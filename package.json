@@ -1,0 +1,9 @@
+{
+  "name": "pathway-language-solutions",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node tests/crs-engine.test.cjs"
+  }
+}
