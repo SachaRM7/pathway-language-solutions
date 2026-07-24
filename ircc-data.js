@@ -2,6 +2,8 @@
   'use strict';
 
   const DATA_URL = 'https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json';
+  const CRITERIA_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html';
+  const RULES_VERSION = '2026-06-22';
   const CACHE_KEY = 'pathway-ircc-rounds-v1';
   const FALLBACK = {
     cec: { score: 516, date: '2026-07-21', name: 'Canadian Experience Class', draw: '428' },
@@ -83,5 +85,37 @@
     }).format(date);
   }
 
-  global.PathwayIRCC = { DATA_URL, FALLBACK, load, formatDate, formatLongDate };
+  async function verifyCriteria() {
+    try {
+      const response = await fetch(CRITERIA_URL, { cache: 'no-store' });
+      if (!response.ok) throw new Error('IRCC criteria unavailable');
+      const html = await response.text();
+      const normalized = html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&#160;/g, ' ').replace(/\s+/g, ' ');
+      const modified = (html.match(/name="dcterms\.modified"[^>]*content="(\d{4}-\d{2}-\d{2})"/i) || [])[1] || null;
+      const checks = [
+        /Maximum 500 points total/i,
+        /Maximum of 100 points/i,
+        /French language skills.{0,120}50/i,
+        /Provincial or territorial nomination.{0,80}600/i,
+        /removing job offer points/i
+      ];
+      return {
+        valid: checks.every(pattern => pattern.test(normalized)),
+        verified: true,
+        modified,
+        checkedAt: new Date().toISOString()
+      };
+    } catch (_) {
+      return {
+        valid: true,
+        verified: false,
+        modified: RULES_VERSION,
+        checkedAt: new Date().toISOString()
+      };
+    }
+  }
+
+  global.PathwayIRCC = {
+    DATA_URL, CRITERIA_URL, RULES_VERSION, FALLBACK, load, verifyCriteria, formatDate, formatLongDate
+  };
 })(typeof window !== 'undefined' ? window : globalThis);
