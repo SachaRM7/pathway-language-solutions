@@ -1,5 +1,11 @@
 const assert = require('node:assert/strict');
-const { calculate } = require('../crs-engine.js');
+const { calculate, displayRules } = require('../crs-engine.js');
+
+assert.equal(
+  displayRules.exampleBaseScore + displayRules.maxFrenchBonus + displayRules.maxSecondLanguagePoints,
+  519
+);
+assert.equal(displayRules.minFrenchBonus, 25);
 
 const base = {
   maritalStatus: 'single',

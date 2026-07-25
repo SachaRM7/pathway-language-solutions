@@ -4,10 +4,11 @@
   const DATA_URL = 'https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json';
   const CRITERIA_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html';
   const RULES_VERSION = '2026-06-22';
-  const CACHE_KEY = 'pathway-ircc-rounds-v1';
+  const CACHE_KEY = 'pathway-ircc-rounds-v2';
   const FALLBACK = {
     cec: { score: 516, date: '2026-07-21', name: 'Canadian Experience Class', draw: '428' },
     french: { score: 399, date: '2026-07-22', name: 'French-language proficiency', draw: '429' },
+    metrics: { frenchYear: 2026, frenchInvitations: 40500, frenchRoundCount: 8 },
     fetchedAt: '2026-07-24T00:00:00.000Z',
     source: 'fallback'
   };
@@ -27,10 +28,14 @@
     };
   }
 
+  function invitationCount(round) {
+    return Number(String(round && round.drawSize || '').replace(/[^\d]/g, '')) || 0;
+  }
+
   function readCache() {
     try {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY));
-      return cached && cached.cec && cached.french ? cached : null;
+      return cached && cached.cec && cached.french && cached.metrics ? cached : null;
     } catch (_) {
       return null;
     }
@@ -57,9 +62,19 @@
         /French[- ]Language proficiency/i.test(round.drawName || '') && validRound(round));
 
       if (!cec || !french) throw new Error('Required IRCC rounds not found');
+      const frenchYear = Number(french.drawDate.slice(0, 4));
+      const frenchRounds = payload.rounds.filter(round =>
+        /French[- ]Language proficiency/i.test(round.drawName || '') &&
+        validRound(round) &&
+        round.drawDate.startsWith(`${frenchYear}-`));
       const result = {
         cec: normalize(cec),
         french: normalize(french),
+        metrics: {
+          frenchYear,
+          frenchInvitations: frenchRounds.reduce((total, round) => total + invitationCount(round), 0),
+          frenchRoundCount: frenchRounds.length
+        },
         fetchedAt: new Date().toISOString(),
         source: 'live'
       };

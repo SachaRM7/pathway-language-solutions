@@ -152,7 +152,17 @@
     };
   }
 
-  const api = { calculate, tables: { AGE_30_TO_44, EDUCATION, SPOUSE_EDUCATION, CANADIAN_WORK } };
+  const displayRules = {
+    exampleBaseScore: 445,
+    minFrenchBonus: 25,
+    maxFrenchBonus: 50,
+    maxSecondLanguagePoints: 24
+  };
+  const api = {
+    calculate,
+    displayRules,
+    tables: { AGE_30_TO_44, EDUCATION, SPOUSE_EDUCATION, CANADIAN_WORK }
+  };
   global.PathwayCRS = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -130,7 +130,7 @@
             </div>
             <div class="comparison" id="comparison"></div>
             <p class="eligibility" id="french-eligibility"></p>
-            <p class="result-source">Cálculo basado en la tabla CRS oficial de IRCC actualizada el 22 de junio de 2026. Verifica siempre el resultado antes de presentar un perfil.</p>
+            <p class="result-source">Cálculo basado en las reglas CRS oficiales de IRCC verificadas el <span id="criteria-date">22 de junio de 2026</span>. Verifica siempre el resultado antes de presentar un perfil.</p>
           </div>
         </aside>
       </div>
@@ -191,8 +191,11 @@
       if(criteria.valid){
         button.disabled=false;
         button.textContent='Calcular mi puntaje CRS';
-        const verification=criteria.verified?`tabla verificada (${criteria.modified||PathwayIRCC.RULES_VERSION})`:`tabla vigente al ${PathwayIRCC.RULES_VERSION}`;
-        status.textContent=`${source}: ronda francófona ${data.french.score} · ${verification}`;
+        const criteriaDate=PathwayIRCC.formatLongDate(criteria.modified||PathwayIRCC.RULES_VERSION,'es-ES');
+        const drawDate=PathwayIRCC.formatLongDate(data.french.date,'es-ES');
+        document.querySelector('#criteria-date').textContent=criteriaDate;
+        const verification=criteria.verified?`reglas CRS verificadas el ${criteriaDate}`:`reglas CRS vigentes al ${criteriaDate}`;
+        status.textContent=`${source}: ronda francófona ${data.french.score} (${drawDate}) · ${verification}`;
       }else{
         button.disabled=true;
         button.textContent='Tabla IRCC en revisión';
