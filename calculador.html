@@ -130,7 +130,7 @@
             </div>
             <div class="comparison" id="comparison"></div>
             <p class="eligibility" id="french-eligibility"></p>
-            <p class="result-source">Cálculo basado en las reglas CRS oficiales de IRCC verificadas el <span id="criteria-date">22 de junio de 2026</span>. Verifica siempre el resultado antes de presentar un perfil.</p>
+            <p class="result-source">Cálculo basado en las reglas CRS oficiales cargadas automáticamente desde IRCC, versión <span id="criteria-date">22 de junio de 2026</span>. Verifica siempre el resultado antes de presentar un perfil.</p>
           </div>
         </aside>
       </div>
@@ -183,24 +183,25 @@
 
     const readLevels=prefix=>['speaking','listening','reading','writing'].map(skill=>Number(document.querySelector(`#${prefix}-${skill}`).value||0));
 
-    Promise.all([PathwayIRCC.load(),PathwayIRCC.verifyCriteria()]).then(([data,criteria])=>{
+    Promise.all([PathwayIRCC.load(),PathwayIRCC.loadRules()]).then(([data,rulesState])=>{
       rounds=data;
       const status=document.querySelector('#data-status');
-      const source=data.source==='live'?'Datos oficiales IRCC':'Últimos datos IRCC guardados';
+      const source=data.source==='live'?'Datos oficiales IRCC':data.source==='cache'?'Últimos datos IRCC guardados':'Datos IRCC de respaldo';
       const button=document.querySelector('#calculate-button');
-      if(criteria.valid){
-        button.disabled=false;
-        button.textContent='Calcular mi puntaje CRS';
-        const criteriaDate=PathwayIRCC.formatLongDate(criteria.modified||PathwayIRCC.RULES_VERSION,'es-ES');
-        const drawDate=PathwayIRCC.formatLongDate(data.french.date,'es-ES');
-        document.querySelector('#criteria-date').textContent=criteriaDate;
-        const verification=criteria.verified?`reglas CRS verificadas el ${criteriaDate}`:`reglas CRS vigentes al ${criteriaDate}`;
-        status.textContent=`${source}: ronda francófona ${data.french.score} (${drawDate}) · ${verification}`;
-      }else{
-        button.disabled=true;
-        button.textContent='Tabla IRCC en revisión';
-        status.textContent='IRCC modificó la tabla: cálculo suspendido hasta validar las nuevas reglas.';
-      }
+      PathwayCRS.setRules(rulesState.rules);
+      button.disabled=false;
+      button.textContent='Calcular mi puntaje CRS';
+      const criteriaDate=PathwayIRCC.formatLongDate(rulesState.modified||PathwayIRCC.RULES_VERSION,'es-ES');
+      const drawDate=PathwayIRCC.formatLongDate(data.french.date,'es-ES');
+      const checkDate=PathwayIRCC.formatLongDate((data.fetchedAt||PathwayIRCC.todayIso()).slice(0,10),'es-ES');
+      const rulesSource=rulesState.source==='live'?'reglas CRS cargadas desde IRCC':rulesState.source==='cache'?'reglas CRS guardadas de la última consulta':'reglas CRS de respaldo';
+      document.querySelector('#criteria-date').textContent=criteriaDate;
+      status.textContent=`${source}: ronda francófona ${data.french.score} (${drawDate}) · ${rulesSource} (${criteriaDate}) · consulta ${checkDate}`;
+    }).catch(()=>{
+      const button=document.querySelector('#calculate-button');
+      button.disabled=true;
+      button.textContent='Datos IRCC en revisión';
+      document.querySelector('#data-status').textContent='No fue posible validar los datos oficiales. El cálculo queda suspendido para evitar un resultado incorrecto.';
     });
 
     form.addEventListener('submit',event=>{
