@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
   <meta name="description" content="Preparación al TEF Canada para hispanohablantes. Objetivo NCLC 7 y acceso a las rondas francófonas de Express Entry.">
   <title>Programa NCLC 7 | Pathway Language Solutions</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
+  <script src="theme.js"></script>
   <style>
     :root{--ink:#101a2e;--slate:#3d4a63;--mist:#eef1f6;--paper:#fbfaf8;--line:#d6dce7;--signal:#c8452e;--gain:#1f7a5c;--white:#fff;--serif:"Fraunces",Georgia,serif;--sans:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.62}a{color:inherit}button,a{touch-action:manipulation}.wrap{width:min(1160px,calc(100% - 36px));margin:auto}.eyebrow{font:600 .74rem/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--signal)}.kicker{max-width:690px;color:var(--slate);font-size:1.08rem}.section{padding:88px 0;border-top:1px solid var(--line)}h1,h2,h3{font-family:var(--serif);line-height:1.06;letter-spacing:-.025em;margin:0}h1{font-size:clamp(2.55rem,7.2vw,5.8rem);max-width:980px}h2{font-size:clamp(2.1rem,4.7vw,4rem);max-width:830px}h3{font-size:1.45rem}p{margin:1em 0}.nav{height:72px;display:flex;align-items:center;border-bottom:1px solid var(--line);background:rgba(251,250,248,.94);position:sticky;top:0;z-index:20;backdrop-filter:blur(10px)}.nav-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-family:var(--serif);font-weight:700;text-decoration:none;line-height:1}.brand small{display:block;font:500 .62rem var(--mono);letter-spacing:.12em;color:var(--slate);margin-top:5px}.nav-links{display:flex;gap:26px;align-items:center;font-size:.86rem}.nav-links a{text-decoration:none}.button{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 18px;border:1px solid var(--ink);background:var(--ink);color:#fff;text-decoration:none;font-weight:600;font-size:.9rem;border-radius:2px;transition:transform .18s,background .18s}.button:hover{transform:translateY(-2px);background:#1b2945}.button.signal{background:var(--signal);border-color:var(--signal)}.button.outline{background:transparent;color:var(--ink)}:focus-visible{outline:3px solid rgba(200,69,46,.4);outline-offset:4px}
@@ -38,6 +40,7 @@
     @media(max-width:760px){.nav .brand{grid-template-columns:34px auto;font-size:.94rem}.nav .brand:before{width:34px;height:34px}.nav .brand small{font-size:.5rem}.hero:after{width:92vw;height:44vw;right:-34vw;bottom:-22vw}.score:last-child .score-label span:last-child{color:#fff}.equation{box-shadow:9px 9px 0 #e6e2d4}}
     .methodology{background:#f1efe7}.method-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(18,43,38,.2);border:1px solid rgba(18,43,38,.2);margin-top:40px}.method-item{background:var(--paper);padding:22px 24px;min-height:132px;transition:background-color .24s ease,color .24s ease}.method-item strong{display:block;font:700 1rem var(--sans);color:var(--ink);margin-bottom:8px;transition:color .24s ease}.method-item span{display:block;color:var(--slate);font-size:.88rem;transition:color .24s ease}@media(hover:hover) and (pointer:fine){.method-item:hover{background:var(--gain)}.method-item:hover strong{color:var(--gold)}.method-item:hover span{color:#f4f1e8}}@media(max-width:760px){.method-grid{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.method-item,.method-item strong,.method-item span{transition:none}}
   </style>
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
   <header class="nav">
@@ -45,6 +48,7 @@
       <a class="brand" href="index.html">Pathway <small>LANGUAGE SOLUTIONS</small></a>
       <nav class="nav-links" aria-label="Navegación principal">
         <a href="#programa">Programa</a><a href="#precios">Precios</a><a href="#faq">Preguntas</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo oscuro" aria-pressed="false"><span data-theme-icon aria-hidden="true">☾</span></button>
         <a class="button signal" href="calculador.html">Calcular mi oportunidad</a>
       </nav>
     </div>

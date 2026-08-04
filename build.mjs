@@ -11,6 +11,8 @@ const assets = [
   'calculador.html',
   'gracias.html',
   'pathway-mark.svg',
+  'theme.css',
+  'theme.js',
   'crs-engine.js',
   'ircc-data.js'
 ];
