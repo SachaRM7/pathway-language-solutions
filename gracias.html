@@ -23,7 +23,7 @@
     <section class="receipt">
       <aside class="receipt-aside"><div class="check">✓</div><div class="ref">SOLICITUD<br>RECIBIDA</div></aside>
       <div class="content">
-        <p class="eyebrow">Evaluación gratuita</p><h1>Ya tenemos tu información.</h1>
+        <p class="eyebrow">Evaluación gratuita</p><h1 id="receipt-title">Ya tenemos tu información.</h1>
         <p class="message" id="message">Revisaremos tu escenario y te enviaremos los próximos pasos por email.</p>
         <div class="next">
           <div class="row"><span>01</span><div><strong>Revisamos tu plazo</strong><p>La fecha del permiso define la prioridad y el ritmo necesario.</p></div></div>
@@ -36,9 +36,17 @@
     </section>
   </div></main>
   <script>
-    const priority=new URLSearchParams(location.search).get('priority')||sessionStorage.getItem('pathwayPermit');
+    const params=new URLSearchParams(location.search);
+    const priority=params.get('priority')||sessionStorage.getItem('pathwayPermit');
+    const channel=params.get('channel');
     const message=document.querySelector('#message');
-    if(priority==='under-12'){
+    if(channel==='whatsapp'){
+      document.querySelector('#receipt-title').textContent='Falta un último paso.';
+      message.innerHTML='<strong>Tu solicitud todavía no ha sido enviada.</strong> Envía el mensaje que abrimos en WhatsApp para que Pathway pueda recibir tus datos y responderte.';
+      const savedUrl=sessionStorage.getItem('pathwayWhatsAppUrl');
+      if(savedUrl)document.querySelector('#whatsapp-link').href=savedUrl;
+      document.querySelector('#whatsapp-link').textContent='Abrir y enviar el mensaje en WhatsApp';
+    }else if(priority==='under-12'){
       message.innerHTML='<strong>Tu plazo requiere prioridad.</strong> Te contactaremos por WhatsApp durante el día para revisar si el objetivo NCLC 7 es viable antes del vencimiento de tu permiso.';
     }else{
       message.textContent='Te enviaremos por email la guía y los próximos pasos para construir un calendario de preparación realista.';

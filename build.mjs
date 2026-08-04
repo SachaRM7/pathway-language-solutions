@@ -13,6 +13,7 @@ const assets = [
   'pathway-mark.svg',
   'theme.css',
   'theme.js',
+  'site-config.js',
   'crs-engine.js',
   'ircc-data.js'
 ];

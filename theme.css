@@ -4,6 +4,7 @@
 .theme-toggle:focus-visible{outline:3px solid rgba(212,175,55,.55);outline-offset:3px}
 .nav-actions{display:flex;align-items:center;gap:18px}
 .nav .nav-inner{height:100%}
+.hero-whatsapp{color:inherit;font-size:.84rem;font-weight:600;text-underline-offset:4px}.pricing-contact{margin:30px 0 0;text-align:center;color:var(--slate)}.pricing-contact a{font-weight:700;text-underline-offset:4px}
 
 html[data-theme="dark"]{color-scheme:dark;--slate:#b8c8c1;--paper:#0a1c18;--line:#2c4941;--white:#102822;--mist:#0d241f;--signal:#d4af37;--gain:#1b493b;--gold-dark:#d4af37}
 html[data-theme="dark"] body{background:radial-gradient(circle at 12% 7%,rgba(212,175,55,.07),transparent 28rem),#0a1c18;color:#f3f0e7}
@@ -64,5 +65,5 @@ html[data-theme="dark"] .receipt-aside{background:radial-gradient(circle at 50% 
 html[data-theme="dark"] .message,html[data-theme="dark"] .row p,html[data-theme="dark"] .legal{color:#b8c8c1}
 html[data-theme="dark"] .next,html[data-theme="dark"] .row{border-color:#35564c}
 
-@media(max-width:760px){.theme-toggle{width:38px;height:38px}.nav-actions{gap:10px}.nav-links{gap:8px}}
+@media(max-width:760px){.theme-toggle{width:38px;height:38px}.nav-actions{gap:10px}.nav-links{gap:8px}.mobile-cta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.mobile-cta .button{margin:0;padding:11px 12px}.mobile-cta .button.outline{background:var(--paper);color:var(--ink)}html[data-theme="dark"] .mobile-cta .button.outline{background:#102822;color:#f3f0e7;border-color:#48675e}}
 @media(prefers-reduced-motion:reduce){.theme-toggle{transition:none}}
