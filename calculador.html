@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f7f5ef">
   <meta name="description" content="Calcula tu puntaje CRS completo según la tabla oficial de IRCC y compáralo con las últimas rondas de Express Entry.">
-  <title>Calculador CRS completo | Pathway</title>
+  <title>Calculadora CRS 2026 con francés | Pathway</title>
+  <link rel="canonical" href="https://sacharm7.github.io/pathway-language-solutions/calculador.html">
+  <meta property="og:title" content="Calculadora CRS con francés | Pathway"><meta property="og:description" content="Calcula tu puntaje y compáralo con las últimas rondas publicadas por IRCC."><meta property="og:type" content="website"><meta property="og:url" content="https://sacharm7.github.io/pathway-language-solutions/calculador.html"><meta property="og:image" content="https://sacharm7.github.io/pathway-language-solutions/og-pathway.png"><meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -21,7 +23,7 @@
   </style>
   <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body><a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="index.html">Pathway <small>LANGUAGE SOLUTIONS</small></a>
@@ -29,7 +31,7 @@
     </div>
   </header>
 
-  <main class="main">
+  <main class="main" id="contenido">
     <div class="wrap">
       <div class="intro">
         <div>
@@ -149,7 +151,7 @@
             <div class="field"><label for="email">Email <span class="required">*</span></label><input id="email" name="email" type="email" autocomplete="email" required></div>
             <div class="field wide"><label for="whatsapp">WhatsApp <span class="required">*</span></label><input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" placeholder="+1 416 000 0000" required></div>
             <div class="field wide"><label for="permit">¿Cuándo vence tu permiso de trabajo? <span class="required">*</span></label><select id="permit" name="permit_expiry" required><option value="">Selecciona una opción</option><option value="under-12">En menos de 12 meses</option><option value="12-24">Entre 12 y 24 meses</option><option value="over-24">En más de 24 meses</option><option value="no-permit">No tengo permiso</option><option value="na">No aplica a mi caso</option></select></div>
-            <div class="status" id="form-status" role="alert"></div>
+            <div class="status" id="form-status" role="alert" tabindex="-1"></div>
             <button class="button" id="lead-submit" type="submit">Continuar por WhatsApp</button>
             <p class="privacy">Al continuar, abriremos WhatsApp con tus respuestas preparadas. Tú decides si envías el mensaje. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
           </form>
@@ -160,6 +162,7 @@
 
   <footer class="footer"><div class="wrap"><p>Pathway Language Solutions es un instituto de idiomas y no ofrece consultoría migratoria. El resultado depende de la exactitud de tus respuestas y no sustituye el cálculo de IRCC. Consulta los <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html" target="_blank" rel="noopener">criterios CRS oficiales</a>.<br><br>Contacto: <a href="mailto:pathway.l.s.sectoram@gmail.com">pathway.l.s.sectoram@gmail.com</a> · <a href="https://wa.me/51989887516" target="_blank" rel="noopener">+51 989 887 516</a></p></div></footer>
 
+  <script src="analytics.js"></script>
   <script src="crs-engine.js"></script>
   <script src="ircc-data.js"></script>
   <script>
@@ -277,6 +280,7 @@
         spouseLanguage:maritalStatus==='accompanying'?readLevels('spouse'):[0,0,0,0]
       };
       const score=PathwayCRS.calculate(profile);
+      if(window.PathwayAnalytics)PathwayAnalytics.track('crs_calculated',{french_eligible:score.frenchEligible,total:score.total});
       document.querySelector('#total-score').textContent=score.total;
       document.querySelector('#core-score').textContent=score.core;
       document.querySelector('#spouse-score').textContent=score.spouse;
@@ -324,6 +328,7 @@
           const whatsappUrl=`https://wa.me/51989887516?text=${encodeURIComponent(message)}`;
           sessionStorage.setItem('pathwayWhatsAppUrl',whatsappUrl);
           const opened=window.open(whatsappUrl,'_blank');
+          if(window.PathwayAnalytics)PathwayAnalytics.track('lead_whatsapp_prepared',{permit:data.permit_expiry});
           if(!opened){window.location.href=whatsappUrl;return;}
           opened.opener=null;
           window.location.href=`gracias.html?channel=whatsapp&priority=${encodeURIComponent(data.permit_expiry)}`;
@@ -331,6 +336,7 @@
       }catch(error){
         status.style.display='block';
         status.textContent='No pudimos enviar tus datos. Inténtalo de nuevo o escríbenos por WhatsApp.';
+        status.focus();
         submit.disabled=false;
         submit.textContent=String(config.leadWebhook||'').trim()?'Solicitar mi evaluación gratuita':'Continuar por WhatsApp';
       }

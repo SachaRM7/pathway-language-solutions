@@ -4,6 +4,6 @@
   "version": "1.0.0",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node tests/crs-engine.test.cjs && node tests/ircc-data.test.cjs"
+    "test": "node tests/crs-engine.test.cjs && node tests/ircc-data.test.cjs && node tests/site.test.cjs"
   }
 }
