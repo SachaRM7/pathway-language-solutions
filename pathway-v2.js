@@ -55,7 +55,7 @@ document.documentElement.classList.add('js');
       link.href = 'test-placement.html';
     });
     if (weekTitle) weekTitle.textContent = 'La intensidad que exige tu objetivo, organizada semana a semana.';
-    if (weekCopy) weekCopy.textContent = 'Según tu nivel y tu fecha, trabajas 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.';
+    if (weekCopy) weekCopy.textContent = 'Según tu nivel, tu fecha y tus necesidades, eliges un ritmo de 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.';
     if (weekList) {
       weekList.innerHTML = `
         <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas* por semana según tu plan</small></div><b>2 · 4 · 6 h*</b></li>
@@ -193,6 +193,8 @@ document.documentElement.classList.add('js');
       setAll('[data-ircc-cec-score]', data.cec.score);
       setAll('[data-ircc-french-score]', data.french.score);
       setAll('[data-ircc-difference]', Math.abs(data.cec.score - data.french.score));
+      setAll('[data-ircc-cec-date]', PathwayIRCC.formatDate(data.cec.date, 'es-ES'));
+      setAll('[data-ircc-french-date]', PathwayIRCC.formatDate(data.french.date, 'es-ES'));
       setAll('[data-draw-date]', PathwayIRCC.formatLongDate(data.french.date, 'es-ES'));
 
       const status = data.source === 'live'
