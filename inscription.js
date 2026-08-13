@@ -19,6 +19,10 @@
     document.querySelector('[data-enroll-title]').textContent = 'Dinos cuánto tiempo tienes y cuándo puedes estudiar.';
     document.querySelector('[data-enroll-intro]').textContent = 'No tienes que elegir la intensidad a ciegas. Compararemos tu fecha, tu nivel y tus disponibilidades para recomendarte un ritmo realista antes de cualquier pago.';
     document.querySelector('[data-journey-first]').textContent = 'Fecha objetivo y disponibilidades';
+    document.querySelector('[data-rhythm-section]').hidden = true;
+    document.querySelector('[data-billing-section]').hidden = true;
+    document.querySelector('[data-schedule-legend]').textContent = '1. Fecha y disponibilidades';
+    document.querySelector('[data-contact-legend]').textContent = '2. Contacto para confirmar';
   }
   form.querySelectorAll('[name="plan"]').forEach(plan => {
     const months = planTimelines[plan.value][effectiveLevel];
@@ -37,9 +41,9 @@
     const billing = getSelected('billing');
     const days = getCheckedValues('days');
     const times = getCheckedValues('times');
-    document.querySelector('[data-summary-plan]').textContent = `${plan.value} · ${plan.dataset.hours} · ${plan.dataset.duration}`;
-    document.querySelector('[data-summary-billing]').textContent = billing.value;
-    document.querySelector('[data-summary-price]').textContent = billing.value === 'Ciclo' ? plan.dataset.cycle : plan.dataset.monthly;
+    document.querySelector('[data-summary-plan]').textContent = isUrgentScenario ? 'A recomendar según tu fecha' : `${plan.value} · ${plan.dataset.hours} · ${plan.dataset.duration}`;
+    document.querySelector('[data-summary-billing]').textContent = isUrgentScenario ? 'A elegir después de la recomendación' : billing.value;
+    document.querySelector('[data-summary-price]').textContent = isUrgentScenario ? 'Después de confirmar el ritmo' : (billing.value === 'Ciclo' ? plan.dataset.cycle : plan.dataset.monthly);
     document.querySelector('[data-summary-schedule]').textContent = days.length || times.length ? `${days.join(', ') || 'Días por definir'} · ${times.join(', ') || 'franja por definir'}` : 'Por completar';
     document.querySelector('[data-schedule-guidance]').textContent = `Para un ritmo de ${plan.dataset.hours}, intenta proponer al menos ${plan.dataset.suggestedDays} días posibles. No tienen que convertirse todos en días de clase.`;
   };
@@ -71,9 +75,9 @@
       `Email: ${data.get('email')}`,
       `WhatsApp: ${data.get('phone')}`,
       `Nivel estimado: ${resultLevel}`,
-      `Ritmo de referencia: ${plan.value} · ${plan.dataset.hours} · ${plan.dataset.duration}`,
-      `Inscripción: ${billing.value}`,
-      `Precio de referencia: ${price}`,
+      `Ritmo de referencia: ${isUrgentScenario ? 'Por recomendar según mi fecha y nivel' : `${plan.value} · ${plan.dataset.hours} · ${plan.dataset.duration}`}`,
+      `Inscripción: ${isUrgentScenario ? 'Por elegir después de la recomendación' : billing.value}`,
+      `Precio de referencia: ${isUrgentScenario ? 'Por confirmar' : price}`,
       `Zona horaria: ${data.get('timezone')}`,
       `Inicio ideal: ${data.get('startDate')}`,
       `Días posibles: ${days.join(', ')}`,
