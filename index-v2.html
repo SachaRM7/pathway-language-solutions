@@ -3,11 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#fbf5e8">
-  <!-- Retirer cette balise au moment de remplacer l'ancienne homepage. -->
-  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#f5efe4">
   <meta name="description" content="Clases privadas de francés para hispanohablantes en Canadá. Un recorrido personalizado hacia el TEF Canada y el objetivo NCLC 7.">
-  <title>Francés privado para el TEF Canada | Pathway Language Solutions</title>
+  <title>NCLC 7 · Preparación TEF y TCF | Pathway</title>
+  <link rel="canonical" href="https://pathway-languages.com/">
+  <meta property="og:title" content="NCLC 7 · Preparación TEF y TCF | Pathway">
+  <meta property="og:description" content="Clases privadas de francés para alcanzar NCLC 7 y preparar el TEF Canada o el TCF Canada con una intensidad adaptada a tu fecha.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:url" content="https://pathway-languages.com/">
+  <meta property="og:image" content="https://pathway-languages.com/og-pathway.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +21,7 @@
   <link rel="stylesheet" href="pathway-v2.css">
   <script src="site-config.js"></script>
   <script>
-    if (location.pathname.endsWith('/couleurs') || location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
+    if (location.hostname === 'pathway-languages.com' || location.hostname === 'www.pathway-languages.com' || location.pathname.endsWith('/couleurs') || location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
       document.documentElement.classList.add('brand-palette');
       document.querySelector('meta[name="theme-color"]').content = '#f5efe4';
       document.title = 'Pathway — Version premium accessible';

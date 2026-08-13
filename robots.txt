@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /gracias.html
 
-Sitemap: https://sacharm7.github.io/pathway-language-solutions/sitemap.xml
+Sitemap: https://pathway-languages.com/sitemap.xml
