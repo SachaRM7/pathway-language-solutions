@@ -7,7 +7,7 @@ const client = resolve(dist, 'client');
 const server = resolve(dist, 'server');
 const metadata = resolve(dist, '.openai');
 const assets = [
-  'index.html',
+  'index-v2.html',
   'calculador.html',
   'gracias.html',
   'privacidad.html',
@@ -26,6 +26,8 @@ const assets = [
   'sitemap.xml',
   'crs-engine.js',
   'ircc-data.js'
+  ,'pathway-v2.css'
+  ,'pathway-v2.js'
 ];
 
 await rm(dist, { recursive: true, force: true });
@@ -34,8 +36,10 @@ await mkdir(server, { recursive: true });
 await mkdir(metadata, { recursive: true });
 
 for (const asset of assets) {
-  await cp(resolve(root, asset), resolve(client, asset));
+  const destination = asset === 'index-v2.html' ? 'index.html' : asset;
+  await cp(resolve(root, asset), resolve(client, destination));
 }
+await cp(resolve(root, 'assets'), resolve(client, 'assets'), { recursive: true });
 await cp(resolve(root, '.openai', 'hosting.json'), resolve(metadata, 'hosting.json'));
 await writeFile(resolve(server, 'index.js'), `export default {
   async fetch(request, env) {

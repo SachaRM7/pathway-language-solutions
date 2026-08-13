@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const pages = ['index.html','calculador.html','gracias.html','privacidad.html','condiciones.html','preparacion-tef-canada.html','nclc-7.html','tefaq-quebec.html'];
+const pages = ['index.html','index-v2.html','calculador.html','gracias.html','privacidad.html','condiciones.html','preparacion-tef-canada.html','nclc-7.html','tefaq-quebec.html'];
 const errors = [];
 
 for (const file of pages) {
