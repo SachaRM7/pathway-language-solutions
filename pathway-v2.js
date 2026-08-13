@@ -23,12 +23,16 @@ document.documentElement.classList.add('js');
     const examLevel = document.querySelector('[data-exam-level]');
     const pricingChoice = document.querySelector('[data-pricing-choice]');
     const pricingFaq = document.querySelector('[data-pricing-faq]');
+    const hoursReference = document.querySelector('[data-hours-reference]');
+    const pricingReference = document.querySelector('[data-pricing-reference]');
 
     if (heroLabel) heroLabel.textContent = 'Objetivo NCLC 7 · Preparación TEF Canada y TCF Canada';
     if (heroTitle) heroTitle.innerHTML = 'Tu ruta al NCLC 7 empieza por <span>un plan que sí cabe en tu vida.</span>';
     if (heroLead) heroLead.textContent = 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada o el TCF Canada.';
     if (honestyNote) honestyNote.hidden = false;
     if (pricingChoice) pricingChoice.hidden = false;
+    if (hoursReference) hoursReference.hidden = false;
+    if (pricingReference) pricingReference.hidden = false;
     if (pricingFaq) pricingFaq.textContent = 'Sí. Puedes inscribirte mes a mes, sin permanencia, o elegir un ciclo completo con 15 % de descuento.';
     if (examLevel) {
       examLevel.dataset.title = 'Tu objetivo es el TEF o el TCF';
@@ -48,10 +52,10 @@ document.documentElement.classList.add('js');
       element.textContent = '2 simulacros TEF / TCF';
     });
     if (weekTitle) weekTitle.textContent = 'La intensidad que exige tu objetivo, organizada semana a semana.';
-    if (weekCopy) weekCopy.textContent = 'Según tu nivel y tu fecha, trabajas 2, 4 o 6 horas por semana en clases privadas, además de una práctica guiada entre sesiones.';
+    if (weekCopy) weekCopy.textContent = 'Según tu nivel y tu fecha, trabajas 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.';
     if (weekList) {
       weekList.innerHTML = `
-        <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas por semana según tu plan</small></div><b>2 · 4 · 6 h</b></li>
+        <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas* por semana según tu plan</small></div><b>2 · 4 · 6 h*</b></li>
         <li><span>Entre sesiones</span><div><strong>Práctica dirigida</strong><small>Ejercicios específicos conectados con tu última clase</small></div><b>Guiada</b></li>
         <li><span>Después de cada clase</span><div><strong>Correcciones continuas</strong><small>Feedback oral y escrito sobre tus prioridades</small></div><b>Continuo</b></li>
         <li><span>Cada etapa</span><div><strong>Control del progreso</strong><small>Objetivos semanales y simulacros antes del TEF o el TCF</small></div><b>Medible</b></li>
@@ -93,6 +97,7 @@ document.documentElement.classList.add('js');
     pricingButtons.forEach(button => {
       button.addEventListener('click', () => setPricingMode(button.dataset.pricingMode));
     });
+    setPricingMode('monthly');
   }
 
   const closeMenu = () => {

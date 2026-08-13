@@ -117,6 +117,7 @@ html.brand-palette {
 .brand-palette .plan-card .button:hover { border-color: var(--coral-dark); background: var(--coral-dark); color: var(--white); }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { margin: 0; overflow-x: hidden; background: var(--cream); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
 body::before { content: ""; position: fixed; inset: 0; z-index: 100; pointer-events: none; opacity: .035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E"); }
@@ -260,6 +261,13 @@ button { font: inherit; }
 .week-list strong { font-family: var(--font-display); font-size: 1.28rem; }
 .week-list small { color: #4e5f5b; }
 .week-list b { font-size: .75rem; }
+.week-reference-note {
+  grid-column: 2;
+  margin: -1.6rem 0 0;
+  color: #405247;
+  font-size: .66rem;
+  line-height: 1.5;
+}
 
 .stories-section { background: var(--paper); }
 .stories-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 1rem; }
@@ -305,6 +313,7 @@ button { font: inherit; }
 .pricing-choice-copy { display: grid; gap: .18rem; }
 .pricing-choice-copy strong { font-size: .8rem; }
 .pricing-choice-copy span { color: var(--ink-soft); font-size: .74rem; line-height: 1.4; }
+.pricing-choice-copy small { max-width: 510px; margin-top: .32rem; color: var(--ink-soft); font-size: .62rem; line-height: 1.45; }
 .pricing-toggle {
   min-width: 390px;
   padding: 5px;
@@ -422,6 +431,7 @@ button { font: inherit; }
   .section-heading, .route-heading, .teacher-grid, .week-grid, .context-grid, .faq-grid, .closing-grid { grid-template-columns: 1fr; gap: 3rem; }
   .section-heading > p { margin-left: 0; }
   .pricing-choice { grid-template-columns: 1fr; align-items: stretch; }
+  .week-reference-note { grid-column: 1; margin-top: -1.8rem; }
   .teacher-visual { max-width: 520px; }
   .week-copy > p { max-width: 620px; }
   .faq-grid header { position: static; }
