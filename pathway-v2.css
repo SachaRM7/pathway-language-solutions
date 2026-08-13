@@ -69,10 +69,10 @@ html.brand-palette {
 .brand-palette .hero-orbit::after { background: rgba(199, 111, 86, .04); }
 .brand-palette .lesson-card { box-shadow: 0 28px 75px rgba(18, 43, 38, .16); }
 .brand-palette .route-section { background: #122b26; }
-.brand-palette .step-label-dark { background: rgba(202, 216, 195, .12); color: #dce5d2; }
+.brand-palette .step-label-dark { background: rgba(181, 198, 108, .14); color: var(--apple); }
 .brand-palette .route-map::before { background: #456158; }
-.brand-palette .route-stop::before { border-color: var(--mint-deep); background: #122b26; color: #e7eee2; }
-.brand-palette .route-stop:last-child::before { border-color: var(--gold); color: var(--gold); }
+.brand-palette .route-stop::before,
+.brand-palette .route-stop:last-child::before { border-color: var(--apple-strong); background: #122b26; color: var(--apple); }
 .brand-palette .teacher-section,
 .brand-palette .context-section { background: var(--fog); }
 .brand-palette .experience-coral,
@@ -85,7 +85,7 @@ html.brand-palette {
 .brand-palette .plan-featured,
 .brand-palette .story-featured,
 .brand-palette .site-footer { background: #122b26; }
-.brand-palette .score-row-accent strong { color: #dce5d2; }
+.brand-palette .score-row-accent strong { color: var(--apple-strong); }
 .brand-palette .teacher-visual::after {
   content: "";
   position: absolute;
@@ -106,6 +106,15 @@ html.brand-palette {
 .brand-palette .week-list { border-color: rgba(18, 43, 38, .35); }
 .brand-palette .week-list li { border-color: rgba(18, 43, 38, .35); }
 .brand-palette .week-list li > b { color: #405247; }
+.brand-palette .plans-section .step-label,
+.brand-palette .plan-tag { background: transparent; color: var(--coral-dark); }
+.brand-palette .plan-featured .plan-tag { color: #e99b84; }
+.brand-palette .plan-card .button {
+  border-color: var(--coral);
+  background: var(--coral);
+  color: #122b26;
+}
+.brand-palette .plan-card .button:hover { border-color: var(--coral-dark); background: var(--coral-dark); color: var(--white); }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -281,6 +290,55 @@ button { font: inherit; }
 .score-panel > small { display: block; margin-top: .8rem; color: #8ca39d; font-size: .65rem; text-align: center; }
 
 .plans-section { background: var(--cream); }
+.pricing-choice {
+  max-width: 920px;
+  margin: -1.5rem auto 3.5rem;
+  padding: .85rem .85rem .85rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+  background: rgba(255, 250, 242, .76);
+}
+.pricing-choice-copy { display: grid; gap: .18rem; }
+.pricing-choice-copy strong { font-size: .8rem; }
+.pricing-choice-copy span { color: var(--ink-soft); font-size: .74rem; line-height: 1.4; }
+.pricing-toggle {
+  min-width: 390px;
+  padding: 5px;
+  border: 1px solid rgba(18, 43, 38, .16);
+  border-radius: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(202, 216, 195, .35);
+}
+.pricing-toggle button {
+  min-height: 46px;
+  padding: .65rem 1rem;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 700 .74rem/1.15 var(--font-body);
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.pricing-toggle button:hover { color: var(--ink); }
+.pricing-toggle button:active { transform: scale(.98); }
+.pricing-toggle button[aria-pressed="true"] { background: var(--ink); color: var(--white); box-shadow: 0 7px 18px rgba(18, 43, 38, .16); }
+.pricing-toggle button span {
+  display: inline-block;
+  margin-left: .35rem;
+  padding: .18rem .34rem;
+  border-radius: 999px;
+  background: var(--apple);
+  color: var(--ink);
+  font-size: .58rem;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
 .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: stretch; }
 .plan-card { min-height: 500px; padding: 1.7rem; border: 1px solid var(--line); border-radius: var(--radius-md); display: flex; flex-direction: column; background: var(--paper); }
 .plan-featured { border-color: var(--ink); background: var(--ink); color: var(--white); transform: translateY(-1rem); box-shadow: 0 18px 40px rgba(16, 46, 45, .17); }
@@ -291,6 +349,23 @@ button { font: inherit; }
 .price small { font-family: var(--font-body); font-size: .7rem; font-weight: 400; letter-spacing: 0; opacity: .65; }
 .plan-hours { margin: .3rem 0 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--line); color: var(--ink-soft); font-size: .78rem; }
 .plan-featured .plan-hours { border-color: rgba(255, 255, 255, .18); color: #b6c8c3; }
+.cycle-summary {
+  margin: -.45rem 0 1.2rem;
+  padding: .7rem .8rem;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .2rem .6rem;
+  background: rgba(181, 198, 108, .2);
+  color: var(--ink-soft);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+.cycle-summary s { opacity: .7; }
+.cycle-summary strong { color: var(--ink); }
+.cycle-summary span { grid-column: 1 / -1; }
+.plan-featured .cycle-summary { background: rgba(181, 198, 108, .13); color: #b6c8c3; }
+.plan-featured .cycle-summary strong { color: var(--apple); }
 .plan-card ul { margin: 0 0 1.5rem; padding-left: 1.15rem; color: var(--ink-soft); font-size: .82rem; line-height: 1.9; }
 .plan-featured ul { color: #b6c8c3; }
 .plan-card .button { width: 100%; margin-top: auto; }
@@ -346,6 +421,7 @@ button { font: inherit; }
   .hero-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
   .section-heading, .route-heading, .teacher-grid, .week-grid, .context-grid, .faq-grid, .closing-grid { grid-template-columns: 1fr; gap: 3rem; }
   .section-heading > p { margin-left: 0; }
+  .pricing-choice { grid-template-columns: 1fr; align-items: stretch; }
   .teacher-visual { max-width: 520px; }
   .week-copy > p { max-width: 620px; }
   .faq-grid header { position: static; }
@@ -391,6 +467,8 @@ button { font: inherit; }
   .stories-grid { grid-template-columns: 1fr; }
   .story, .story-featured { grid-row: auto; min-height: 330px; }
   .plans-grid { grid-template-columns: 1fr; }
+  .pricing-choice { margin-top: -1.5rem; padding: 1rem; }
+  .pricing-toggle { min-width: 0; }
   .plan-featured { order: -1; transform: none; }
   .commitment { grid-template-columns: 1fr; gap: 1.5rem; }
   .commitment-mark { width: 110px; height: 110px; }
@@ -414,6 +492,8 @@ button { font: inherit; }
   .week-list li b { grid-column: 1; }
   .score-panel { padding: 1.5rem; }
   .score-row strong { font-size: 3.5rem; }
+  .pricing-toggle { grid-template-columns: 1fr; }
+  .pricing-toggle button { min-height: 42px; }
   .commitment { padding: 1.5rem; }
 }
 

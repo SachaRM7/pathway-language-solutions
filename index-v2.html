@@ -74,7 +74,7 @@
           </div>
           <figcaption class="lesson-caption">
             <img class="lesson-avatar" src="assets/pathway-teacher-prototype.png" alt="">
-            <span><strong>Sesión individual</strong><small>Expresión oral · práctica TEF</small></span>
+            <span><strong>Sesión individual</strong><small data-exam-session>Expresión oral · práctica TEF</small></span>
             <span class="session-time">60 min</span>
           </figcaption>
           <!-- Remplacer ces images par des photos Pathway réelles avant publication. -->
@@ -87,7 +87,7 @@
         <div class="level-options" role="group" aria-label="Selecciona tu situación">
           <button type="button" data-level data-title="Empiezas desde cero" data-copy="Medimos tu disponibilidad y te proponemos una progresión que construya las bases antes de entrenar el examen." aria-pressed="false">Empiezo de cero</button>
           <button type="button" data-level data-title="Ya tienes una base" data-copy="Identificamos qué competencia frena tu avance y concentramos el programa en esa brecha." aria-pressed="true">Tengo una base</button>
-          <button type="button" data-level data-title="Tu objetivo es el TEF" data-copy="Entrenamos el formato del examen sin dejar vacíos en tu francés general." aria-pressed="false">Preparo el TEF</button>
+          <button type="button" data-level data-exam-level data-title="Tu objetivo es el TEF" data-copy="Entrenamos el formato del examen sin dejar vacíos en tu francés general." aria-pressed="false">Preparo el TEF</button>
           <button type="button" data-level data-title="Tu fecha es prioritaria" data-copy="Construimos el calendario hacia atrás y te decimos con franqueza si el plazo es viable." aria-pressed="false">Tengo poco tiempo</button>
         </div>
         <div class="level-answer" data-level-answer aria-live="polite">
@@ -109,7 +109,7 @@
           <article class="route-stop" data-stop="1"><h3>Medir</h3><p>Evaluamos comprensión y expresión, oral y escrita, además del tiempo disponible.</p></article>
           <article class="route-stop" data-stop="2"><h3>Planificar</h3><p>Construimos tu calendario desde la fecha del examen hacia atrás.</p></article>
           <article class="route-stop" data-stop="3"><h3>Practicar</h3><p>Trabajas en clases privadas y continúas entre sesiones con tareas específicas.</p></article>
-          <article class="route-stop" data-stop="4"><h3>Demostrar</h3><p>Dos simulacros verifican si las cuatro competencias están listas para el TEF.</p></article>
+          <article class="route-stop" data-stop="4"><h3>Demostrar</h3><p data-exam-route>Dos simulacros verifican si las cuatro competencias están listas para el TEF.</p></article>
         </div>
       </div>
     </section>
@@ -130,7 +130,7 @@
             <!-- TODO PATHWAY : remplacer ces trois contenus par les informations vérifiées. -->
             <div><strong>Formación FLE</strong><span>Diploma por indicar</span></div>
             <div><strong>Experiencia</strong><span>Años por indicar</span></div>
-            <div><strong>Especialidad</strong><span>TEF Canada</span></div>
+            <div><strong>Especialidad</strong><span data-exam-specialty>TEF Canada</span></div>
           </div>
           <p class="edit-note">Contenido pendiente: nombre, formación, años de experiencia y perfil real del equipo docente.</p>
         </div>
@@ -218,20 +218,34 @@
           <p>La evaluación inicial indica el ritmo coherente con tu nivel y tu fecha, incluso si la respuesta es que el tiempo no alcanza.</p>
         </header>
 
+        <div class="pricing-choice reveal" data-pricing-choice data-reveal hidden>
+          <div class="pricing-choice-copy">
+            <strong>Dos formas de inscribirte</strong>
+            <span>Mes a mes sin permanencia, o un ciclo completo con 15 % de descuento.</span>
+          </div>
+          <div class="pricing-toggle" role="group" aria-label="Forma de inscripción">
+            <button type="button" data-pricing-mode="monthly" aria-pressed="true">Inscripción mensual</button>
+            <button type="button" data-pricing-mode="cycle" aria-pressed="false">Ciclo <span>ahorra 15 %</span></button>
+          </div>
+        </div>
+
         <div class="plans-grid reveal" data-reveal>
-          <article class="plan-card">
-            <span class="plan-tag">Más de 18 meses</span><h3>Esencial</h3><div class="price">175 <small>CAD / mes</small></div><p class="plan-hours">8 horas al mes · 2 h/semana</p>
-            <ul><li>Clases privadas en vivo</li><li>Cuaderno y seguimiento</li><li>Talleres prácticos</li><li>2 simulacros TEF</li></ul>
+          <article class="plan-card" data-plan data-month-price="175" data-month-hours="8 horas al mes · 2 h/semana" data-cycle-price="892,50" data-cycle-original="1.050" data-cycle-saving="157,50" data-cycle-duration="6 meses" data-cycle-hours="2 h/semana" data-cycle-equivalent="148,75">
+            <span class="plan-tag">Más de 18 meses</span><h3>Esencial</h3><div class="price" data-plan-price>175 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>8 horas al mes · 2 h/semana</p>
+            <p class="cycle-summary" data-cycle-summary hidden></p>
+            <ul><li>Clases privadas en vivo</li><li>Cuaderno y seguimiento</li><li>Talleres prácticos</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-outline" href="calculador.html" data-cta="plan-essential">Evaluar este ritmo</a>
           </article>
-          <article class="plan-card plan-featured">
-            <span class="plan-tag">El más elegido</span><h3>Acelerado</h3><div class="price">335 <small>CAD / mes</small></div><p class="plan-hours">16 horas al mes · 4 h/semana</p>
-            <ul><li>Compatible con trabajo a tiempo completo</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li>2 simulacros TEF</li></ul>
+          <article class="plan-card plan-featured" data-plan data-month-price="335" data-month-hours="16 horas al mes · 4 h/semana" data-cycle-price="1.423,75" data-cycle-original="1.675" data-cycle-saving="251,25" data-cycle-duration="5 meses" data-cycle-hours="3–4 h/semana" data-cycle-equivalent="284,75">
+            <span class="plan-tag">El más elegido</span><h3>Acelerado</h3><div class="price" data-plan-price>335 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>16 horas al mes · 4 h/semana</p>
+            <p class="cycle-summary" data-cycle-summary hidden></p>
+            <ul><li>Compatible con trabajo a tiempo completo</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-coral" href="calculador.html" data-cta="plan-accelerated">Evaluar este ritmo</a>
           </article>
-          <article class="plan-card">
-            <span class="plan-tag">Menos de 12 meses</span><h3>Intensivo</h3><div class="price">505 <small>CAD / mes</small></div><p class="plan-hours">24 horas al mes · 6 h/semana</p>
-            <ul><li>Ritmo de avance prioritario</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li>2 simulacros TEF</li></ul>
+          <article class="plan-card" data-plan data-month-price="505" data-month-hours="24 horas al mes · 6 h/semana" data-cycle-price="1.717" data-cycle-original="2.020" data-cycle-saving="303" data-cycle-duration="4 meses" data-cycle-hours="5–6 h/semana" data-cycle-equivalent="429,25">
+            <span class="plan-tag">Menos de 12 meses</span><h3>Intensivo</h3><div class="price" data-plan-price>505 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>24 horas al mes · 6 h/semana</p>
+            <p class="cycle-summary" data-cycle-summary hidden></p>
+            <ul><li>Ritmo de avance prioritario</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-outline" href="calculador.html" data-cta="plan-intensive">Evaluar este ritmo</a>
           </article>
         </div>
@@ -246,12 +260,12 @@
     <!-- FAQ courte : le reste peut vivre dans des guides dédiés. -->
     <section class="section faq-section" id="preguntas">
       <div class="container faq-grid">
-        <header class="reveal" data-reveal><span class="step-label">Preguntas importantes</span><h2>Lo esencial, sin convertir la página en un manual.</h2><p>Para explicaciones más detalladas, consulta nuestras guías sobre el TEF Canada y NCLC 7.</p></header>
+        <header class="reveal" data-reveal><span class="step-label">Preguntas importantes</span><h2>Lo esencial, sin convertir la página en un manual.</h2><p data-exam-faq-intro>Para explicaciones más detalladas, consulta nuestras guías sobre el TEF Canada y NCLC 7.</p></header>
         <div class="faq-list reveal" data-reveal>
           <details><summary>¿Cómo sé qué plan necesito?</summary><p>La evaluación inicial mide tu nivel, disponibilidad y fecha objetivo. A partir de esos datos recomendamos 2, 4 o 6 horas semanales. No necesitas elegir solo.</p></details>
           <details><summary>¿Las clases son individuales?</summary><p>Sí. Las clases principales son privadas y en vivo. Los talleres adicionales pueden reunir a varios alumnos para practicar.</p></details>
           <details><summary>¿Pathway garantiza la residencia permanente?</summary><p>No. Pathway es un instituto de idiomas. Nuestro compromiso cubre la preparación y el resultado lingüístico NCLC 7 bajo las condiciones del programa, no una invitación ni una decisión de IRCC.</p></details>
-          <details><summary>¿Puedo pagar mes a mes?</summary><p>Sí. El pago es mensual, sin permanencia y sin exigir el costo total del programa por adelantado.</p></details>
+          <details><summary>¿Puedo pagar mes a mes?</summary><p data-pricing-faq>Sí. El pago es mensual, sin permanencia y sin exigir el costo total del programa por adelantado.</p></details>
           <div class="faq-links"><a href="preparacion-tef-canada.html">Guía TEF Canada</a><a href="nclc-7.html">Comprender NCLC 7</a><a href="tefaq-quebec.html">Proyecto Quebec</a></div>
         </div>
       </div>

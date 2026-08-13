@@ -9,6 +9,10 @@ document.documentElement.classList.add('js');
   // La variante Pathway conserve l'architecture C, mais précise immédiatement
   // l'objectif NCLC 7 et présente le programme comme la force de frappe principale.
   if (usesPathwayPalette) {
+    document.title = 'NCLC 7 · Preparación TEF y TCF | Pathway';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) metaDescription.content = 'Clases privadas de francés para alcanzar NCLC 7 y preparar el TEF Canada o el TCF Canada con una intensidad adaptada a tu fecha.';
+
     const heroLabel = document.querySelector('[data-hero-label]');
     const heroTitle = document.querySelector('[data-hero-title]');
     const heroLead = document.querySelector('[data-hero-lead]');
@@ -16,11 +20,33 @@ document.documentElement.classList.add('js');
     const weekTitle = document.querySelector('[data-week-title]');
     const weekCopy = document.querySelector('[data-week-copy]');
     const weekList = document.querySelector('[data-week-list]');
+    const examLevel = document.querySelector('[data-exam-level]');
+    const pricingChoice = document.querySelector('[data-pricing-choice]');
+    const pricingFaq = document.querySelector('[data-pricing-faq]');
 
-    if (heroLabel) heroLabel.textContent = 'Objetivo NCLC 7 · Preparación TEF Canada';
+    if (heroLabel) heroLabel.textContent = 'Objetivo NCLC 7 · Preparación TEF Canada y TCF Canada';
     if (heroTitle) heroTitle.innerHTML = 'Tu ruta al NCLC 7 empieza por <span>un plan que sí cabe en tu vida.</span>';
-    if (heroLead) heroLead.textContent = 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada.';
+    if (heroLead) heroLead.textContent = 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada o el TCF Canada.';
     if (honestyNote) honestyNote.hidden = false;
+    if (pricingChoice) pricingChoice.hidden = false;
+    if (pricingFaq) pricingFaq.textContent = 'Sí. Puedes inscribirte mes a mes, sin permanencia, o elegir un ciclo completo con 15 % de descuento.';
+    if (examLevel) {
+      examLevel.dataset.title = 'Tu objetivo es el TEF o el TCF';
+      examLevel.textContent = 'Preparo el TEF o el TCF';
+    }
+    const examCopies = {
+      '[data-exam-session]': 'Expresión oral · práctica TEF / TCF',
+      '[data-exam-route]': 'Dos simulacros verifican si las cuatro competencias están listas para el TEF o el TCF.',
+      '[data-exam-specialty]': 'TEF Canada · TCF Canada',
+      '[data-exam-faq-intro]': 'Para explicaciones más detalladas, consulta nuestras guías sobre los exámenes de francés y NCLC 7.'
+    };
+    Object.entries(examCopies).forEach(([selector, copy]) => {
+      const element = document.querySelector(selector);
+      if (element) element.textContent = copy;
+    });
+    document.querySelectorAll('[data-exam-simulations]').forEach(element => {
+      element.textContent = '2 simulacros TEF / TCF';
+    });
     if (weekTitle) weekTitle.textContent = 'La intensidad que exige tu objetivo, organizada semana a semana.';
     if (weekCopy) weekCopy.textContent = 'Según tu nivel y tu fecha, trabajas 2, 4 o 6 horas por semana en clases privadas, además de una práctica guiada entre sesiones.';
     if (weekList) {
@@ -28,9 +54,45 @@ document.documentElement.classList.add('js');
         <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas por semana según tu plan</small></div><b>2 · 4 · 6 h</b></li>
         <li><span>Entre sesiones</span><div><strong>Práctica dirigida</strong><small>Ejercicios específicos conectados con tu última clase</small></div><b>Guiada</b></li>
         <li><span>Después de cada clase</span><div><strong>Correcciones continuas</strong><small>Feedback oral y escrito sobre tus prioridades</small></div><b>Continuo</b></li>
-        <li><span>Cada etapa</span><div><strong>Control del progreso</strong><small>Objetivos semanales y simulacros antes del TEF</small></div><b>Medible</b></li>
+        <li><span>Cada etapa</span><div><strong>Control del progreso</strong><small>Objetivos semanales y simulacros antes del TEF o el TCF</small></div><b>Medible</b></li>
       `;
     }
+
+    const pricingButtons = document.querySelectorAll('[data-pricing-mode]');
+    const plans = document.querySelectorAll('[data-plan]');
+
+    const setPricingMode = mode => {
+      pricingButtons.forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.pricingMode === mode));
+      });
+
+      plans.forEach(plan => {
+        const price = plan.querySelector('[data-plan-price]');
+        const hours = plan.querySelector('[data-plan-hours]');
+        const summary = plan.querySelector('[data-cycle-summary]');
+        if (!price || !hours || !summary) return;
+
+        const isCycle = mode === 'cycle';
+        plan.classList.toggle('is-cycle', isCycle);
+        price.setAttribute('aria-live', 'polite');
+
+        if (isCycle) {
+          price.innerHTML = `${plan.dataset.cyclePrice} <small>CAD · ciclo completo</small>`;
+          hours.innerHTML = `<strong>${plan.dataset.cycleDuration}</strong> · ${plan.dataset.cycleHours}`;
+          summary.innerHTML = `<s>${plan.dataset.cycleOriginal} CAD</s><strong>Ahorras ${plan.dataset.cycleSaving} CAD</strong><span>Equivale a ${plan.dataset.cycleEquivalent} CAD al mes.</span>`;
+          summary.hidden = false;
+          return;
+        }
+
+        price.innerHTML = `${plan.dataset.monthPrice} <small>CAD / mes</small>`;
+        hours.textContent = plan.dataset.monthHours;
+        summary.hidden = true;
+      });
+    };
+
+    pricingButtons.forEach(button => {
+      button.addEventListener('click', () => setPricingMode(button.dataset.pricingMode));
+    });
   }
 
   const closeMenu = () => {
