@@ -33,6 +33,8 @@ const assets = [
   ,'placement-test.js'
   ,'inscription.html'
   ,'inscription.js'
+  ,'resource.css'
+  ,'resource.js'
 ];
 
 await rm(dist, { recursive: true, force: true });

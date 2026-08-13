@@ -402,6 +402,10 @@ button { font: inherit; }
 .faq-links { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.5rem; }
 .faq-links a { padding: .6rem .75rem; border: 1px solid var(--line); border-radius: 8px; font-size: .72rem; font-weight: 700; text-decoration: none; transition: background .2s ease; }
 .faq-links a:hover { background: var(--mint); }
+.brand-palette .faq-links { gap: .55rem; }
+.brand-palette .faq-links a { border: 0; border-radius: 10px; background: rgba(202,216,195,.62); transition: background .2s ease, transform .2s ease; }
+.brand-palette .faq-links a::after { content: " →"; color: var(--coral-dark); }
+.brand-palette .faq-links a:hover { background: var(--apple); transform: translateY(-2px); }
 
 .closing-section { padding: clamp(5rem, 10vw, 9rem) 0; background: var(--coral); }
 .closing-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 5rem; align-items: end; }
