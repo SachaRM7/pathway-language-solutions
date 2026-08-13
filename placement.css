@@ -86,6 +86,40 @@ h1, h2, h3 { font-family: var(--display); }
 .answer-option input:focus-visible + span { outline: 3px solid rgba(199,111,86,.35); outline-offset: 2px; }
 .test-actions { margin-top: 2rem; display: flex; justify-content: space-between; gap: 1rem; }
 
+.calculation-card {
+  min-height: 470px;
+  padding: clamp(2rem, 6vw, 5rem);
+  border-radius: 30px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(2rem, 7vw, 6rem);
+  align-items: center;
+  background: var(--ink);
+  color: var(--white);
+  box-shadow: 0 30px 80px rgba(18, 43, 38, .18);
+}
+.calculation-ring {
+  --calculation-progress: 0deg;
+  position: relative;
+  width: clamp(170px, 24vw, 260px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--apple-strong) var(--calculation-progress), rgba(255,255,255,.12) 0);
+}
+.calculation-ring::before { content: ""; position: absolute; inset: 13px; border-radius: inherit; background: var(--ink); }
+.calculation-ring strong { position: relative; font-family: var(--display); font-size: clamp(2.3rem, 5vw, 4.4rem); letter-spacing: -.05em; }
+.calculation-copy h2 { max-width: 650px; margin: 1rem 0; font-size: clamp(2.7rem, 5vw, 5rem); line-height: .92; letter-spacing: -.055em; }
+.calculation-copy > p { max-width: 620px; color: #c2d0ca; line-height: 1.6; }
+.calculation-steps { margin: 1.5rem 0 0; padding: 0; display: grid; gap: .5rem; list-style: none; }
+.calculation-steps li { position: relative; padding-left: 1.6rem; color: #8da49b; font-size: .75rem; transition: color .25s ease; }
+.calculation-steps li::before { content: ""; position: absolute; left: 0; top: .15rem; width: 10px; height: 10px; border: 2px solid #60776e; border-radius: 50%; transition: background .25s ease, border-color .25s ease; }
+.calculation-steps li.is-active { color: var(--white); }
+.calculation-steps li.is-active::before { border-color: var(--coral); background: var(--coral); }
+.calculation-steps li.is-complete { color: var(--apple); }
+.calculation-steps li.is-complete::before { border-color: var(--apple-strong); background: var(--apple-strong); }
+
 .result-card { overflow: hidden; border-radius: 30px; background: var(--ink); color: var(--white); box-shadow: 0 30px 80px rgba(18, 43, 38, .18); }
 .result-hero { padding: clamp(2rem, 5vw, 4rem); display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; }
 .result-hero h2 { max-width: 690px; margin: .8rem 0; font-size: clamp(2.8rem, 6vw, 6rem); line-height: .88; letter-spacing: -.06em; }
@@ -96,6 +130,8 @@ h1, h2, h3 { font-family: var(--display); }
 .skill-score { padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--cream); }
 .skill-score span { display: block; color: var(--ink-soft); font-size: .67rem; }
 .skill-score strong { display: block; margin-top: .3rem; font-family: var(--display); font-size: 1.8rem; }
+.skill-score.is-pending { border-color: var(--apple-strong); background: rgba(200,214,155,.27); }
+.skill-score.is-pending strong { font-size: 1.15rem; }
 .result-note { margin: 1.5rem 0; padding: 1rem; border-radius: 13px; background: var(--sage); color: var(--ink-soft); font-size: .78rem; line-height: 1.55; }
 .result-actions { display: flex; flex-wrap: wrap; gap: .8rem; }
 
@@ -129,6 +165,7 @@ h1, h2, h3 { font-family: var(--display); }
 .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; }
 .check-choice { min-height: 48px; padding: .72rem; border: 1px solid var(--line); border-radius: 11px; display: flex; align-items: center; gap: .55rem; background: var(--cream); font-size: .75rem; cursor: pointer; }
 .check-choice:has(input:checked) { border-color: var(--ink); background: var(--sage); }
+.schedule-guidance { margin: .8rem 0 1.1rem; padding: .75rem .85rem; border-radius: 10px; background: rgba(200,214,155,.35); color: var(--ink-soft); font-size: .72rem; line-height: 1.5; }
 .enroll-summary { position: sticky; top: 110px; padding: 1.4rem; border-radius: 22px; background: var(--ink); color: var(--white); }
 .enroll-summary > span { color: var(--apple); font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .enroll-summary h2 { margin: .6rem 0 1.2rem; font-size: 1.8rem; }
@@ -162,6 +199,8 @@ h1, h2, h3 { font-family: var(--display); }
   .test-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .result-hero { grid-template-columns: 1fr; }
   .result-level { width: 130px; }
+  .calculation-card { min-height: 0; grid-template-columns: 1fr; }
+  .calculation-ring { width: 150px; }
   .skill-bars { grid-template-columns: 1fr 1fr; }
   .choice-grid, .field-grid, .check-grid { grid-template-columns: 1fr; }
   .enroll-head { gap: 1.5rem; }

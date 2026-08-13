@@ -46,9 +46,9 @@
           <legend>1. Ritmo de referencia</legend>
           <p>La recomendación final depende de tu nivel confirmado y de la fecha de tu objetivo.</p>
           <div class="choice-grid">
-            <label class="choice"><input type="radio" name="plan" value="Esencial" data-hours="2 h/semana" data-monthly="175 CAD/mes" data-cycle="892,50 CAD · 6 meses"><span><strong>Esencial</strong><small>2 h/semana · más de 18 meses</small></span></label>
-            <label class="choice"><input type="radio" name="plan" value="Acelerado" data-hours="4 h/semana" data-monthly="335 CAD/mes" data-cycle="1.423,75 CAD · 5 meses" checked><span><strong>Acelerado</strong><small>4 h/semana · el más elegido</small></span></label>
-            <label class="choice"><input type="radio" name="plan" value="Intensivo" data-hours="6 h/semana" data-monthly="505 CAD/mes" data-cycle="1.717 CAD · 4 meses"><span><strong>Intensivo</strong><small>6 h/semana · avance prioritario</small></span></label>
+            <label class="choice"><input type="radio" name="plan" value="Esencial" data-hours="2 h/semana" data-monthly="175 CAD/mes" data-cycle="892,50 CAD · 6 meses" data-suggested-days="2"><span><strong>Esencial</strong><small>2 h/semana · más de 18 meses</small></span></label>
+            <label class="choice"><input type="radio" name="plan" value="Acelerado" data-hours="4 h/semana" data-monthly="335 CAD/mes" data-cycle="1.423,75 CAD · 5 meses" data-suggested-days="3" checked><span><strong>Acelerado</strong><small>4 h/semana · el más elegido</small></span></label>
+            <label class="choice"><input type="radio" name="plan" value="Intensivo" data-hours="6 h/semana" data-monthly="505 CAD/mes" data-cycle="1.717 CAD · 4 meses" data-suggested-days="4"><span><strong>Intensivo</strong><small>6 h/semana · avance prioritario</small></span></label>
           </div>
         </fieldset>
 
@@ -64,6 +64,7 @@
         <fieldset class="form-section">
           <legend>3. Preferencias horarias</legend>
           <p>Selecciona varias posibilidades para que Pathway pueda encontrar una combinación compatible. Esto todavía no bloquea un horario.</p>
+          <p class="schedule-guidance" data-schedule-guidance>Para un ritmo de 4 h/semana, intenta proponer al menos 3 días posibles. No tienen que convertirse todos en días de clase.</p>
           <div class="field-grid">
             <label class="field"><span>Zona horaria</span><select name="timezone" required><option value="">Selecciona</option><option>Hora del Este · Toronto / Montréal</option><option>Hora Central · Winnipeg</option><option>Hora de la Montaña · Calgary</option><option>Hora del Pacífico · Vancouver</option><option>Otra zona horaria</option></select></label>
             <label class="field"><span>Fecha ideal de inicio</span><input type="date" name="startDate" required></label>

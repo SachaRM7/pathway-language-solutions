@@ -71,10 +71,26 @@
       </div>
     </section>
 
+    <section class="calculation-card" data-calculation hidden aria-live="polite">
+      <div class="calculation-ring" data-calculation-ring style="--calculation-progress:0deg">
+        <strong data-calculation-value>0 %</strong>
+      </div>
+      <div class="calculation-copy">
+        <span class="eyebrow">Analyse en cours</span>
+        <h2>Estamos situando tu punto de partida.</h2>
+        <p>Cruzamos la progresión por niveles con los resultados de cada competencia. No mostramos el detalle de las respuestas.</p>
+        <ol class="calculation-steps">
+          <li data-calculation-step="0">Comprensión escrita y oral</li>
+          <li data-calculation-step="1">Estructuras y vocabulario</li>
+          <li data-calculation-step="2">Estimación del nivel CECRL</li>
+        </ol>
+      </div>
+    </section>
+
     <section class="result-card" data-result hidden aria-live="polite">
       <div class="result-hero">
         <div>
-          <span class="eyebrow">Estimación de placement</span>
+          <span class="eyebrow">Estimación de nivel</span>
           <h2 data-result-title>Tu punto de partida estimado.</h2>
           <p data-result-copy></p>
         </div>
@@ -82,7 +98,7 @@
       </div>
       <div class="result-body">
         <div class="skill-bars" data-skill-scores></div>
-        <p class="result-note"><strong>Importante:</strong> este resultado orienta tu recorrido, pero no es una certificación CECRL ni una equivalencia NCLC. Pathway confirmará especialmente la expresión oral y escrita antes de fijar el plan.</p>
+        <p class="result-note"><strong>Importante:</strong> este resultado orienta tu recorrido, pero no es una certificación CECRL ni una equivalencia NCLC. La producción escrita y la expresión oral se evaluarán durante la primera clase para confirmar y, si hace falta, ajustar el nivel.</p>
         <div class="result-actions">
           <a class="button button-coral" href="inscription.html" data-enroll-link>Elegir oferta y horarios <span aria-hidden="true">→</span></a>
           <button class="button button-ghost" type="button" data-restart>Repetir el test</button>

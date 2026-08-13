@@ -20,6 +20,10 @@
 
   const intro = document.querySelector('[data-test-intro]');
   const stage = document.querySelector('[data-test-stage]');
+  const calculation = document.querySelector('[data-calculation]');
+  const calculationRing = document.querySelector('[data-calculation-ring]');
+  const calculationValue = document.querySelector('[data-calculation-value]');
+  const calculationSteps = [...document.querySelectorAll('[data-calculation-step]')];
   const result = document.querySelector('[data-result]');
   const form = document.querySelector('[data-test-form]');
   const title = document.querySelector('[data-question-title]');
@@ -34,6 +38,7 @@
   const progressCopy = document.querySelector('[data-progress-copy]');
   const progressBar = document.querySelector('[data-progress-bar]');
   const responses = Array(questions.length).fill(null);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let current = 0;
 
   const renderQuestion = () => {
@@ -73,6 +78,55 @@
     });
   };
 
+  const revealResult = () => {
+    calculation.hidden = true;
+    result.hidden = false;
+    result.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+  };
+
+  const runCalculationAnimation = () => {
+    stage.hidden = true;
+    calculation.hidden = false;
+    calculationRing.style.setProperty('--calculation-progress', '0deg');
+    calculationValue.textContent = '0 %';
+    calculationSteps.forEach(step => step.classList.remove('is-active', 'is-complete'));
+    calculation.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+
+    if (reducedMotion) {
+      calculationRing.style.setProperty('--calculation-progress', '360deg');
+      calculationValue.textContent = '100 %';
+      calculationSteps.forEach(step => step.classList.add('is-complete'));
+      revealResult();
+      return;
+    }
+
+    const duration = 1200;
+    const startedAt = performance.now();
+    const animate = now => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const percentage = Math.round(easedProgress * 100);
+      calculationRing.style.setProperty('--calculation-progress', `${easedProgress * 360}deg`);
+      calculationValue.textContent = `${percentage} %`;
+      calculationSteps.forEach((step, index) => {
+        const threshold = index / calculationSteps.length;
+        const nextThreshold = (index + 1) / calculationSteps.length;
+        step.classList.toggle('is-active', progress >= threshold && progress < nextThreshold);
+        step.classList.toggle('is-complete', progress >= nextThreshold);
+      });
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+        return;
+      }
+      calculationSteps.forEach(step => {
+        step.classList.remove('is-active');
+        step.classList.add('is-complete');
+      });
+      window.setTimeout(revealResult, 180);
+    };
+    requestAnimationFrame(animate);
+  };
+
   const calculateResult = () => {
     const levelScores = { A1: 0, A2: 0, B1: 0, B2: 0 };
     const skillScores = { 'Grammaire': 0, 'Vocabulaire': 0, 'Compréhension écrite': 0, 'Compréhension orale': 0 };
@@ -94,13 +148,14 @@
 
     document.querySelector('[data-result-level]').textContent = estimatedLevel;
     document.querySelector('[data-result-title]').textContent = `Tu francés se sitúa alrededor de ${estimatedLevel}.`;
-    document.querySelector('[data-result-copy]').textContent = `Has obtenido ${total} respuestas correctas de 16. Tu nivel aparece ${status}; la evaluación con Pathway confirmará las competencias de producción y el ritmo adecuado para tu objetivo NCLC 7.`;
-    document.querySelector('[data-skill-scores]').innerHTML = Object.entries(skillScores).map(([name, score]) => `
-      <div class="skill-score"><span>${name}</span><strong>${score} / 4</strong></div>
-    `).join('');
-    stage.hidden = true;
-    result.hidden = false;
-    result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector('[data-result-copy]').textContent = `Has obtenido ${total} respuestas correctas de 16. Tu nivel aparece ${status}; Pathway lo confirmará durante la primera clase y ajustará el ritmo si hace falta.`;
+    document.querySelector('[data-skill-scores]').innerHTML = `
+      <div class="skill-score"><span>Estructuras y vocabulario</span><strong>${skillScores.Grammaire + skillScores.Vocabulaire} / 8</strong></div>
+      <div class="skill-score"><span>Comprensión escrita</span><strong>${skillScores['Compréhension écrite']} / 4</strong></div>
+      <div class="skill-score"><span>Comprensión oral</span><strong>${skillScores['Compréhension orale']} / 4</strong></div>
+      <div class="skill-score is-pending"><span>Producción escrita</span><strong>Por confirmar en clase</strong></div>
+    `;
+    runCalculationAnimation();
   };
 
   document.querySelector('[data-start-test]').addEventListener('click', () => {
@@ -130,6 +185,7 @@
   document.querySelector('[data-restart]').addEventListener('click', () => {
     responses.fill(null);
     current = 0;
+    calculation.hidden = true;
     result.hidden = true;
     intro.hidden = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
