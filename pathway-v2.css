@@ -75,8 +75,7 @@ html.brand-palette {
 .brand-palette .route-stop:last-child::before { border-color: var(--apple-strong); background: #122b26; color: var(--apple); }
 .brand-palette .teacher-section,
 .brand-palette .context-section { background: var(--fog); }
-.brand-palette .experience-coral,
-.brand-palette .closing-section { background: var(--coral); }
+.brand-palette .experience-coral { background: var(--coral); }
 .brand-palette .week-section,
 .brand-palette .experience-lime { background: var(--apple); }
 .brand-palette .experience-main,
@@ -425,6 +424,58 @@ button { font: inherit; }
 .footer-legal p { margin: 0; }
 .mobile-action { display: none; }
 
+/* BEACON FOOTER — une seule conclusion, du CTA aux mentions légales. */
+.brand-palette .closing-section-classic { display: none; }
+.brand-palette .footer-classic { display: none; }
+.beacon-footer { display: none; }
+.brand-palette .site-footer { position: relative; padding: 0 0 5rem; overflow: hidden; border-radius: clamp(28px, 4vw, 54px) clamp(28px, 4vw, 54px) 0 0; background: #173d38; color: #f5efe4; }
+.brand-palette .beacon-footer { display: block; }
+.brand-palette .beacon-cta { min-height: 660px; padding-top: clamp(5.5rem, 10vw, 9rem); padding-bottom: clamp(5rem, 10vw, 8rem); display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(380px, .92fr); gap: clamp(3rem, 7vw, 7rem); align-items: center; }
+.beacon-copy { position: relative; z-index: 3; }
+.beacon-kicker { display: inline-flex; padding: .48rem .68rem; border: 1px solid rgba(200, 214, 155, .38); border-radius: 8px; color: var(--apple); font-size: .63rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.beacon-copy h2 { max-width: 760px; margin: 1.35rem 0; color: #f5efe4; font-size: clamp(4rem, 7.6vw, 7.6rem); line-height: .85; letter-spacing: -.07em; text-wrap: balance; }
+.beacon-copy h2 span { display: block; color: var(--apple); }
+.beacon-copy > p { max-width: 610px; margin: 0; color: #b8cbc3; font-size: clamp(1rem, 1.5vw, 1.18rem); line-height: 1.7; text-wrap: pretty; }
+.beacon-actions { margin-top: 2.4rem; display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; }
+.beacon-button { min-width: 235px; border-color: var(--apple); background: var(--apple); color: #122b26; }
+.beacon-button:hover { border-color: #d5dfae; background: #d5dfae; transform: translateY(-2px); }
+.beacon-whatsapp { padding: .8rem 0; color: #f5efe4; font-size: .78rem; font-weight: 700; text-decoration-color: rgba(245, 239, 228, .38); text-underline-offset: .35rem; }
+.beacon-whatsapp span { display: inline-block; margin-left: .25rem; color: var(--apple); transition: transform .25s var(--ease); }
+.beacon-whatsapp:hover span { transform: translate(3px, -3px); }
+
+.beacon-visual { position: relative; width: 100%; min-height: 510px; align-self: end; isolation: isolate; }
+.beacon-visual::before { content: ""; position: absolute; right: 7%; bottom: 18px; width: min(31vw, 390px); aspect-ratio: 1; border: 1px solid rgba(200, 214, 155, .15); border-radius: 50%; box-shadow: 0 0 0 80px rgba(200, 214, 155, .022), 0 0 0 160px rgba(200, 214, 155, .012); }
+.beacon-route { position: absolute; right: 0; top: 1.25rem; color: rgba(245, 239, 228, .38); font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; writing-mode: vertical-rl; }
+.beacon-horizon { position: absolute; left: -4vw; right: -16vw; bottom: 46px; height: 1px; background: linear-gradient(90deg, transparent, rgba(200,214,155,.34) 18%, rgba(200,214,155,.34) 74%, transparent); transform: rotate(-2.5deg); }
+.beacon-ground { position: absolute; left: -12%; right: -25%; bottom: -42px; height: 132px; z-index: 1; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: #122b26; transform: rotate(-2deg); }
+.beacon-tower { position: absolute; left: 50%; bottom: 44px; z-index: 3; width: 104px; height: 278px; clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%); background: #f5efe4; transform: translateX(-50%) rotate(-1deg); box-shadow: inset -18px 0 0 rgba(200, 214, 155, .22); }
+.beacon-tower::before, .beacon-tower::after, .beacon-tower i { content: ""; position: absolute; left: 50%; width: 17px; height: 33px; border-radius: 9px 9px 2px 2px; background: #173d38; transform: translateX(-50%); }
+.beacon-tower::before { top: 54px; }
+.beacon-tower::after { top: 132px; }
+.beacon-tower i { top: 213px; height: 65px; border-radius: 10px 10px 0 0; }
+.beacon-tower b { position: absolute; left: 19px; right: 19px; top: 186px; height: 1px; background: rgba(23,61,56,.16); }
+.beacon-lantern { position: absolute; left: 50%; bottom: 318px; z-index: 4; width: 92px; height: 55px; border: 8px solid #f5efe4; border-top-width: 7px; background: var(--apple); transform: translateX(-50%) rotate(-1deg); box-shadow: inset 0 0 0 2px #173d38; }
+.beacon-lantern::before, .beacon-lantern::after { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: #173d38; }
+.beacon-lantern::before { left: 25px; }
+.beacon-lantern::after { right: 25px; }
+.beacon-roof { position: absolute; left: 50%; bottom: 371px; z-index: 5; width: 122px; height: 48px; background: #f5efe4; clip-path: polygon(50% 0, 100% 78%, 100% 100%, 0 100%, 0 78%); transform: translateX(-50%) rotate(-1deg); }
+.beacon-roof::after { content: ""; position: absolute; left: calc(50% - 1px); top: -23px; width: 2px; height: 28px; background: var(--gold); }
+.beacon-light { position: absolute; left: 50%; bottom: 335px; z-index: 7; width: 13px; height: 13px; border-radius: 50%; background: #f6e8aa; transform: translateX(-50%); box-shadow: 0 0 24px rgba(246, 232, 170, .68); }
+.beacon-glow { position: absolute; left: 50%; bottom: 267px; z-index: 2; width: 190px; height: 190px; border: 1px solid rgba(212, 175, 55, .32); border-radius: 50%; transform: translateX(-50%); animation: beacon-breathe 5s var(--ease) infinite; }
+.beacon-glow::after { content: ""; position: absolute; inset: 23px; border: 1px solid rgba(212, 175, 55, .2); border-radius: inherit; }
+.beacon-beam { position: absolute; left: calc(50% + 5px); bottom: 327px; z-index: 2; width: min(42vw, 590px); height: 100px; opacity: .42; transform-origin: 0 50%; transform: rotate(-13deg); background: linear-gradient(90deg, rgba(246,232,170,.28), rgba(246,232,170,.07) 58%, transparent); clip-path: polygon(0 43%, 100% 0, 100% 100%, 0 57%); animation: beacon-sweep 8s ease-in-out infinite; }
+@keyframes beacon-sweep { 0%, 100% { transform: rotate(-15deg); opacity: .3; } 50% { transform: rotate(-7deg); opacity: .52; } }
+@keyframes beacon-breathe { 0%, 100% { transform: translateX(-50%) scale(.92); opacity: .45; } 50% { transform: translateX(-50%) scale(1.05); opacity: .8; } }
+
+.brand-palette .beacon-directory { position: relative; z-index: 4; padding: clamp(3rem, 6vw, 5rem) 0; border-top: 1px solid rgba(245,239,228,.18); display: grid; grid-template-columns: 1.45fr .75fr 1fr; gap: clamp(2.5rem, 7vw, 7rem); align-items: start; }
+.beacon-brand-block > p { max-width: 440px; margin: 1.2rem 0 0; color: #91aaa1; font-size: .75rem; line-height: 1.7; }
+.beacon-links, .beacon-contact { display: grid; gap: .55rem; }
+.beacon-links > span, .beacon-contact > span { margin-bottom: .35rem; color: var(--apple); font-size: .57rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.brand-palette .beacon-links a, .brand-palette .beacon-contact a { color: #d8e2dc; font-size: .74rem; font-weight: 600; text-decoration: none; transition: color .2s ease, transform .2s ease; }
+.brand-palette .beacon-links a:hover, .brand-palette .beacon-contact a:hover { color: var(--apple); transform: translateX(3px); }
+.brand-palette .footer-legal { position: relative; z-index: 4; border-top: 1px solid rgba(245,239,228,.12); }
+.brand-palette .footer-legal a { color: inherit; text-underline-offset: .25rem; }
+
 .reveal { opacity: 1; transform: none; }
 .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
 .js .reveal.is-visible { opacity: 1; transform: none; }
@@ -444,6 +495,11 @@ button { font: inherit; }
   .footer-contact { grid-column: 2; }
   .footer-legal { grid-template-columns: 1fr 1fr; }
   .footer-legal p:first-child { grid-column: 1/-1; }
+  .brand-palette .beacon-cta { min-height: 600px; grid-template-columns: 1.08fr .92fr; gap: 2rem; }
+  .beacon-copy h2 { font-size: clamp(3.8rem, 9vw, 6rem); }
+  .beacon-visual { min-height: 460px; }
+  .brand-palette .beacon-directory { grid-template-columns: 1fr 1fr; }
+  .beacon-brand-block { grid-column: 1/-1; }
 }
 
 @media (max-width: 760px) {
@@ -489,6 +545,17 @@ button { font: inherit; }
   .commitment-mark { width: 110px; height: 110px; }
   .footer-top, .footer-legal { grid-template-columns: 1fr; gap: 2rem; }
   .footer-contact, .footer-legal p:first-child { grid-column: auto; }
+  .brand-palette .beacon-cta { min-height: 0; padding-top: 5rem; padding-bottom: 3rem; grid-template-columns: 1fr; gap: 1rem; }
+  .beacon-copy h2 { font-size: clamp(3.35rem, 14vw, 5rem); }
+  .beacon-actions { align-items: stretch; flex-direction: column; }
+  .beacon-actions .button { width: 100%; }
+  .beacon-whatsapp { text-align: center; }
+  .beacon-visual { min-height: 430px; width: min(100%, 440px); margin: 0 auto; }
+  .beacon-route { right: 2px; }
+  .beacon-beam { width: 77vw; }
+  .brand-palette .beacon-directory { grid-template-columns: 1fr; gap: 2.5rem; }
+  .beacon-brand-block { grid-column: auto; }
+  .brand-palette .site-footer { padding-bottom: 2.5rem; }
   .mobile-action { position: fixed; left: 0; right: 0; bottom: 0; z-index: 90; display: block; padding: .7rem 14px; border-top: 1px solid var(--line); background: rgba(251, 245, 232, .94); backdrop-filter: blur(12px); }
   .mobile-action .button { width: 100%; min-height: 48px; }
 }
@@ -510,10 +577,12 @@ button { font: inherit; }
   .pricing-toggle { grid-template-columns: 1fr; }
   .pricing-toggle button { min-height: 42px; }
   .commitment { padding: 1.5rem; }
+  .beacon-visual { min-height: 390px; transform: scale(.9); transform-origin: center bottom; margin-top: -1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   .js .reveal { opacity: 1; transform: none; }
+  .beacon-beam, .beacon-glow { animation: none; }
 }
