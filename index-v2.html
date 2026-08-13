@@ -88,17 +88,23 @@
         </figure>
       </div>
 
+    </section>
+
+    <section class="starting-section" aria-label="Orientación según tu punto de partida">
       <div class="container starting-point" data-starting-point>
         <p>¿Cuál describe mejor tu punto de partida?</p>
         <div class="level-options" role="group" aria-label="Selecciona tu situación">
-          <button type="button" data-level data-title="Empiezas desde cero" data-copy="Medimos tu disponibilidad y te proponemos una progresión que construya las bases antes de entrenar el examen." aria-pressed="false">Empiezo de cero</button>
-          <button type="button" data-level data-title="Ya tienes una base" data-copy="Identificamos qué competencia frena tu avance y concentramos el programa en esa brecha." aria-pressed="true">Tengo una base</button>
-          <button type="button" data-level data-exam-level data-title="Tu objetivo es el TEF" data-copy="Entrenamos el formato del examen sin dejar vacíos en tu francés general." aria-pressed="false">Preparo el TEF</button>
-          <button type="button" data-level data-title="Tu fecha es prioritaria" data-copy="Construimos el calendario hacia atrás y te decimos con franqueza si el plazo es viable." aria-pressed="false">Tengo poco tiempo</button>
+          <button type="button" data-level data-title="Empiezas desde cero" data-copy="Te mostramos cómo funcionan las clases, la metodología y los ciclos para construir una base sólida antes de preparar el examen." data-cta-label="Descubrir cómo aprenderás" data-cta-href="#recorrido" aria-pressed="false">Empiezo de cero</button>
+          <button type="button" data-level data-title="Ya tienes una base" data-copy="Un test progresivo identifica la competencia que frena tu avance y nos permite concentrar el programa en esa brecha." data-cta-label="Hacer mi test de nivel" data-cta-href="test-placement.html" aria-pressed="true">Tengo una base</button>
+          <button type="button" data-level data-exam-level data-title="Tu objetivo es el TEF o el TCF" data-copy="Clases privadas, práctica enfocada y simulacros: descubre la intensidad adecuada para preparar las cuatro competencias del examen." data-cta-label="Ver la preparación TEF / TCF" data-cta-href="#planes" aria-pressed="false">Preparo el TEF</button>
+          <button type="button" data-level data-title="Tu fecha es prioritaria" data-copy="Aunque el plazo sea corto, empezamos por lo útil: tu fecha y tus disponibilidades. Pathway te dirá con honestidad qué ritmo es viable." data-cta-label="Indicar mi fecha y disponibilidad" data-cta-href="inscription.html?scenario=urgent" aria-pressed="false">Tengo poco tiempo</button>
         </div>
         <div class="level-answer" data-level-answer aria-live="polite">
-          <strong>Ya tienes una base</strong>
-          <span>Identificamos qué competencia frena tu avance y concentramos el programa en esa brecha.</span>
+          <div class="level-answer-copy">
+            <strong data-level-answer-title>Ya tienes una base</strong>
+            <span data-level-answer-copy>Un test progresivo identifica la competencia que frena tu avance y nos permite concentrar el programa en esa brecha.</span>
+          </div>
+          <a class="button level-answer-cta" href="test-placement.html" data-level-answer-cta>Hacer mi test de nivel <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
@@ -189,6 +195,24 @@
           <p>La experiencia de los alumnos, contada por ellos mismos. Sin promesas prefabricadas.</p>
         </header>
         <div class="stories-grid reveal" data-reveal>
+          <section class="video-testimonial" data-video-carousel aria-label="Testimonios de alumnos en video">
+            <div class="video-stage">
+              <img src="assets/pathway-online-lesson-prototype.png" alt="Emplacement prévu pour les témoignages vidéo Pathway">
+              <div class="video-placeholder">
+                <span>Testimonios en video</span>
+                <strong>8 historias de alumnos, próximamente aquí.</strong>
+                <small>El reproductor, el encadenamiento y la navegación están preparados. Faltan los archivos originales.</small>
+              </div>
+              <video data-testimonial-video playsinline controls hidden></video>
+              <button class="carousel-arrow carousel-prev" type="button" data-video-previous aria-label="Video anterior" hidden>←</button>
+              <button class="carousel-arrow carousel-next" type="button" data-video-next aria-label="Video siguiente" hidden>→</button>
+            </div>
+            <div class="video-meta">
+              <div><span data-video-count>Experiencias en primera persona</span><strong data-video-name>Alumnos Pathway</strong></div>
+              <div class="carousel-dots" data-video-dots aria-label="Elegir un testimonio"></div>
+            </div>
+          </section>
+
           <div class="written-stories" aria-label="Testimonios escritos">
             <section class="story-carousel story-carousel-top" data-story-carousel="top" aria-label="Primer grupo de testimonios">
               <article class="story story-compact" data-story-slide>
@@ -214,23 +238,6 @@
             </section>
           </div>
 
-          <section class="video-testimonial" data-video-carousel aria-label="Testimonios de alumnos en video">
-            <div class="video-stage">
-              <img src="assets/pathway-online-lesson-prototype.png" alt="Emplacement prévu pour les témoignages vidéo Pathway">
-              <div class="video-placeholder">
-                <span>Testimonios en video</span>
-                <strong>8 historias de alumnos, próximamente aquí.</strong>
-                <small>El reproductor, el encadenamiento y la navegación están preparados. Faltan los archivos originales.</small>
-              </div>
-              <video data-testimonial-video playsinline controls hidden></video>
-              <button class="carousel-arrow carousel-prev" type="button" data-video-previous aria-label="Video anterior" hidden>←</button>
-              <button class="carousel-arrow carousel-next" type="button" data-video-next aria-label="Video siguiente" hidden>→</button>
-            </div>
-            <div class="video-meta">
-              <div><span data-video-count>Experiencias en primera persona</span><strong data-video-name>Alumnos Pathway</strong></div>
-              <div class="carousel-dots" data-video-dots aria-label="Elegir un testimonio"></div>
-            </div>
-          </section>
         </div>
       </div>
     </section>

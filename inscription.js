@@ -2,6 +2,8 @@
   const form = document.querySelector('[data-enroll-form]');
   const submit = document.querySelector('[data-submit-request]');
   const error = document.querySelector('[data-form-error]');
+  const scenario = new URLSearchParams(window.location.search).get('scenario');
+  const isUrgentScenario = scenario === 'urgent';
   const storedResult = JSON.parse(sessionStorage.getItem('pathwayPlacementResult') || 'null');
   const resultLevel = storedResult?.level ? `${storedResult.level} · estimado` : 'Por confirmar';
   document.querySelector('[data-summary-level]').textContent = resultLevel;
@@ -12,6 +14,12 @@
     Intensivo: { A1: 8, A2: 6, B1: 3, B2: 2 }
   };
   const effectiveLevel = levelOrder.includes(storedResult?.level) ? storedResult.level : 'A1';
+  if (isUrgentScenario) {
+    document.querySelector('[data-enroll-eyebrow]').textContent = 'Tu fecha primero';
+    document.querySelector('[data-enroll-title]').textContent = 'Dinos cuánto tiempo tienes y cuándo puedes estudiar.';
+    document.querySelector('[data-enroll-intro]').textContent = 'No tienes que elegir la intensidad a ciegas. Compararemos tu fecha, tu nivel y tus disponibilidades para recomendarte un ritmo realista antes de cualquier pago.';
+    document.querySelector('[data-journey-first]').textContent = 'Fecha objetivo y disponibilidades';
+  }
   form.querySelectorAll('[name="plan"]').forEach(plan => {
     const months = planTimelines[plan.value][effectiveLevel];
     const duration = plan.closest('.choice').querySelector('[data-plan-duration]');
@@ -55,7 +63,9 @@
     const billing = getSelected('billing');
     const price = billing.value === 'Ciclo' ? plan.dataset.cycle : plan.dataset.monthly;
     const message = [
-      'Hola Pathway, terminé el test de placement y quiero solicitar la confirmación de un horario.',
+      isUrgentScenario
+        ? 'Hola Pathway, tengo poco tiempo antes de mi objetivo y quiero saber qué ritmo es viable según mi fecha y mis disponibilidades.'
+        : 'Hola Pathway, terminé el test de placement y quiero solicitar la confirmación de un horario.',
       '',
       `Nombre: ${data.get('name')}`,
       `Email: ${data.get('email')}`,

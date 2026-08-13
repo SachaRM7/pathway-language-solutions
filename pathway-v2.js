@@ -124,14 +124,25 @@ document.documentElement.classList.add('js');
   updateHeader();
   window.addEventListener('scroll', updateHeader, { passive: true });
 
+  const levelAnswer = document.querySelector('[data-level-answer]');
+  const levelAnswerTitle = levelAnswer?.querySelector('[data-level-answer-title]');
+  const levelAnswerCopy = levelAnswer?.querySelector('[data-level-answer-copy]');
+  const levelAnswerCta = levelAnswer?.querySelector('[data-level-answer-cta]');
+
   document.querySelectorAll('[data-level]').forEach(button => {
     button.addEventListener('click', () => {
       document.querySelectorAll('[data-level]').forEach(item => {
         item.setAttribute('aria-pressed', String(item === button));
       });
-      const answer = document.querySelector('[data-level-answer]');
-      if (!answer) return;
-      answer.innerHTML = `<strong>${button.dataset.title}</strong><span>${button.dataset.copy}</span>`;
+      if (!levelAnswer || !levelAnswerTitle || !levelAnswerCopy || !levelAnswerCta) return;
+      levelAnswerTitle.textContent = button.dataset.title;
+      levelAnswerCopy.textContent = button.dataset.copy;
+      levelAnswerCta.href = button.dataset.ctaHref;
+      levelAnswerCta.firstChild.textContent = `${button.dataset.ctaLabel} `;
+      levelAnswer.animate(
+        [{ opacity: .58, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }],
+        { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' }
+      );
     });
   });
 
