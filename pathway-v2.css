@@ -281,6 +281,7 @@ button { font: inherit; }
 }
 
 .stories-section { background: var(--paper); }
+.stories-source { display: inline-block; margin-top: .55rem; color: var(--ink); font-size: .72rem; font-weight: 700; text-underline-offset: .25rem; }
 .stories-grid { display: grid; grid-template-columns: minmax(0, 1.26fr) minmax(340px, .74fr); gap: 1rem; align-items: stretch; }
 .written-stories { display: grid; grid-template-rows: 1fr 1fr; gap: 1rem; }
 .story-carousel { position: relative; min-height: 0; }
