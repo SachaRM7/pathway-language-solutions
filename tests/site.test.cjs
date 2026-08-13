@@ -25,6 +25,12 @@ for (const required of ['robots.txt','sitemap.xml','og-pathway.png','analytics.j
   if (!fs.existsSync(path.join(root, required))) errors.push(`missing asset ${required}`);
 }
 
+const placementScript = fs.readFileSync(path.join(root, 'placement-test.js'), 'utf8');
+const placementQuestionCount = [...placementScript.matchAll(/\{ level: '[AB][12]'/g)].length;
+const listeningQuestionCount = [...placementScript.matchAll(/skill: 'Compréhension orale'/g)].length;
+if (placementQuestionCount !== 20) errors.push(`placement test: expected 20 questions, found ${placementQuestionCount}`);
+if (listeningQuestionCount !== 8) errors.push(`placement test: expected 8 listening questions, found ${listeningQuestionCount}`);
+
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
