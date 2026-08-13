@@ -4,6 +4,34 @@ document.documentElement.classList.add('js');
   const header = document.querySelector('[data-header]');
   const menuButton = document.querySelector('[data-menu-toggle]');
   const menu = document.querySelector('[data-menu]');
+  const usesPathwayPalette = document.documentElement.classList.contains('brand-palette');
+
+  // La variante Pathway conserve l'architecture C, mais précise immédiatement
+  // l'objectif NCLC 7 et présente le programme comme la force de frappe principale.
+  if (usesPathwayPalette) {
+    const heroLabel = document.querySelector('[data-hero-label]');
+    const heroTitle = document.querySelector('[data-hero-title]');
+    const heroLead = document.querySelector('[data-hero-lead]');
+    const honestyNote = document.querySelector('[data-honesty-note]');
+    const weekTitle = document.querySelector('[data-week-title]');
+    const weekCopy = document.querySelector('[data-week-copy]');
+    const weekList = document.querySelector('[data-week-list]');
+
+    if (heroLabel) heroLabel.textContent = 'Objetivo NCLC 7 · Preparación TEF Canada';
+    if (heroTitle) heroTitle.innerHTML = 'Tu ruta al NCLC 7 empieza por <span>un plan que sí cabe en tu vida.</span>';
+    if (heroLead) heroLead.textContent = 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada.';
+    if (honestyNote) honestyNote.hidden = false;
+    if (weekTitle) weekTitle.textContent = 'La intensidad que exige tu objetivo, organizada semana a semana.';
+    if (weekCopy) weekCopy.textContent = 'Según tu nivel y tu fecha, trabajas 2, 4 o 6 horas por semana en clases privadas, además de una práctica guiada entre sesiones.';
+    if (weekList) {
+      weekList.innerHTML = `
+        <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas por semana según tu plan</small></div><b>2 · 4 · 6 h</b></li>
+        <li><span>Entre sesiones</span><div><strong>Práctica dirigida</strong><small>Ejercicios específicos conectados con tu última clase</small></div><b>Guiada</b></li>
+        <li><span>Después de cada clase</span><div><strong>Correcciones continuas</strong><small>Feedback oral y escrito sobre tus prioridades</small></div><b>Continuo</b></li>
+        <li><span>Cada etapa</span><div><strong>Control del progreso</strong><small>Objetivos semanales y simulacros antes del TEF</small></div><b>Medible</b></li>
+      `;
+    }
+  }
 
   const closeMenu = () => {
     if (!menuButton || !menu) return;

@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="pathway-v2.css">
   <script src="site-config.js"></script>
   <script>
-    if (location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
+    if (location.pathname.endsWith('/couleurs') || location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
       document.documentElement.classList.add('brand-palette');
       document.querySelector('meta[name="theme-color"]').content = '#f5efe4';
       document.title = 'Pathway — Version premium accessible';
@@ -52,13 +52,14 @@
       <div class="hero-orbit" aria-hidden="true"></div>
       <div class="container hero-grid">
         <div class="hero-copy">
-          <span class="step-label">Antes de inscribirte · una respuesta honesta</span>
-          <h1>Tu ruta al francés empieza por <span>un plan que sí cabe en tu vida.</span></h1>
-          <p class="hero-lead">Pathway mide tu nivel, construye un calendario realista y te acompaña con clases privadas hasta el TEF Canada.</p>
+          <span class="step-label" data-hero-label>Antes de inscribirte · una respuesta honesta</span>
+          <h1 data-hero-title>Tu ruta al francés empieza por <span>un plan que sí cabe en tu vida.</span></h1>
+          <p class="hero-lead" data-hero-lead>Pathway mide tu nivel, construye un calendario realista y te acompaña con clases privadas hasta el TEF Canada.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="calculador.html" data-cta="hero-evaluation">Evaluar mi punto de partida <span aria-hidden="true">→</span></a>
             <a class="text-link" href="#recorrido">Ver el recorrido completo</a>
           </div>
+          <p class="honesty-note" data-honesty-note hidden>Antes de inscribirte, te diremos con honestidad qué ritmo necesitas y si el plazo es viable.</p>
           <ul class="hero-assurances" aria-label="Ventajas principales">
             <li>Evaluación inicial gratuita</li>
             <li>Clases privadas en vivo</li>
@@ -159,10 +160,10 @@
       <div class="container week-grid reveal" data-reveal>
         <div class="week-copy">
           <span class="step-label step-label-dark">Una semana con Pathway</span>
-          <h2>El francés encuentra su lugar en tu agenda.</h2>
-          <p>Un ritmo visible, compatible con el trabajo y conectado con una fecha de examen realista.</p>
+          <h2 data-week-title>El francés encuentra su lugar en tu agenda.</h2>
+          <p data-week-copy>Un ritmo visible, compatible con el trabajo y conectado con una fecha de examen realista.</p>
         </div>
-        <ol class="week-list">
+        <ol class="week-list" data-week-list>
           <li><span>Lunes</span><div><strong>Clase en vivo</strong><small>Práctica activa y corrección inmediata</small></div><b>60–90 min</b></li>
           <li><span>Miércoles</span><div><strong>Trabajo autónomo</strong><small>Ejercicios dirigidos por tu última sesión</small></div><b>30–45 min</b></li>
           <li><span>Viernes</span><div><strong>Feedback y revisión</strong><small>Correcciones guardadas en tu cuaderno</small></div><b>20–30 min</b></li>

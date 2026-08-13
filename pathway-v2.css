@@ -39,6 +39,8 @@ html.brand-palette {
   --fog: #e6e9df;
   --line: rgba(18, 43, 38, .18);
   --gold: #d4af37;
+  --apple: #c8d69b;
+  --apple-strong: #b5c66c;
   --shadow: 0 28px 75px rgba(18, 43, 38, .15);
 }
 
@@ -74,9 +76,9 @@ html.brand-palette {
 .brand-palette .teacher-section,
 .brand-palette .context-section { background: var(--fog); }
 .brand-palette .experience-coral,
-.brand-palette .week-section,
 .brand-palette .closing-section { background: var(--coral); }
-.brand-palette .experience-lime { background: #d8e2ce; }
+.brand-palette .week-section,
+.brand-palette .experience-lime { background: var(--apple); }
 .brand-palette .experience-main,
 .brand-palette .commitment { background: var(--mint); }
 .brand-palette .score-panel,
@@ -97,6 +99,13 @@ html.brand-palette {
 }
 .brand-palette .commitment-mark { border-color: var(--gold); }
 .brand-palette .brand-footer img { filter: none; }
+.brand-palette .week-section .step-label-dark {
+  background: rgba(18, 43, 38, .09);
+  color: var(--ink);
+}
+.brand-palette .week-list { border-color: rgba(18, 43, 38, .35); }
+.brand-palette .week-list li { border-color: rgba(18, 43, 38, .35); }
+.brand-palette .week-list li > b { color: #405247; }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -159,6 +168,7 @@ button { font: inherit; }
 .hero-copy h1 span { color: var(--coral); }
 .hero-lead { max-width: 620px; margin: 0; color: var(--ink-soft); font-size: clamp(1.08rem, 1.8vw, 1.25rem); line-height: 1.58; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.35rem; margin-top: 2.1rem; }
+.honesty-note { max-width: 610px; margin: 1.15rem 0 0; padding-left: .9rem; border-left: 2px solid var(--gold, var(--coral)); color: var(--ink-soft); font-size: .75rem; font-weight: 600; }
 .hero-assurances { display: flex; flex-wrap: wrap; gap: .65rem 1.4rem; margin: 1.7rem 0 0; padding: 0; list-style: none; color: var(--ink-soft); font-size: .76rem; }
 .hero-assurances li { display: flex; align-items: center; gap: .45rem; }
 .hero-assurances li::before { content: "✓"; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: var(--mint); color: var(--ink); font-size: .65rem; font-weight: 700; }
