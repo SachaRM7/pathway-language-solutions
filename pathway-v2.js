@@ -51,6 +51,9 @@ document.documentElement.classList.add('js');
     document.querySelectorAll('[data-exam-simulations]').forEach(element => {
       element.textContent = '2 simulacros TEF / TCF';
     });
+    document.querySelectorAll('[data-cta="header-evaluation"], [data-cta="hero-evaluation"], [data-cta="closing-evaluation"], [data-cta="mobile-evaluation"], [data-cta^="plan-"]').forEach(link => {
+      link.href = 'test-placement.html';
+    });
     if (weekTitle) weekTitle.textContent = 'La intensidad que exige tu objetivo, organizada semana a semana.';
     if (weekCopy) weekCopy.textContent = 'Según tu nivel y tu fecha, trabajas 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.';
     if (weekList) {
@@ -83,7 +86,7 @@ document.documentElement.classList.add('js');
         if (isCycle) {
           price.innerHTML = `${plan.dataset.cyclePrice} <small>CAD · ciclo completo</small>`;
           hours.innerHTML = `<strong>${plan.dataset.cycleDuration}</strong> · ${plan.dataset.cycleHours}`;
-          summary.innerHTML = `<s>${plan.dataset.cycleOriginal} CAD</s><strong>Ahorras ${plan.dataset.cycleSaving} CAD</strong><span>Equivale a ${plan.dataset.cycleEquivalent} CAD al mes.</span>`;
+          summary.innerHTML = `<s>${plan.dataset.cycleOriginal} CAD</s><strong>Ahorras ${plan.dataset.cycleSaving} CAD</strong><span>Equivale a ${plan.dataset.cycleEquivalent} CAD al mes.</span><small>Precio de referencia: ${plan.dataset.cycleReference}.</small>`;
           summary.hidden = false;
           return;
         }

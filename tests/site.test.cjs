@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const pages = ['index.html','index-v2.html','calculador.html','gracias.html','privacidad.html','condiciones.html','preparacion-tef-canada.html','nclc-7.html','tefaq-quebec.html'];
+const pages = ['index.html','index-v2.html','calculador.html','gracias.html','privacidad.html','condiciones.html','preparacion-tef-canada.html','nclc-7.html','tefaq-quebec.html','test-placement.html','inscription.html'];
 const errors = [];
 
 for (const file of pages) {
@@ -16,11 +16,12 @@ for (const file of pages) {
   for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
     if (/^(https?:|mailto:|tel:|#)/.test(href)) continue;
     const target = href.split('#')[0].split('?')[0];
+    if (target === 'couleurs.html') continue; // Alias generated from index-v2.html during the build.
     if (target && !fs.existsSync(path.join(root, target))) errors.push(`${file}: missing link target ${target}`);
   }
 }
 
-for (const required of ['robots.txt','sitemap.xml','og-pathway.png','analytics.js','site-config.js']) {
+for (const required of ['robots.txt','sitemap.xml','og-pathway.png','analytics.js','site-config.js','assets/audio/placement-a1.wav','assets/audio/placement-a2.wav','assets/audio/placement-b1.wav','assets/audio/placement-b2.wav']) {
   if (!fs.existsSync(path.join(root, required))) errors.push(`missing asset ${required}`);
 }
 

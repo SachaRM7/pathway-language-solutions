@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5efe4">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Elige tu oferta Pathway, tus preferencias horarias y prepara la confirmación de inscripción.">
+  <title>Oferta y horarios | Pathway</title>
+  <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="placement.css">
+  <script src="site-config.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="flow-header">
+    <div class="flow-header-inner">
+      <a class="flow-brand" href="couleurs.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
+      <a class="flow-back" href="test-placement.html">← Volver al resultado</a>
+    </div>
+  </header>
+
+  <main class="enroll-shell" id="contenido">
+    <header class="enroll-head">
+      <div>
+        <span class="eyebrow">Después del placement</span>
+        <h1>Elige tu ritmo. Propón tus horarios.</h1>
+        <p>Pathway revisará tu resultado y comprobará la disponibilidad real antes de bloquear un horario. El pago solo se solicita después de esa confirmación.</p>
+      </div>
+      <aside class="journey" aria-label="Etapas de inscripción">
+        <ol>
+          <li>Test de placement completado</li>
+          <li>Oferta y preferencias horarias</li>
+          <li>Confirmación de un profesor</li>
+          <li>Pago seguro de la inscripción</li>
+        </ol>
+      </aside>
+    </header>
+
+    <div class="enroll-grid">
+      <form class="enroll-form" data-enroll-form>
+        <fieldset class="form-section">
+          <legend>1. Ritmo de referencia</legend>
+          <p>La recomendación final depende de tu nivel confirmado y de la fecha de tu objetivo.</p>
+          <div class="choice-grid">
+            <label class="choice"><input type="radio" name="plan" value="Esencial" data-hours="2 h/semana" data-monthly="175 CAD/mes" data-cycle="892,50 CAD · 6 meses"><span><strong>Esencial</strong><small>2 h/semana · más de 18 meses</small></span></label>
+            <label class="choice"><input type="radio" name="plan" value="Acelerado" data-hours="4 h/semana" data-monthly="335 CAD/mes" data-cycle="1.423,75 CAD · 5 meses" checked><span><strong>Acelerado</strong><small>4 h/semana · el más elegido</small></span></label>
+            <label class="choice"><input type="radio" name="plan" value="Intensivo" data-hours="6 h/semana" data-monthly="505 CAD/mes" data-cycle="1.717 CAD · 4 meses"><span><strong>Intensivo</strong><small>6 h/semana · avance prioritario</small></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>2. Forma de inscripción</legend>
+          <p>Los precios son referencias basadas en el volumen semanal elegido. Pathway confirmará el calendario exacto antes del pago.</p>
+          <div class="choice-grid">
+            <label class="choice"><input type="radio" name="billing" value="Mensual" checked><span><strong>Mensual</strong><small>Mes a mes, sin permanencia</small></span></label>
+            <label class="choice"><input type="radio" name="billing" value="Ciclo"><span><strong>Ciclo −15 %</strong><small>Inscripción por el ciclo completo</small></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>3. Preferencias horarias</legend>
+          <p>Selecciona varias posibilidades para que Pathway pueda encontrar una combinación compatible. Esto todavía no bloquea un horario.</p>
+          <div class="field-grid">
+            <label class="field"><span>Zona horaria</span><select name="timezone" required><option value="">Selecciona</option><option>Hora del Este · Toronto / Montréal</option><option>Hora Central · Winnipeg</option><option>Hora de la Montaña · Calgary</option><option>Hora del Pacífico · Vancouver</option><option>Otra zona horaria</option></select></label>
+            <label class="field"><span>Fecha ideal de inicio</span><input type="date" name="startDate" required></label>
+          </div>
+          <p><strong>Días posibles</strong></p>
+          <div class="check-grid" data-day-options>
+            <label class="check-choice"><input type="checkbox" name="days" value="Lunes">Lunes</label>
+            <label class="check-choice"><input type="checkbox" name="days" value="Martes">Martes</label>
+            <label class="check-choice"><input type="checkbox" name="days" value="Miércoles">Miércoles</label>
+            <label class="check-choice"><input type="checkbox" name="days" value="Jueves">Jueves</label>
+            <label class="check-choice"><input type="checkbox" name="days" value="Viernes">Viernes</label>
+            <label class="check-choice"><input type="checkbox" name="days" value="Sábado">Sábado</label>
+          </div>
+          <p><strong>Franjas posibles</strong></p>
+          <div class="check-grid" data-time-options>
+            <label class="check-choice"><input type="checkbox" name="times" value="Mañana · 8:00–12:00">Mañana · 8–12 h</label>
+            <label class="check-choice"><input type="checkbox" name="times" value="Tarde · 12:00–17:00">Tarde · 12–17 h</label>
+            <label class="check-choice"><input type="checkbox" name="times" value="Noche · 17:00–21:00">Noche · 17–21 h</label>
+          </div>
+          <label class="field" style="margin-top:.8rem"><span>Precisiones útiles</span><textarea name="scheduleNote" placeholder="Ej.: martes y jueves después de las 18 h, nunca el viernes…"></textarea></label>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>4. Contacto para confirmar</legend>
+          <div class="field-grid">
+            <label class="field"><span>Nombre</span><input type="text" name="name" autocomplete="name" required></label>
+            <label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" required></label>
+            <label class="field"><span>WhatsApp</span><input type="tel" name="phone" autocomplete="tel" placeholder="+1…" required></label>
+            <label class="field"><span>Fecha objetivo TEF / TCF</span><input type="date" name="examDate"></label>
+          </div>
+        </fieldset>
+      </form>
+
+      <aside class="enroll-summary" aria-live="polite">
+        <span>Tu solicitud</span>
+        <h2>Resumen antes de confirmar</h2>
+        <dl class="summary-list">
+          <div><dt>Nivel estimado</dt><dd data-summary-level>Por confirmar</dd></div>
+          <div><dt>Ritmo</dt><dd data-summary-plan>Acelerado · 4 h/semana</dd></div>
+          <div><dt>Inscripción</dt><dd data-summary-billing>Mensual</dd></div>
+          <div><dt>Precio de referencia</dt><dd data-summary-price>335 CAD/mes</dd></div>
+          <div><dt>Disponibilidades</dt><dd data-summary-schedule>Por completar</dd></div>
+        </dl>
+        <button class="button button-coral" type="button" data-submit-request>Solicitar confirmación de horario</button>
+        <p class="form-error" data-form-error hidden></p>
+        <p class="payment-note">Aquí no se cobra ningún pago. Pathway confirma primero un horario y después envía el enlace de pago correspondiente.</p>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="flow-footer">Pathway Language Solutions · Tu solicitud no reserva un horario hasta la confirmación escrita de Pathway.</footer>
+  <script src="inscription.js"></script>
+</body>
+</html>

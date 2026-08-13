@@ -373,6 +373,7 @@ button { font: inherit; }
 .cycle-summary s { opacity: .7; }
 .cycle-summary strong { color: var(--ink); }
 .cycle-summary span { grid-column: 1 / -1; }
+.cycle-summary small { grid-column: 1 / -1; padding-top: .28rem; border-top: 1px solid rgba(18, 43, 38, .14); color: inherit; font-size: .61rem; letter-spacing: .01em; }
 .plan-featured .cycle-summary { background: rgba(181, 198, 108, .13); color: #b6c8c3; }
 .plan-featured .cycle-summary strong { color: var(--apple); }
 .plan-card ul { margin: 0 0 1.5rem; padding-left: 1.15rem; color: var(--ink-soft); font-size: .82rem; line-height: 1.9; }

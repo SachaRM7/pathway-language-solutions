@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5efe4">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Test de placement de francés Pathway: gramática, vocabulario, comprensión escrita y comprensión oral de A1 a B2.">
+  <title>Test de placement de francés | Pathway</title>
+  <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="placement.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="flow-header">
+    <div class="flow-header-inner">
+      <a class="flow-brand" href="couleurs.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
+      <a class="flow-back" href="couleurs.html">← Volver al programa</a>
+    </div>
+  </header>
+
+  <main class="test-shell" id="contenido">
+    <section class="intro-grid" data-test-intro>
+      <div class="intro-copy">
+        <span class="eyebrow">Test de placement · A1 a B2</span>
+        <h1>Descubre dónde <span>empieza tu ruta.</span></h1>
+        <p>Un test progresivo en francés para estimar tu punto de partida antes de elegir el ritmo, los horarios y la forma de inscripción.</p>
+      </div>
+      <aside class="intro-panel">
+        <strong>Antes de empezar</strong>
+        <ul class="intro-facts">
+          <li><b>16</b><span>preguntas progresivas</span></li>
+          <li><b>4</b><span>competencias evaluadas</span></li>
+          <li><b>12–15 min</b><span>sin diccionario ni traducción</span></li>
+        </ul>
+        <p class="notice">Usa audífonos si puedes. Cada audio puede volver a escucharse, pero responde sin ayuda externa para obtener una estimación útil.</p>
+        <button class="button button-coral" type="button" data-start-test>Empezar el test <span aria-hidden="true">→</span></button>
+      </aside>
+    </section>
+
+    <section class="test-stage" data-test-stage hidden aria-live="polite">
+      <div class="test-layout">
+        <aside class="test-aside">
+          <div class="test-progress-copy"><span>Tu avance</span><b data-progress-copy>1 / 16</b></div>
+          <div class="progress-track" aria-hidden="true"><span data-progress-bar></span></div>
+          <ol class="level-rail" aria-label="Niveles del test">
+            <li data-level-rail="A1">A1 · Découverte</li>
+            <li data-level-rail="A2">A2 · Élémentaire</li>
+            <li data-level-rail="B1">B1 · Indépendant</li>
+            <li data-level-rail="B2">B2 · Avancé</li>
+          </ol>
+        </aside>
+
+        <form class="test-card" data-test-form>
+          <div class="question-meta"><span data-question-level>A1</span><span data-question-skill>Grammaire</span></div>
+          <h2 data-question-title></h2>
+          <div class="question-context" data-question-context hidden></div>
+          <div class="audio-box" data-audio-box hidden>
+            <strong>Compréhension orale · écoute l’extrait</strong>
+            <audio controls preload="metadata" data-question-audio></audio>
+          </div>
+          <div class="answers" data-answers></div>
+          <div class="test-actions">
+            <button class="button button-ghost" type="button" data-previous disabled>Anterior</button>
+            <button class="button button-coral" type="submit" data-next disabled>Siguiente</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="result-card" data-result hidden aria-live="polite">
+      <div class="result-hero">
+        <div>
+          <span class="eyebrow">Estimación de placement</span>
+          <h2 data-result-title>Tu punto de partida estimado.</h2>
+          <p data-result-copy></p>
+        </div>
+        <div class="result-level" data-result-level>A1</div>
+      </div>
+      <div class="result-body">
+        <div class="skill-bars" data-skill-scores></div>
+        <p class="result-note"><strong>Importante:</strong> este resultado orienta tu recorrido, pero no es una certificación CECRL ni una equivalencia NCLC. Pathway confirmará especialmente la expresión oral y escrita antes de fijar el plan.</p>
+        <div class="result-actions">
+          <a class="button button-coral" href="inscription.html" data-enroll-link>Elegir oferta y horarios <span aria-hidden="true">→</span></a>
+          <button class="button button-ghost" type="button" data-restart>Repetir el test</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="flow-footer">Pathway Language Solutions · Este test orientativo no sustituye un examen oficial TEF, TCF, DELF o DALF.</footer>
+  <script src="placement-test.js"></script>
+</body>
+</html>

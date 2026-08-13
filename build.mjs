@@ -28,6 +28,11 @@ const assets = [
   'ircc-data.js'
   ,'pathway-v2.css'
   ,'pathway-v2.js'
+  ,'test-placement.html'
+  ,'placement.css'
+  ,'placement-test.js'
+  ,'inscription.html'
+  ,'inscription.js'
 ];
 
 await rm(dist, { recursive: true, force: true });
