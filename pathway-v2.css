@@ -21,6 +21,83 @@
   --font-body: "DM Sans", sans-serif;
 }
 
+/*
+  VERSION 2 — PREMIUM ACCESSIBLE PATHWAY
+  Activée sur /couleurs.html. Répartition visuelle visée :
+  65 % crème chaud · 20 % vert sapin · 10 % terracotta · 4 % sauge · 1 % or.
+*/
+html.brand-palette {
+  --ink: #122b26;
+  --ink-soft: #50625c;
+  --cream: #f5efe4;
+  --paper: #fffaf2;
+  --mint: #cad8c3;
+  --mint-deep: #9eb4a4;
+  --coral: #c76f56;
+  --coral-dark: #a9533f;
+  --lime: #dce5d2;
+  --fog: #e6e9df;
+  --line: rgba(18, 43, 38, .18);
+  --gold: #d4af37;
+  --shadow: 0 28px 75px rgba(18, 43, 38, .15);
+}
+
+.brand-palette body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.brand-palette .site-header::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 76px;
+  height: 2px;
+  background: var(--gold);
+  transform: translateX(-50%);
+}
+
+.brand-palette .hero-orbit,
+.brand-palette .hero-orbit::before,
+.brand-palette .hero-orbit::after {
+  border-color: rgba(199, 111, 86, .18);
+}
+
+.brand-palette .hero-orbit::after { background: rgba(199, 111, 86, .04); }
+.brand-palette .lesson-card { box-shadow: 0 28px 75px rgba(18, 43, 38, .16); }
+.brand-palette .route-section { background: #122b26; }
+.brand-palette .step-label-dark { background: rgba(202, 216, 195, .12); color: #dce5d2; }
+.brand-palette .route-map::before { background: #456158; }
+.brand-palette .route-stop::before { border-color: var(--mint-deep); background: #122b26; color: #e7eee2; }
+.brand-palette .route-stop:last-child::before { border-color: var(--gold); color: var(--gold); }
+.brand-palette .teacher-section,
+.brand-palette .context-section { background: var(--fog); }
+.brand-palette .experience-coral,
+.brand-palette .week-section,
+.brand-palette .closing-section { background: var(--coral); }
+.brand-palette .experience-lime { background: #d8e2ce; }
+.brand-palette .experience-main,
+.brand-palette .commitment { background: var(--mint); }
+.brand-palette .score-panel,
+.brand-palette .plan-featured,
+.brand-palette .story-featured,
+.brand-palette .site-footer { background: #122b26; }
+.brand-palette .score-row-accent strong { color: #dce5d2; }
+.brand-palette .teacher-visual::after {
+  content: "";
+  position: absolute;
+  right: -1rem;
+  bottom: 15%;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+}
+.brand-palette .commitment-mark { border-color: var(--gold); }
+.brand-palette .brand-footer img { filter: none; }
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; overflow-x: hidden; background: var(--cream); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }

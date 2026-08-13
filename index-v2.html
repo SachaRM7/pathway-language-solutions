@@ -14,6 +14,13 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="pathway-v2.css">
   <script src="site-config.js"></script>
+  <script>
+    if (location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
+      document.documentElement.classList.add('brand-palette');
+      document.querySelector('meta[name="theme-color"]').content = '#f5efe4';
+      document.title = 'Pathway — Version premium accessible';
+    }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>

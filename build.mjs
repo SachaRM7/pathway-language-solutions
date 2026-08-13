@@ -39,6 +39,8 @@ for (const asset of assets) {
   const destination = asset === 'index-v2.html' ? 'index.html' : asset;
   await cp(resolve(root, asset), resolve(client, destination));
 }
+// Deux URL partageables, une seule source HTML : la seconde active la palette Pathway humanisée.
+await cp(resolve(root, 'index-v2.html'), resolve(client, 'couleurs.html'));
 await cp(resolve(root, 'assets'), resolve(client, 'assets'), { recursive: true });
 await cp(resolve(root, '.openai', 'hosting.json'), resolve(metadata, 'hosting.json'));
 await writeFile(resolve(server, 'index.js'), `export default {
