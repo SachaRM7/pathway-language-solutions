@@ -5,6 +5,19 @@
   const storedResult = JSON.parse(sessionStorage.getItem('pathwayPlacementResult') || 'null');
   const resultLevel = storedResult?.level ? `${storedResult.level} · estimado` : 'Por confirmar';
   document.querySelector('[data-summary-level]').textContent = resultLevel;
+  const levelOrder = ['A1', 'A2', 'B1', 'B2'];
+  const planTimelines = {
+    Esencial: { A1: 18, A2: 12, B1: 6, B2: 3 },
+    Acelerado: { A1: 12, A2: 8, B1: 4, B2: 2 },
+    Intensivo: { A1: 8, A2: 6, B1: 3, B2: 2 }
+  };
+  const effectiveLevel = levelOrder.includes(storedResult?.level) ? storedResult.level : 'A1';
+  form.querySelectorAll('[name="plan"]').forEach(plan => {
+    const months = planTimelines[plan.value][effectiveLevel];
+    const duration = plan.closest('.choice').querySelector('[data-plan-duration]');
+    if (duration) duration.textContent = `${plan.dataset.hours} · aprox. ${months} meses desde una base ${effectiveLevel}`;
+    plan.dataset.duration = `aprox. ${months} meses desde ${effectiveLevel}`;
+  });
   const startDate = form.querySelector('[name="startDate"]');
   startDate.min = new Date().toISOString().slice(0, 10);
 
@@ -16,7 +29,7 @@
     const billing = getSelected('billing');
     const days = getCheckedValues('days');
     const times = getCheckedValues('times');
-    document.querySelector('[data-summary-plan]').textContent = `${plan.value} · ${plan.dataset.hours}`;
+    document.querySelector('[data-summary-plan]').textContent = `${plan.value} · ${plan.dataset.hours} · ${plan.dataset.duration}`;
     document.querySelector('[data-summary-billing]').textContent = billing.value;
     document.querySelector('[data-summary-price]').textContent = billing.value === 'Ciclo' ? plan.dataset.cycle : plan.dataset.monthly;
     document.querySelector('[data-summary-schedule]').textContent = days.length || times.length ? `${days.join(', ') || 'Días por definir'} · ${times.join(', ') || 'franja por definir'}` : 'Por completar';
@@ -48,7 +61,7 @@
       `Email: ${data.get('email')}`,
       `WhatsApp: ${data.get('phone')}`,
       `Nivel estimado: ${resultLevel}`,
-      `Ritmo de referencia: ${plan.value} · ${plan.dataset.hours}`,
+      `Ritmo de referencia: ${plan.value} · ${plan.dataset.hours} · ${plan.dataset.duration}`,
       `Inscripción: ${billing.value}`,
       `Precio de referencia: ${price}`,
       `Zona horaria: ${data.get('timezone')}`,
@@ -64,6 +77,7 @@
       level: resultLevel,
       plan: plan.value,
       hours: plan.dataset.hours,
+      duration: plan.dataset.duration,
       billing: billing.value,
       price,
       timezone: data.get('timezone'),

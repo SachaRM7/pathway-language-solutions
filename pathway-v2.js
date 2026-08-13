@@ -176,6 +176,101 @@ document.documentElement.classList.add('js');
     });
   });
 
+  const buildStoryCarousel = carousel => {
+    const slides = [...carousel.querySelectorAll('[data-story-slide]')];
+    const controls = carousel.querySelector('[data-carousel-controls]');
+    if (!controls || !slides.length) return;
+    let current = 0;
+
+    const previous = document.createElement('button');
+    previous.type = 'button';
+    previous.className = 'carousel-arrow carousel-prev';
+    previous.setAttribute('aria-label', 'Testimonio anterior');
+    previous.textContent = '←';
+
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'carousel-arrow carousel-next';
+    next.setAttribute('aria-label', 'Testimonio siguiente');
+    next.textContent = '→';
+
+    const dots = document.createElement('div');
+    dots.className = 'carousel-dots';
+    dots.setAttribute('aria-label', 'Elegir un testimonio');
+
+    const show = index => {
+      current = (index + slides.length) % slides.length;
+      slides.forEach((slide, slideIndex) => { slide.hidden = slideIndex !== current; });
+      [...dots.children].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === current)));
+    };
+
+    slides.forEach((_, index) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'carousel-dot';
+      dot.setAttribute('aria-label', `Ver testimonio ${index + 1}`);
+      dot.addEventListener('click', () => show(index));
+      dots.append(dot);
+    });
+    previous.addEventListener('click', () => show(current - 1));
+    next.addEventListener('click', () => show(current + 1));
+    controls.append(previous, dots, next);
+    if (slides.length < 2) {
+      previous.hidden = true;
+      next.hidden = true;
+    }
+    show(0);
+  };
+
+  document.querySelectorAll('[data-story-carousel]').forEach(buildStoryCarousel);
+
+  /* Ajouter les huit fichiers réels ici dès leur réception. */
+  const testimonialVideos = [];
+  const videoCarousel = document.querySelector('[data-video-carousel]');
+  if (videoCarousel && testimonialVideos.length) {
+    const video = videoCarousel.querySelector('[data-testimonial-video]');
+    const poster = videoCarousel.querySelector('.video-stage > img');
+    const placeholder = videoCarousel.querySelector('.video-placeholder');
+    const previous = videoCarousel.querySelector('[data-video-previous]');
+    const next = videoCarousel.querySelector('[data-video-next]');
+    const dots = videoCarousel.querySelector('[data-video-dots]');
+    const count = videoCarousel.querySelector('[data-video-count]');
+    const name = videoCarousel.querySelector('[data-video-name]');
+    let current = 0;
+
+    const showVideo = index => {
+      current = (index + testimonialVideos.length) % testimonialVideos.length;
+      const item = testimonialVideos[current];
+      video.src = item.src;
+      video.poster = item.poster || '';
+      video.load();
+      count.textContent = `${current + 1} / ${testimonialVideos.length}`;
+      name.textContent = item.name;
+      [...dots.children].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === current)));
+    };
+
+    poster.hidden = true;
+    placeholder.hidden = true;
+    video.hidden = false;
+    previous.hidden = false;
+    next.hidden = false;
+    testimonialVideos.forEach((item, index) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'carousel-dot';
+      dot.setAttribute('aria-label', `Ver video ${index + 1}: ${item.name}`);
+      dot.addEventListener('click', () => showVideo(index));
+      dots.append(dot);
+    });
+    previous.addEventListener('click', () => showVideo(current - 1));
+    next.addEventListener('click', () => showVideo(current + 1));
+    video.addEventListener('ended', () => {
+      showVideo(current + 1);
+      video.play().catch(() => {});
+    });
+    showVideo(0);
+  }
+
   document.querySelectorAll('[data-current-year]').forEach(element => {
     element.textContent = new Date().getFullYear();
   });

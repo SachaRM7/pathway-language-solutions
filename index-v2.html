@@ -168,28 +168,69 @@
           <span class="step-label step-label-dark">Una semana con Pathway</span>
           <h2 data-week-title>El francés encuentra su lugar en tu agenda.</h2>
         </div>
-        <ol class="week-list" data-week-list>
-          <li><span>Lunes</span><div><strong>Clase en vivo</strong><small>Práctica activa y corrección inmediata</small></div><b>60–90 min</b></li>
-          <li><span>Miércoles</span><div><strong>Trabajo autónomo</strong><small>Ejercicios dirigidos por tu última sesión</small></div><b>30–45 min</b></li>
-          <li><span>Viernes</span><div><strong>Feedback y revisión</strong><small>Correcciones guardadas en tu cuaderno</small></div><b>20–30 min</b></li>
-          <li><span>Semana siguiente</span><div><strong>Nueva prioridad</strong><small>El plan se ajusta a tu progreso real</small></div><b>Continuo</b></li>
-        </ol>
-        <p class="week-support" data-week-copy>Un ritmo visible, compatible con el trabajo y conectado con una fecha de examen realista.</p>
-        <p class="week-reference-note" data-hours-reference hidden>* Volúmenes horarios y precios de referencia; el ritmo exacto se confirma después de la evaluación inicial y según tus necesidades.</p>
+        <div class="week-program">
+          <ol class="week-list" data-week-list>
+            <li><span>Lunes</span><div><strong>Clase en vivo</strong><small>Práctica activa y corrección inmediata</small></div><b>60–90 min</b></li>
+            <li><span>Miércoles</span><div><strong>Trabajo autónomo</strong><small>Ejercicios dirigidos por tu última sesión</small></div><b>30–45 min</b></li>
+            <li><span>Viernes</span><div><strong>Feedback y revisión</strong><small>Correcciones guardadas en tu cuaderno</small></div><b>20–30 min</b></li>
+            <li><span>Semana siguiente</span><div><strong>Nueva prioridad</strong><small>El plan se ajusta a tu progreso real</small></div><b>Continuo</b></li>
+          </ol>
+          <p class="week-support" data-week-copy>Un ritmo visible, compatible con el trabajo y conectado con una fecha de examen realista.</p>
+          <p class="week-reference-note" data-hours-reference hidden>* Volúmenes horarios y precios de referencia; el ritmo exacto se confirma después de la evaluación inicial y según tus necesidades.</p>
+        </div>
       </div>
     </section>
 
     <!-- PREUVES — uniquement les témoignages existants. -->
     <section class="section stories-section" id="historias">
       <div class="container">
-        <header class="section-heading reveal" data-reveal>
+        <header class="section-heading stories-heading reveal" data-reveal>
           <div><span class="step-label">Experiencias reales</span><h2>Lo cuentan quienes ya aprendieron con Pathway.</h2></div>
-          <p>Tres testimonios reales. Sin espacios vacíos ni promesas que todavía no podemos demostrar.</p>
+          <p>La experiencia de los alumnos, contada por ellos mismos. Sin promesas prefabricadas.</p>
         </header>
         <div class="stories-grid reveal" data-reveal>
-          <article class="story story-featured"><span class="quote-mark">“</span><blockquote>En Pathway encontré un método claro y un acompañamiento cercano. Cada clase me ayudó a avanzar con más confianza hacia mis objetivos.</blockquote><footer><strong>Oscar</strong><span>Perú</span></footer></article>
-          <article class="story"><span class="quote-mark">“</span><blockquote>Los profesores tienen mucha paciencia y hacen las clases dinámicas. He mejorado mi pronunciación y me siento más seguro al hablar francés.</blockquote><footer><strong>Pablo</strong><span>México</span></footer></article>
-          <article class="story"><span class="quote-mark">“</span><blockquote>Aprendemos de manera práctica. Las clases me han ayudado a desarrollar competencias reales, no solo teoría.</blockquote><footer><strong>Karla</strong><span>Costa Rica</span></footer></article>
+          <div class="written-stories" aria-label="Testimonios escritos">
+            <section class="story-carousel story-carousel-top" data-story-carousel="top" aria-label="Primer grupo de testimonios">
+              <article class="story story-compact" data-story-slide>
+                <span class="quote-mark">“</span>
+                <blockquote>En Pathway encontré un método claro y un acompañamiento cercano. Cada clase me ayudó a avanzar con más confianza hacia mis objetivos.</blockquote>
+                <footer><strong>Oscar</strong><span>Perú</span></footer>
+              </article>
+              <article class="story story-compact" data-story-slide hidden>
+                <span class="quote-mark">“</span>
+                <blockquote>Los profesores tienen mucha paciencia y hacen las clases dinámicas. He mejorado mi pronunciación y me siento más seguro al hablar francés.</blockquote>
+                <footer><strong>Pablo</strong><span>México</span></footer>
+              </article>
+              <div class="carousel-controls" data-carousel-controls></div>
+            </section>
+
+            <section class="story-carousel story-carousel-bottom" data-story-carousel="bottom" aria-label="Segundo grupo de testimonios">
+              <article class="story story-compact" data-story-slide>
+                <span class="quote-mark">“</span>
+                <blockquote>Aprendemos de manera práctica. Las clases me han ayudado a desarrollar competencias reales, no solo teoría.</blockquote>
+                <footer><strong>Karla</strong><span>Costa Rica</span></footer>
+              </article>
+              <div class="carousel-controls" data-carousel-controls></div>
+            </section>
+          </div>
+
+          <section class="video-testimonial" data-video-carousel aria-label="Testimonios de alumnos en video">
+            <div class="video-stage">
+              <img src="assets/pathway-online-lesson-prototype.png" alt="Emplacement prévu pour les témoignages vidéo Pathway">
+              <div class="video-placeholder">
+                <span>Testimonios en video</span>
+                <strong>8 historias de alumnos, próximamente aquí.</strong>
+                <small>El reproductor, el encadenamiento y la navegación están preparados. Faltan los archivos originales.</small>
+              </div>
+              <video data-testimonial-video playsinline controls hidden></video>
+              <button class="carousel-arrow carousel-prev" type="button" data-video-previous aria-label="Video anterior" hidden>←</button>
+              <button class="carousel-arrow carousel-next" type="button" data-video-next aria-label="Video siguiente" hidden>→</button>
+            </div>
+            <div class="video-meta">
+              <div><span data-video-count>Experiencias en primera persona</span><strong data-video-name>Alumnos Pathway</strong></div>
+              <div class="carousel-dots" data-video-dots aria-label="Elegir un testimonio"></div>
+            </div>
+          </section>
         </div>
       </div>
     </section>
