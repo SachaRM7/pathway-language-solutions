@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="pathway-v2.css">
+  <link rel="stylesheet" href="pathway-v2.css?v=20260814-portraits">
   <script src="site-config.js"></script>
   <script>
     if (location.hostname === 'pathway-languages.com' || location.hostname === 'www.pathway-languages.com' || location.pathname.endsWith('/couleurs') || location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
@@ -75,16 +75,14 @@
 
         <figure class="lesson-card">
           <div class="lesson-image-wrap">
-            <img src="assets/pathway-online-lesson-prototype.png" alt="Una alumna practica francés en una clase privada por videollamada">
+            <img src="assets/pathway-live-class-teacher.png" alt="Un profesor de Pathway imparte una clase privada de francés por videollamada a una alumna latinoamericana">
             <span class="live-badge"><i></i> Clase en vivo</span>
           </div>
           <figcaption class="lesson-caption">
-            <img class="lesson-avatar" src="assets/pathway-teacher-prototype.png" alt="">
+            <img class="lesson-avatar" src="assets/pathway-teacher-01-avatar.jpg" alt="">
             <span><strong>Sesión individual</strong><small data-exam-session>Expresión oral · práctica TEF</small></span>
             <span class="session-time">60 min</span>
           </figcaption>
-          <!-- Remplacer ces images par des photos Pathway réelles avant publication. -->
-          <p class="asset-note">Imágenes provisionales · sustituir por fotos reales de Pathway</p>
         </figure>
       </div>
 
@@ -129,9 +127,13 @@
     <!-- ÉQUIPE ENSEIGNANTE -->
     <section class="section teacher-section" id="profesores">
       <div class="container teacher-grid reveal" data-reveal>
-        <div class="teacher-visual">
-          <img src="assets/pathway-teacher-prototype.png" alt="Retrato provisional para presentar al equipo docente de Pathway">
-          <span>Retratos del equipo por añadir</span>
+        <div class="teacher-visual" aria-label="Retratos de los profesores de Pathway">
+          <figure class="teacher-portrait teacher-portrait-first">
+            <img src="assets/pathway-teacher-portrait-01.png" alt="Profesor de Pathway con polo verde y emblema del faro">
+          </figure>
+          <figure class="teacher-portrait teacher-portrait-second">
+            <img src="assets/pathway-teacher-portrait-02.png" alt="Profesor de Pathway con barba, polo verde y emblema del faro">
+          </figure>
         </div>
         <div class="teacher-copy">
           <span class="step-label">El equipo detrás del progreso</span>
@@ -143,7 +145,6 @@
             <div><strong>Ámbitos</strong><span>Francés como segunda lengua, universitario y para empresas</span></div>
             <div><strong>Exámenes</strong><span>Habilitados para DELF, DALF, TCF, TEF y TEFAQ hasta C1</span></div>
           </div>
-          <p class="edit-note">Los perfiles individuales de los dos profesores se incorporarán con sus retratos.</p>
         </div>
       </div>
     </section>

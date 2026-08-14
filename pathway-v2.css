@@ -89,7 +89,7 @@ html.brand-palette {
   content: "";
   position: absolute;
   right: -1rem;
-  bottom: 15%;
+  bottom: 42%;
   z-index: 2;
   width: 42px;
   height: 42px;
@@ -224,11 +224,12 @@ button { font: inherit; }
 .route-stop p { max-width: 240px; margin: 0; color: #a7bab5; font-size: .82rem; line-height: 1.6; }
 
 .teacher-section { overflow: hidden; background: var(--fog); }
-.teacher-grid { display: grid; grid-template-columns: minmax(320px, .74fr) 1.26fr; gap: clamp(3rem, 8vw, 8rem); align-items: center; }
-.teacher-visual { position: relative; }
-.teacher-visual::before { content: ""; position: absolute; width: 72%; aspect-ratio: 1; right: -12%; top: -8%; border-radius: 50%; background: var(--coral); }
-.teacher-visual img { position: relative; width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 48% 48% 18px 18px; }
-.teacher-visual > span { position: absolute; left: 1rem; bottom: 1rem; padding: .45rem .6rem; border-radius: 6px; background: rgba(255, 253, 247, .92); font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.teacher-grid { display: grid; grid-template-columns: minmax(290px, .66fr) 1.34fr; gap: clamp(3rem, 7vw, 7rem); align-items: center; }
+.teacher-visual { position: relative; display: grid; justify-items: center; gap: 1.35rem; }
+.teacher-portrait { position: relative; isolation: isolate; width: min(74%, 300px); margin: 0; }
+.teacher-portrait::before { content: ""; position: absolute; width: 70%; aspect-ratio: 1; right: -12%; top: -7%; z-index: -1; border-radius: 50%; background: var(--coral); }
+.teacher-portrait-second::before { right: auto; left: -12%; }
+.teacher-portrait img { display: block; width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 48% 48% 16px 16px; }
 .teacher-copy h2 { max-width: 760px; }
 .teacher-intro { max-width: 690px; color: var(--ink-soft); font-size: 1.04rem; line-height: 1.7; }
 .teacher-copy blockquote { max-width: 660px; margin: 2rem 0; padding-left: 1.3rem; border-left: 3px solid var(--coral); font-family: var(--font-display); font-size: clamp(1.3rem, 2.3vw, 1.85rem); font-weight: 500; line-height: 1.35; }
@@ -536,7 +537,7 @@ button { font: inherit; }
   .pricing-choice { grid-template-columns: 1fr; align-items: stretch; }
   .week-support { margin-top: 1.1rem; }
   .week-reference-note { margin-top: .15rem; }
-  .teacher-visual { max-width: 520px; }
+  .teacher-visual { width: min(100%, 440px); margin-inline: auto; }
   .week-copy > p { max-width: 620px; }
   .faq-grid header { position: static; }
   .footer-top { grid-template-columns: 1fr 1fr; }
