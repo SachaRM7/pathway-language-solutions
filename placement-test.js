@@ -186,12 +186,4 @@
     renderQuestion();
   });
 
-  document.querySelector('[data-restart]').addEventListener('click', () => {
-    responses.fill(null);
-    current = 0;
-    calculation.hidden = true;
-    result.hidden = true;
-    intro.hidden = false;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
 })();

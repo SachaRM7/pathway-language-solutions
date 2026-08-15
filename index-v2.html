@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="pathway-v2.css?v=20260814-portraits">
+  <link rel="stylesheet" href="pathway-v2.css?v=20260815-quickfixes">
   <script src="site-config.js"></script>
   <script>
     if (location.hostname === 'pathway-languages.com' || location.hostname === 'www.pathway-languages.com' || location.pathname.endsWith('/couleurs') || location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
@@ -44,8 +44,8 @@
 
       <nav class="main-nav" id="main-navigation" data-menu aria-label="Navegación principal">
         <a href="#recorrido">Cómo funciona</a>
-        <a href="#experiencia">La experiencia</a>
         <a href="#profesores">Profesores</a>
+        <a href="#experiencia">La experiencia</a>
         <a href="#planes">Planes</a>
         <a class="nav-cta" href="calculador.html" data-cta="header-evaluation">Evaluar mi nivel</a>
       </nav>
@@ -197,13 +197,13 @@
         <div class="stories-grid reveal" data-reveal>
           <section class="video-testimonial" data-video-carousel aria-label="Testimonios de alumnos en video">
             <div class="video-stage">
-              <img src="assets/pathway-online-lesson-prototype.png" alt="Emplacement prévu pour les témoignages vidéo Pathway">
+              <img src="assets/videos/testimonio-21-poster.jpg?v=20260814-2" alt="Una alumna comparte su experiencia aprendiendo francés con Pathway">
               <div class="video-placeholder">
                 <span>Testimonios en video</span>
-                <strong>8 historias de alumnos, próximamente aquí.</strong>
-                <small>El reproductor, el encadenamiento y la navegación están preparados. Faltan los archivos originales.</small>
+                <strong>Seis alumnos cuentan su experiencia.</strong>
+                <small>Testimonios reales de la comunidad Pathway.</small>
               </div>
-              <video data-testimonial-video playsinline controls hidden></video>
+              <video data-testimonial-video playsinline controls autoplay muted preload="auto" hidden aria-label="Testimonio de una alumna Pathway"></video>
               <button class="carousel-arrow carousel-prev" type="button" data-video-previous aria-label="Video anterior" hidden>←</button>
               <button class="carousel-arrow carousel-next" type="button" data-video-next aria-label="Video siguiente" hidden>→</button>
             </div>
@@ -341,35 +341,37 @@
         <div class="pricing-choice reveal" data-pricing-choice data-reveal hidden>
           <div class="pricing-choice-copy">
             <strong>Dos formas de inscribirte</strong>
-            <span>Mes a mes sin permanencia, o un ciclo completo con 15 % de descuento.</span>
+            <span>Mes a mes sin permanencia, o un ciclo completo* con 15 % de descuento.</span>
+            <small>Si empiezas con un mes y continúas después con un ciclo completo, el descuento aplicado al ciclo es del 10 %.</small>
             <small data-pricing-reference hidden>* Volúmenes horarios y precios de referencia; el ritmo exacto se confirma después de la evaluación inicial y según tus necesidades.</small>
           </div>
           <div class="pricing-toggle" role="group" aria-label="Forma de inscripción">
             <button type="button" data-pricing-mode="monthly" aria-pressed="true">Inscripción mensual</button>
-            <button type="button" data-pricing-mode="cycle" aria-pressed="false">Ciclo <span>ahorra 15 %</span></button>
+            <button type="button" data-pricing-mode="cycle" aria-pressed="false">Ciclo* <span>ahorra 15 %</span></button>
           </div>
         </div>
 
         <div class="plans-grid reveal" data-reveal>
-          <article class="plan-card" data-plan data-month-price="175" data-month-hours="8 horas al mes · 2 h*/semana" data-cycle-price="892,50" data-cycle-original="1.050" data-cycle-saving="157,50" data-cycle-duration="6 meses" data-cycle-hours="2 h*/semana" data-cycle-equivalent="148,75" data-cycle-reference="2 h/semana">
-            <span class="plan-tag">Más de 18 meses</span><h3>Esencial</h3><div class="price" data-plan-price>175 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>8 horas al mes · 2 h/semana</p>
+          <article class="plan-card" data-plan data-month-price="185" data-month-hours="8 horas al mes · 2 h*/semana" data-cycle-price="943,50" data-cycle-original="1.110" data-cycle-saving="166,50" data-cycle-duration="6 meses" data-cycle-hours="2 h*/semana" data-cycle-equivalent="157,25" data-cycle-reference="2 h/semana">
+            <span class="plan-tag">Más de 18 meses</span><h3>Esencial</h3><div class="price" data-plan-price>185 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>8 horas al mes · 2 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
             <ul><li>Clases privadas en vivo</li><li>Cuaderno y seguimiento</li><li>Talleres prácticos</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-outline" href="calculador.html" data-cta="plan-essential">Evaluar este ritmo</a>
           </article>
-          <article class="plan-card plan-featured" data-plan data-month-price="335" data-month-hours="16 horas al mes · 4 h*/semana" data-cycle-price="1.423,75" data-cycle-original="1.675" data-cycle-saving="251,25" data-cycle-duration="5 meses" data-cycle-hours="3–4 h*/semana" data-cycle-equivalent="284,75" data-cycle-reference="4 h/semana">
-            <span class="plan-tag">El más elegido</span><h3>Acelerado</h3><div class="price" data-plan-price>335 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>16 horas al mes · 4 h/semana</p>
+          <article class="plan-card plan-featured" data-plan data-month-price="355" data-month-hours="16 horas al mes · 4 h*/semana" data-cycle-price="1.508,75" data-cycle-original="1.775" data-cycle-saving="266,25" data-cycle-duration="5 meses" data-cycle-hours="3–4 h*/semana" data-cycle-equivalent="301,75" data-cycle-reference="4 h/semana">
+            <span class="plan-tag">El más elegido</span><h3>Acelerado</h3><div class="price" data-plan-price>355 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>16 horas al mes · 4 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
             <ul><li>Compatible con trabajo a tiempo completo</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-coral" href="calculador.html" data-cta="plan-accelerated">Evaluar este ritmo</a>
           </article>
-          <article class="plan-card" data-plan data-month-price="505" data-month-hours="24 horas al mes · 6 h*/semana" data-cycle-price="1.717" data-cycle-original="2.020" data-cycle-saving="303" data-cycle-duration="4 meses" data-cycle-hours="5–6 h*/semana" data-cycle-equivalent="429,25" data-cycle-reference="6 h/semana">
-            <span class="plan-tag">Menos de 12 meses</span><h3>Intensivo</h3><div class="price" data-plan-price>505 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>24 horas al mes · 6 h/semana</p>
+          <article class="plan-card" data-plan data-month-price="530" data-month-hours="24 horas al mes · 6 h*/semana" data-cycle-price="1.802" data-cycle-original="2.120" data-cycle-saving="318" data-cycle-duration="4 meses" data-cycle-hours="5–6 h*/semana" data-cycle-equivalent="450,50" data-cycle-reference="6 h/semana">
+            <span class="plan-tag">Menos de 12 meses</span><h3>Intensivo</h3><div class="price" data-plan-price>530 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>24 horas al mes · 6 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
             <ul><li>Ritmo de avance prioritario</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-outline" href="calculador.html" data-cta="plan-intensive">Evaluar este ritmo</a>
           </article>
         </div>
+        <p class="plans-cycle-note">* Un ciclo corresponde al trabajo previsto para dominar un nivel del CECRL (A1, A2, B1, B2…), según el nivel de partida acreditado y el ritmo elegido.</p>
 
         <aside class="commitment reveal" data-reveal>
           <div class="commitment-mark">NCLC<br><strong>7</strong></div>
@@ -469,6 +471,6 @@
   <script src="crs-engine.js"></script>
   <script src="ircc-data.js"></script>
   <script src="analytics.js"></script>
-  <script src="pathway-v2.js"></script>
+  <script src="pathway-v2.js?v=20260815-quickfixes"></script>
 </body>
 </html>

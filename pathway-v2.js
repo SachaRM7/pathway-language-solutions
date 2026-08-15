@@ -33,7 +33,7 @@ document.documentElement.classList.add('js');
     if (pricingChoice) pricingChoice.hidden = false;
     if (hoursReference) hoursReference.hidden = false;
     if (pricingReference) pricingReference.hidden = false;
-    if (pricingFaq) pricingFaq.textContent = 'Sí. Puedes inscribirte mes a mes, sin permanencia, o elegir un ciclo completo con 15 % de descuento.';
+    if (pricingFaq) pricingFaq.textContent = 'Sí. Puedes inscribirte mes a mes, sin permanencia, o elegir un ciclo completo con 15 % de descuento. Si pasas al ciclo después de un primer mes, el descuento del ciclo es del 10 %.';
     if (examLevel) {
       examLevel.dataset.title = 'Tu objetivo es el TEF o el TCF';
       examLevel.textContent = 'Preparo el TEF o el TCF';
@@ -235,11 +235,42 @@ document.documentElement.classList.add('js');
 
   document.querySelectorAll('[data-story-carousel]').forEach(buildStoryCarousel);
 
-  /* Ajouter les huit fichiers réels ici dès leur réception. */
-  const testimonialVideos = [];
+  const testimonialVideos = [
+    {
+      src: 'assets/videos/testimonio-21.mp4',
+      poster: 'assets/videos/testimonio-21-poster.jpg?v=20260814-2',
+      name: 'Testimonio 1'
+    },
+    {
+      src: 'assets/videos/testimonio-22.mp4',
+      poster: 'assets/videos/testimonio-22-poster.jpg?v=20260814-2',
+      name: 'Testimonio 2'
+    },
+    {
+      src: 'assets/videos/testimonio-23.mp4',
+      poster: 'assets/videos/testimonio-23-poster.jpg?v=20260814-2',
+      name: 'Testimonio 3'
+    },
+    {
+      src: 'assets/videos/testimonio-majo.mp4',
+      poster: 'assets/videos/testimonio-majo-poster.jpg?v=20260814',
+      name: 'Majo'
+    },
+    {
+      src: 'assets/videos/testimonio-meli.mp4',
+      poster: 'assets/videos/testimonio-meli-poster.jpg?v=20260814',
+      name: 'Méli'
+    },
+    {
+      src: 'assets/videos/testimonio-20.mp4',
+      poster: 'assets/videos/testimonio-20-poster.jpg?v=20260814-2',
+      name: 'Testimonio 6'
+    }
+  ];
   const videoCarousel = document.querySelector('[data-video-carousel]');
   if (videoCarousel && testimonialVideos.length) {
     const video = videoCarousel.querySelector('[data-testimonial-video]');
+    const videoStage = videoCarousel.querySelector('.video-stage');
     const poster = videoCarousel.querySelector('.video-stage > img');
     const placeholder = videoCarousel.querySelector('.video-placeholder');
     const previous = videoCarousel.querySelector('[data-video-previous]');
@@ -252,9 +283,14 @@ document.documentElement.classList.add('js');
     const showVideo = index => {
       current = (index + testimonialVideos.length) % testimonialVideos.length;
       const item = testimonialVideos[current];
+      video.pause();
+      videoStage.classList.remove('is-playing');
       video.src = item.src;
       video.poster = item.poster || '';
+      video.setAttribute('aria-label', `Testimonio en video: ${item.name}`);
+      video.muted = true;
       video.load();
+      video.play().catch(() => {});
       count.textContent = `${current + 1} / ${testimonialVideos.length}`;
       name.textContent = item.name;
       [...dots.children].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === current)));
@@ -263,8 +299,9 @@ document.documentElement.classList.add('js');
     poster.hidden = true;
     placeholder.hidden = true;
     video.hidden = false;
-    previous.hidden = false;
-    next.hidden = false;
+    videoCarousel.classList.add('has-videos');
+    previous.hidden = testimonialVideos.length < 2;
+    next.hidden = testimonialVideos.length < 2;
     testimonialVideos.forEach((item, index) => {
       const dot = document.createElement('button');
       dot.type = 'button';
@@ -275,6 +312,8 @@ document.documentElement.classList.add('js');
     });
     previous.addEventListener('click', () => showVideo(current - 1));
     next.addEventListener('click', () => showVideo(current + 1));
+    video.addEventListener('play', () => videoStage.classList.add('is-playing'));
+    video.addEventListener('loadeddata', () => video.play().catch(() => {}));
     video.addEventListener('ended', () => {
       showVideo(current + 1);
       video.play().catch(() => {});
