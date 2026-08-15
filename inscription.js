@@ -9,9 +9,8 @@
   document.querySelector('[data-summary-level]').textContent = resultLevel;
   const levelOrder = ['A1', 'A2', 'B1', 'B2'];
   const planTimelines = {
-    Esencial: { A1: 18, A2: 12, B1: 6, B2: 3 },
-    Acelerado: { A1: 12, A2: 8, B1: 4, B2: 2 },
-    Intensivo: { A1: 8, A2: 6, B1: 3, B2: 2 }
+    Acelerado: { A1: 8, A2: 6, B1: 4, B2: 2 },
+    Intensivo: { A1: 6, A2: 4, B1: 3, B2: 2 }
   };
   const effectiveLevel = levelOrder.includes(storedResult?.level) ? storedResult.level : 'A1';
   if (isUrgentScenario) {

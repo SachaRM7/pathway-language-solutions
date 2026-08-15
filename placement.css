@@ -130,8 +130,10 @@ h1, h2, h3 { font-family: var(--display); }
 .skill-score { padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--cream); }
 .skill-score span { display: block; color: var(--ink-soft); font-size: .67rem; }
 .skill-score strong { display: block; margin-top: .3rem; font-family: var(--display); font-size: 1.8rem; }
-.skill-score.is-pending { border-color: var(--apple-strong); background: rgba(200,214,155,.27); }
-.skill-score.is-pending strong { font-size: 1.15rem; }
+.skill-score strong small { margin-left: .12rem; color: var(--ink-soft); font: 600 .68rem var(--body); }
+.skill-meter { height: 6px; margin-top: .7rem; overflow: hidden; border-radius: 999px; background: rgba(18,43,38,.12); }
+.skill-meter i { display: block; width: var(--skill-score); height: 100%; border-radius: inherit; background: var(--coral); }
+.skill-score em { display: block; margin-top: .45rem; color: var(--ink-soft); font-size: .61rem; font-style: normal; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .result-note { margin: 1.5rem 0; padding: 1rem; border-radius: 13px; background: var(--sage); color: var(--ink-soft); font-size: .78rem; line-height: 1.55; }
 .result-actions { display: flex; flex-wrap: wrap; gap: .8rem; }
 
@@ -157,6 +159,12 @@ h1, h2, h3 { font-family: var(--display); }
 .choice span small { color: var(--ink-soft); line-height: 1.4; }
 .choice input:checked + span { border: 2px solid var(--ink); background: var(--apple); }
 .choice input:focus-visible + span { outline: 3px solid rgba(199,111,86,.35); outline-offset: 2px; }
+.offer-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.offer-choice span { min-height: 210px; gap: .45rem; align-content: start; }
+.offer-choice span > b { width: fit-content; padding: .35rem .5rem; border-radius: 999px; background: var(--ink); color: var(--white); font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; }
+.offer-choice span > strong { margin-top: .45rem; font-size: 1.55rem; }
+.offer-choice span > em { margin-top: auto; padding-top: .8rem; border-top: 1px solid rgba(18,43,38,.16); display: grid; gap: .2rem; font-style: normal; }
+.offer-choice span > em i { color: var(--ink); font-size: .76rem; font-style: normal; font-weight: 700; }
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 .field { display: grid; gap: .42rem; }
 .field > span { font-size: .71rem; font-weight: 700; }

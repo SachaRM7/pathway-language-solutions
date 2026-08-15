@@ -18,14 +18,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="pathway-v2.css?v=20260815-quickfixes">
+  <link rel="stylesheet" href="pathway-v2.css?v=20260815-complete">
   <script src="site-config.js"></script>
   <script>
-    if (location.hostname === 'pathway-languages.com' || location.hostname === 'www.pathway-languages.com' || location.pathname.endsWith('/couleurs') || location.pathname.endsWith('/couleurs.html') || new URLSearchParams(location.search).get('palette') === 'pathway') {
-      document.documentElement.classList.add('brand-palette');
-      document.querySelector('meta[name="theme-color"]').content = '#f5efe4';
-      document.title = 'Pathway — Version premium accessible';
-    }
+    document.documentElement.classList.add('brand-palette');
+    document.querySelector('meta[name="theme-color"]').content = '#f5efe4';
   </script>
 </head>
 <body>
@@ -120,6 +117,29 @@
           <article class="route-stop" data-stop="2"><h3>Planificar</h3><p>Construimos tu calendario desde la fecha del examen hacia atrás.</p></article>
           <article class="route-stop" data-stop="3"><h3>Practicar</h3><p>Trabajas en clases privadas y continúas entre sesiones con tareas específicas.</p></article>
           <article class="route-stop" data-stop="4"><h3>Demostrar</h3><p data-exam-route>Dos simulacros verifican si las cuatro competencias están listas para el TEF.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTEXTO CRS — el escenario aparece justo después del método. -->
+    <section class="section context-section" id="contexto">
+      <div class="container context-grid reveal" data-reveal>
+        <div class="context-copy">
+          <span class="step-label">El contexto actual</span>
+          <h2>El francés puede abrir una vía distinta, no solo sumar puntos.</h2>
+          <p>En Express Entry, el dominio del francés puede dar puntos adicionales y permitir la selección en rondas por categoría francófona. Los cortes cambian de una ronda a otra: por eso mostramos datos fechados y un escenario personal, nunca una promesa migratoria.</p>
+          <details class="context-details">
+            <summary>¿Cómo leer estos números?</summary>
+            <p>Comparamos la última ronda de Experiencia Canadiense y la última ronda basada en dominio del francés disponibles en los datos de IRCC. Son contextos de selección diferentes y no garantizan una invitación futura.</p>
+          </details>
+        </div>
+        <div class="score-panel" aria-label="Comparación de los últimos cortes cargados">
+          <p>Últimos datos IRCC disponibles</p>
+          <div class="score-row"><span>Experiencia canadiense<small data-ircc-cec-date>21 JUL 2026</small></span><strong data-ircc-cec-score>516</strong></div>
+          <div class="score-row score-row-accent"><span>Dominio del francés<small data-ircc-french-date>22 JUL 2026</small></span><strong data-ircc-french-score>399</strong></div>
+          <p class="score-difference"><b data-ircc-difference>117</b> puntos de diferencia entre estas dos rondas.</p>
+          <a class="button button-light" href="calculador.html" data-cta="context-calculator">Construir mi escenario CRS <span aria-hidden="true">→</span></a>
+          <small>Herramienta educativa basada en datos públicos. No constituye asesoría migratoria.</small>
         </div>
       </div>
     </section>
@@ -307,29 +327,6 @@
       </div>
     </section>
 
-    <!-- CONTEXTE CRS — secondaire et repliable. -->
-    <section class="section context-section" id="contexto">
-      <div class="container context-grid reveal" data-reveal>
-        <div class="context-copy">
-          <span class="step-label">El contexto que conocemos</span>
-          <h2>El francés no solo suma puntos. Puede cambiar la fila.</h2>
-          <p>Pathway entiende por qué este objetivo importa a muchos de sus alumnos en Canadá. Nuestro trabajo sigue siendo lingüístico: enseñarte el francés y prepararte para demostrarlo.</p>
-          <details class="context-details">
-            <summary>¿Qué significan estos números?</summary>
-            <p>Son los últimos puntajes disponibles en los datos cargados desde IRCC para una ronda CEC y una ronda basada en dominio del francés. Cada ronda cambia y estos datos no garantizan una invitación.</p>
-          </details>
-        </div>
-        <div class="score-panel" aria-label="Comparación de los últimos cortes cargados">
-          <p>Últimos datos IRCC disponibles</p>
-          <div class="score-row"><span>Experiencia canadiense<small data-ircc-cec-date>21 JUL 2026</small></span><strong data-ircc-cec-score>516</strong></div>
-          <div class="score-row score-row-accent"><span>Dominio del francés<small data-ircc-french-date>22 JUL 2026</small></span><strong data-ircc-french-score>399</strong></div>
-          <p class="score-difference"><b data-ircc-difference>117</b> puntos de diferencia entre estas dos rondas.</p>
-          <a class="button button-light" href="calculador.html" data-cta="context-calculator">Explorar mi escenario CRS <span aria-hidden="true">→</span></a>
-          <small>Herramienta informativa. No constituye asesoría migratoria.</small>
-        </div>
-      </div>
-    </section>
-
     <!-- TARIFS — modifier ici les prix et contenus inclus. -->
     <section class="section plans-section" id="planes">
       <div class="container">
@@ -374,8 +371,14 @@
         <p class="plans-cycle-note">* Un ciclo corresponde al trabajo previsto para dominar un nivel del CECRL (A1, A2, B1, B2…), según el nivel de partida acreditado y el ritmo elegido.</p>
 
         <aside class="commitment reveal" data-reveal>
-          <div class="commitment-mark">NCLC<br><strong>7</strong></div>
-          <div><span>Nuestro compromiso NCLC 7</span><h3>Seguimos contigo hasta alcanzar el nivel.</h3><p>Si completas el programa y no alcanzas NCLC 7, continuamos sin costo hasta que lo logres, bajo condiciones transparentes de asistencia, tareas, simulacros y fecha de examen.</p><a href="condiciones.html">Consultar las condiciones completas →</a></div>
+          <div class="commitment-mark"><span>Objetivo lingüístico</span><strong>NCLC 7</strong><small>en 4 competencias</small></div>
+          <div class="commitment-copy">
+            <span>La promesa Pathway</span>
+            <h3>El recorrido termina con un nivel demostrado, no con un calendario agotado.</h3>
+            <p>Si completas el programa acordado y el examen oficial no confirma NCLC 7, continuamos la preparación lingüística sin nuevas mensualidades, bajo las condiciones documentadas antes de la inscripción.</p>
+            <ul><li>Nivel inicial acreditado</li><li>Ciclo y duración acordados</li><li>Asistencia, tareas y simulacros completados</li></ul>
+            <a href="condiciones.html">Leer las condiciones del compromiso <span aria-hidden="true">→</span></a>
+          </div>
         </aside>
       </div>
     </section>
@@ -471,6 +474,6 @@
   <script src="crs-engine.js"></script>
   <script src="ircc-data.js"></script>
   <script src="analytics.js"></script>
-  <script src="pathway-v2.js?v=20260815-quickfixes"></script>
+  <script src="pathway-v2.js?v=20260815-complete"></script>
 </body>
 </html>

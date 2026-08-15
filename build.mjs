@@ -48,6 +48,7 @@ for (const asset of assets) {
 }
 // Deux URL partageables, une seule source HTML : la seconde active la palette Pathway humanisée.
 await cp(resolve(root, 'index-v2.html'), resolve(client, 'couleurs.html'));
+await cp(resolve(root, 'index-v2.html'), resolve(client, 'index-v2.html'));
 await cp(resolve(root, 'assets'), resolve(client, 'assets'), { recursive: true });
 await cp(resolve(root, '.openai', 'hosting.json'), resolve(metadata, 'hosting.json'));
 await writeFile(resolve(server, 'index.js'), `export default {
@@ -57,4 +58,4 @@ await writeFile(resolve(server, 'index.js'), `export default {
 };
 `, 'utf8');
 
-console.log(`Built ${assets.length} static assets for Pathway.`);
+console.log(`Built ${assets.length + 2} static assets for Pathway.`);

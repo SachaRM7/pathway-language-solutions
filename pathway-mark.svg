@@ -1,11 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">Phare Pathway</title>
+  <desc id="desc">Un phare vert guide un chemin corail sous un arc doré.</desc>
   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M7 48c8-4 16-6 25-6s17 2 25 6" stroke="#D4AF37" stroke-width="2"/>
-    <path d="M12 28a22 22 0 0 1 8-13M52 28a22 22 0 0 0-8-13" stroke="#D4AF37" stroke-width="2"/>
-    <path d="M25 42h14l-2.8-25h-8.4z" fill="#F2F2F2" stroke="#122B26" stroke-width="1.5"/>
-    <path d="M27 17h10M26 13h12M29 9h6l2 4H27z" fill="#D4AF37" stroke="#122B26" stroke-width="1.5"/>
-    <path d="M30 24h4v6h-4zM30 35h4v7h-4z" fill="#122B26" stroke="#122B26" stroke-width="1"/>
-    <path d="M32 5v4" stroke="#D4AF37" stroke-width="2"/>
+    <path d="M8 49c7.5-4.2 15.5-6.3 24-6.3S48.5 44.8 56 49" stroke="#FB8669" stroke-width="2.4"/>
+    <path d="M12 29.5C13.9 18.2 21.7 10 32 10s18.1 8.2 20 19.5" stroke="#D4AF37" stroke-width="2"/>
+    <path d="M23.8 43h16.4l-3-26.5H26.8z" fill="#EDF3DF" stroke="#103A35" stroke-width="1.8"/>
+    <path d="M27 16.5h10M25.8 12.5h12.4L35.5 8h-7z" fill="#FB8669" stroke="#103A35" stroke-width="1.6"/>
+    <path d="M29.5 23h5v6.5h-5zM29.5 35h5v8h-5z" fill="#103A35" stroke="#103A35" stroke-width="1"/>
+    <path d="M32 4.5V8M20.5 9.5l3.1 3M43.5 9.5l-3.1 3" stroke="#D4AF37" stroke-width="2"/>
+    <circle cx="32" cy="8" r="1.8" fill="#D4AF37" stroke="none"/>
   </g>
 </svg>

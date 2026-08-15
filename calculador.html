@@ -10,7 +10,7 @@
   <meta property="og:title" content="Calculadora CRS con francés | Pathway"><meta property="og:description" content="Calcula tu puntaje y compáralo con las últimas rondas publicadas por IRCC."><meta property="og:type" content="website"><meta property="og:url" content="https://sacharm7.github.io/pathway-language-solutions/calculador.html"><meta property="og:image" content="https://sacharm7.github.io/pathway-language-solutions/og-pathway.png"><meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
   <script src="site-config.js"></script>
   <script src="theme.js"></script>
@@ -20,6 +20,21 @@
     .button:disabled{cursor:wait;opacity:.56;transform:none;box-shadow:none}
     @media(max-width:900px){.calculator-shell{grid-template-columns:1fr}.result-panel{position:relative;top:auto}.result-empty{min-height:300px}}
     @media(max-width:680px){body{font-size:15px}.wrap{width:min(100% - 28px,1180px)}.nav{height:62px}.brand{grid-template-columns:34px auto;font-size:.94rem}.brand:before{width:34px;height:34px}.brand small{font-size:.5rem}.back{font-size:.72rem}.main{padding:36px 0 70px}.intro{grid-template-columns:1fr;gap:10px;margin-bottom:30px}.question-section{padding:26px 20px}.question-head{grid-template-columns:34px 1fr}.fields,form.capture{grid-template-columns:1fr}.field.wide,.capture .wide,.capture .button,.capture .privacy,.capture .status{grid-column:1}.language-grid{grid-template-columns:1fr 1fr}.calculate-bar{padding:20px}.calculator-form{box-shadow:8px 8px 0 #e6e2d4}.result-panel{padding:25px 21px}.lead-grid{grid-template-columns:1fr;gap:28px}}
+  </style>
+  <style>
+    :root{--ink:#103a35;--forest:#103a35;--slate:#61746e;--paper:#fbf5e8;--mist:#edf2ea;--line:#cad3c9;--gold:#fb8669;--gold-dark:#b6533d;--white:#fff;--serif:"Outfit",sans-serif;--sans:"DM Sans",sans-serif}
+    body{background:linear-gradient(180deg,#fbf5e8 0,#f5f7ef 48%,#fbf5e8 100%);font-family:var(--sans)}
+    .nav{height:76px;background:rgba(251,245,232,.9);border-color:rgba(16,58,53,.14)}
+    .brand{font-family:"Outfit",sans-serif;text-transform:none;letter-spacing:-.025em}.brand small{font-family:var(--sans);letter-spacing:.17em;text-transform:uppercase;color:#6d817a}
+    .back{padding:.65rem .85rem;border:1px solid rgba(16,58,53,.2);border-radius:12px;text-decoration:none}
+    .main{padding-top:72px}.intro{margin-bottom:34px;align-items:center}.intro h1{max-width:760px;font-family:"Outfit",sans-serif;font-size:clamp(3.4rem,7vw,6.8rem);line-height:.84;letter-spacing:-.065em}.intro>div:last-child{padding:1.25rem 0 1.25rem 1.4rem;border-left:2px solid var(--gold)}
+    .eyebrow,.section-index{color:var(--gold-dark);font-family:var(--sans)}.data-status:before{background:#b5c66c}
+    .scenario-strip{margin:0 0 2rem;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;overflow:hidden;border:1px solid rgba(16,58,53,.14);border-radius:18px;background:rgba(16,58,53,.14);list-style:none}.scenario-strip li{padding:1rem 1.15rem;display:grid;grid-template-columns:auto 1fr;gap:.1rem .7rem;background:rgba(255,255,255,.6)}.scenario-strip span{grid-row:1/3;align-self:center;color:var(--gold-dark);font-size:.65rem;font-weight:700}.scenario-strip strong{font-family:"Outfit",sans-serif;font-size:.96rem}.scenario-strip small{color:var(--slate);font-size:.68rem}
+    .calculator-shell{grid-template-columns:minmax(0,1.18fr) minmax(340px,.82fr);gap:1rem}.calculator-form{overflow:hidden;border:1px solid rgba(16,58,53,.16);border-radius:28px;background:rgba(255,255,255,.74);box-shadow:none}.question-section{padding:clamp(1.5rem,3.5vw,2.7rem);border-color:rgba(16,58,53,.12)}.question-head{grid-template-columns:48px 1fr;margin-bottom:1.6rem}.question-head .section-index{width:42px;height:42px;padding:0;display:grid;place-items:center;border:1px solid rgba(16,58,53,.2);border-radius:50%;font-size:.62rem}.question-head h3{font-family:"Outfit",sans-serif;font-size:clamp(1.55rem,2.5vw,2.25rem);letter-spacing:-.035em}.question-head p{line-height:1.55}
+    .field label,.field legend{font-size:.82rem}.field label small{display:block;margin-top:.12rem;color:var(--gold-dark);font-size:.61rem;font-weight:700;letter-spacing:.04em}.field select,.field input{min-height:48px;padding:.78rem .85rem;border:1px solid #b7c4ba;border-radius:12px;background:#fffdf8;font-family:var(--sans)}.field select:focus,.field input:focus{border-color:var(--gold);outline:3px solid rgba(251,134,105,.16)}.choice label{padding:.85rem;border-radius:12px;background:#fffdf8}.choice input:checked+label{border-color:var(--forest);box-shadow:inset 4px 0 0 var(--gold);background:#edf3df}.hint{line-height:1.5}.calculate-bar{padding:1rem clamp(1.5rem,3.5vw,2.7rem) 2.7rem}.button{min-height:50px;border:0;border-radius:14px;background:var(--forest);color:#fff;font-family:var(--sans)}.button:hover{background:#174c45;color:#fff}
+    .result-panel{top:92px;min-height:560px;padding:clamp(1.6rem,3vw,2.4rem);overflow:hidden;border-radius:28px;background:radial-gradient(circle at 100% 0,rgba(251,134,105,.22),transparent 19rem),linear-gradient(150deg,#103a35,#092b27);box-shadow:0 24px 60px rgba(16,58,53,.18)}.result-panel:before{content:"SCENARIO / CRS";display:block;margin-bottom:2rem;color:#91aaa1;font-size:.58rem;font-weight:700;letter-spacing:.14em}.result-empty .question-mark{color:#fb8669;font-family:"Outfit",sans-serif}.result-empty h2{font-family:"Outfit",sans-serif;font-size:2.6rem;line-height:.95}.total-label{color:#a9be74}.total-score{font-family:"Outfit",sans-serif;color:#fb8669}.breakdown{border-color:rgba(255,255,255,.22)}.break-row{border-color:rgba(255,255,255,.14)}.comparison{border:0;border-radius:14px;background:#edf3df;color:#103a35}.lead{border-color:rgba(16,58,53,.16)}.lead h2{font-family:"Outfit",sans-serif;font-size:clamp(2.7rem,5vw,5.3rem);line-height:.9;letter-spacing:-.055em}.capture{padding:1.3rem;border:1px solid rgba(16,58,53,.15);border-radius:22px;background:rgba(255,255,255,.58)}
+    @media(max-width:900px){.calculator-shell{grid-template-columns:1fr}.result-panel{position:relative;top:auto}.scenario-strip{grid-template-columns:1fr}.scenario-strip li{grid-template-columns:34px 1fr}}
+    @media(max-width:680px){.main{padding-top:44px}.intro h1{font-size:clamp(3rem,15vw,4.9rem)}.intro>div:last-child{padding-left:1rem}.scenario-strip{border-radius:14px}.calculator-form,.result-panel{border-radius:20px}.question-head{grid-template-columns:40px 1fr}.language-grid{grid-template-columns:1fr 1fr}}
   </style>
   <link rel="stylesheet" href="theme.css">
 </head>
@@ -43,6 +58,12 @@
           <span class="data-status" id="data-status">Conectando con los datos de IRCC…</span>
         </div>
       </div>
+
+      <ol class="scenario-strip" aria-label="Etapas del escenario CRS">
+        <li><span>01</span><strong>Tu perfil</strong><small>Edad, estudios y experiencia</small></li>
+        <li><span>02</span><strong>Tus idiomas</strong><small>CLB / NCLC en 4 competencias</small></li>
+        <li><span>03</span><strong>Tu escenario</strong><small>Total, cortes y aporte del francés</small></li>
+      </ol>
 
       <div class="calculator-shell">
         <form class="calculator-form" id="crs-form">
@@ -73,17 +94,17 @@
               <div class="field wide"><label for="language-results-valid">¿Tus resultados lingüísticos tienen menos de dos años?</label><select id="language-results-valid" required><option value="yes">Sí</option><option value="no">No tengo resultados válidos</option></select><span class="hint" id="language-validity-hint">Express Entry exige resultados válidos de un examen aceptado por IRCC.</span></div>
               <div class="field wide"><label for="first-language-name">Primera lengua oficial declarada</label><select id="first-language-name" name="first_language_name" required><option value="en">Inglés (CLB)</option><option value="fr">Francés (NCLC)</option></select></div>
               <div class="field wide"><label>Resultados de la primera lengua</label><div class="language-grid">
-                <div><label for="first-speaking">Expresión oral</label><select class="level-select" id="first-speaking" data-group="first" required></select></div>
-                <div><label for="first-listening">Comprensión oral</label><select class="level-select" id="first-listening" data-group="first" required></select></div>
-                <div><label for="first-reading">Comprensión escrita</label><select class="level-select" id="first-reading" data-group="first" required></select></div>
-                <div><label for="first-writing">Expresión escrita</label><select class="level-select" id="first-writing" data-group="first" required></select></div>
+                 <div><label for="first-speaking">Expresión oral <small>Speaking</small></label><select class="level-select" id="first-speaking" data-group="first" required></select></div>
+                 <div><label for="first-listening">Comprensión oral <small>Listening</small></label><select class="level-select" id="first-listening" data-group="first" required></select></div>
+                 <div><label for="first-reading">Comprensión escrita <small>Reading</small></label><select class="level-select" id="first-reading" data-group="first" required></select></div>
+                 <div><label for="first-writing">Expresión escrita <small>Writing</small></label><select class="level-select" id="first-writing" data-group="first" required></select></div>
               </div></div>
               <div class="field wide"><label for="second-language-present">¿Tienes resultados válidos en la otra lengua oficial?</label><select id="second-language-present" name="second_language_present" required><option value="no">No</option><option value="yes">Sí</option></select></div>
               <div class="field wide conditional" id="second-language-fields" hidden><label>Resultados de la segunda lengua</label><div class="language-grid">
-                <div><label for="second-speaking">Expresión oral</label><select class="level-select" id="second-speaking" data-group="second"></select></div>
-                <div><label for="second-listening">Comprensión oral</label><select class="level-select" id="second-listening" data-group="second"></select></div>
-                <div><label for="second-reading">Comprensión escrita</label><select class="level-select" id="second-reading" data-group="second"></select></div>
-                <div><label for="second-writing">Expresión escrita</label><select class="level-select" id="second-writing" data-group="second"></select></div>
+                 <div><label for="second-speaking">Expresión oral <small>Speaking</small></label><select class="level-select" id="second-speaking" data-group="second"></select></div>
+                 <div><label for="second-listening">Comprensión oral <small>Listening</small></label><select class="level-select" id="second-listening" data-group="second"></select></div>
+                 <div><label for="second-reading">Comprensión escrita <small>Reading</small></label><select class="level-select" id="second-reading" data-group="second"></select></div>
+                 <div><label for="second-writing">Expresión escrita <small>Writing</small></label><select class="level-select" id="second-writing" data-group="second"></select></div>
               </div></div>
             </div>
           </section>
@@ -113,10 +134,10 @@
               </select></div>
               <div class="field"><label for="spouse-work">Experiencia canadiense del cónyuge</label><select id="spouse-work"><option value="0">Menos de 1 año</option><option value="1">1 año</option><option value="2">2 años</option><option value="3">3 años</option><option value="4">4 años</option><option value="5">5 años o más</option></select></div>
               <div class="field wide"><label>Primera lengua oficial del cónyuge</label><div class="language-grid">
-                <div><label for="spouse-speaking">Expresión oral</label><select class="level-select" id="spouse-speaking" data-group="spouse"></select></div>
-                <div><label for="spouse-listening">Comprensión oral</label><select class="level-select" id="spouse-listening" data-group="spouse"></select></div>
-                <div><label for="spouse-reading">Comprensión escrita</label><select class="level-select" id="spouse-reading" data-group="spouse"></select></div>
-                <div><label for="spouse-writing">Expresión escrita</label><select class="level-select" id="spouse-writing" data-group="spouse"></select></div>
+                 <div><label for="spouse-speaking">Expresión oral <small>Speaking</small></label><select class="level-select" id="spouse-speaking" data-group="spouse"></select></div>
+                 <div><label for="spouse-listening">Comprensión oral <small>Listening</small></label><select class="level-select" id="spouse-listening" data-group="spouse"></select></div>
+                 <div><label for="spouse-reading">Comprensión escrita <small>Reading</small></label><select class="level-select" id="spouse-reading" data-group="spouse"></select></div>
+                 <div><label for="spouse-writing">Expresión escrita <small>Writing</small></label><select class="level-select" id="spouse-writing" data-group="spouse"></select></div>
               </div></div>
             </div>
           </section>
