@@ -248,7 +248,7 @@ button { font: inherit; }
 .experience-card h3 { max-width: 680px; margin: auto 0 .55rem; font-family: var(--font-display); font-size: clamp(1.55rem, 2.8vw, 2.9rem); font-weight: 600; line-height: .98; letter-spacing: -.04em; }
 .experience-card p { max-width: 520px; margin: 0; font-size: .82rem; line-height: 1.55; opacity: .72; }
 .experience-main { position: relative; isolation: isolate; overflow: hidden; grid-column: span 7; grid-row: span 2; background: var(--mint); }
-.experience-main::before { content: ""; position: absolute; z-index: -1; inset: 0 0 0 42%; background: url("assets/pathway-live-class-teacher.png") 55% center / cover no-repeat; opacity: .65; -webkit-mask-image: linear-gradient(90deg, transparent, #000 32%); mask-image: linear-gradient(90deg, transparent, #000 32%); }
+.experience-main::before { content: ""; position: absolute; z-index: -1; inset: 0 0 0 42%; background: url("assets/pathway-live-class-teacher.png?v=20260815-live-class-grid") 55% center / cover no-repeat; opacity: .65; -webkit-mask-image: linear-gradient(90deg, transparent, #000 32%); mask-image: linear-gradient(90deg, transparent, #000 32%); }
 .experience-main h3, .experience-main p { max-width: 62%; }
 .experience-coral { grid-column: span 5; background: var(--coral); }
 .experience-lime { grid-column: span 5; background: var(--lime); }
