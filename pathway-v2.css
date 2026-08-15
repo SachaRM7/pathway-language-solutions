@@ -284,7 +284,7 @@ button { font: inherit; }
 
 .stories-section { background: var(--paper); }
 .stories-source { display: inline-block; margin-top: .55rem; color: var(--ink); font-size: .72rem; font-weight: 700; text-underline-offset: .25rem; }
-.stories-grid { display: grid; grid-template-columns: clamp(290px, 24vw, 330px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.stories-grid { display: grid; grid-template-columns: clamp(290px, 24vw, 330px) minmax(380px, 452px); column-gap: clamp(3rem, 6vw, 5.5rem); align-items: start; justify-content: center; }
 .stories-grid > * { min-width: 0; }
 .written-stories { height: 588px; display: grid; grid-template-rows: 1fr 1fr; gap: 1rem; }
 .story-carousel { position: relative; min-height: 0; }
@@ -560,7 +560,7 @@ button { font: inherit; }
   .beacon-visual { min-height: 460px; }
   .brand-palette .beacon-directory { grid-template-columns: 1fr 1fr; }
   .beacon-brand-block { grid-column: 1/-1; }
-  .stories-grid { grid-template-columns: minmax(280px, 300px) minmax(0, 1fr); }
+  .stories-grid { grid-template-columns: minmax(270px, 300px) minmax(360px, 420px); column-gap: clamp(2rem, 4vw, 3rem); }
   .story-compact { padding-inline: 3rem; }
 }
 
