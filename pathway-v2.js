@@ -237,34 +237,34 @@ document.documentElement.classList.add('js');
 
   const testimonialVideos = [
     {
-      src: 'assets/videos/testimonio-21.mp4',
-      poster: 'assets/videos/testimonio-21-poster.jpg?v=20260814-2',
-      name: 'Testimonio 1'
-    },
-    {
-      src: 'assets/videos/testimonio-22.mp4',
-      poster: 'assets/videos/testimonio-22-poster.jpg?v=20260814-2',
-      name: 'Testimonio 2'
-    },
-    {
-      src: 'assets/videos/testimonio-23.mp4',
-      poster: 'assets/videos/testimonio-23-poster.jpg?v=20260814-2',
-      name: 'Testimonio 3'
-    },
-    {
       src: 'assets/videos/testimonio-majo.mp4',
       poster: 'assets/videos/testimonio-majo-poster.jpg?v=20260814',
       name: 'Majo'
     },
     {
+      src: 'assets/videos/testimonio-22.mp4',
+      poster: 'assets/videos/testimonio-22-poster.jpg?v=20260814-2',
+      name: 'Pia'
+    },
+    {
+      src: 'assets/videos/testimonio-21.mp4',
+      poster: 'assets/videos/testimonio-21-poster.jpg?v=20260814-2',
+      name: 'Jennifer'
+    },
+    {
+      src: 'assets/videos/testimonio-23.mp4',
+      poster: 'assets/videos/testimonio-23-poster.jpg?v=20260814-2',
+      name: 'Fabián'
+    },
+    {
       src: 'assets/videos/testimonio-meli.mp4',
       poster: 'assets/videos/testimonio-meli-poster.jpg?v=20260814',
-      name: 'Méli'
+      name: 'Melissa'
     },
     {
       src: 'assets/videos/testimonio-20.mp4',
       poster: 'assets/videos/testimonio-20-poster.jpg?v=20260814-2',
-      name: 'Testimonio 6'
+      name: 'Elisa'
     }
   ];
   const videoCarousel = document.querySelector('[data-video-carousel]');

@@ -12,6 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="placement.css?v=20260815-complete">
+  <link rel="canonical" href="https://pathway-languages.com/inscription.html">
+  <link rel="alternate" hreflang="es" href="https://pathway-languages.com/inscription.html">
+  <link rel="alternate" hreflang="fr" href="https://pathway-languages.com/fr/inscription.html">
+  <link rel="alternate" hreflang="en" href="https://pathway-languages.com/en/inscription.html">
+  <link rel="alternate" hreflang="de" href="https://pathway-languages.com/de/inscription.html">
   <script src="site-config.js"></script>
 </head>
 <body>
@@ -20,6 +25,7 @@
     <div class="flow-header-inner">
       <a class="flow-brand" href="index-v2.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
       <a class="flow-back" href="test-placement.html">← Volver al resultado</a>
+      <nav class="language-switcher" aria-label="Seleccionar idioma" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.7rem;font-weight:700"><a href="inscription.html" lang="es" hreflang="es" aria-current="page">ES</a><a href="fr/inscription.html" lang="fr" hreflang="fr">FR</a><a href="en/inscription.html" lang="en" hreflang="en">EN</a><a href="de/inscription.html" lang="de" hreflang="de">DE</a></nav>
     </div>
   </header>
 
@@ -45,9 +51,12 @@
         <fieldset class="form-section" data-rhythm-section>
           <legend>1. Elige el volumen semanal</legend>
           <p>Estas son las dos ofertas disponibles antes de la confirmación del horario. La duración exacta depende de tu nivel acreditado y de tu fecha objetivo.</p>
-          <div class="choice-grid offer-choice-grid">
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Acelerado" data-hours="3 h/semana" data-monthly="355 CAD/mes" data-cycle="1.508,75 CAD · ciclo de 5 meses" data-suggested-days="3" checked><span><b>3 h / semana</b><strong>Acelerado</strong><small data-plan-duration>aprox. 8 meses desde una base A1</small><em><i>355 CAD / mes</i><i>1.508,75 CAD / ciclo*</i></em></span></label>
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Intensivo" data-hours="5 h/semana" data-monthly="530 CAD/mes" data-cycle="1.802 CAD · ciclo de 4 meses" data-suggested-days="4"><span><b>5 h / semana</b><strong>Intensivo</strong><small data-plan-duration>aprox. 6 meses desde una base A1</small><em><i>530 CAD / mes</i><i>1.802 CAD / ciclo*</i></em></span></label>
+          <div class="choice-grid offer-choice-grid rhythm-grid">
+            <label class="choice offer-choice"><input type="radio" name="plan" value="Esencial" data-hours="2 h/semana" data-monthly="185 CAD/mes" data-cycle="943,50 CAD · ciclo de 6 meses" data-suggested-days="2" checked><span><b>2 h / semana</b><strong>Esencial</strong><small data-plan-duration>aprox. 12 meses desde una base A1</small><em><i>185 CAD / mes</i><i>943,50 CAD / ciclo*</i></em></span></label>
+            <label class="choice offer-choice"><input type="radio" name="plan" value="Acelerado 3h" data-hours="3 h/semana" data-monthly="355 CAD/mes" data-cycle="1.508,75 CAD · ciclo de 5 meses" data-suggested-days="3"><span><b>3 h / semana</b><strong>Ritmo estable</strong><small data-plan-duration>aprox. 8 meses desde una base A1</small><em><i>355 CAD / mes</i><i>1.508,75 CAD / ciclo*</i></em></span></label>
+            <label class="choice offer-choice"><input type="radio" name="plan" value="Acelerado" data-hours="4 h/semana" data-monthly="355 CAD/mes" data-cycle="1.508,75 CAD · ciclo de 5 meses" data-suggested-days="3"><span><b>4 h / semana</b><strong>Acelerado</strong><small data-plan-duration>aprox. 6 meses desde una base A1</small><em><i>355 CAD / mes</i><i>1.508,75 CAD / ciclo*</i></em></span></label>
+            <label class="choice offer-choice"><input type="radio" name="plan" value="Intensivo 5h" data-hours="5 h/semana" data-monthly="530 CAD/mes" data-cycle="1.802 CAD · ciclo de 4 meses" data-suggested-days="4"><span><b>5 h / semana</b><strong>Intensivo</strong><small data-plan-duration>aprox. 5 meses desde una base A1</small><em><i>530 CAD / mes</i><i>1.802 CAD / ciclo*</i></em></span></label>
+            <label class="choice offer-choice"><input type="radio" name="plan" value="Intensivo" data-hours="6 h/semana" data-monthly="530 CAD/mes" data-cycle="1.802 CAD · ciclo de 4 meses" data-suggested-days="4"><span><b>6 h / semana</b><strong>Prioridad</strong><small data-plan-duration>aprox. 4 meses desde una base A1</small><em><i>530 CAD / mes</i><i>1.802 CAD / ciclo*</i></em></span></label>
           </div>
         </fieldset>
 
@@ -58,7 +67,7 @@
             <label class="choice"><input type="radio" name="billing" value="Mensual" checked><span><strong>Mensual</strong><small>Mes a mes, sin permanencia</small></span></label>
             <label class="choice"><input type="radio" name="billing" value="Ciclo"><span><strong>Ciclo* −15 %</strong><small>Inscripción directa por el ciclo completo</small></span></label>
           </div>
-          <p class="billing-condition">* Un ciclo corresponde al dominio de un nivel CECRL. Si empiezas por un mes y luego pasas al ciclo, la reducción aplicada al ciclo es del 10 %.</p>
+          <p class="billing-condition">* Un ciclo corresponde al dominio de un nivel CECRL, como A1, A2, B1 o B2. Si empiezas por un mes y luego pasas al ciclo, la reducción aplicada al ciclo es del 10 %.</p>
         </fieldset>
 
         <fieldset class="form-section">
@@ -70,14 +79,15 @@
             <label class="field"><span>Fecha ideal de inicio</span><input type="date" name="startDate" required></label>
           </div>
           <p><strong>Días posibles</strong></p>
-          <div class="check-grid" data-day-options>
-            <label class="check-choice"><input type="checkbox" name="days" value="Lunes">Lunes</label>
-            <label class="check-choice"><input type="checkbox" name="days" value="Martes">Martes</label>
-            <label class="check-choice"><input type="checkbox" name="days" value="Miércoles">Miércoles</label>
-            <label class="check-choice"><input type="checkbox" name="days" value="Jueves">Jueves</label>
-            <label class="check-choice"><input type="checkbox" name="days" value="Viernes">Viernes</label>
-            <label class="check-choice"><input type="checkbox" name="days" value="Sábado">Sábado</label>
-            <label class="check-choice"><input type="checkbox" name="days" value="Domingo">Domingo</label>
+          <div class="check-grid day-grid" data-day-options>
+            <label class="check-choice" aria-label="Lunes"><input type="checkbox" name="days" value="Lunes"><span aria-hidden="true">L</span><span class="sr-only">Lunes</span></label>
+            <label class="check-choice" aria-label="Martes"><input type="checkbox" name="days" value="Martes"><span aria-hidden="true">M</span><span class="sr-only">Martes</span></label>
+            <label class="check-choice" aria-label="Miércoles"><input type="checkbox" name="days" value="Miércoles"><span aria-hidden="true">M</span><span class="sr-only">Miércoles</span></label>
+            <label class="check-choice" aria-label="Jueves"><input type="checkbox" name="days" value="Jueves"><span aria-hidden="true">J</span><span class="sr-only">Jueves</span></label>
+            <label class="check-choice" aria-label="Viernes"><input type="checkbox" name="days" value="Viernes"><span aria-hidden="true">V</span><span class="sr-only">Viernes</span></label>
+            <label class="check-choice" aria-label="Sábado"><input type="checkbox" name="days" value="Sábado"><span aria-hidden="true">S</span><span class="sr-only">Sábado</span></label>
+            <label class="check-choice" aria-label="Domingo"><input type="checkbox" name="days" value="Domingo"><span aria-hidden="true">D</span><span class="sr-only">Domingo</span></label>
+            <label class="check-choice any-day-choice" aria-label="Cualquier día"><input type="checkbox" name="days" value="Cualquier día"><span aria-hidden="true">Cualquier día</span></label>
           </div>
           <p><strong>Franjas posibles</strong></p>
           <div class="check-grid" data-time-options>
@@ -91,9 +101,10 @@
         <fieldset class="form-section">
           <legend data-contact-legend>4. Contacto para confirmar</legend>
           <div class="field-grid">
-            <label class="field"><span>Nombre</span><input type="text" name="name" autocomplete="name" required></label>
+            <label class="field"><span>Nombre completo</span><input type="text" name="name" autocomplete="name" required aria-describedby="error-name"></label>
             <label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" required></label>
             <label class="field"><span>WhatsApp</span><input type="tel" name="phone" autocomplete="tel" placeholder="+1…" required></label>
+            <label class="field field-wide"><span>Objetivo</span><textarea name="objective" autocomplete="off" required placeholder="Ej.: alcanzar NCLC 7 para mi proyecto de residencia"></textarea></label>
             <label class="field"><span>Fecha objetivo TEF / TCF</span><input type="date" name="examDate"></label>
           </div>
         </fieldset>
@@ -104,7 +115,7 @@
         <h2>Resumen antes de confirmar</h2>
         <dl class="summary-list">
           <div><dt>Nivel estimado</dt><dd data-summary-level>Por confirmar</dd></div>
-          <div><dt>Ritmo</dt><dd data-summary-plan>Acelerado · 3 h/semana</dd></div>
+          <div><dt>Ritmo</dt><dd data-summary-plan>Esencial · 2 h/semana</dd></div>
           <div><dt>Inscripción</dt><dd data-summary-billing>Mensual</dd></div>
           <div><dt>Precio de referencia</dt><dd data-summary-price>355 CAD/mes</dd></div>
           <div><dt>Disponibilidades</dt><dd data-summary-schedule>Por completar</dd></div>
@@ -116,7 +127,7 @@
     </div>
   </main>
 
-  <footer class="flow-footer">Pathway Language Solutions · Tu solicitud no reserva un horario hasta la confirmación escrita de Pathway.</footer>
+  <footer class="flow-footer">Pathway Language Solutions · Tu solicitud no reserva un horario hasta la confirmación escrita de Pathway. * Un ciclo corresponde al dominio de un nivel CECRL (A1, A2, B1 o B2); pago directo: 15 % de reducción. Si cambias después de un primer mes, la reducción es del 10 %.</footer>
   <script src="inscription.js?v=20260815-complete"></script>
 </body>
 </html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5efe4">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Test de placement de francés Pathway: cuatro competencias puntuadas sobre 100, de A1 a B2.">
+  <title>Test de placement de francés | Pathway</title>
+  <link rel="canonical" href="https://pathway-languages.com/test.html">
+  <link rel="alternate" hreflang="es" href="https://pathway-languages.com/test.html">
+  <link rel="alternate" hreflang="fr" href="https://pathway-languages.com/fr/test.html">
+  <link rel="alternate" hreflang="en" href="https://pathway-languages.com/en/test.html">
+  <link rel="alternate" hreflang="de" href="https://pathway-languages.com/de/test.html">
+  <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="test.css?v=20260815-complete">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="flow-header">
+    <div class="flow-header-inner">
+      <a class="flow-brand" href="index-v2.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
+      <a class="flow-back" href="index-v2.html">← Volver al programa</a>
+      <nav class="language-switcher" aria-label="Seleccionar idioma" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.7rem;font-weight:700"><a href="test.html" lang="es" hreflang="es" aria-current="page">ES</a><a href="fr/test.html" lang="fr" hreflang="fr">FR</a><a href="en/test.html" lang="en" hreflang="en">EN</a><a href="de/test.html" lang="de" hreflang="de">DE</a></nav>
+    </div>
+  </header>
+
+  <main class="test-shell" id="contenido">
+    <section class="intro-grid" data-test-intro>
+      <div class="intro-copy">
+        <span class="eyebrow">Test de placement · A1 a B2</span>
+        <h1>Descubre dónde <span>empieza tu ruta.</span></h1>
+        <p>Elige el nivel de precisión que necesitas. Las competencias autoevaluadas se muestran sobre 100; la expresión oral se confirma en una clase porque este test no graba tu voz.</p>
+      </div>
+      <aside class="intro-panel">
+        <strong>Antes de empezar</strong>
+        <ul class="intro-facts">
+          <li><b data-test-question-count>16</b><span>preguntas progresivas</span></li>
+          <li><b>3 + 1</b><span>competencias autoevaluadas + oral por confirmar</span></li>
+          <li><b data-test-duration>12–15 min</b><span>sin diccionario ni ayuda externa</span></li>
+        </ul>
+        <div class="test-mode-choice" role="group" aria-label="Elige tu test">
+          <button type="button" class="mode-choice" data-test-mode="express" aria-pressed="true"><strong>Test express</strong><span>16 preguntas · orientación conservadora</span></button>
+          <button type="button" class="mode-choice" data-test-mode="intensive" aria-pressed="false"><strong>Test intensif</strong><span>32 preguntas · estimación más precisa</span></button>
+        </div>
+        <p class="notice">Usa audífonos si puedes. La interfaz está en español y cada competencia incluye su nombre en inglés; las preguntas permanecen en francés porque forman parte de la evaluación.</p>
+        <button class="button button-coral" type="button" data-start-test>Empezar el test <span aria-hidden="true">→</span></button>
+      </aside>
+    </section>
+
+    <section class="test-stage" data-test-stage hidden aria-live="polite">
+      <div class="test-layout">
+        <aside class="test-aside">
+          <div class="test-progress-copy"><span>Tu avance</span><b data-progress-copy>1 / 32</b></div>
+          <div class="progress-track" aria-hidden="true"><span data-progress-bar></span></div>
+          <ol class="level-rail" aria-label="Niveles del test">
+            <li data-level-rail="A1">A1 · Découverte</li>
+            <li data-level-rail="A2">A2 · Élémentaire</li>
+            <li data-level-rail="B1">B1 · Indépendant</li>
+            <li data-level-rail="B2">B2 · Avancé</li>
+          </ol>
+        </aside>
+
+        <form class="test-card" data-test-form>
+          <div class="question-meta"><span data-question-level>A1</span><span data-question-skill>Compréhension écrite</span></div>
+          <h2 data-question-title></h2>
+          <div class="question-context" data-question-context hidden></div>
+          <div class="audio-box" data-audio-box hidden>
+            <strong>Compréhension orale · écoute l’extrait</strong>
+            <audio controls preload="metadata" data-question-audio></audio>
+            <span class="audio-listen-status" data-audio-listen-status aria-live="polite">Escuchas disponibles: 1/2</span>
+          </div>
+          <div class="answers" data-answers></div>
+          <div class="test-actions">
+            <button class="button button-ghost" type="button" data-previous disabled>Anterior</button>
+            <button class="button button-coral" type="submit" data-next disabled>Siguiente</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="calculation-card" data-calculation hidden aria-live="polite">
+      <div class="calculation-ring" data-calculation-ring style="--calculation-progress:0deg">
+        <strong data-calculation-value>0 %</strong>
+      </div>
+      <div class="calculation-copy">
+        <span class="eyebrow">Analyse en cours</span>
+        <h2>Estamos situando tu punto de partida.</h2>
+        <p>Cruzamos la progresión por niveles con los resultados de cada competencia. Las respuestas incorrectas reducen el puntaje para limitar el efecto del azar.</p>
+        <ol class="calculation-steps">
+          <li data-calculation-step="0">Comprensión escrita y oral</li>
+          <li data-calculation-step="1">Expresión escrita y oral</li>
+          <li data-calculation-step="2">Corrección del efecto del azar</li>
+          <li data-calculation-step="3">Estimación del nivel CECRL</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="result-card" data-result hidden aria-live="polite">
+      <div class="result-hero">
+        <div>
+          <span class="eyebrow">Estimación de nivel</span>
+          <h2 data-result-title>Tu punto de partida estimado.</h2>
+          <p data-result-copy></p>
+        </div>
+        <div class="result-level" data-result-level>A1</div>
+      </div>
+      <div class="result-body">
+        <div class="skill-bars" data-skill-scores></div>
+        <p class="result-note"><strong>Cómo leer el resultado:</strong> lectura, comprensión oral y gramática/vocabulario se puntúan sobre 100 cuando hay preguntas suficientes. Cada error resta un tercio del peso de la pregunta; las preguntas difíciles pesan más y cada competencia debe superar un suelo mínimo para avanzar. La expresión oral no se autoevalúa: se confirma en clase y no recibe una cifra inventada.</p>
+        <div class="result-actions">
+          <a class="button button-coral" href="inscription.html" data-enroll-link>Elegir oferta y horarios <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="flow-footer">Pathway Language Solutions · Este test orientativo no sustituye un examen oficial TEF, TCF, DELF o DALF.</footer>
+  <script src="placement-scoring.js?v=20260815-complete"></script>
+  <script src="test.js?v=20260815-complete"></script>
+</body>
+</html>

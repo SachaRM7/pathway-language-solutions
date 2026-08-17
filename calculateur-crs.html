@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
+  <meta name="description" content="Calcula tu puntaje CRS completo según la tabla oficial de IRCC y compáralo con las últimas rondas de Express Entry.">
+  <title>Calculadora CRS 2026 con francés | Pathway</title>
+  <link rel="canonical" href="https://pathway-languages.com/calculador.html">
+  <link rel="alternate" hreflang="es" href="https://pathway-languages.com/calculador.html">
+  <link rel="alternate" hreflang="fr" href="https://pathway-languages.com/fr/calculateur-crs.html">
+  <link rel="alternate" hreflang="en" href="https://pathway-languages.com/en/calculateur-crs.html">
+  <link rel="alternate" hreflang="de" href="https://pathway-languages.com/de/calculateur-crs.html">
+  <meta property="og:title" content="Calculadora CRS con francés | Pathway"><meta property="og:description" content="Calcula tu puntaje y compáralo con las últimas rondas publicadas por IRCC."><meta property="og:type" content="website"><meta property="og:url" content="https://pathway-languages.com/calculateur-crs.html"><meta property="og:image" content="https://pathway-languages.com/og-pathway.png"><meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="pathway-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="calculator.css">
+  <script src="calculator.js"></script>
+  <script src="site-config.js"></script>
+  <script src="theme.js"></script>
+  <style>
+    :root{--ink:#122b26;--forest:#1e3c35;--slate:#445b54;--paper:#f7f5ef;--mist:#eceee9;--line:#d6d7cf;--gold:#d4af37;--gold-dark:#987318;--white:#fff;--serif:"Playfair Display",Georgia,serif;--sans:"Montserrat",sans-serif}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 84% 6%,rgba(212,175,55,.08),transparent 25rem),var(--paper);color:var(--ink);font:16px/1.58 var(--sans)}a{color:inherit}.wrap{width:min(1180px,calc(100% - 36px));margin:auto}.nav{height:72px;border-bottom:1px solid rgba(18,43,38,.16);display:flex;align-items:center;background:rgba(247,245,239,.94);position:sticky;top:0;z-index:20;backdrop-filter:blur(10px)}.nav-inner{display:flex;justify-content:space-between;align-items:center}.brand{display:grid;grid-template-columns:42px auto;column-gap:10px;align-items:center;font:700 1.08rem/1 var(--serif);text-decoration:none;text-transform:uppercase;letter-spacing:.035em}.brand:before{content:"";grid-row:1/3;width:42px;height:42px;background:url("pathway-mark.svg") center/contain no-repeat}.brand small{grid-column:2;display:block;font:500 .58rem var(--sans);letter-spacing:.16em;color:var(--forest);margin-top:5px}.back{font-size:.82rem;font-weight:600;text-underline-offset:4px}.main{padding:56px 0 90px}.intro{display:grid;grid-template-columns:1fr .62fr;gap:7vw;align-items:end;margin-bottom:42px}.eyebrow,.section-index{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark)}h1,h2,h3{font-family:var(--serif);line-height:1.04;letter-spacing:-.025em;margin:0;text-wrap:balance}h1{font-size:clamp(2.7rem,6vw,5.35rem)}h2{font-size:clamp(2rem,4vw,3.35rem)}h3{font-size:1.5rem}.intro>p{color:var(--slate);max-width:520px}.data-status{display:inline-flex;gap:8px;align-items:center;margin-top:12px;font-size:.72rem;color:var(--slate)}.data-status:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}.calculator-shell{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:24px;align-items:start}.calculator-form{background:#fffefb;border:1px solid var(--ink);box-shadow:14px 14px 0 #e6e2d4}.question-section{padding:34px;border-bottom:1px solid var(--line)}.question-section:last-of-type{border-bottom:0}.question-head{display:grid;grid-template-columns:42px 1fr;gap:12px;margin-bottom:28px}.question-head .section-index{padding-top:5px}.question-head p{margin:7px 0 0;color:var(--slate);font-size:.86rem;max-width:650px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:20px}.field{min-width:0}.field.wide{grid-column:1/-1}.field label,.field legend{display:block;font-weight:600;margin-bottom:8px}.hint{display:block;margin-top:6px;color:var(--slate);font-size:.72rem}.field select,.field input{width:100%;border:1px solid #aeb8b1;background:#fff;color:var(--ink);padding:12px 13px;font:500 .93rem var(--sans);border-radius:0}.field select:focus,.field input:focus{border-color:var(--gold)}.language-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.language-grid label{font-size:.76rem}.conditional[hidden]{display:none}.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{position:relative}.choice input{position:absolute;opacity:0;width:1px;height:1px}.choice label{display:block;height:100%;padding:13px;border:1px solid var(--line);cursor:pointer;font-size:.85rem}.choice input:checked+label{border-color:var(--gold);box-shadow:inset 4px 0 0 var(--gold);background:#efeee7}.calculate-bar{padding:26px 34px 34px}.button{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--gold);background:var(--gold);color:var(--ink);padding:14px 19px;font:700 .91rem var(--sans);cursor:pointer;text-decoration:none;border-radius:0;transition:transform .2s ease,background .2s ease,box-shadow .2s ease}.button:hover{background:#e0bd4b;box-shadow:0 8px 20px rgba(18,43,38,.15);transform:translateY(-2px)}.button:active{transform:translateY(0) scale(.985)}.calculate-bar .button{width:100%}:focus-visible{outline:3px solid rgba(212,175,55,.6);outline-offset:3px}.result-panel{position:sticky;top:96px;background:radial-gradient(circle at 100% 0,rgba(212,175,55,.12),transparent 18rem),var(--ink);color:#fff;padding:30px;min-height:520px}.result-empty{min-height:455px;display:grid;align-content:center}.result-empty .question-mark{font:700 7.5rem/.8 var(--sans);color:#294b42}.result-empty p{color:#cbd4cf}.result-content[hidden],.result-empty[hidden]{display:none}.total-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}.total-score{font:700 clamp(5rem,10vw,8rem)/.88 var(--sans);letter-spacing:-.08em;color:var(--gold);margin:16px 0 25px}.breakdown{border-top:1px solid rgba(212,175,55,.35)}.break-row{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-bottom:1px solid rgba(212,175,55,.24);color:#d5ddd8;font-size:.84rem}.break-row strong{color:#fff;font-variant-numeric:tabular-nums}.comparison{margin-top:20px;padding:17px;background:#e4ebe6;color:var(--forest);border-left:4px solid var(--gold);font-size:.84rem}.comparison strong{font-size:1.05rem}.eligibility{margin:17px 0 0;color:#cbd4cf;font-size:.8rem}.eligibility strong{color:#fff}.result-source{font-size:.66rem;color:#aab9b2;margin-top:19px}.lead{display:none;margin-top:70px;padding-top:58px;border-top:1px solid var(--line)}.lead.active{display:block}.lead-grid{display:grid;grid-template-columns:.75fr 1.25fr;gap:7vw}.lead p{color:var(--slate)}form.capture{display:grid;grid-template-columns:1fr 1fr;gap:18px}.capture .field{margin:0}.capture .wide,.capture .button,.capture .privacy,.capture .status{grid-column:1/-1}.required{color:var(--gold-dark)}.privacy{font-size:.72rem;color:var(--slate);margin:0}.status{display:none;padding:12px;background:#f1e8d1;color:#624b10}.footer{background:#0b211d;color:#b4c0ba;padding:36px 0 60px;font-size:.72rem}.footer p{max-width:880px;margin:0}.footer a{color:#fff;text-underline-offset:3px}
+    .button:disabled{cursor:wait;opacity:.56;transform:none;box-shadow:none}
+    @media(max-width:900px){.calculator-shell{grid-template-columns:1fr}.result-panel{position:relative;top:auto}.result-empty{min-height:300px}}
+    @media(max-width:680px){body{font-size:15px}.wrap{width:min(100% - 28px,1180px)}.nav{height:62px}.brand{grid-template-columns:34px auto;font-size:.94rem}.brand:before{width:34px;height:34px}.brand small{font-size:.5rem}.back{font-size:.72rem}.main{padding:36px 0 70px}.intro{grid-template-columns:1fr;gap:10px;margin-bottom:30px}.question-section{padding:26px 20px}.question-head{grid-template-columns:34px 1fr}.fields,form.capture{grid-template-columns:1fr}.field.wide,.capture .wide,.capture .button,.capture .privacy,.capture .status{grid-column:1}.language-grid{grid-template-columns:1fr 1fr}.calculate-bar{padding:20px}.calculator-form{box-shadow:8px 8px 0 #e6e2d4}.result-panel{padding:25px 21px}.lead-grid{grid-template-columns:1fr;gap:28px}}
+  </style>
+  <style>
+    :root{--ink:#103a35;--forest:#103a35;--slate:#61746e;--paper:#fbf5e8;--mist:#edf2ea;--line:#cad3c9;--gold:#fb8669;--gold-dark:#b6533d;--white:#fff;--serif:"Outfit",sans-serif;--sans:"DM Sans",sans-serif}
+    body{background:linear-gradient(180deg,#fbf5e8 0,#f5f7ef 48%,#fbf5e8 100%);font-family:var(--sans)}
+    .nav{height:76px;background:rgba(251,245,232,.9);border-color:rgba(16,58,53,.14)}
+    .brand{font-family:"Outfit",sans-serif;text-transform:none;letter-spacing:-.025em}.brand small{font-family:var(--sans);letter-spacing:.17em;text-transform:uppercase;color:#6d817a}
+    .back{padding:.65rem .85rem;border:1px solid rgba(16,58,53,.2);border-radius:12px;text-decoration:none}
+    .main{padding-top:72px}.intro{margin-bottom:34px;align-items:center}.intro h1{max-width:760px;font-family:"Outfit",sans-serif;font-size:clamp(3.4rem,7vw,6.8rem);line-height:.84;letter-spacing:-.065em}.intro>div:last-child{padding:1.25rem 0 1.25rem 1.4rem;border-left:2px solid var(--gold)}
+    .eyebrow,.section-index{color:var(--gold-dark);font-family:var(--sans)}.data-status:before{background:#b5c66c}
+    .scenario-strip{margin:0 0 2rem;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;overflow:hidden;border:1px solid rgba(16,58,53,.14);border-radius:18px;background:rgba(16,58,53,.14);list-style:none}.scenario-strip li{padding:1rem 1.15rem;display:grid;grid-template-columns:auto 1fr;gap:.1rem .7rem;background:rgba(255,255,255,.6)}.scenario-strip span{grid-row:1/3;align-self:center;color:var(--gold-dark);font-size:.65rem;font-weight:700}.scenario-strip strong{font-family:"Outfit",sans-serif;font-size:.96rem}.scenario-strip small{color:var(--slate);font-size:.68rem}
+    .calculator-shell{grid-template-columns:minmax(0,1.18fr) minmax(340px,.82fr);gap:1rem}.calculator-form{overflow:hidden;border:1px solid rgba(16,58,53,.16);border-radius:28px;background:rgba(255,255,255,.74);box-shadow:none}.question-section{padding:clamp(1.5rem,3.5vw,2.7rem);border-color:rgba(16,58,53,.12)}.question-head{grid-template-columns:48px 1fr;margin-bottom:1.6rem}.question-head .section-index{width:42px;height:42px;padding:0;display:grid;place-items:center;border:1px solid rgba(16,58,53,.2);border-radius:50%;font-size:.62rem}.question-head h3{font-family:"Outfit",sans-serif;font-size:clamp(1.55rem,2.5vw,2.25rem);letter-spacing:-.035em}.question-head p{line-height:1.55}
+    .field label,.field legend{font-size:.82rem}.field label small{display:block;margin-top:.12rem;color:var(--gold-dark);font-size:.61rem;font-weight:700;letter-spacing:.04em}.field select,.field input{min-height:48px;padding:.78rem .85rem;border:1px solid #b7c4ba;border-radius:12px;background:#fffdf8;font-family:var(--sans)}.field select:focus,.field input:focus{border-color:var(--gold);outline:3px solid rgba(251,134,105,.16)}.choice label{padding:.85rem;border-radius:12px;background:#fffdf8}.choice input:checked+label{border-color:var(--forest);box-shadow:inset 4px 0 0 var(--gold);background:#edf3df}.hint{line-height:1.5}.calculate-bar{padding:1rem clamp(1.5rem,3.5vw,2.7rem) 2.7rem}.button{min-height:50px;border:0;border-radius:14px;background:var(--forest);color:#fff;font-family:var(--sans)}.button:hover{background:#174c45;color:#fff}
+    .result-panel{top:92px;min-height:560px;padding:clamp(1.6rem,3vw,2.4rem);overflow:hidden;border-radius:28px;background:radial-gradient(circle at 100% 0,rgba(251,134,105,.22),transparent 19rem),linear-gradient(150deg,#103a35,#092b27);box-shadow:0 24px 60px rgba(16,58,53,.18)}.result-panel:before{content:"SCENARIO / CRS";display:block;margin-bottom:2rem;color:#91aaa1;font-size:.58rem;font-weight:700;letter-spacing:.14em}.result-empty .question-mark{color:#fb8669;font-family:"Outfit",sans-serif}.result-empty h2{font-family:"Outfit",sans-serif;font-size:2.6rem;line-height:.95}.total-label{color:#a9be74}.total-score{font-family:"Outfit",sans-serif;color:#fb8669}.breakdown{border-color:rgba(255,255,255,.22)}.break-row{border-color:rgba(255,255,255,.14)}.comparison{border:0;border-radius:14px;background:#edf3df;color:#103a35}.lead{border-color:rgba(16,58,53,.16)}.lead h2{font-family:"Outfit",sans-serif;font-size:clamp(2.7rem,5vw,5.3rem);line-height:.9;letter-spacing:-.055em}.capture{padding:1.3rem;border:1px solid rgba(16,58,53,.15);border-radius:22px;background:rgba(255,255,255,.58)}
+    @media(max-width:900px){.calculator-shell{grid-template-columns:1fr}.result-panel{position:relative;top:auto}.scenario-strip{grid-template-columns:1fr}.scenario-strip li{grid-template-columns:34px 1fr}}
+    @media(max-width:680px){.main{padding-top:44px}.intro h1{font-size:clamp(3rem,15vw,4.9rem)}.intro>div:last-child{padding-left:1rem}.scenario-strip{border-radius:14px}.calculator-form,.result-panel{border-radius:20px}.question-head{grid-template-columns:40px 1fr}.language-grid{grid-template-columns:1fr 1fr}}
+  </style>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body><a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html">Pathway <small>LANGUAGE SOLUTIONS</small></a>
+      <div class="nav-actions"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo oscuro" aria-pressed="false"><span data-theme-icon aria-hidden="true">☾</span></button><a class="back" href="index-v2.html">← Volver al análisis</a><span class="language-switcher" aria-label="Idioma"><a href="calculateur-crs.html" lang="es" aria-current="page">ES</a><a href="fr/calculateur-crs.html" lang="fr">FR</a><a href="en/calculateur-crs.html" lang="en">EN</a><a href="de/calculateur-crs.html" lang="de">DE</a></span></div>
+    </div>
+  </header>
+
+  <main class="main" id="contenido">
+    <div class="wrap">
+      <div class="intro">
+        <div>
+          <p class="eyebrow">Calculador CRS completo</p>
+          <h1>Calcula tu puntaje con la tabla oficial.</h1>
+        </div>
+        <div>
+          <p>Completa todos los factores que utiliza IRCC. El francés sigue estando menos utilizado y puede diferenciar tu perfil: en 2025, 29.630 residentes permanentes francófonos fueron admitidos fuera de Quebec (8,9 %). El resultado aplica la tabla CRS vigente y se compara con las últimas rondas publicadas. <a href="https://www.canada.ca/en/immigration-refugees-citizenship/corporate/publications-manuals/francophone-immigration-outside-quebec.html" target="_blank" rel="noopener">Fuente oficial ↗</a></p>
+          <span class="data-status" id="data-status">Conectando con los datos de IRCC…</span>
+        </div>
+      </div>
+
+      <ol class="scenario-strip" aria-label="Etapas del escenario CRS">
+        <li><span>01</span><strong>Tu perfil</strong><small>Edad, estudios y experiencia</small></li>
+        <li><span>02</span><strong>Tus idiomas</strong><small>CLB / NCLC en 4 competencias</small></li>
+        <li><span>03</span><strong>Tu escenario</strong><small>Total, cortes y aporte del francés</small></li>
+      </ol>
+
+      <div class="calculator-shell">
+        <form class="calculator-form" id="crs-form">
+          <section class="question-section">
+            <div class="question-head"><span class="section-index">01</span><div><h3>Situación personal</h3><p>IRCC aplica tablas diferentes cuando el cónyuge acompaña al candidato principal.</p></div></div>
+            <div class="fields">
+              <fieldset class="field wide" style="border:0;padding:0;margin:0">
+                <legend>Situación conyugal</legend>
+                <div class="toggle-grid">
+                  <div class="choice"><input id="status-single" type="radio" name="marital_status" value="single" checked><label for="status-single">Sin cónyuge acompañante</label></div>
+                  <div class="choice"><input id="status-spouse" type="radio" name="marital_status" value="accompanying"><label for="status-spouse">Cónyuge acompañante</label></div>
+                </div>
+                <span class="hint">Selecciona la primera opción si eres soltero/a, si tu pareja no te acompaña o si ya es residente permanente o ciudadana canadiense.</span>
+              </fieldset>
+              <div class="field"><label for="age">Edad</label><input id="age" name="age" type="number" min="17" max="99" inputmode="numeric" required></div>
+              <div class="field"><label for="education">Nivel de estudios reconocido</label><select id="education" name="education" required>
+                <option value="">Selecciona</option><option value="less_secondary">Menos de secundaria</option><option value="secondary">Secundaria</option><option value="one_year">Programa postsecundario de 1 año</option><option value="two_year">Programa postsecundario de 2 años</option><option value="bachelor">Licenciatura o programa de 3+ años</option><option value="two_or_more">Dos o más títulos; uno de 3+ años</option><option value="master">Maestría o título profesional elegible</option><option value="phd">Doctorado</option>
+              </select><span class="hint">Usa el nivel canadiense o la equivalencia indicada en tu ECA.</span></div>
+              <div class="field wide"><label for="canadian-study">Estudios postsecundarios elegibles en Canadá</label><select id="canadian-study" name="canadian_study" required>
+                <option value="0">Ninguno</option><option value="15">Título de 1 o 2 años</option><option value="30">Título de 3+ años, maestría, profesional o doctorado</option>
+              </select></div>
+            </div>
+          </section>
+
+          <section class="question-section">
+            <div class="question-head"><span class="section-index">02</span><div><h3>Idiomas oficiales</h3><p>Introduce la equivalencia CLB o NCLC de cada competencia, no el puntaje bruto del examen.</p></div></div>
+            <div class="fields">
+              <div class="field wide"><label for="language-results-valid">¿Tus resultados lingüísticos tienen menos de dos años?</label><select id="language-results-valid" required><option value="yes">Sí</option><option value="no">No tengo resultados válidos</option></select><span class="hint" id="language-validity-hint">Express Entry exige resultados válidos de un examen aceptado por IRCC.</span></div>
+              <div class="field wide"><label for="first-language-name">Primera lengua oficial declarada</label><select id="first-language-name" name="first_language_name" required><option value="en">Inglés (CLB)</option><option value="fr">Francés (NCLC)</option></select></div>
+              <div class="field wide"><label>Resultados de la primera lengua</label><div class="language-grid">
+                 <div><label for="first-speaking">Expresión oral <small>Speaking</small></label><select class="level-select" id="first-speaking" data-group="first" required></select></div>
+                 <div><label for="first-listening">Comprensión oral <small>Listening</small></label><select class="level-select" id="first-listening" data-group="first" required></select></div>
+                 <div><label for="first-reading">Comprensión escrita <small>Reading</small></label><select class="level-select" id="first-reading" data-group="first" required></select></div>
+                 <div><label for="first-writing">Expresión escrita <small>Writing</small></label><select class="level-select" id="first-writing" data-group="first" required></select></div>
+              </div></div>
+              <div class="field wide"><label for="second-language-present">¿Tienes resultados válidos en la otra lengua oficial?</label><select id="second-language-present" name="second_language_present" required><option value="no">No</option><option value="yes">Sí</option></select></div>
+              <div class="field wide conditional" id="second-language-fields" hidden><label>Resultados de la segunda lengua</label><div class="language-grid">
+                 <div><label for="second-speaking">Expresión oral <small>Speaking</small></label><select class="level-select" id="second-speaking" data-group="second"></select></div>
+                 <div><label for="second-listening">Comprensión oral <small>Listening</small></label><select class="level-select" id="second-listening" data-group="second"></select></div>
+                 <div><label for="second-reading">Comprensión escrita <small>Reading</small></label><select class="level-select" id="second-reading" data-group="second"></select></div>
+                 <div><label for="second-writing">Expresión escrita <small>Writing</small></label><select class="level-select" id="second-writing" data-group="second"></select></div>
+              </div></div>
+            </div>
+          </section>
+
+          <section class="question-section">
+            <div class="question-head"><span class="section-index">03</span><div><h3>Experiencia y oficio</h3><p>Incluye únicamente experiencia calificada conforme a las definiciones de Express Entry.</p></div></div>
+            <div class="fields">
+              <div class="field"><label for="canadian-work">Experiencia calificada en Canadá</label><select id="canadian-work" required><option value="0">Menos de 1 año</option><option value="1">1 año</option><option value="2">2 años</option><option value="3">3 años</option><option value="4">4 años</option><option value="5">5 años o más</option></select></div>
+              <div class="field"><label for="foreign-work">Experiencia calificada en el extranjero</label><select id="foreign-work" required><option value="0">Ninguna</option><option value="1">1 o 2 años</option><option value="3">3 años o más</option></select></div>
+              <div class="field wide"><label for="certificate">Certificado canadiense de cualificación en un oficio</label><select id="certificate" required><option value="no">No</option><option value="yes">Sí</option></select></div>
+            </div>
+          </section>
+
+          <section class="question-section">
+            <div class="question-head"><span class="section-index">04</span><div><h3>Puntos adicionales</h3><p>Estos factores pueden modificar significativamente el resultado final.</p></div></div>
+            <div class="fields">
+              <div class="field"><label for="nomination">Nominación provincial o territorial</label><select id="nomination" required><option value="no">No</option><option value="yes">Sí</option></select></div>
+              <div class="field"><label for="sibling">Hermano/a elegible en Canadá</label><select id="sibling" required><option value="no">No</option><option value="yes">Sí</option></select></div>
+            </div>
+          </section>
+
+          <section class="question-section conditional" id="spouse-section" hidden>
+            <div class="question-head"><span class="section-index">05</span><div><h3>Factores del cónyuge</h3><p>Esta sección se aplica únicamente cuando la pareja acompaña al candidato principal.</p></div></div>
+            <div class="fields">
+              <div class="field"><label for="spouse-education">Estudios reconocidos del cónyuge</label><select id="spouse-education">
+                <option value="less_secondary">Menos de secundaria</option><option value="secondary">Secundaria</option><option value="one_year">Programa de 1 año</option><option value="two_year">Programa de 2 años</option><option value="bachelor">Licenciatura o programa de 3+ años</option><option value="two_or_more">Dos o más títulos</option><option value="master">Maestría o título profesional</option><option value="phd">Doctorado</option>
+              </select></div>
+              <div class="field"><label for="spouse-work">Experiencia canadiense del cónyuge</label><select id="spouse-work"><option value="0">Menos de 1 año</option><option value="1">1 año</option><option value="2">2 años</option><option value="3">3 años</option><option value="4">4 años</option><option value="5">5 años o más</option></select></div>
+              <div class="field wide"><label>Primera lengua oficial del cónyuge</label><div class="language-grid">
+                 <div><label for="spouse-speaking">Expresión oral <small>Speaking</small></label><select class="level-select" id="spouse-speaking" data-group="spouse"></select></div>
+                 <div><label for="spouse-listening">Comprensión oral <small>Listening</small></label><select class="level-select" id="spouse-listening" data-group="spouse"></select></div>
+                 <div><label for="spouse-reading">Comprensión escrita <small>Reading</small></label><select class="level-select" id="spouse-reading" data-group="spouse"></select></div>
+                 <div><label for="spouse-writing">Expresión escrita <small>Writing</small></label><select class="level-select" id="spouse-writing" data-group="spouse"></select></div>
+              </div></div>
+            </div>
+          </section>
+
+          <div class="calculate-bar"><button class="button" id="calculate-button" type="submit" disabled>Verificando la tabla oficial…</button></div>
+        </form>
+
+        <aside class="result-panel" aria-live="polite">
+          <div class="result-empty" id="result-empty"><div class="question-mark">?</div><h2>Tu resultado aparecerá aquí.</h2><p>Verás el total, el detalle de cada bloque y la comparación con las últimas rondas de IRCC.</p></div>
+          <div class="result-content" id="result-content" hidden>
+            <div class="total-label">Puntaje CRS estimado</div><div class="total-score" id="total-score">0</div>
+            <div class="breakdown">
+              <div class="break-row"><span>Capital humano</span><strong id="core-score">0</strong></div>
+              <div class="break-row"><span>Factores del cónyuge</span><strong id="spouse-score">0</strong></div>
+              <div class="break-row"><span>Transferibilidad</span><strong id="transfer-score">0</strong></div>
+              <div class="break-row"><span>Puntos adicionales</span><strong id="additional-score">0</strong></div>
+            </div>
+            <div class="comparison" id="comparison"></div>
+            <p class="eligibility" id="french-eligibility"></p>
+            <p class="result-source">Cálculo basado en las reglas CRS oficiales cargadas automáticamente desde IRCC, versión <span id="criteria-date">22 de junio de 2026</span>. Verifica siempre el resultado antes de presentar un perfil.</p>
+          </div>
+        </aside>
+      </div>
+
+      <section class="lead" id="evaluacion">
+        <div class="lead-grid">
+          <div><p class="eyebrow" id="lead-eyebrow">Evaluación gratuita · 20 minutos</p><h2 id="lead-title">Ahora falta la variable más importante: el tiempo.</h2><p id="lead-copy">Compararemos tu nivel actual con la fecha de vencimiento de tu permiso para darte un calendario realista hacia NCLC 7.</p></div>
+          <form class="capture" id="capture">
+            <input type="hidden" id="capture-score" name="current_crs">
+            <input type="hidden" id="capture-french-eligible" name="french_category_eligible">
+            <div class="field"><label for="name">Nombre <span class="required">*</span></label><input id="name" name="first_name" autocomplete="given-name" required></div>
+            <div class="field"><label for="email">Email <span class="required">*</span></label><input id="email" name="email" type="email" autocomplete="email" required></div>
+            <div class="field wide"><label for="whatsapp">WhatsApp <span class="required">*</span></label><input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" placeholder="+1 416 000 0000" required></div>
+            <div class="field wide"><label for="permit">¿Cuándo vence tu permiso de trabajo? <span class="required">*</span></label><select id="permit" name="permit_expiry" required><option value="">Selecciona una opción</option><option value="under-12">En menos de 12 meses</option><option value="12-24">Entre 12 y 24 meses</option><option value="over-24">En más de 24 meses</option><option value="no-permit">No tengo permiso</option><option value="na">No aplica a mi caso</option></select></div>
+            <div class="status" id="form-status" role="alert" tabindex="-1"></div>
+            <button class="button" id="lead-submit" type="submit">Continuar por WhatsApp</button>
+            <p class="privacy">Al continuar, abriremos WhatsApp con tus respuestas preparadas. Tú decides si envías el mensaje. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer"><div class="wrap"><p>Pathway Language Solutions es un instituto de idiomas y no ofrece consultoría migratoria. El resultado depende de la exactitud de tus respuestas y no sustituye el cálculo de IRCC. Consulta los <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html" target="_blank" rel="noopener">criterios CRS oficiales</a>.<br><br>Contacto: <a href="mailto:pathway.l.s.sectoram@gmail.com">pathway.l.s.sectoram@gmail.com</a> · <a href="https://wa.me/51989887516" target="_blank" rel="noopener">+51 989 887 516</a></p></div></footer>
+
+  <script src="analytics.js"></script>
+  <script src="crs-engine.js"></script>
+  <script src="ircc-data.js"></script>
+  <script>
+    const form=document.querySelector('#crs-form');
+    const resultEmpty=document.querySelector('#result-empty');
+    const resultContent=document.querySelector('#result-content');
+    const lead=document.querySelector('#evaluacion');
+    const config=window.PATHWAY_CONFIG||{};
+    const languageValidity=document.querySelector('#language-results-valid');
+    const calculateButton=document.querySelector('#calculate-button');
+    let rulesReady=false;
+    let rounds=PathwayIRCC.FALLBACK;
+
+    document.querySelectorAll('.level-select').forEach(select=>{
+      select.innerHTML='<option value="">Nivel</option>'+Array.from({length:11},(_,level)=>`<option value="${level}">${level===10?'10 o más':level}</option>`).join('');
+    });
+
+    const toggleConditional=(container,show)=>{
+      container.hidden=!show;
+      container.querySelectorAll('select,input').forEach(control=>{control.disabled=!show;control.required=show});
+    };
+
+    const firstLanguageControls=[document.querySelector('#first-language-name'),...document.querySelectorAll('[data-group="first"]')];
+    const updateLanguageMode=()=>{
+      const hasValidResults=languageValidity.value==='yes';
+      firstLanguageControls.forEach(control=>{control.disabled=!hasValidResults;control.required=hasValidResults});
+      document.querySelector('#second-language-present').disabled=!hasValidResults;
+      document.querySelector('#second-language-present').required=hasValidResults;
+      toggleConditional(document.querySelector('#second-language-fields'),hasValidResults&&document.querySelector('#second-language-present').value==='yes');
+      document.querySelector('#language-validity-hint').textContent=hasValidResults
+        ?'Express Entry exige resultados válidos de un examen aceptado por IRCC.'
+        :'No necesitas inventar niveles. Puedes solicitar directamente el examen gratuito de ubicación.';
+      if(!hasValidResults){
+        lead.classList.add('active');
+        document.querySelector('#lead-eyebrow').textContent='Examen de ubicación gratuito · 20 minutos';
+        document.querySelector('#lead-title').textContent='Empieza por saber dónde estás.';
+        document.querySelector('#lead-copy').textContent='Mediremos tu nivel actual y construiremos una ruta realista hacia el examen que corresponde a tu proyecto.';
+        document.querySelector('#capture-score').value='';
+        document.querySelector('#capture-french-eligible').value='unknown';
+      }
+      calculateButton.disabled=hasValidResults&&!rulesReady;
+      calculateButton.textContent=hasValidResults?(rulesReady?'Calcular mi puntaje CRS':'Verificando la tabla oficial…'):'Ir a mi evaluación de nivel';
+    };
+    languageValidity.addEventListener('change',updateLanguageMode);
+    calculateButton.addEventListener('click',event=>{
+      if(languageValidity.value!=='yes'){
+        event.preventDefault();
+        lead.classList.add('active');
+        lead.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+      }
+    });
+
+    document.querySelector('#second-language-present').addEventListener('change',event=>{
+      toggleConditional(document.querySelector('#second-language-fields'),event.target.value==='yes');
+    });
+    document.querySelectorAll('input[name="marital_status"]').forEach(input=>input.addEventListener('change',event=>{
+      toggleConditional(document.querySelector('#spouse-section'),event.target.value==='accompanying');
+    }));
+
+    const readLevels=prefix=>['speaking','listening','reading','writing'].map(skill=>Number(document.querySelector(`#${prefix}-${skill}`).value||0));
+
+    Promise.all([PathwayIRCC.load(),PathwayIRCC.loadRules()]).then(([data,rulesState])=>{
+      rounds=data;
+      const status=document.querySelector('#data-status');
+      const source=data.source==='live'?'Datos oficiales IRCC':data.source==='cache'?'Últimos datos IRCC guardados':'Datos IRCC de respaldo';
+      PathwayCRS.setRules(rulesState.rules);
+      rulesReady=true;
+      updateLanguageMode();
+      const criteriaDate=PathwayIRCC.formatLongDate(rulesState.modified||PathwayIRCC.RULES_VERSION,'es-ES');
+      const drawDate=PathwayIRCC.formatLongDate(data.french.date,'es-ES');
+      const checkDate=PathwayIRCC.formatLongDate((data.fetchedAt||PathwayIRCC.todayIso()).slice(0,10),'es-ES');
+      const rulesSource=rulesState.source==='live'?'reglas CRS cargadas desde IRCC':rulesState.source==='cache'?'reglas CRS guardadas de la última consulta':'reglas CRS de respaldo';
+      document.querySelector('#criteria-date').textContent=criteriaDate;
+      status.textContent=`${source}: ronda francófona ${data.french.score} (${drawDate}) · ${rulesSource} (${criteriaDate}) · consulta ${checkDate}`;
+    }).catch(()=>{
+      rulesReady=false;
+      updateLanguageMode();
+      if(languageValidity.value==='yes')calculateButton.textContent='Datos IRCC en revisión';
+      document.querySelector('#data-status').textContent='No fue posible validar los datos oficiales. El cálculo queda suspendido para evitar un resultado incorrecto.';
+    });
+
+    form.addEventListener('submit',event=>{
+      event.preventDefault();
+      if(!form.reportValidity())return;
+      if(document.querySelector('#language-results-valid').value!=='yes'){
+        resultEmpty.hidden=true;resultContent.hidden=false;
+        document.querySelector('#total-score').textContent='—';
+        document.querySelector('#core-score').textContent='—';
+        document.querySelector('#spouse-score').textContent='—';
+        document.querySelector('#transfer-score').textContent='—';
+        document.querySelector('#additional-score').textContent='—';
+        document.querySelector('#comparison').innerHTML='<strong>No se puede calcular un puntaje CRS válido.</strong> IRCC exige resultados lingüísticos de menos de dos años para crear o actualizar un perfil Express Entry.';
+        document.querySelector('#french-eligibility').textContent='Renueva el examen y vuelve a calcular con la equivalencia CLB/NCLC vigente.';
+        lead.classList.add('active');
+        return;
+      }
+      const maritalStatus=document.querySelector('input[name="marital_status"]:checked').value;
+      const secondLanguagePresent=document.querySelector('#second-language-present').value==='yes';
+      const profile={
+        maritalStatus,
+        age:Number(document.querySelector('#age').value),
+        education:document.querySelector('#education').value,
+        canadianStudy:Number(document.querySelector('#canadian-study').value),
+        firstLanguageName:document.querySelector('#first-language-name').value,
+        firstLanguage:readLevels('first'),
+        secondLanguagePresent,
+        secondLanguage:secondLanguagePresent?readLevels('second'):[0,0,0,0],
+        canadianWork:Number(document.querySelector('#canadian-work').value),
+        foreignWork:Number(document.querySelector('#foreign-work').value),
+        certificate:document.querySelector('#certificate').value==='yes',
+        nomination:document.querySelector('#nomination').value==='yes',
+        sibling:document.querySelector('#sibling').value==='yes',
+        spouseEducation:maritalStatus==='accompanying'?document.querySelector('#spouse-education').value:'less_secondary',
+        spouseCanadianWork:maritalStatus==='accompanying'?Number(document.querySelector('#spouse-work').value):0,
+        spouseLanguage:maritalStatus==='accompanying'?readLevels('spouse'):[0,0,0,0]
+      };
+      const score=PathwayCRS.calculate(profile);
+      if(window.PathwayAnalytics)PathwayAnalytics.track('crs_calculated',{french_eligible:score.frenchEligible,total:score.total});
+      document.querySelector('#total-score').textContent=score.total;
+      document.querySelector('#core-score').textContent=score.core;
+      document.querySelector('#spouse-score').textContent=score.spouse;
+      document.querySelector('#transfer-score').textContent=score.transferability;
+      document.querySelector('#additional-score').textContent=score.additional;
+      const gap=score.total-rounds.french.score;
+      document.querySelector('#comparison').innerHTML=gap>=0
+        ?`Tu puntaje está <strong>${gap} puntos por encima</strong> del último corte francófono de <strong>${rounds.french.score}</strong>.`
+        :`Tu puntaje está <strong>${Math.abs(gap)} puntos por debajo</strong> del último corte francófono de <strong>${rounds.french.score}</strong>.`;
+      document.querySelector('#french-eligibility').innerHTML=score.frenchEligible
+        ?`<strong>Categoría francófona:</strong> cumples el requisito lingüístico NCLC 7 en las cuatro competencias. Bonificación por francés incluida: ${score.frenchBonus} puntos.`
+        :'<strong>Categoría francófona:</strong> todavía no cumples NCLC 7 en las cuatro competencias de francés.';
+      document.querySelector('#capture-score').value=score.total;
+      document.querySelector('#capture-french-eligible').value=score.frenchEligible?'yes':'no';
+      resultEmpty.hidden=true;resultContent.hidden=false;lead.classList.add('active');
+      if(window.innerWidth<900)document.querySelector('.result-panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+    });
+
+    document.querySelector('#capture').addEventListener('submit',async event=>{
+      event.preventDefault();
+      const capture=event.currentTarget,status=document.querySelector('#form-status'),submit=document.querySelector('#lead-submit');
+      if(!capture.reportValidity())return;
+      const data=Object.fromEntries(new FormData(capture).entries());
+      submit.disabled=true;
+      submit.textContent='Preparando tu solicitud…';
+      try{
+        const webhookUrl=String(config.leadWebhook||'').trim();
+        sessionStorage.setItem('pathwayLead',JSON.stringify(data));
+        sessionStorage.setItem('pathwayPermit',data.permit_expiry);
+        if(webhookUrl){
+          const response=await fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+          if(!response.ok)throw new Error('Webhook error');
+          window.location.href=`gracias.html?channel=webhook&priority=${encodeURIComponent(data.permit_expiry)}`;
+        }else{
+          const permitLabels={'under-12':'menos de 12 meses','12-24':'entre 12 y 24 meses','over-24':'más de 24 meses','no-permit':'sin permiso','na':'no aplica'};
+          const message=[
+            'Hola Pathway, quiero solicitar mi evaluación gratuita.',
+            `Nombre: ${data.first_name}`,
+            `Email: ${data.email}`,
+            `WhatsApp: ${data.whatsapp}`,
+            `Vencimiento del permiso: ${permitLabels[data.permit_expiry]||data.permit_expiry}`,
+            data.current_crs?`Puntaje CRS estimado: ${data.current_crs}`:'Necesito un examen de ubicación.',
+            `NCLC 7 actual: ${data.french_category_eligible==='yes'?'sí':data.french_category_eligible==='no'?'no':'por evaluar'}`
+          ].join('\n');
+          const whatsappUrl=`https://wa.me/51989887516?text=${encodeURIComponent(message)}`;
+          sessionStorage.setItem('pathwayWhatsAppUrl',whatsappUrl);
+          const opened=window.open(whatsappUrl,'_blank');
+          if(window.PathwayAnalytics)PathwayAnalytics.track('lead_whatsapp_prepared',{permit:data.permit_expiry});
+          if(!opened){window.location.href=whatsappUrl;return;}
+          opened.opener=null;
+          window.location.href=`gracias.html?channel=whatsapp&priority=${encodeURIComponent(data.permit_expiry)}`;
+        }
+      }catch(error){
+        status.style.display='block';
+        status.textContent='No pudimos enviar tus datos. Inténtalo de nuevo o escríbenos por WhatsApp.';
+        status.focus();
+        submit.disabled=false;
+        submit.textContent=String(config.leadWebhook||'').trim()?'Solicitar mi evaluación gratuita':'Continuar por WhatsApp';
+      }
+    });
+    document.querySelector('#lead-submit').textContent=String(config.leadWebhook||'').trim()?'Solicitar mi evaluación gratuita':'Continuar por WhatsApp';
+  </script>
+</body>
+</html>
