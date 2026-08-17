@@ -5,13 +5,15 @@ document.documentElement.classList.add('js');
   const menuButton = document.querySelector('[data-menu-toggle]');
   const menu = document.querySelector('[data-menu]');
   const usesPathwayPalette = document.documentElement.classList.contains('brand-palette');
+  const homeCopy = window.PathwayHomeCopy || {};
+  const copy = (key, fallback) => homeCopy[key] ?? fallback;
 
   // La variante Pathway conserve l'architecture C, mais précise immédiatement
   // l'objectif NCLC 7 et présente le programme comme la force de frappe principale.
   if (usesPathwayPalette) {
-    document.title = 'NCLC 7 · Preparación TEF y TCF | Pathway';
+    document.title = copy('title', 'NCLC 7 · Preparación TEF y TCF | Pathway');
     const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) metaDescription.content = 'Clases privadas de francés para alcanzar NCLC 7 y preparar el TEF Canada o el TCF Canada con una intensidad adaptada a tu fecha.';
+    if (metaDescription) metaDescription.content = copy('metaDescription', 'Clases privadas de francés para alcanzar NCLC 7 y preparar el TEF Canada o el TCF Canada con una intensidad adaptada a tu fecha.');
 
     const heroLabel = document.querySelector('[data-hero-label]');
     const heroTitle = document.querySelector('[data-hero-title]');
@@ -26,19 +28,19 @@ document.documentElement.classList.add('js');
     const hoursReference = document.querySelector('[data-hours-reference]');
     const pricingReference = document.querySelector('[data-pricing-reference]');
 
-    if (heroLabel) heroLabel.textContent = 'Objetivo NCLC 7 · Preparación TEF Canada y TCF Canada';
-    if (heroTitle) heroTitle.innerHTML = 'Tu ruta al NCLC 7 empieza por <span>un plan que sí cabe en tu vida.</span>';
-    if (heroLead) heroLead.textContent = 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada o el TCF Canada.';
+    if (heroLabel) heroLabel.textContent = copy('heroLabel', 'Objetivo NCLC 7 · Preparación TEF Canada y TCF Canada');
+    if (heroTitle) heroTitle.innerHTML = copy('heroTitleHtml', 'Tu ruta al NCLC 7 empieza por <span>un plan que sí cabe en tu vida.</span>');
+    if (heroLead) heroLead.textContent = copy('heroLead', 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada o el TCF Canada.');
     if (honestyNote) honestyNote.hidden = false;
     if (pricingChoice) pricingChoice.hidden = false;
     if (hoursReference) hoursReference.hidden = false;
     if (pricingReference) pricingReference.hidden = false;
-    if (pricingFaq) pricingFaq.textContent = 'Sí. Puedes inscribirte mes a mes, sin permanencia, o elegir un ciclo completo con 15 % de descuento. Si pasas al ciclo después de un primer mes, el descuento del ciclo es del 10 %.';
+    if (pricingFaq) pricingFaq.textContent = copy('pricingFaq', 'Sí. Puedes inscribirte mes a mes, sin permanencia, o elegir un ciclo completo con 15 % de descuento. Si pasas al ciclo después de un primer mes, el descuento del ciclo es del 10 %.');
     if (examLevel) {
-      examLevel.dataset.title = 'Tu objetivo es el TEF o el TCF';
-      examLevel.textContent = 'Preparo el TEF o el TCF';
+      examLevel.dataset.title = copy('examLevelTitle', 'Tu objetivo es el TEF o el TCF');
+      examLevel.textContent = copy('examLevelLabel', 'Preparo el TEF o el TCF');
     }
-    const examCopies = {
+    const examCopies = homeCopy.examCopies || {
       '[data-exam-session]': 'Expresión oral · práctica TEF / TCF',
       '[data-exam-route]': 'Dos simulacros verifican si las cuatro competencias están listas para el TEF o el TCF.',
       '[data-exam-specialty]': 'TEF Canada · TCF Canada',
@@ -49,20 +51,20 @@ document.documentElement.classList.add('js');
       if (element) element.textContent = copy;
     });
     document.querySelectorAll('[data-exam-simulations]').forEach(element => {
-      element.textContent = '2 simulacros TEF / TCF';
+      element.textContent = copy('simulations', '2 simulacros TEF / TCF');
     });
     document.querySelectorAll('[data-cta="header-evaluation"], [data-cta="hero-evaluation"], [data-cta="closing-evaluation"], [data-cta="mobile-evaluation"], [data-cta^="plan-"]').forEach(link => {
-      link.href = 'test-placement.html';
+      link.href = copy('evaluationHref', 'test-placement.html');
     });
-    if (weekTitle) weekTitle.textContent = 'La intensidad que exige tu objetivo, organizada semana a semana.';
-    if (weekCopy) weekCopy.textContent = 'Según tu nivel, tu fecha y tus necesidades, eliges un ritmo de 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.';
+    if (weekTitle) weekTitle.textContent = copy('weekTitle', 'La intensidad que exige tu objetivo, organizada semana a semana.');
+    if (weekCopy) weekCopy.textContent = copy('weekCopy', 'Según tu nivel, tu fecha y tus necesidades, eliges un ritmo de 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.');
     if (weekList) {
-      weekList.innerHTML = `
+      weekList.innerHTML = copy('weekListHtml', `
         <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas* por semana según tu plan</small></div><b>2 · 4 · 6 h*</b></li>
         <li><span>Entre sesiones</span><div><strong>Práctica dirigida</strong><small>Ejercicios específicos conectados con tu última clase</small></div><b>Guiada</b></li>
         <li><span>Después de cada clase</span><div><strong>Correcciones continuas</strong><small>Feedback oral y escrito sobre tus prioridades</small></div><b>Continuo</b></li>
         <li><span>Cada etapa</span><div><strong>Control del progreso</strong><small>Objetivos semanales y simulacros antes del TEF o el TCF</small></div><b>Medible</b></li>
-      `;
+      `);
     }
 
     const pricingButtons = document.querySelectorAll('[data-pricing-mode]');
@@ -84,14 +86,14 @@ document.documentElement.classList.add('js');
         price.setAttribute('aria-live', 'polite');
 
         if (isCycle) {
-          price.innerHTML = `${plan.dataset.cyclePrice} <small>CAD · ciclo completo</small>`;
+          price.innerHTML = `${plan.dataset.cyclePrice} <small>${homeCopy.pricing?.cycleSuffix || 'CAD · ciclo completo'}</small>`;
           hours.innerHTML = `<strong>${plan.dataset.cycleDuration}</strong> · ${plan.dataset.cycleHours}`;
-          summary.innerHTML = `<s>${plan.dataset.cycleOriginal} CAD</s><strong>Ahorras ${plan.dataset.cycleSaving} CAD</strong><span>Equivale a ${plan.dataset.cycleEquivalent} CAD al mes.</span><small>Precio de referencia: ${plan.dataset.cycleReference}.</small>`;
+          summary.innerHTML = `<s>${plan.dataset.cycleOriginal} CAD</s><strong>${homeCopy.pricing?.savingPrefix || 'Ahorras'} ${plan.dataset.cycleSaving} CAD</strong><span>${homeCopy.pricing?.equivalentPrefix || 'Equivale a'} ${plan.dataset.cycleEquivalent} ${homeCopy.pricing?.perMonthSuffix || 'CAD al mes.'}</span><small>${homeCopy.pricing?.referencePrefix || 'Precio de referencia:'} ${plan.dataset.cycleReference}.</small>`;
           summary.hidden = false;
           return;
         }
 
-        price.innerHTML = `${plan.dataset.monthPrice} <small>CAD / mes</small>`;
+        price.innerHTML = `${plan.dataset.monthPrice} <small>${homeCopy.pricing?.monthlySuffix || 'CAD / mes'}</small>`;
         hours.textContent = plan.dataset.monthHours;
         summary.hidden = true;
       });
@@ -196,18 +198,18 @@ document.documentElement.classList.add('js');
     const previous = document.createElement('button');
     previous.type = 'button';
     previous.className = 'carousel-arrow carousel-prev';
-    previous.setAttribute('aria-label', 'Testimonio anterior');
+    previous.setAttribute('aria-label', homeCopy.carousel?.previous || 'Testimonio anterior');
     previous.textContent = '←';
 
     const next = document.createElement('button');
     next.type = 'button';
     next.className = 'carousel-arrow carousel-next';
-    next.setAttribute('aria-label', 'Testimonio siguiente');
+    next.setAttribute('aria-label', homeCopy.carousel?.next || 'Testimonio siguiente');
     next.textContent = '→';
 
     const dots = document.createElement('div');
     dots.className = 'carousel-dots';
-    dots.setAttribute('aria-label', 'Elegir un testimonio');
+    dots.setAttribute('aria-label', homeCopy.carousel?.choose || 'Elegir un testimonio');
 
     const show = index => {
       current = (index + slides.length) % slides.length;
@@ -219,7 +221,7 @@ document.documentElement.classList.add('js');
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = 'carousel-dot';
-      dot.setAttribute('aria-label', `Ver testimonio ${index + 1}`);
+      dot.setAttribute('aria-label', `${homeCopy.carousel?.writtenItem || 'Ver testimonio'} ${index + 1}`);
       dot.addEventListener('click', () => show(index));
       dots.append(dot);
     });
@@ -235,35 +237,36 @@ document.documentElement.classList.add('js');
 
   document.querySelectorAll('[data-story-carousel]').forEach(buildStoryCarousel);
 
+  const assetBase = copy('assetBase', '');
   const testimonialVideos = [
     {
-      src: 'assets/videos/testimonio-majo.mp4',
-      poster: 'assets/videos/testimonio-majo-poster.jpg?v=20260814',
+      src: `${assetBase}assets/videos/testimonio-majo.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-majo-poster.jpg?v=20260814`,
       name: 'Majo'
     },
     {
-      src: 'assets/videos/testimonio-22.mp4',
-      poster: 'assets/videos/testimonio-22-poster.jpg?v=20260814-2',
+      src: `${assetBase}assets/videos/testimonio-22.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-22-poster.jpg?v=20260814-2`,
       name: 'Pia'
     },
     {
-      src: 'assets/videos/testimonio-21.mp4',
-      poster: 'assets/videos/testimonio-21-poster.jpg?v=20260814-2',
+      src: `${assetBase}assets/videos/testimonio-21.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-21-poster.jpg?v=20260814-2`,
       name: 'Jennifer'
     },
     {
-      src: 'assets/videos/testimonio-23.mp4',
-      poster: 'assets/videos/testimonio-23-poster.jpg?v=20260814-2',
+      src: `${assetBase}assets/videos/testimonio-23.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-23-poster.jpg?v=20260814-2`,
       name: 'Fabián'
     },
     {
-      src: 'assets/videos/testimonio-meli.mp4',
-      poster: 'assets/videos/testimonio-meli-poster.jpg?v=20260814',
+      src: `${assetBase}assets/videos/testimonio-meli.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-meli-poster.jpg?v=20260814`,
       name: 'Melissa'
     },
     {
-      src: 'assets/videos/testimonio-20.mp4',
-      poster: 'assets/videos/testimonio-20-poster.jpg?v=20260814-2',
+      src: `${assetBase}assets/videos/testimonio-20.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-20-poster.jpg?v=20260814-2`,
       name: 'Elisa'
     }
   ];
@@ -287,7 +290,7 @@ document.documentElement.classList.add('js');
       videoStage.classList.remove('is-playing');
       video.src = item.src;
       video.poster = item.poster || '';
-      video.setAttribute('aria-label', `Testimonio en video: ${item.name}`);
+      video.setAttribute('aria-label', `${copy('videoAriaPrefix', 'Testimonio en video:')} ${item.name}`);
       video.muted = true;
       video.load();
       video.play().catch(() => {});
@@ -306,7 +309,7 @@ document.documentElement.classList.add('js');
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = 'carousel-dot';
-      dot.setAttribute('aria-label', `Ver video ${index + 1}: ${item.name}`);
+      dot.setAttribute('aria-label', `${homeCopy.carousel?.videoItem || 'Ver video'} ${index + 1}: ${item.name}`);
       dot.addEventListener('click', () => showVideo(index));
       dots.append(dot);
     });
@@ -338,18 +341,19 @@ document.documentElement.classList.add('js');
       setAll('[data-ircc-cec-score]', data.cec.score);
       setAll('[data-ircc-french-score]', data.french.score);
       setAll('[data-ircc-difference]', Math.abs(data.cec.score - data.french.score));
-      setAll('[data-ircc-cec-date]', PathwayIRCC.formatDate(data.cec.date, 'es-ES'));
-      setAll('[data-ircc-french-date]', PathwayIRCC.formatDate(data.french.date, 'es-ES'));
-      setAll('[data-draw-date]', PathwayIRCC.formatLongDate(data.french.date, 'es-ES'));
+      const irccLocale = copy('irccLocale', 'es-ES');
+      setAll('[data-ircc-cec-date]', PathwayIRCC.formatDate(data.cec.date, irccLocale));
+      setAll('[data-ircc-french-date]', PathwayIRCC.formatDate(data.french.date, irccLocale));
+      setAll('[data-draw-date]', PathwayIRCC.formatLongDate(data.french.date, irccLocale));
 
       const status = data.source === 'live'
-        ? 'consulta automática activa'
+        ? (homeCopy.dataStatus?.live || 'consulta automática activa')
         : data.source === 'cache'
-          ? 'última consulta exitosa conservada'
-          : 'datos de respaldo incluidos';
+          ? (homeCopy.dataStatus?.cache || 'última consulta exitosa conservada')
+          : (homeCopy.dataStatus?.fallback || 'datos de respaldo incluidos');
       setAll('[data-data-status]', status);
     })
     .catch(() => {
-      setAll('[data-data-status]', 'datos de respaldo incluidos');
+      setAll('[data-data-status]', homeCopy.dataStatus?.fallback || 'datos de respaldo incluidos');
     });
 })();

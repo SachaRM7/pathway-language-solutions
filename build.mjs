@@ -7,10 +7,33 @@ const dist = resolve(root, 'dist');
 const client = resolve(dist, 'client');
 const server = resolve(dist, 'server');
 const metadata = resolve(dist, '.openai');
+const canonicalHome = await readFile(resolve(root, 'index-v2.html'), 'utf8');
+const sectionSignature = markup => [...markup.matchAll(/<section class="([^"]+)"/g)].map(match => match[1]);
+const canonicalHomeSections = sectionSignature(canonicalHome);
 const sharedShellHref = 'pathway-page-shell.css';
 const assertSharedShell = (markup, page) => {
   if (!markup.includes('class="pathway-page"') || !markup.includes(sharedShellHref)) {
     throw new Error(`${page} must use the shared Pathway page shell.`);
+  }
+};
+const assertHomeParity = (markup, page) => {
+  const requiredMarkers = [
+    'pathway-v2.css', 'brand-palette', 'class="site-header"', 'class="hero"',
+    'starting-section', 'route-section', 'context-section', 'teacher-section',
+    'experience-section', 'week-section', 'stories-section', 'plans-section',
+    'faq-section', 'closing-section', 'class="site-footer"'
+  ];
+  const missing = requiredMarkers.filter(marker => !markup.includes(marker));
+  if (missing.length) {
+    throw new Error(`${page} diverges from the Spanish home structure: ${missing.join(', ')}`);
+  }
+  const positions = requiredMarkers.slice(2).map(marker => markup.indexOf(marker));
+  if (positions.some((position, index) => index > 0 && position <= positions[index - 1])) {
+    throw new Error(`${page} changes the Spanish home section order.`);
+  }
+  const localizedSections = sectionSignature(markup);
+  if (JSON.stringify(localizedSections) !== JSON.stringify(canonicalHomeSections)) {
+    throw new Error(`${page} must preserve every Spanish home section and CSS class.`);
   }
 };
 const assets = [
@@ -50,7 +73,8 @@ for (const locale of Object.keys(LOCALES)) {
   await mkdir(localeDir, { recursive: true });
   for (const page of pageNames) {
     const markup = renderLocalePage(locale, page);
-    assertSharedShell(markup, `${locale}/${page}`);
+    if (page === 'index.html') assertHomeParity(markup, `${locale}/${page}`);
+    else assertSharedShell(markup, `${locale}/${page}`);
     await writeFile(resolve(localeDir, page), markup, 'utf8');
   }
 }
