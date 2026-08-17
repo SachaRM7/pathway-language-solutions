@@ -1,4 +1,4 @@
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { LOCALES, pageNames, renderLocalePage } from './i18n/locale-pages.mjs';
 
@@ -7,13 +7,19 @@ const dist = resolve(root, 'dist');
 const client = resolve(dist, 'client');
 const server = resolve(dist, 'server');
 const metadata = resolve(dist, '.openai');
+const sharedShellHref = 'pathway-page-shell.css';
+const assertSharedShell = (markup, page) => {
+  if (!markup.includes('class="pathway-page"') || !markup.includes(sharedShellHref)) {
+    throw new Error(`${page} must use the shared Pathway page shell.`);
+  }
+};
 const assets = [
   'index-v2.html', 'calculador.html', 'calculateur-crs.html', 'gracias.html', 'merci.html',
   'privacidad.html', 'politique-confidentialite.html', 'condiciones.html', 'conditions-nclc7.html',
   'preparacion-tef-canada.html', 'recursos.html', 'nclc-7.html', 'tefaq-quebec.html',
   'pathway-mark.svg', 'theme.css', 'guide.css', 'theme.js', 'site-config.js', 'analytics.js',
   'og-pathway.png', 'robots.txt', 'sitemap.xml', 'crs-engine.js', 'ircc-data.js',
-  'pathway-v2.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
+  'pathway-v2.css', 'pathway-page-shell.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
   'placement-test.css', 'test.css', 'placement-test.js', 'test.js', 'placement-scoring.js',
   'inscription.html', 'inscription.js', 'resource.css', 'resource.js',
   'calculator.css', 'calculator.js', 'conditions-nclc7.css', 'conditions-nclc7.js'
@@ -35,11 +41,17 @@ await mkdir(resolve(client, 'i18n'), { recursive: true });
 await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.css'), { recursive: false });
 await cp(resolve(root, '.openai', 'hosting.json'), resolve(metadata, 'hosting.json'));
 
+for (const page of ['condiciones.html', 'conditions-nclc7.html', 'calculador.html', 'calculateur-crs.html']) {
+  assertSharedShell(await readFile(resolve(root, page), 'utf8'), page);
+}
+
 for (const locale of Object.keys(LOCALES)) {
   const localeDir = resolve(client, locale);
   await mkdir(localeDir, { recursive: true });
   for (const page of pageNames) {
-    await writeFile(resolve(localeDir, page), renderLocalePage(locale, page), 'utf8');
+    const markup = renderLocalePage(locale, page);
+    assertSharedShell(markup, `${locale}/${page}`);
+    await writeFile(resolve(localeDir, page), markup, 'utf8');
   }
 }
 
