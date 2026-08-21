@@ -11,10 +11,10 @@
   const levelOrder = ['A1', 'A2', 'B1', 'B2'];
   const effectiveLevel = levelOrder.includes(storedResult?.level) ? storedResult.level : 'A1';
   const planTimelines = {
-    Esencial: { A1: 12, A2: 9, B1: 7, B2: 5 },
-    'Acelerado 3h': { A1: 8, A2: 6, B1: 4, B2: 3 },
-    Acelerado: { A1: 6, A2: 5, B1: 4, B2: 3 },
-    'Intensivo 5h': { A1: 5, A2: 4, B1: 3, B2: 2 },
+    Esencial: { A1: 6, A2: 9, B1: 7, B2: 5 },
+    'Acelerado 3h': { A1: 5, A2: 6, B1: 4, B2: 3 },
+    Acelerado: { A1: 5, A2: 5, B1: 4, B2: 3 },
+    'Intensivo 5h': { A1: 4, A2: 4, B1: 3, B2: 2 },
     Intensivo: { A1: 4, A2: 3, B1: 2, B2: 2 }
   };
 
@@ -37,8 +37,11 @@
   form.querySelectorAll('[name="plan"]').forEach(plan => {
     const months = planTimelines[plan.value]?.[effectiveLevel] || 6;
     const duration = plan.closest('.choice')?.querySelector('[data-plan-duration]');
-    if (duration) duration.textContent = `${plan.dataset.hours} · aprox. ${months} meses desde ${effectiveLevel}`;
-    plan.dataset.duration = `aprox. ${months} meses desde ${effectiveLevel}`;
+    const durationLabel = effectiveLevel === 'A1'
+      ? `ciclo de ${months} meses desde A1`
+      : `aprox. ${months} meses desde ${effectiveLevel}`;
+    if (duration) duration.textContent = durationLabel;
+    plan.dataset.duration = durationLabel;
   });
 
   const startDate = form.querySelector('[name="startDate"]');

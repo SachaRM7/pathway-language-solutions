@@ -195,6 +195,15 @@ document.documentElement.classList.add('js');
     if (!controls || !slides.length) return;
     let current = 0;
 
+    const syncHeight = () => {
+      slides.forEach(slide => { slide.hidden = false; slide.style.minHeight = ''; });
+      const maxHeight = Math.ceil(Math.max(...slides.map(slide => slide.getBoundingClientRect().height)));
+      slides.forEach((slide, slideIndex) => {
+        slide.hidden = slideIndex !== current;
+        slide.style.minHeight = `${maxHeight}px`;
+      });
+    };
+
     const previous = document.createElement('button');
     previous.type = 'button';
     previous.className = 'carousel-arrow carousel-prev';
@@ -233,12 +242,24 @@ document.documentElement.classList.add('js');
       next.hidden = true;
     }
     show(0);
+    syncHeight();
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(syncHeight, 120);
+    }, { passive: true });
+    document.fonts?.ready.then(syncHeight);
   };
 
   document.querySelectorAll('[data-story-carousel]').forEach(buildStoryCarousel);
 
   const assetBase = copy('assetBase', '');
   const testimonialVideos = [
+    {
+      src: `${assetBase}assets/videos/testimonio-25.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first`,
+      name: 'Nuevo testimonio'
+    },
     {
       src: `${assetBase}assets/videos/testimonio-majo.mp4`,
       poster: `${assetBase}assets/videos/testimonio-majo-poster.jpg?v=20260814`,
@@ -248,6 +269,11 @@ document.documentElement.classList.add('js');
       src: `${assetBase}assets/videos/testimonio-22.mp4`,
       poster: `${assetBase}assets/videos/testimonio-22-poster.jpg?v=20260814-2`,
       name: 'Pia'
+    },
+    {
+      src: `${assetBase}assets/videos/testimonio-24.mp4`,
+      poster: `${assetBase}assets/videos/testimonio-24-poster.jpg?v=20260821-video-carousel`,
+      name: 'Nuevo testimonio'
     },
     {
       src: `${assetBase}assets/videos/testimonio-21.mp4`,
