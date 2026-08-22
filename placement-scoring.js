@@ -18,14 +18,21 @@
     'Grammaire et vocabulaire': 'grammarVocabulary'
   }[question.skill] || 'grammarVocabulary');
 
+  // A wrong answer removes a third of its weight, but the penalty never erases the
+  // credit of a correct answer: any correct answer keeps the score above zero.
   const correctedScore = entries => {
     const totals = entries.reduce((result, entry) => {
       const weight = DIFFICULTY[entry.question.level] || 1;
       result.maximum += weight;
       result.earned += entry.correct ? weight : -(weight / 3);
+      if (entry.correct) result.credited += weight;
       return result;
-    }, { earned: 0, maximum: 0 });
-    return totals.maximum ? Math.max(0, Math.min(100, Math.round((totals.earned / totals.maximum) * 100))) : 0;
+    }, { earned: 0, credited: 0, maximum: 0 });
+    if (!totals.maximum) return 0;
+    if (!totals.credited) return 0;
+    const corrected = Math.round((totals.earned / totals.maximum) * 100);
+    const floor = Math.max(1, Math.round((totals.credited / totals.maximum) * 100 / 3));
+    return Math.max(floor, Math.min(100, corrected));
   };
 
   const score = ({ questions, responses, mode = 'intensive' }) => {
@@ -53,8 +60,11 @@
     levelIndex = Math.min(levelIndex, skillLimiter);
     if (mode === 'express' && levelIndex > 0 && selected.length < questions.length) levelIndex = Math.min(levelIndex, 2);
 
-    const weakestSkill = AUTO_SKILLS.reduce((weakest, skill) => skillScores[skill] < skillScores[weakest] ? skill : weakest, AUTO_SKILLS[0]);
     const correctCount = evaluated.filter(entry => entry.correct).length;
+    // The bank is not demanding enough to certify B2: it is only awarded on a flawless run.
+    if (levelIndex >= 3 && correctCount < evaluated.length) levelIndex = 2;
+
+    const weakestSkill = AUTO_SKILLS.reduce((weakest, skill) => skillScores[skill] < skillScores[weakest] ? skill : weakest, AUTO_SKILLS[0]);
     const speaking = { score: null, status: 'not-evaluated', label: labels.speaking };
     return {
       mode,

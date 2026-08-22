@@ -14,10 +14,10 @@
       question: 'pregunta',
       durationExpress: '12–15 min',
       durationIntensive: '25–30 min',
-      audioUsed: listens => `Escuchas utilizadas: ${listens}/2`,
-      audioNoMore: listens => `${UI.es.audioUsed(listens)} · no hay más repeticiones`,
-      audioNoMoreAfter: listens => `${UI.es.audioUsed(listens)} · no hay más repeticiones después de esta escucha`,
-      audioLabel: 'Reproducción final disponible; pausa y reanudación no consumen otra escucha',
+      audioWarning: 'Atención: solo tienes derecho a una escucha por pregunta.',
+      audioPlaying: 'Escucha en curso · es tu única escucha para esta pregunta',
+      audioSpent: 'Escucha utilizada (1/1) para esta pregunta',
+      audioLabel: 'Una sola escucha por pregunta; pausar y reanudar no consume otra escucha',
       previous: 'Anterior',
       next: 'Siguiente',
       showResult: 'Ver mi resultado',
@@ -33,10 +33,10 @@
       question: 'question',
       durationExpress: '12–15 min',
       durationIntensive: '25–30 min',
-      audioUsed: listens => `Écoutes utilisées : ${listens}/2`,
-      audioNoMore: listens => `${UI.fr.audioUsed(listens)} · aucune autre rediffusion`,
-      audioNoMoreAfter: listens => `${UI.fr.audioUsed(listens)} · aucune autre rediffusion après cette écoute`,
-      audioLabel: 'Dernière lecture disponible ; mettre en pause et reprendre ne consomme pas une écoute supplémentaire',
+      audioWarning: 'Attention : tu n’as droit qu’à une seule écoute par question.',
+      audioPlaying: 'Écoute en cours · c’est ta seule écoute pour cette question',
+      audioSpent: 'Écoute utilisée (1/1) pour cette question',
+      audioLabel: 'Une seule écoute par question ; mettre en pause et reprendre ne consomme pas une écoute supplémentaire',
       previous: 'Précédente',
       next: 'Suivante',
       showResult: 'Voir mon résultat',
@@ -52,10 +52,10 @@
       question: 'question',
       durationExpress: '12–15 min',
       durationIntensive: '25–30 min',
-      audioUsed: listens => `Listens used: ${listens}/2`,
-      audioNoMore: listens => `${UI.en.audioUsed(listens)} · no more replays`,
-      audioNoMoreAfter: listens => `${UI.en.audioUsed(listens)} · no more replays after this listen`,
-      audioLabel: 'Final playback available; pausing and resuming does not use another listen',
+      audioWarning: 'Careful: you only get one listen per question.',
+      audioPlaying: 'Playing · this is your only listen for this question',
+      audioSpent: 'Listen used (1/1) for this question',
+      audioLabel: 'One listen per question; pausing and resuming does not use another listen',
       previous: 'Previous',
       next: 'Next',
       showResult: 'See my result',
@@ -71,10 +71,10 @@
       question: 'Frage',
       durationExpress: '12–15 Min.',
       durationIntensive: '25–30 Min.',
-      audioUsed: listens => `Verwendete Hörversuche: ${listens}/2`,
-      audioNoMore: listens => `${UI.de.audioUsed(listens)} · keine weitere Wiedergabe`,
-      audioNoMoreAfter: listens => `${UI.de.audioUsed(listens)} · nach diesem Hören keine weitere Wiedergabe`,
-      audioLabel: 'Letzte Wiedergabe verfügbar; Pausieren und Fortsetzen verbrauchen keinen weiteren Versuch',
+      audioWarning: 'Achtung: Sie haben nur einen Hörversuch pro Frage.',
+      audioPlaying: 'Wiedergabe läuft · Ihr einziger Hörversuch für diese Frage',
+      audioSpent: 'Hörversuch verbraucht (1/1) für diese Frage',
+      audioLabel: 'Ein Hörversuch pro Frage; Pausieren und Fortsetzen verbrauchen keinen weiteren Versuch',
       previous: 'Zurück',
       next: 'Weiter',
       showResult: 'Ergebnis anzeigen',
@@ -108,23 +108,23 @@
     { level: 'A2', skill: 'Grammaire et vocabulaire', title: 'Tu n’as pas compris une consigne. Que dis-tu ?', options: ['Quoi ?', 'Répétez.', 'Excusez-moi, pourriez-vous répéter plus lentement ?', 'Je ne veux pas écouter.'], answer: 2 },
     { level: 'A2', skill: 'Grammaire et vocabulaire', title: 'Quelle réponse explique simplement un retard ?', options: ['Parce que le bus a eu du retard, je suis arrivé dix minutes après.', 'Le bus retard moi dix minutes.', 'Hier demain le bus.', 'Je retard, c’est bus.'], answer: 0 },
 
-    { level: 'B1', skill: 'Compréhension écrite', title: 'Qu’est-ce qu’un modèle de travail hybride ?', context: 'Le télétravail évite certains déplacements mais peut isoler les salariés. Plusieurs entreprises proposent donc un modèle hybride afin de garder les avantages des deux façons de travailler.', options: ['Travailler uniquement la nuit', 'Changer de métier chaque semaine', 'Alterner télétravail et présence au bureau', 'Partager un poste entre deux entreprises'], answer: 2 },
-    { level: 'B1', skill: 'Compréhension écrite', title: 'Quelle réserve l’auteur exprime-t-il ?', context: 'Les cours en ligne offrent une grande souplesse. Cependant, sans calendrier précis ni échanges réguliers, certains apprenants perdent rapidement leur motivation.', options: ['Les cours coûtent toujours trop cher', 'La flexibilité suffit à garantir les progrès', 'L’absence de cadre peut réduire la motivation', 'Les échanges empêchent de travailler seul'], answer: 2 },
-    { level: 'B1', skill: 'Compréhension orale', title: 'Pourquoi certains employés préfèrent-ils venir au bureau ?', audio: 'assets/audio/placement-b1.wav', options: ['Ils gagnent plus d’argent', 'Ils n’ont pas Internet', 'Ils se concentrent mieux avec leurs collègues', 'Ils veulent travailler le week-end'], answer: 2 },
-    { level: 'B1', skill: 'Compréhension orale', title: 'Combien de jours de télétravail sont autorisés par semaine ?', audio: 'assets/audio/placement-b1.wav', options: ['Un jour', 'Deux jours', 'Trois jours', 'Toute la semaine'], answer: 1 },
-    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase articule clairement une opposition ?', options: ['Le télétravail est pratique, pourtant il peut aussi isoler.', 'Le télétravail pratique et isoler pourtant.', 'Pourtant pratique télétravail isolement.', 'Le télétravail est pratique parce qu’il isole toujours.'], answer: 0 },
-    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Choisis la formulation la plus claire pour donner un conseil.', options: ['À ta place, je définirais des horaires fixes afin de mieux progresser.', 'À ta place, horaires fixes progrès.', 'Tu définis hier des horaires pour progresserais.', 'Il faut que tu définis des horaires.'], answer: 0 },
-    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Comment exprimer un désaccord de façon nuancée ?', options: ['C’est faux.', 'Je ne suis pas tout à fait d’accord, car cette solution ne convient pas à tous.', 'Non, jamais.', 'Tu as tort et c’est tout.'], answer: 1 },
-    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Quelle réponse développe une opinion personnelle ?', options: ['Oui.', 'Peut-être.', 'À mon avis, cette mesure est utile parce qu’elle réduit les déplacements sans supprimer les échanges.', 'La mesure, voilà.'], answer: 2 },
+    { level: 'B1', skill: 'Compréhension écrite', title: 'Qu’est-ce qu’un modèle de travail hybride ?', context: 'Le télétravail évite certains déplacements mais peut isoler les salariés. Plusieurs entreprises proposent donc un modèle hybride afin de garder les avantages des deux façons de travailler.', options: ['Confier l’ensemble des tâches collectives à des équipes entièrement à distance', 'Remplacer toutes les réunions du bureau par des échanges écrits permanents', 'Alterner des journées de télétravail et des journées de présence au bureau', 'Laisser chaque salarié partager son poste entre deux entreprises différentes'], answer: 2 },
+    { level: 'B1', skill: 'Compréhension écrite', title: 'Quelle réserve l’auteur exprime-t-il ?', context: 'Les cours en ligne offrent une grande souplesse. Cependant, sans calendrier précis ni échanges réguliers, certains apprenants perdent rapidement leur motivation.', options: ['Le coût des formations en ligne décourage la majorité des apprenants inscrits', 'La souplesse des horaires garantit à elle seule la régularité des progrès', 'Sans cadre précis ni échanges réguliers, la motivation des apprenants s’érode', 'Les échanges entre apprenants empêchent de travailler à son propre rythme'], answer: 2 },
+    { level: 'B1', skill: 'Compréhension orale', title: 'Pourquoi certains employés préfèrent-ils venir au bureau ?', audio: 'assets/audio/placement-b1.wav', options: ['Parce que leurs déplacements quotidiens leur sont remboursés par l’entreprise', 'Parce que leur connexion Internet à domicile est devenue trop instable', 'Parce qu’ils se concentrent mieux en travaillant auprès de leurs collègues', 'Parce qu’ils souhaitent pouvoir travailler aussi pendant le week-end'], answer: 2 },
+    { level: 'B1', skill: 'Compréhension orale', title: 'Combien de jours de télétravail sont autorisés par semaine ?', audio: 'assets/audio/placement-b1.wav', options: ['Un jour par semaine', 'Deux jours par semaine', 'Trois jours par semaine', 'Quatre jours par semaine'], answer: 1 },
+    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase articule clairement une opposition ?', options: ['Le télétravail est pratique, pourtant il peut aussi isoler les équipes.', 'Le télétravail est pratique, donc il peut aussi isoler les équipes.', 'Le télétravail est pratique, parce qu’il peut aussi isoler les équipes.', 'Le télétravail est pratique, en effet il peut aussi isoler les équipes.'], answer: 0 },
+    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Choisis la formulation la plus claire pour donner un conseil.', options: ['À ta place, je définirais des horaires fixes afin de mieux progresser.', 'Si tu définirais des horaires fixes, tu progresserais bien plus vite.', 'Il faudrait que tu définis des horaires fixes pour progresser plus vite.', 'Je te conseille que tu définisses des horaires fixes pour mieux progresser.'], answer: 0 },
+    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Comment exprimer un désaccord de façon nuancée ?', options: ['Je suis absolument contre cette solution, elle ne convient vraiment à personne.', 'Je ne suis pas tout à fait d’accord, car cette solution ne convient pas à tous.', 'Cette solution est totalement inadaptée et personne ne peut sérieusement la défendre.', 'Je suis entièrement d’accord, même si cette solution ne convient pas à tous.'], answer: 1 },
+    { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Quelle réponse développe une opinion personnelle ?', options: ['Cette mesure a été adoptée l’an dernier par la majorité des entreprises.', 'Il paraît que cette mesure réduit les déplacements dans plusieurs grandes entreprises.', 'À mon avis, cette mesure est utile parce qu’elle réduit les déplacements sans supprimer les échanges.', 'La mesure réduit les déplacements et maintient les échanges entre les collègues.'], answer: 2 },
 
-    { level: 'B2', skill: 'Compréhension écrite', title: 'Pourquoi les compétences humaines restent-elles importantes ?', context: 'Les entreprises forment leurs employés pour travailler avec les nouvelles technologies. La créativité, la communication, l’esprit critique et l’adaptation deviennent recherchés, alors que certaines compétences techniques risquent de devenir obsolètes.', options: ['Parce que les technologies sont interdites', 'Parce qu’elles permettent de travailler avec les évolutions technologiques', 'Parce que les entreprises refusent toute automatisation', 'Parce qu’elles remplacent les compétences techniques'], answer: 1 },
-    { level: 'B2', skill: 'Compréhension écrite', title: 'Quelle conclusion implicite se dégage du texte ?', context: 'L’accès immédiat à l’information donne l’impression que toute réponse est à portée de main. Pourtant, distinguer une source fiable d’une affirmation séduisante exige du temps, des méthodes et une vigilance que la vitesse de consultation ne garantit pas.', options: ['La rapidité assure la fiabilité', 'Toute information en ligne est trompeuse', 'L’accès à l’information ne remplace pas l’esprit critique', 'Les méthodes de vérification sont inutiles'], answer: 2 },
-    { level: 'B2', skill: 'Compréhension orale', title: 'Quelle est l’idée principale de l’extrait ?', audio: 'assets/audio/placement-b2.wav', options: ['Les outils numériques suppriment toujours le travail répétitif', 'Il faut abandonner les outils numériques', 'La maîtrise technique suffit à améliorer la concentration', 'Les outils numériques peuvent aider, mais leur usage doit aussi être limité'], answer: 3 },
-    { level: 'B2', skill: 'Compréhension orale', title: 'Quel effet négatif des outils numériques est mentionné ?', audio: 'assets/audio/placement-b2.wav', options: ['Ils ralentissent toutes les tâches', 'Ils multiplient les sollicitations', 'Ils empêchent toute créativité', 'Ils rendent la technologie inaccessible'], answer: 1 },
-    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase présente l’argumentation la plus précise ?', options: ['Bien que ces outils améliorent la productivité, leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Ces outils améliorent mais ça dépend.', 'Malgré que les outils sont efficaces, ils dépendent.', 'Les outils, étant productifs, donc réflexion.'], answer: 0 },
-    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Choisis la reformulation qui conserve la nuance.', context: 'La mesure pourrait être utile, à condition qu’elle soit accompagnée d’un suivi régulier.', options: ['La mesure sera forcément utile.', 'Sans suivi régulier, l’utilité de la mesure reste incertaine.', 'Le suivi rend toute mesure inutile.', 'La mesure est utile même sans accompagnement.'], answer: 1 },
-    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Quelle intervention structure le mieux une prise de position ?', options: ['Je dirais d’abord que cette solution répond à un besoin réel ; néanmoins, deux limites doivent être examinées.', 'Moi, je pense ça, mais bon.', 'Il y a une solution et deux choses.', 'Premièrement oui, deuxièmement peut-être.'], answer: 0 },
-    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Comment reformuler poliment une objection complexe ?', options: ['Je comprends cet argument ; toutefois, il suppose que tous les publics disposent des mêmes ressources, ce qui reste à démontrer.', 'Non, cet argument ne marche pas.', 'C’est impossible et faux.', 'Je comprends, mais voilà, non.'], answer: 0 }
+    { level: 'B2', skill: 'Compréhension écrite', title: 'Pourquoi les compétences humaines restent-elles importantes ?', context: 'Les entreprises forment leurs employés pour travailler avec les nouvelles technologies. La créativité, la communication, l’esprit critique et l’adaptation deviennent recherchés, alors que certaines compétences techniques risquent de devenir obsolètes.', options: ['Parce qu’elles compensent le retard technologique accumulé par certaines entreprises', 'Parce qu’elles permettent de suivre les évolutions technologiques plutôt que de les subir', 'Parce qu’elles ralentissent une automatisation que les entreprises jugent excessive', 'Parce qu’elles rendent inutile toute mise à jour des compétences techniques'], answer: 1 },
+    { level: 'B2', skill: 'Compréhension écrite', title: 'Quelle conclusion implicite se dégage du texte ?', context: 'L’accès immédiat à l’information donne l’impression que toute réponse est à portée de main. Pourtant, distinguer une source fiable d’une affirmation séduisante exige du temps, des méthodes et une vigilance que la vitesse de consultation ne garantit pas.', options: ['La rapidité d’accès garantit désormais la fiabilité des informations consultées', 'Toute information disponible en ligne doit être considérée comme trompeuse', 'Disposer de l’information ne dispense pas du travail de vérification', 'Les méthodes de vérification deviennent inutiles quand les sources sont nombreuses'], answer: 2 },
+    { level: 'B2', skill: 'Compréhension orale', title: 'Quelle est l’idée principale de l’extrait ?', audio: 'assets/audio/placement-b2.wav', options: ['Les outils numériques suppriment l’essentiel des tâches répétitives sans contrepartie', 'Les outils numériques devraient être abandonnés au profit de méthodes traditionnelles', 'La maîtrise technique des outils suffit à protéger durablement la concentration', 'Les outils numériques peuvent aider, à condition d’en limiter aussi l’usage'], answer: 3 },
+    { level: 'B2', skill: 'Compréhension orale', title: 'Quel effet négatif des outils numériques est mentionné ?', audio: 'assets/audio/placement-b2.wav', options: ['Ils ralentissent l’ensemble des tâches quotidiennes des équipes', 'Ils multiplient les sollicitations pendant le temps de travail', 'Ils rendent toute forme de créativité impossible à long terme', 'Ils réservent la technologie aux personnes déjà expertes'], answer: 1 },
+    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase présente l’argumentation la plus précise ?', options: ['Bien que ces outils améliorent la productivité, leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Malgré que ces outils améliorent la productivité, leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Ces outils améliorent la productivité, donc leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Bien que ces outils améliorent la productivité, leur efficacité en dépend de l’usage réfléchi que l’on en fait.'], answer: 0 },
+    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Choisis la reformulation qui conserve la nuance.', context: 'La mesure pourrait être utile, à condition qu’elle soit accompagnée d’un suivi régulier.', options: ['La mesure sera forcément utile, même si le suivi qui l’accompagne reste irrégulier.', 'Sans un suivi régulier, l’utilité de la mesure demeure incertaine.', 'Le suivi régulier rend la mesure inutile dans la plupart des situations.', 'La mesure conserve son utilité indépendamment du suivi qui l’accompagne.'], answer: 1 },
+    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Quelle intervention structure le mieux une prise de position ?', options: ['Je dirais d’abord que cette solution répond à un besoin réel ; néanmoins, deux limites doivent être examinées.', 'Je pense que cette solution répond à un besoin réel et qu’il y a aussi deux ou trois limites.', 'Cette solution répond à un besoin réel, par conséquent deux limites doivent être examinées.', 'D’un côté cette solution répond à un besoin réel, d’un côté deux limites doivent être examinées.'], answer: 0 },
+    { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Comment reformuler poliment une objection complexe ?', options: ['Je comprends cet argument ; toutefois, il suppose que tous les publics disposent des mêmes ressources, ce qui reste à démontrer.', 'Je comprends cet argument, mais il est évident que tous les publics ne disposent pas des mêmes ressources.', 'Cet argument suppose que tous les publics disposent des mêmes ressources, ce qui est manifestement faux.', 'Je comprends parfaitement cet argument et je partage l’idée que tous les publics disposent des mêmes ressources.'], answer: 0 }
   ];
 
   questions.forEach((question, index) => {
@@ -181,35 +181,31 @@
   };
   modeButtons.forEach(button => button.addEventListener('click', () => selectMode(button.dataset.testMode)));
 
+  // One listen per question: two questions can share the same audio file and each
+  // one still opens a fresh playback.
   audio.addEventListener('play', () => {
     if (!audioQuestionKey) return;
-    const starts = audioStarts.get(audioQuestionKey) || 0;
+    const spent = audioStarts.get(audioQuestionKey) === true;
     const freshStart = audio.dataset.started !== 'true' || audio.dataset.finished === 'true';
-    if (starts >= 2 && freshStart) {
+    if (spent && freshStart) {
       audio.pause();
       audio.controls = false;
       audio.setAttribute('aria-disabled', 'true');
-      if (audioStatus) audioStatus.textContent = T.audioNoMore(2);
+      if (audioStatus) audioStatus.textContent = T.audioSpent;
       return;
     }
     if (!freshStart) return;
-    const nextStart = Math.min(2, starts + 1);
-    audioStarts.set(audioQuestionKey, nextStart);
+    audioStarts.set(audioQuestionKey, true);
     audio.dataset.started = 'true';
-    if (audioStatus) audioStatus.textContent = nextStart >= 2 ? T.audioNoMoreAfter(nextStart) : T.audioUsed(nextStart);
-    if (nextStart >= 2) {
-      audio.setAttribute('aria-disabled', 'true');
-      audio.setAttribute('aria-label', T.audioLabel);
-    }
+    audio.setAttribute('aria-label', T.audioLabel);
+    if (audioStatus) audioStatus.textContent = T.audioPlaying;
   });
   audio.addEventListener('ended', () => {
     audio.dataset.finished = 'true';
-    const listens = audioStarts.get(audioQuestionKey) || 0;
-    if (listens >= 2) {
-      audio.controls = false;
-      audio.setAttribute('aria-disabled', 'true');
-      if (audioStatus) audioStatus.textContent = T.audioNoMore(listens);
-    }
+    if (audioStarts.get(audioQuestionKey) !== true) return;
+    audio.controls = false;
+    audio.setAttribute('aria-disabled', 'true');
+    if (audioStatus) audioStatus.textContent = T.audioSpent;
   });
 
   const renderQuestion = () => {
@@ -222,15 +218,16 @@
     audio.pause();
     audio.currentTime = 0;
     audioBox.hidden = !question.audio;
-    audioQuestionKey = question.audio || '';
+    audioQuestionKey = question.audio ? `${question.index}` : '';
     audio.dataset.started = 'false';
     audio.dataset.finished = 'false';
     if (question.audio) {
       audio.src = assetPath(question.audio);
-      const listens = audioStarts.get(audioQuestionKey) || 0;
-      audio.controls = listens < 2;
-      audio.setAttribute('aria-disabled', String(listens >= 2));
-      if (audioStatus) audioStatus.textContent = listens >= 2 ? T.audioNoMore(listens) : T.audioUsed(listens);
+      const spent = audioStarts.get(audioQuestionKey) === true;
+      audio.controls = !spent;
+      audio.setAttribute('aria-disabled', String(spent));
+      audio.setAttribute('aria-label', T.audioLabel);
+      if (audioStatus) audioStatus.textContent = spent ? T.audioSpent : T.audioWarning;
     } else {
       audio.removeAttribute('src');
       audio.removeAttribute('aria-disabled');
