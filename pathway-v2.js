@@ -329,13 +329,63 @@ document.documentElement.classList.add('js');
   if (storyDeck) {
     const storySlides = [...storyDeck.querySelectorAll('[data-story-slide]')];
     const storyCarousels = [...storyDeck.querySelectorAll('[data-story-carousel]')];
-    storySlides.forEach(slide => {
-      slide.hidden = false;
-      slide.style.minHeight = '';
-      storyDeck.append(slide);
+    const mobileStoriesQuery = window.matchMedia('(max-width: 760px)');
+    storySlides.forEach((slide, index) => {
+      slide.classList.add(index % 2 === 0 ? 'story-tone-dark' : 'story-tone-light');
     });
-    storyCarousels.forEach(carousel => carousel.remove());
-    setupSwipeDeck(storyDeck, ':scope > [data-story-slide]', document.querySelector('[data-story-deck-index]'));
+
+    const storyGroups = storyCarousels.map(carousel => {
+      const slides = [...carousel.querySelectorAll('[data-story-slide]')];
+      const controls = carousel.querySelector('[data-carousel-controls]');
+      let current = 0;
+
+      const show = index => {
+        current = (index + slides.length) % slides.length;
+        if (mobileStoriesQuery.matches) return;
+        slides.forEach((slide, slideIndex) => { slide.hidden = slideIndex !== current; });
+      };
+
+      if (controls && slides.length > 1) {
+        const previous = document.createElement('button');
+        previous.type = 'button';
+        previous.className = 'carousel-arrow carousel-prev';
+        previous.setAttribute('aria-label', homeCopy.carousel?.previous || 'Testimonio anterior');
+        previous.textContent = '←';
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'carousel-arrow carousel-next';
+        next.setAttribute('aria-label', homeCopy.carousel?.next || 'Testimonio siguiente');
+        next.textContent = '→';
+
+        previous.addEventListener('click', () => show(current - 1));
+        next.addEventListener('click', () => show(current + 1));
+        controls.replaceChildren(previous, next);
+      }
+
+      return { slides, controls, show, get current() { return current; } };
+    });
+
+    const syncStoryLayout = () => {
+      const isMobile = mobileStoriesQuery.matches;
+      storyDeck.dataset.layout = isMobile ? 'mobile' : 'desktop';
+      storyGroups.forEach(group => {
+        if (group.controls) group.controls.hidden = isMobile;
+        if (isMobile) {
+          group.slides.forEach(slide => {
+            slide.hidden = false;
+            slide.style.minHeight = '';
+          });
+          return;
+        }
+        group.show(group.current);
+      });
+      if (!isMobile) storyDeck.scrollLeft = 0;
+    };
+
+    syncStoryLayout();
+    mobileStoriesQuery.addEventListener('change', syncStoryLayout);
+    setupSwipeDeck(storyDeck, '[data-story-slide]', document.querySelector('[data-story-deck-index]'));
   }
 
   const assetBase = copy('assetBase', '');
