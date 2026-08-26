@@ -183,6 +183,8 @@ h1, h2, h3 { font-family: var(--display); }
 .has-validation-error { animation: enrollment-shake .46s var(--ease, ease-in-out); }
 @keyframes enrollment-shake { 0%,100% { transform: translateX(0); } 22% { transform: translateX(-5px); } 44% { transform: translateX(4px); } 66% { transform: translateX(-2px); } 84% { transform: translateX(1px); } }
 .billing-condition { margin: .85rem 0 0; color: var(--ink-soft); font-size: .72rem; line-height: 1.55; }
+.registration-fee-note { margin: .85rem 0 0; padding: .8rem 1rem; border-left: 3px solid var(--coral); background: rgba(199, 111, 86, .08); color: var(--ink-soft); font-size: .75rem; line-height: 1.55; }
+.registration-fee-note strong { color: var(--ink); }
 .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; }
 .check-choice { min-height: 48px; padding: .72rem; border: 1px solid var(--line); border-radius: 11px; display: flex; align-items: center; gap: .55rem; background: var(--cream); font-size: .75rem; cursor: pointer; }
 .check-choice:has(input:checked) { border-color: var(--ink); background: var(--sage); }

@@ -258,7 +258,7 @@ document.documentElement.classList.add('js');
     {
       src: `${assetBase}assets/videos/testimonio-25.mp4`,
       poster: `${assetBase}assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first`,
-      name: 'Nuevo testimonio'
+      name: 'Yazmin'
     },
     {
       src: `${assetBase}assets/videos/testimonio-majo.mp4`,
@@ -273,7 +273,7 @@ document.documentElement.classList.add('js');
     {
       src: `${assetBase}assets/videos/testimonio-24.mp4`,
       poster: `${assetBase}assets/videos/testimonio-24-poster.jpg?v=20260821-video-carousel`,
-      name: 'Nuevo testimonio'
+      name: 'Diego'
     },
     {
       src: `${assetBase}assets/videos/testimonio-21.mp4`,
