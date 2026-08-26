@@ -36,6 +36,16 @@ const assertHomeParity = (markup, page) => {
     throw new Error(`${page} must preserve every Spanish home section and CSS class.`);
   }
 };
+const assertMobileExperience = (markup, page, nested = false) => {
+  const requiredMarkers = ['viewport-fit=cover', 'data-video-play', 'preload="none"', 'data-stories-more', 'data-plan-selector'];
+  const missing = requiredMarkers.filter(marker => !markup.includes(marker));
+  if (missing.length) throw new Error(`${page} is missing mobile experience markers: ${missing.join(', ')}`);
+  if (/data-testimonial-video[^>]*autoplay/.test(markup)) throw new Error(`${page} must not autoplay testimonial videos.`);
+  if (nested && (markup.includes('srcset="assets/') || markup.includes(', assets/'))) {
+    throw new Error(`${page} contains a non-localized responsive image path.`);
+  }
+};
+assertMobileExperience(canonicalHome, 'index-v2.html');
 const assets = [
   'index-v2.html', 'calculador.html', 'calculateur-crs.html', 'gracias.html', 'merci.html',
   'privacidad.html', 'politique-confidentialite.html', 'condiciones.html', 'conditions-nclc7.html',
@@ -73,7 +83,10 @@ for (const locale of Object.keys(LOCALES)) {
   await mkdir(localeDir, { recursive: true });
   for (const page of pageNames) {
     const markup = renderLocalePage(locale, page);
-    if (page === 'index.html') assertHomeParity(markup, `${locale}/${page}`);
+    if (page === 'index.html') {
+      assertHomeParity(markup, `${locale}/${page}`);
+      assertMobileExperience(markup, `${locale}/${page}`, true);
+    }
     else assertSharedShell(markup, `${locale}/${page}`);
     await writeFile(resolve(localeDir, page), markup, 'utf8');
   }

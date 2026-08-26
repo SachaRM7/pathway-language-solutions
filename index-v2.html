@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f5efe4">
   <meta name="description" content="Clases privadas de francés para hispanohablantes en Canadá. Un recorrido personalizado hacia el TEF Canada y el objetivo NCLC 7.">
   <title>NCLC 7 · Preparación TEF y TCF | Pathway</title>
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="pathway-v2.css?v=20260821-testimonial-layout">
+  <link rel="stylesheet" href="pathway-v2.css?v=20260826-mobile-first">
   <script src="site-config.js"></script>
   <script>
     document.documentElement.classList.add('brand-palette');
@@ -36,7 +36,7 @@
   <header class="site-header" data-header>
     <div class="container header-inner">
       <a class="brand" href="index-v2.html" aria-label="Pathway Language Solutions, inicio">
-        <img src="pathway-mark.svg" alt="">
+        <img src="pathway-mark.svg" width="39" height="39" alt="">
         <span>Pathway<small>Language Solutions</small></span>
       </a>
 
@@ -73,10 +73,6 @@
             <a class="button button-primary" href="calculador.html" data-cta="hero-evaluation">Evaluar mi punto de partida <span aria-hidden="true">→</span></a>
             <a class="text-link" href="#recorrido">Ver el recorrido completo</a>
           </div>
-          <aside class="desktop-experience-note" aria-label="Recomendación de visualización">
-            <span aria-hidden="true">⌘</span>
-            <div><strong>Mejor experiencia en ordenador</strong><small>En móvil puedes consultar el sitio, pero recomendamos un ordenador para aprovechar todo el recorrido.</small></div>
-          </aside>
           <p class="honesty-note" data-honesty-note hidden>Antes de inscribirte, te diremos con honestidad qué ritmo necesitas y si el plazo es viable.</p>
           <ul class="hero-assurances" aria-label="Ventajas principales">
             <li>Evaluación inicial gratuita</li>
@@ -87,7 +83,10 @@
 
         <figure class="lesson-card">
           <div class="lesson-image-wrap">
-            <img src="assets/pathway-zoom-course-laptop-approved.png?v=20260826-approved" alt="Ordenador portátil con Ryan y una alumna en un curso de francés por Zoom con traducciones al español">
+            <picture>
+              <source type="image/webp" srcset="assets/pathway-zoom-course-laptop-768.webp 768w, assets/pathway-zoom-course-laptop-1280.webp 1280w" sizes="(max-width: 760px) calc(100vw - 40px), 45vw">
+              <img src="assets/pathway-zoom-course-laptop-approved.png?v=20260826-approved" width="1536" height="1024" fetchpriority="high" alt="Ordenador portátil con Ryan y una alumna en un curso de francés por Zoom con traducciones al español">
+            </picture>
             <span class="live-badge"><i></i> Clase real en Zoom</span>
           </div>
           <figcaption class="lesson-caption">
@@ -164,10 +163,10 @@
       <div class="container teacher-grid reveal" data-reveal>
         <div class="teacher-visual" aria-label="Retratos de los profesores de Pathway">
           <figure class="teacher-portrait teacher-portrait-first">
-            <img src="assets/pathway-teacher-portrait-01.png" alt="Profesor de Pathway con polo verde y emblema del faro">
+            <img src="assets/pathway-teacher-portrait-01-720.webp" srcset="assets/pathway-teacher-portrait-01-360.webp 360w, assets/pathway-teacher-portrait-01-720.webp 720w" sizes="(max-width: 760px) 74vw, 300px" width="720" height="900" loading="lazy" decoding="async" alt="Profesor de Pathway con polo verde y emblema del faro">
           </figure>
           <figure class="teacher-portrait teacher-portrait-second">
-            <img src="assets/pathway-teacher-portrait-02.png" alt="Profesor de Pathway con barba, polo verde y emblema del faro">
+            <img src="assets/pathway-teacher-portrait-02-720.webp" srcset="assets/pathway-teacher-portrait-02-360.webp 360w, assets/pathway-teacher-portrait-02-720.webp 720w" sizes="(max-width: 760px) 74vw, 300px" width="720" height="900" loading="lazy" decoding="async" alt="Profesor de Pathway con barba, polo verde y emblema del faro">
           </figure>
         </div>
         <div class="teacher-copy">
@@ -197,7 +196,7 @@
           <article class="experience-card experience-coral"><span class="card-number">02</span><h3>Cuaderno vivo</h3><p>Correcciones, recursos y próximas tareas en un mismo lugar.</p></article>
           <article class="experience-card experience-lime"><span class="card-number">03</span><h3>Feedback útil</h3><p>Sabes qué repetir, por qué y cómo mejorarlo.</p></article>
           <article class="experience-card experience-neutral"><span class="card-number">04</span><h3>Talleres</h3><p>Más oportunidades de practicar sin perder el foco individual.</p></article>
-          <article class="experience-card experience-dark"><span class="card-number">05</span><h3>Dos simulacros completos</h3><p>Comprensión oral, comprensión escrita, expresión oral y expresión escrita bajo las condiciones del examen.</p></article>
+          <article class="experience-card experience-dark"><span class="card-number">05</span><h3>Simulacros completos</h3><p>Las 4 competencias, bajo las condiciones del examen.</p></article>
         </div>
       </div>
     </section>
@@ -232,13 +231,14 @@
         <div class="stories-grid reveal" data-reveal>
           <section class="video-testimonial" data-video-carousel aria-label="Testimonios de alumnos en video">
             <div class="video-stage">
-              <img src="assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first" alt="Una alumna comparte su experiencia aprendiendo francés con Pathway">
+              <img src="assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first" width="478" height="850" loading="lazy" decoding="async" alt="Una alumna comparte su experiencia aprendiendo francés con Pathway">
               <div class="video-placeholder">
                 <span>Testimonios en video</span>
                 <strong>Ocho alumnos cuentan su experiencia.</strong>
                 <small>Testimonios reales de la comunidad Pathway.</small>
               </div>
-              <video data-testimonial-video playsinline controls autoplay muted preload="auto" hidden aria-label="Testimonio de una alumna Pathway"></video>
+              <button class="video-play" type="button" data-video-play aria-label="Reproducir el primer testimonio en video"><span aria-hidden="true">▶</span> Ver un testimonio</button>
+              <video data-testimonial-video playsinline controls preload="none" hidden aria-label="Testimonio de una alumna Pathway"></video>
               <button class="carousel-arrow carousel-prev" type="button" data-video-previous aria-label="Video anterior" hidden>←</button>
               <button class="carousel-arrow carousel-next" type="button" data-video-next aria-label="Video siguiente" hidden>→</button>
             </div>
@@ -336,6 +336,7 @@
               </article>
               <div class="carousel-controls" data-carousel-controls></div>
             </section>
+            <button class="stories-more" type="button" data-stories-more aria-expanded="false">Ver más experiencias</button>
           </div>
 
         </div>
@@ -364,19 +365,24 @@
         </div>
 
         <div class="plans-grid reveal" data-reveal>
-          <article class="plan-card" data-plan data-month-price="185" data-month-hours="8 horas al mes · 2 h*/semana" data-cycle-price="943,50" data-cycle-original="1.110" data-cycle-saving="166,50" data-cycle-duration="6 meses" data-cycle-hours="2 h*/semana" data-cycle-equivalent="157,25" data-cycle-reference="2 h/semana">
+          <div class="plan-selector" role="tablist" aria-label="Elegir un ritmo de estudio">
+            <button type="button" role="tab" data-plan-selector="essential" aria-selected="false">2 h / sem.</button>
+            <button type="button" role="tab" data-plan-selector="accelerated" aria-selected="true">4 h / sem.</button>
+            <button type="button" role="tab" data-plan-selector="intensive" aria-selected="false">6 h / sem.</button>
+          </div>
+          <article class="plan-card" data-plan data-plan-id="essential" data-month-price="185" data-month-hours="8 horas al mes · 2 h*/semana" data-cycle-price="943,50" data-cycle-original="1.110" data-cycle-saving="166,50" data-cycle-duration="6 meses" data-cycle-hours="2 h*/semana" data-cycle-equivalent="157,25" data-cycle-reference="2 h/semana">
             <span class="plan-tag">Más de 18 meses</span><h3>Esencial</h3><div class="price" data-plan-price>185 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>8 horas al mes · 2 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
             <ul><li>Clases privadas en vivo</li><li>Cuaderno y seguimiento</li><li>Talleres prácticos</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-outline" href="calculador.html" data-cta="plan-essential">Evaluar este ritmo</a>
           </article>
-          <article class="plan-card plan-featured" data-plan data-month-price="370" data-month-hours="16 horas al mes · 4 h*/semana" data-cycle-price="1.572,50" data-cycle-original="1.850" data-cycle-saving="277,50" data-cycle-duration="5 meses" data-cycle-hours="4 h*/semana" data-cycle-equivalent="314,50" data-cycle-reference="4 h/semana">
+          <article class="plan-card plan-featured" data-plan data-plan-id="accelerated" data-month-price="370" data-month-hours="16 horas al mes · 4 h*/semana" data-cycle-price="1.572,50" data-cycle-original="1.850" data-cycle-saving="277,50" data-cycle-duration="5 meses" data-cycle-hours="4 h*/semana" data-cycle-equivalent="314,50" data-cycle-reference="4 h/semana">
             <span class="plan-tag">El más elegido</span><h3>Acelerado</h3><div class="price" data-plan-price>370 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>16 horas al mes · 4 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
             <ul><li>Compatible con trabajo a tiempo completo</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li data-exam-simulations>2 simulacros TEF</li></ul>
             <a class="button button-coral" href="calculador.html" data-cta="plan-accelerated">Evaluar este ritmo</a>
           </article>
-          <article class="plan-card" data-plan data-month-price="555" data-month-hours="24 horas al mes · 6 h*/semana" data-cycle-price="1.887" data-cycle-original="2.220" data-cycle-saving="333" data-cycle-duration="4 meses" data-cycle-hours="6 h*/semana" data-cycle-equivalent="471,75" data-cycle-reference="6 h/semana">
+          <article class="plan-card" data-plan data-plan-id="intensive" data-month-price="555" data-month-hours="24 horas al mes · 6 h*/semana" data-cycle-price="1.887" data-cycle-original="2.220" data-cycle-saving="333" data-cycle-duration="4 meses" data-cycle-hours="6 h*/semana" data-cycle-equivalent="471,75" data-cycle-reference="6 h/semana">
             <span class="plan-tag">Menos de 12 meses</span><h3>Intensivo</h3><div class="price" data-plan-price>555 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>24 horas al mes · 6 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
             <ul><li>Ritmo de avance prioritario</li><li>Clases privadas en vivo</li><li>Cuaderno, seguimiento y talleres</li><li data-exam-simulations>2 simulacros TEF</li></ul>
@@ -424,7 +430,7 @@
   <footer class="site-footer">
     <div class="footer-classic">
       <div class="container footer-top">
-        <a class="brand brand-footer" href="index-v2.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
+        <a class="brand brand-footer" href="index-v2.html"><img src="pathway-mark.svg" width="39" height="39" alt=""><span>Pathway<small>Language Solutions</small></span></a>
         <nav aria-label="Recursos"><a href="preparacion-tef-canada.html">Preparación TEF</a><a href="nclc-7.html">NCLC 7</a><a href="tefaq-quebec.html">Quebec</a><a href="privacidad.html">Privacidad</a><a href="condiciones.html">Condiciones</a></nav>
         <div class="footer-contact"><a href="mailto:contacto@pathway-languages.com">contacto@pathway-languages.com</a><a href="https://wa.me/51989887516" target="_blank" rel="noopener">+51 989 887 516</a></div>
       </div>
@@ -461,7 +467,7 @@
 
       <div class="container beacon-directory">
         <div class="beacon-brand-block">
-          <a class="brand brand-footer" href="index-v2.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
+          <a class="brand brand-footer" href="index-v2.html"><img src="pathway-mark.svg" width="39" height="39" alt=""><span>Pathway<small>Language Solutions</small></span></a>
           <p>Francés privado, estrategia clara y acompañamiento humano hacia el TEF Canada, el TCF Canada y el NCLC 7.</p>
         </div>
         <nav class="beacon-links" aria-label="Recursos">
@@ -490,6 +496,6 @@
   <script src="crs-engine.js"></script>
   <script src="ircc-data.js"></script>
   <script src="analytics.js"></script>
-  <script src="pathway-v2.js?v=20260821-testimonial-first"></script>
+  <script src="pathway-v2.js?v=20260826-mobile-first"></script>
 </body>
 </html>

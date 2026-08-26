@@ -7,6 +7,7 @@ document.documentElement.classList.add('js');
   const usesPathwayPalette = document.documentElement.classList.contains('brand-palette');
   const homeCopy = window.PathwayHomeCopy || {};
   const copy = (key, fallback) => homeCopy[key] ?? fallback;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // La variante Pathway conserve l'architecture C, mais précise immédiatement
   // l'objectif NCLC 7 et présente le programme comme la force de frappe principale.
@@ -103,23 +104,62 @@ document.documentElement.classList.add('js');
       button.addEventListener('click', () => setPricingMode(button.dataset.pricingMode));
     });
     setPricingMode('monthly');
+
+    const planSelectors = [...document.querySelectorAll('[data-plan-selector]')];
+    const mobilePlanQuery = window.matchMedia('(max-width: 760px)');
+    let selectedPlan = planSelectors.find(button => button.getAttribute('aria-selected') === 'true')?.dataset.planSelector || 'accelerated';
+    const setSelectedPlan = planId => {
+      selectedPlan = planId;
+      planSelectors.forEach(button => button.setAttribute('aria-selected', String(button.dataset.planSelector === planId)));
+      plans.forEach(plan => {
+        plan.hidden = mobilePlanQuery.matches && plan.dataset.planId !== planId;
+      });
+    };
+    planSelectors.forEach((button, buttonIndex) => {
+      button.addEventListener('click', () => setSelectedPlan(button.dataset.planSelector));
+      button.addEventListener('keydown', event => {
+        const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+        if (!keys.includes(event.key)) return;
+        event.preventDefault();
+        const nextIndex = event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? planSelectors.length - 1
+            : (buttonIndex + (event.key === 'ArrowRight' ? 1 : -1) + planSelectors.length) % planSelectors.length;
+        planSelectors[nextIndex].focus();
+        setSelectedPlan(planSelectors[nextIndex].dataset.planSelector);
+      });
+    });
+    mobilePlanQuery.addEventListener('change', () => setSelectedPlan(selectedPlan));
+    setSelectedPlan(selectedPlan);
   }
 
   const closeMenu = () => {
     if (!menuButton || !menu) return;
     menuButton.setAttribute('aria-expanded', 'false');
     menu.dataset.open = 'false';
+    document.body.classList.remove('menu-open');
+    document.querySelector('main')?.removeAttribute('inert');
+    document.querySelector('.mobile-action')?.removeAttribute('inert');
   };
 
   menuButton?.addEventListener('click', () => {
     const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
     menuButton.setAttribute('aria-expanded', String(!isOpen));
     menu.dataset.open = String(!isOpen);
+    document.body.classList.toggle('menu-open', !isOpen);
+    document.querySelector('main')?.toggleAttribute('inert', !isOpen);
+    document.querySelector('.mobile-action')?.toggleAttribute('inert', !isOpen);
   });
 
   menu?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
   window.addEventListener('resize', () => {
     if (window.innerWidth > 760) closeMenu();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || menuButton?.getAttribute('aria-expanded') !== 'true') return;
+    closeMenu();
+    menuButton.focus();
   });
 
   const updateHeader = () => header?.classList.toggle('is-scrolled', window.scrollY > 24);
@@ -141,14 +181,15 @@ document.documentElement.classList.add('js');
       levelAnswerCopy.textContent = button.dataset.copy;
       levelAnswerCta.href = button.dataset.ctaHref;
       levelAnswerCta.firstChild.textContent = `${button.dataset.ctaLabel} `;
-      levelAnswer.animate(
-        [{ opacity: .58, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }],
-        { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' }
-      );
+      if (!reducedMotion) {
+        levelAnswer.animate(
+          [{ opacity: .58, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }],
+          { duration: 240, easing: 'cubic-bezier(.2,.8,.2,1)' }
+        );
+      }
     });
   });
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion || !('IntersectionObserver' in window)) {
     document.querySelectorAll('[data-reveal]').forEach(element => element.classList.add('is-visible'));
   } else {
@@ -160,6 +201,27 @@ document.documentElement.classList.add('js');
       });
     }, { threshold: .1 });
     document.querySelectorAll('[data-reveal]').forEach(element => revealObserver.observe(element));
+  }
+
+  const routeMap = document.querySelector('.route-map');
+  const routeStops = [...document.querySelectorAll('.route-stop')];
+  const activateRouteStop = index => {
+    routeStops.forEach((stop, stopIndex) => stop.classList.toggle('is-active', stopIndex <= index));
+    routeMap?.style.setProperty('--route-progress', routeStops.length > 1 ? String(index / (routeStops.length - 1)) : '1');
+  };
+  if (routeMap && routeStops.length) {
+    activateRouteStop(0);
+    if ('IntersectionObserver' in window && !reducedMotion) {
+      const routeObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          activateRouteStop(routeStops.indexOf(entry.target));
+        });
+      }, { rootMargin: '-38% 0px -42% 0px', threshold: .15 });
+      routeStops.forEach(stop => routeObserver.observe(stop));
+    } else {
+      activateRouteStop(routeStops.length - 1);
+    }
   }
 
   const sectionLinks = [...document.querySelectorAll('.main-nav a[href^="#"]')];
@@ -253,45 +315,56 @@ document.documentElement.classList.add('js');
 
   document.querySelectorAll('[data-story-carousel]').forEach(buildStoryCarousel);
 
+  const storiesMore = document.querySelector('[data-stories-more]');
+  const writtenStories = storiesMore?.closest('.written-stories');
+  storiesMore?.addEventListener('click', () => {
+    const isExpanded = storiesMore.getAttribute('aria-expanded') === 'true';
+    storiesMore.setAttribute('aria-expanded', String(!isExpanded));
+    writtenStories.dataset.expanded = String(!isExpanded);
+    storiesMore.textContent = isExpanded
+      ? (homeCopy.interface?.storiesMore || 'Ver más experiencias')
+      : (homeCopy.interface?.storiesLess || 'Mostrar menos experiencias');
+  });
+
   const assetBase = copy('assetBase', '');
   const testimonialVideos = [
     {
-      src: `${assetBase}assets/videos/testimonio-25.mp4`,
+      src: `${assetBase}assets/videos/testimonio-25-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first`,
       name: 'Yazmin'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-majo.mp4`,
+      src: `${assetBase}assets/videos/testimonio-majo-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-majo-poster.jpg?v=20260814`,
       name: 'Majo'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-22.mp4`,
+      src: `${assetBase}assets/videos/testimonio-22-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-22-poster.jpg?v=20260814-2`,
       name: 'Pia'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-24.mp4`,
+      src: `${assetBase}assets/videos/testimonio-24-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-24-poster.jpg?v=20260821-video-carousel`,
       name: 'Diego'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-21.mp4`,
+      src: `${assetBase}assets/videos/testimonio-21-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-21-poster.jpg?v=20260814-2`,
       name: 'Jennifer'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-23.mp4`,
+      src: `${assetBase}assets/videos/testimonio-23-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-23-poster.jpg?v=20260814-2`,
       name: 'Fabián'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-meli.mp4`,
+      src: `${assetBase}assets/videos/testimonio-meli-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-meli-poster.jpg?v=20260814`,
       name: 'Melissa'
     },
     {
-      src: `${assetBase}assets/videos/testimonio-20.mp4`,
+      src: `${assetBase}assets/videos/testimonio-20-web.mp4`,
       poster: `${assetBase}assets/videos/testimonio-20-poster.jpg?v=20260814-2`,
       name: 'Elisa'
     }
@@ -302,14 +375,16 @@ document.documentElement.classList.add('js');
     const videoStage = videoCarousel.querySelector('.video-stage');
     const poster = videoCarousel.querySelector('.video-stage > img');
     const placeholder = videoCarousel.querySelector('.video-placeholder');
+    const playButton = videoCarousel.querySelector('[data-video-play]');
     const previous = videoCarousel.querySelector('[data-video-previous]');
     const next = videoCarousel.querySelector('[data-video-next]');
     const dots = videoCarousel.querySelector('[data-video-dots]');
     const count = videoCarousel.querySelector('[data-video-count]');
     const name = videoCarousel.querySelector('[data-video-name]');
     let current = 0;
+    let hasStarted = false;
 
-    const showVideo = index => {
+    const showVideo = (index, shouldPlay = false) => {
       current = (index + testimonialVideos.length) % testimonialVideos.length;
       const item = testimonialVideos[current];
       video.pause();
@@ -317,37 +392,40 @@ document.documentElement.classList.add('js');
       video.src = item.src;
       video.poster = item.poster || '';
       video.setAttribute('aria-label', `${copy('videoAriaPrefix', 'Testimonio en video:')} ${item.name}`);
-      video.muted = true;
       video.load();
-      video.play().catch(() => {});
+      if (shouldPlay) video.play().catch(() => {});
       count.textContent = `${current + 1} / ${testimonialVideos.length}`;
       name.textContent = item.name;
       [...dots.children].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === current)));
     };
 
-    poster.hidden = true;
-    placeholder.hidden = true;
-    video.hidden = false;
-    videoCarousel.classList.add('has-videos');
-    previous.hidden = testimonialVideos.length < 2;
-    next.hidden = testimonialVideos.length < 2;
     testimonialVideos.forEach((item, index) => {
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = 'carousel-dot';
       dot.setAttribute('aria-label', `${homeCopy.carousel?.videoItem || 'Ver video'} ${index + 1}: ${item.name}`);
-      dot.addEventListener('click', () => showVideo(index));
+      dot.addEventListener('click', () => {
+        if (!hasStarted) return;
+        showVideo(index, true);
+      });
       dots.append(dot);
     });
-    previous.addEventListener('click', () => showVideo(current - 1));
-    next.addEventListener('click', () => showVideo(current + 1));
-    video.addEventListener('play', () => videoStage.classList.add('is-playing'));
-    video.addEventListener('loadeddata', () => video.play().catch(() => {}));
-    video.addEventListener('ended', () => {
-      showVideo(current + 1);
-      video.play().catch(() => {});
+    [...dots.children].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === 0)));
+    previous.addEventListener('click', () => showVideo(current - 1, true));
+    next.addEventListener('click', () => showVideo(current + 1, true));
+    playButton?.addEventListener('click', () => {
+      hasStarted = true;
+      poster.hidden = true;
+      placeholder.hidden = true;
+      playButton.hidden = true;
+      video.hidden = false;
+      videoCarousel.classList.add('has-videos');
+      previous.hidden = testimonialVideos.length < 2;
+      next.hidden = testimonialVideos.length < 2;
+      showVideo(0, true);
     });
-    showVideo(0);
+    video.addEventListener('play', () => videoStage.classList.add('is-playing'));
+    video.addEventListener('pause', () => videoStage.classList.remove('is-playing'));
   }
 
   document.querySelectorAll('[data-current-year]').forEach(element => {
