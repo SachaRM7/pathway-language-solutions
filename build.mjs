@@ -37,7 +37,7 @@ const assertHomeParity = (markup, page) => {
   }
 };
 const assertMobileExperience = (markup, page, nested = false) => {
-  const requiredMarkers = ['viewport-fit=cover', 'data-video-play', 'preload="none"', 'data-stories-more', 'data-plan-selector'];
+  const requiredMarkers = ['viewport-fit=cover', 'data-video-play', 'preload="none"', 'data-story-swipe-hint', 'data-story-deck', 'data-week-swipe-hint', 'data-plan-swipe-hint', 'data-plans-deck'];
   const missing = requiredMarkers.filter(marker => !markup.includes(marker));
   if (missing.length) throw new Error(`${page} is missing mobile experience markers: ${missing.join(', ')}`);
   if (/data-testimonial-video[^>]*autoplay/.test(markup)) throw new Error(`${page} must not autoplay testimonial videos.`);

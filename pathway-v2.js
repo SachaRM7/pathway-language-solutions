@@ -105,34 +105,74 @@ document.documentElement.classList.add('js');
     });
     setPricingMode('monthly');
 
-    const planSelectors = [...document.querySelectorAll('[data-plan-selector]')];
-    const mobilePlanQuery = window.matchMedia('(max-width: 760px)');
-    let selectedPlan = planSelectors.find(button => button.getAttribute('aria-selected') === 'true')?.dataset.planSelector || 'accelerated';
-    const setSelectedPlan = planId => {
-      selectedPlan = planId;
-      planSelectors.forEach(button => button.setAttribute('aria-selected', String(button.dataset.planSelector === planId)));
-      plans.forEach(plan => {
-        plan.hidden = mobilePlanQuery.matches && plan.dataset.planId !== planId;
-      });
+  }
+
+  const weekSwipeCopy = document.querySelector('[data-week-swipe-copy]');
+  const planSwipeCopy = document.querySelector('[data-plan-swipe-copy]');
+  const storySwipeCopy = document.querySelector('[data-story-swipe-copy]');
+  if (weekSwipeCopy) weekSwipeCopy.textContent = homeCopy.interface?.weekSwipe || 'Desliza para recorrer la semana';
+  if (planSwipeCopy) planSwipeCopy.textContent = homeCopy.interface?.planSwipe || 'Desliza para comparar los ritmos';
+  if (storySwipeCopy) storySwipeCopy.textContent = homeCopy.interface?.storySwipe || 'Desliza para leer las experiencias';
+
+  const setupSwipeDeck = (deck, cardSelector, indexNode, initialIndex = 0) => {
+    if (!deck || !indexNode) return;
+    const cards = [...deck.querySelectorAll(cardSelector)];
+    if (!cards.length) return;
+    const mobileDeckQuery = window.matchMedia('(max-width: 760px)');
+    let frame = 0;
+    let currentIndex = 0;
+    let initialPositionApplied = false;
+    const updateIndex = () => {
+      frame = 0;
+      const deckRect = deck.getBoundingClientRect();
+      const deckCenter = deckRect.left + deckRect.width / 2;
+      const activeIndex = cards.reduce((closest, card, index) => {
+        const rect = card.getBoundingClientRect();
+        const distance = Math.abs(rect.left + rect.width / 2 - deckCenter);
+        return distance < closest.distance ? { index, distance } : closest;
+      }, { index: 0, distance: Number.POSITIVE_INFINITY }).index;
+      currentIndex = activeIndex;
+      indexNode.textContent = String(activeIndex + 1);
     };
-    planSelectors.forEach((button, buttonIndex) => {
-      button.addEventListener('click', () => setSelectedPlan(button.dataset.planSelector));
-      button.addEventListener('keydown', event => {
-        const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
-        if (!keys.includes(event.key)) return;
-        event.preventDefault();
-        const nextIndex = event.key === 'Home'
-          ? 0
-          : event.key === 'End'
-            ? planSelectors.length - 1
-            : (buttonIndex + (event.key === 'ArrowRight' ? 1 : -1) + planSelectors.length) % planSelectors.length;
-        planSelectors[nextIndex].focus();
-        setSelectedPlan(planSelectors[nextIndex].dataset.planSelector);
+    deck.addEventListener('scroll', () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateIndex);
+    }, { passive: true });
+    window.addEventListener('resize', updateIndex);
+    deck.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      const targetIndex = Math.min(cards.length - 1, Math.max(0, currentIndex + direction));
+      const target = cards[targetIndex];
+      deck.scrollTo({
+        left: target.offsetLeft - (deck.clientWidth - target.clientWidth) / 2,
+        behavior: reducedMotion ? 'auto' : 'smooth'
       });
     });
-    mobilePlanQuery.addEventListener('change', () => setSelectedPlan(selectedPlan));
-    setSelectedPlan(selectedPlan);
-  }
+    const applyInitialPosition = () => {
+      if (!mobileDeckQuery.matches || initialPositionApplied) {
+        updateIndex();
+        return;
+      }
+      const target = cards[Math.min(initialIndex, cards.length - 1)];
+      deck.scrollLeft = target.offsetLeft - (deck.clientWidth - target.clientWidth) / 2;
+      initialPositionApplied = true;
+      requestAnimationFrame(updateIndex);
+    };
+    mobileDeckQuery.addEventListener('change', event => {
+      if (!event.matches) {
+        initialPositionApplied = false;
+        deck.scrollLeft = 0;
+        return;
+      }
+      requestAnimationFrame(applyInitialPosition);
+    });
+    requestAnimationFrame(applyInitialPosition);
+  };
+
+  setupSwipeDeck(document.querySelector('[data-week-list]'), ':scope > li', document.querySelector('[data-week-deck-index]'));
+  setupSwipeDeck(document.querySelector('[data-plans-deck]'), ':scope > [data-plan]', document.querySelector('[data-plan-deck-index]'), 1);
 
   const closeMenu = () => {
     if (!menuButton || !menu) return;
@@ -205,16 +245,50 @@ document.documentElement.classList.add('js');
 
   const routeMap = document.querySelector('.route-map');
   const routeStops = [...document.querySelectorAll('.route-stop')];
+  const mobileRouteQuery = window.matchMedia('(max-width: 760px)');
   const activateRouteStop = index => {
     routeStops.forEach((stop, stopIndex) => stop.classList.toggle('is-active', stopIndex <= index));
     routeMap?.style.setProperty('--route-progress', routeStops.length > 1 ? String(index / (routeStops.length - 1)) : '1');
   };
   if (routeMap && routeStops.length) {
     activateRouteStop(0);
+    let routeFrame = 0;
+    const updateMobileRoute = () => {
+      routeFrame = 0;
+      if (!mobileRouteQuery.matches) return;
+      if (reducedMotion) {
+        routeMap.style.setProperty('--route-progress', '1');
+        routeStops.forEach(stop => stop.classList.add('is-active'));
+        return;
+      }
+      const firstRect = routeStops[0].getBoundingClientRect();
+      const lastRect = routeStops[routeStops.length - 1].getBoundingClientRect();
+      const firstCenter = firstRect.top + 30;
+      const lastCenter = lastRect.top + 30;
+      const viewportAnchor = window.innerHeight * .62;
+      const routeRect = routeMap.getBoundingClientRect();
+      const rawProgress = (viewportAnchor - firstCenter) / Math.max(1, lastCenter - firstCenter);
+      const progress = routeRect.bottom <= window.innerHeight * .86
+        ? 1
+        : Math.min(1, Math.max(0, rawProgress));
+      routeMap.style.setProperty('--route-progress', progress.toFixed(4));
+      routeStops.forEach((stop, stopIndex) => {
+        const activationPoint = stopIndex / Math.max(1, routeStops.length - 1);
+        stop.classList.toggle('is-active', progress + .035 >= activationPoint);
+      });
+    };
+    const requestMobileRouteUpdate = () => {
+      if (reducedMotion || !mobileRouteQuery.matches || routeFrame) return;
+      routeFrame = requestAnimationFrame(updateMobileRoute);
+    };
+    window.addEventListener('scroll', requestMobileRouteUpdate, { passive: true });
+    window.addEventListener('resize', requestMobileRouteUpdate);
+    mobileRouteQuery.addEventListener('change', event => event.matches ? updateMobileRoute() : activateRouteStop(0));
+    updateMobileRoute();
     if ('IntersectionObserver' in window && !reducedMotion) {
       const routeObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
+          if (!entry.isIntersecting || mobileRouteQuery.matches) return;
           activateRouteStop(routeStops.indexOf(entry.target));
         });
       }, { rootMargin: '-38% 0px -42% 0px', threshold: .15 });
@@ -251,80 +325,18 @@ document.documentElement.classList.add('js');
     });
   });
 
-  const buildStoryCarousel = carousel => {
-    const slides = [...carousel.querySelectorAll('[data-story-slide]')];
-    const controls = carousel.querySelector('[data-carousel-controls]');
-    if (!controls || !slides.length) return;
-    let current = 0;
-
-    const syncHeight = () => {
-      slides.forEach(slide => { slide.hidden = false; slide.style.minHeight = ''; });
-      const maxHeight = Math.ceil(Math.max(...slides.map(slide => slide.getBoundingClientRect().height)));
-      slides.forEach((slide, slideIndex) => {
-        slide.hidden = slideIndex !== current;
-        slide.style.minHeight = `${maxHeight}px`;
-      });
-    };
-
-    const previous = document.createElement('button');
-    previous.type = 'button';
-    previous.className = 'carousel-arrow carousel-prev';
-    previous.setAttribute('aria-label', homeCopy.carousel?.previous || 'Testimonio anterior');
-    previous.textContent = '←';
-
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.className = 'carousel-arrow carousel-next';
-    next.setAttribute('aria-label', homeCopy.carousel?.next || 'Testimonio siguiente');
-    next.textContent = '→';
-
-    const dots = document.createElement('div');
-    dots.className = 'carousel-dots';
-    dots.setAttribute('aria-label', homeCopy.carousel?.choose || 'Elegir un testimonio');
-
-    const show = index => {
-      current = (index + slides.length) % slides.length;
-      slides.forEach((slide, slideIndex) => { slide.hidden = slideIndex !== current; });
-      [...dots.children].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === current)));
-    };
-
-    slides.forEach((_, index) => {
-      const dot = document.createElement('button');
-      dot.type = 'button';
-      dot.className = 'carousel-dot';
-      dot.setAttribute('aria-label', `${homeCopy.carousel?.writtenItem || 'Ver testimonio'} ${index + 1}`);
-      dot.addEventListener('click', () => show(index));
-      dots.append(dot);
+  const storyDeck = document.querySelector('[data-story-deck]');
+  if (storyDeck) {
+    const storySlides = [...storyDeck.querySelectorAll('[data-story-slide]')];
+    const storyCarousels = [...storyDeck.querySelectorAll('[data-story-carousel]')];
+    storySlides.forEach(slide => {
+      slide.hidden = false;
+      slide.style.minHeight = '';
+      storyDeck.append(slide);
     });
-    previous.addEventListener('click', () => show(current - 1));
-    next.addEventListener('click', () => show(current + 1));
-    controls.append(previous, dots, next);
-    if (slides.length < 2) {
-      previous.hidden = true;
-      next.hidden = true;
-    }
-    show(0);
-    syncHeight();
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(syncHeight, 120);
-    }, { passive: true });
-    document.fonts?.ready.then(syncHeight);
-  };
-
-  document.querySelectorAll('[data-story-carousel]').forEach(buildStoryCarousel);
-
-  const storiesMore = document.querySelector('[data-stories-more]');
-  const writtenStories = storiesMore?.closest('.written-stories');
-  storiesMore?.addEventListener('click', () => {
-    const isExpanded = storiesMore.getAttribute('aria-expanded') === 'true';
-    storiesMore.setAttribute('aria-expanded', String(!isExpanded));
-    writtenStories.dataset.expanded = String(!isExpanded);
-    storiesMore.textContent = isExpanded
-      ? (homeCopy.interface?.storiesMore || 'Ver más experiencias')
-      : (homeCopy.interface?.storiesLess || 'Mostrar menos experiencias');
-  });
+    storyCarousels.forEach(carousel => carousel.remove());
+    setupSwipeDeck(storyDeck, ':scope > [data-story-slide]', document.querySelector('[data-story-deck-index]'));
+  }
 
   const assetBase = copy('assetBase', '');
   const testimonialVideos = [

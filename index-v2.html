@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="pathway-v2.css?v=20260826-mobile-media-fix">
+  <link rel="stylesheet" href="pathway-v2.css?v=20260826-mobile-ux5">
   <script src="site-config.js"></script>
   <script>
     document.documentElement.classList.add('brand-palette');
@@ -163,10 +163,10 @@
       <div class="container teacher-grid reveal" data-reveal>
         <div class="teacher-visual" aria-label="Retratos de los profesores de Pathway">
           <figure class="teacher-portrait teacher-portrait-first">
-            <img src="assets/pathway-teacher-portrait-01-720.webp" srcset="assets/pathway-teacher-portrait-01-360.webp 360w, assets/pathway-teacher-portrait-01-720.webp 720w" sizes="(max-width: 760px) 74vw, 300px" width="720" height="900" loading="lazy" decoding="async" alt="Profesor de Pathway con polo verde y emblema del faro">
+            <img src="assets/pathway-teacher-portrait-01-720.webp" srcset="assets/pathway-teacher-portrait-01-360.webp 360w, assets/pathway-teacher-portrait-01-720.webp 720w" sizes="(max-width: 760px) 46vw, 300px" width="720" height="900" loading="lazy" decoding="async" alt="Profesor de Pathway con polo verde y emblema del faro">
           </figure>
           <figure class="teacher-portrait teacher-portrait-second">
-            <img src="assets/pathway-teacher-portrait-02-720.webp" srcset="assets/pathway-teacher-portrait-02-360.webp 360w, assets/pathway-teacher-portrait-02-720.webp 720w" sizes="(max-width: 760px) 74vw, 300px" width="720" height="900" loading="lazy" decoding="async" alt="Profesor de Pathway con barba, polo verde y emblema del faro">
+            <img src="assets/pathway-teacher-portrait-02-720.webp" srcset="assets/pathway-teacher-portrait-02-360.webp 360w, assets/pathway-teacher-portrait-02-720.webp 720w" sizes="(max-width: 760px) 46vw, 300px" width="720" height="900" loading="lazy" decoding="async" alt="Profesor de Pathway con barba, polo verde y emblema del faro">
           </figure>
         </div>
         <div class="teacher-copy">
@@ -209,7 +209,8 @@
           <h2 data-week-title>El francés encuentra su lugar en tu agenda.</h2>
         </div>
         <div class="week-program">
-          <ol class="week-list" data-week-list>
+          <div class="swipe-hint week-swipe-hint" data-week-swipe-hint><span data-week-swipe-copy>Desliza para recorrer la semana</span><span class="swipe-count" aria-hidden="true"><b data-week-deck-index>1</b>/4 <i>→</i></span></div>
+          <ol class="week-list" data-week-list tabindex="0">
             <li><span>Lunes</span><div><strong>Clase en vivo</strong><small>Práctica activa y corrección inmediata</small></div><b>60–90 min</b></li>
             <li><span>Miércoles</span><div><strong>Trabajo autónomo</strong><small>Ejercicios dirigidos por tu última sesión</small></div><b>30–45 min</b></li>
             <li><span>Viernes</span><div><strong>Feedback y revisión</strong><small>Correcciones guardadas en tu cuaderno</small></div><b>20–30 min</b></li>
@@ -248,7 +249,9 @@
             </div>
           </section>
 
-          <div class="written-stories" aria-label="Testimonios escritos">
+          <div class="written-stories-shell">
+            <div class="swipe-hint story-swipe-hint" data-story-swipe-hint><span data-story-swipe-copy>Desliza para leer las experiencias</span><span class="swipe-count" aria-hidden="true"><b data-story-deck-index>1</b>/16 <i>→</i></span></div>
+            <div class="written-stories" data-story-deck aria-label="Testimonios escritos" tabindex="0">
             <section class="story-carousel story-carousel-top" data-story-carousel="top" aria-label="Primer grupo de testimonios">
               <article class="story story-compact" data-story-slide>
                 <span class="quote-mark">“</span>
@@ -336,7 +339,7 @@
               </article>
               <div class="carousel-controls" data-carousel-controls></div>
             </section>
-            <button class="stories-more" type="button" data-stories-more aria-expanded="false">Ver más experiencias</button>
+            </div>
           </div>
 
         </div>
@@ -364,12 +367,8 @@
           </div>
         </div>
 
-        <div class="plans-grid reveal" data-reveal>
-          <div class="plan-selector" role="tablist" aria-label="Elegir un ritmo de estudio">
-            <button type="button" role="tab" data-plan-selector="essential" aria-selected="false">2 h / sem.</button>
-            <button type="button" role="tab" data-plan-selector="accelerated" aria-selected="true">4 h / sem.</button>
-            <button type="button" role="tab" data-plan-selector="intensive" aria-selected="false">6 h / sem.</button>
-          </div>
+        <div class="swipe-hint plan-swipe-hint" data-plan-swipe-hint><span data-plan-swipe-copy>Desliza para comparar los ritmos</span><span class="swipe-count" aria-hidden="true"><b data-plan-deck-index>2</b>/3 <i>↔</i></span></div>
+        <div class="plans-grid reveal" data-plans-deck data-reveal tabindex="0">
           <article class="plan-card" data-plan data-plan-id="essential" data-month-price="185" data-month-hours="8 horas al mes · 2 h*/semana" data-cycle-price="943,50" data-cycle-original="1.110" data-cycle-saving="166,50" data-cycle-duration="6 meses" data-cycle-hours="2 h*/semana" data-cycle-equivalent="157,25" data-cycle-reference="2 h/semana">
             <span class="plan-tag">Más de 18 meses</span><h3>Esencial</h3><div class="price" data-plan-price>185 <small>CAD / mes</small></div><p class="plan-hours" data-plan-hours>8 horas al mes · 2 h/semana</p>
             <p class="cycle-summary" data-cycle-summary hidden></p>
@@ -491,11 +490,18 @@
     </div>
   </footer>
 
-  <div class="mobile-action" aria-label="Acción principal móvil"><a class="button button-primary" href="calculador.html" data-cta="mobile-evaluation">Evaluar mi nivel <span aria-hidden="true">→</span></a></div>
+  <div class="mobile-action">
+    <a class="button button-primary" href="calculador.html" data-cta="mobile-evaluation" aria-label="Evaluar mi nivel">
+      <span class="sr-only">Evaluar mi nivel</span>
+      <svg viewBox="0 0 24 24" width="25" height="25" aria-hidden="true" focusable="false">
+        <path d="M5 18v-4M12 18v-8M19 18V6M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
 
   <script src="crs-engine.js"></script>
   <script src="ircc-data.js"></script>
   <script src="analytics.js"></script>
-  <script src="pathway-v2.js?v=20260826-mobile-first"></script>
+  <script src="pathway-v2.js?v=20260826-mobile-ux5"></script>
 </body>
 </html>

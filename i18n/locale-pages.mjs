@@ -333,9 +333,9 @@ const applyHomeTranslations = (documentText, locale, t) => {
 const homeV2 = (locale, t) => {
   const dynamic = homeDynamicCopy(locale, t);
   const interfaceCopy = {
-    fr: { videoPlay: 'Voir un témoignage', videoPlayAria: 'Lire le premier témoignage vidéo', storiesMore: 'Voir plus de témoignages', storiesLess: 'Afficher moins de témoignages', planLabel: 'Choisir un rythme d’étude', planHours: ['2 h / sem.', '4 h / sem.', '6 h / sem.'] },
-    en: { videoPlay: 'Watch a testimonial', videoPlayAria: 'Play the first video testimonial', storiesMore: 'See more testimonials', storiesLess: 'Show fewer testimonials', planLabel: 'Choose a study pace', planHours: ['2 h / week', '4 h / week', '6 h / week'] },
-    de: { videoPlay: 'Erfahrungsbericht ansehen', videoPlayAria: 'Ersten Video-Erfahrungsbericht abspielen', storiesMore: 'Mehr Erfahrungsberichte', storiesLess: 'Weniger Erfahrungsberichte', planLabel: 'Lernrhythmus wählen', planHours: ['2 Std. / Woche', '4 Std. / Woche', '6 Std. / Woche'] }
+    fr: { videoPlay: 'Voir un témoignage', videoPlayAria: 'Lire le premier témoignage vidéo', storySwipe: 'Faites glisser pour lire les témoignages', weekSwipe: 'Faites glisser pour parcourir la semaine', planSwipe: 'Faites glisser pour comparer les rythmes' },
+    en: { videoPlay: 'Watch a testimonial', videoPlayAria: 'Play the first video testimonial', storySwipe: 'Swipe to read learner stories', weekSwipe: 'Swipe through the week', planSwipe: 'Swipe to compare study paces' },
+    de: { videoPlay: 'Erfahrungsbericht ansehen', videoPlayAria: 'Ersten Video-Erfahrungsbericht abspielen', storySwipe: 'Zum Lesen der Erfahrungen wischen', weekSwipe: 'Durch die Woche wischen', planSwipe: 'Zum Vergleichen der Lernrhythmen wischen' }
   };
   dynamic.interface = interfaceCopy[locale];
   let html = fs.readFileSync(HOME_TEMPLATE_URL, 'utf8');
@@ -347,12 +347,7 @@ const homeV2 = (locale, t) => {
   };
   html = html.replaceAll('Ocho alumnos cuentan su experiencia.', videoCountCopy[locale]);
   html = html.replace('aria-label="Reproducir el primer testimonio en video"', `aria-label="${dynamic.interface.videoPlayAria}"`)
-    .replace('> Ver un testimonio</button>', `> ${dynamic.interface.videoPlay}</button>`)
-    .replace('>Ver más experiencias</button>', `>${dynamic.interface.storiesMore}</button>`)
-    .replace('aria-label="Elegir un ritmo de estudio"', `aria-label="${dynamic.interface.planLabel}"`)
-    .replace('>2 h / sem.</button>', `>${dynamic.interface.planHours[0]}</button>`)
-    .replace('>4 h / sem.</button>', `>${dynamic.interface.planHours[1]}</button>`)
-    .replace('>6 h / sem.</button>', `>${dynamic.interface.planHours[2]}</button>`);
+    .replace('> Ver un testimonio</button>', `> ${dynamic.interface.videoPlay}</button>`);
   const scheduleCopy = {
     fr: [['8 horas al mes · 2 h*/semana', '8 heures par mois · 2 h*/semaine'], ['16 horas al mes · 4 h*/semana', '16 heures par mois · 4 h*/semaine'], ['24 horas al mes · 6 h*/semana', '24 heures par mois · 6 h*/semaine'], ['8 horas al mes · 2 h/semana', '8 heures par mois · 2 h/semaine'], ['16 horas al mes · 4 h/semana', '16 heures par mois · 4 h/semaine'], ['24 horas al mes · 6 h/semana', '24 heures par mois · 6 h/semaine'], ['6 meses', '6 mois'], ['5 meses', '5 mois'], ['4 meses', '4 mois'], ['2 h*/semana', '2 h*/semaine'], ['4 h*/semana', '4 h*/semaine'], ['6 h*/semana', '6 h*/semaine'], ['2 h/semana', '2 h/semaine'], ['4 h/semana', '4 h/semaine'], ['6 h/semana', '6 h/semaine'], ['CAD / mes', 'CAD / mois']],
     en: [['8 horas al mes · 2 h*/semana', '8 hours per month · 2 h*/week'], ['16 horas al mes · 4 h*/semana', '16 hours per month · 4 h*/week'], ['24 horas al mes · 6 h*/semana', '24 hours per month · 6 h*/week'], ['8 horas al mes · 2 h/semana', '8 hours per month · 2 h/week'], ['16 horas al mes · 4 h/semana', '16 hours per month · 4 h/week'], ['24 horas al mes · 6 h/semana', '24 hours per month · 6 h/week'], ['6 meses', '6 months'], ['5 meses', '5 months'], ['4 meses', '4 months'], ['2 h*/semana', '2 h*/week'], ['4 h*/semana', '4 h*/week'], ['6 h*/semana', '6 h*/week'], ['2 h/semana', '2 h/week'], ['4 h/semana', '4 h/week'], ['6 h/semana', '6 h/week'], ['CAD / mes', 'CAD / month']],
