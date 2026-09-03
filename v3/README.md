@@ -36,7 +36,48 @@ Quand la version est prête : remplacer le contenu de `index-v2.html` (et les ga
 `Disallow: /v3/` de `robots.txt`. Tant que cette étape n'a pas eu lieu, v3 n'est
 accessible qu'en connaissant l'URL.
 
-## Point de départ
+## Architecture de la Home v3
 
-Le contenu initial est une copie conforme de la page d'accueil espagnole du
-3 septembre 2026 : `/v3/` s'affiche à l'identique de `/` avant toute modification.
+La v3 est partie d'une copie conforme de l'accueil espagnol, puis son **premier acte**
+a été refondu. Le reste de la page est celui du site public.
+
+### Acte 1 — comprendre (jusqu'aux professeurs)
+
+1. **Header** — inchangé.
+2. **Hero** — promesse + `<aside class="route-preview">`, un aperçu de parcours
+   (B1 → NCLC 7, rythme, prochaine étape, professeur réel). Il remplace la capture Zoom
+   seule, qui montrait « Pathway fait des cours en visio » plutôt que la méthode.
+   Sur mobile, cet aperçu passe avant les réassurances : on montre avant de rassurer.
+3. **`¿Desde dónde empiezas?`** — les quatre profils existants, compactés.
+4. **`Siempre sabes cuál es el siguiente paso`** — méthode en quatre étapes, conservée
+   telle quelle (déjà verticale sur mobile).
+5. **`Mira lo que eso significa en la práctica`** — section ajoutée, trois preuves :
+   `01` le diagnostic (les compétences réelles de `placement-scoring.js`),
+   `02` les cycles CECRL et le matériel réel d'une classe,
+   `03` la semaine type, reprise de l'ancienne `week-section`.
+
+L'acte 1 se termine là. La section professeurs ouvre l'acte 2.
+
+### Déplacements
+
+- L'ancienne `week-section` autonome a été **absorbée** dans la preuve `03` : elle
+  faisait doublon avec elle.
+- La `context-section` (immigration, CRS, IRCC) est passée **après les offres**, sous le
+  titre `¿Por qué apuntar al NCLC 7?` : c'est du contenu de conviction, pas de
+  compréhension du produit, et elle coupait la progression promesse → méthode → preuve.
+
+### Données affichées
+
+Les chiffres des aperçus (`62 %`, `B1`, `4 h / semana`) sont des **exemples**, marqués
+comme tels dans l'interface. Ils sont cohérents avec le produit réel : compétences et
+statuts viennent de `placement-scoring.js`, les cycles CECRL et le rythme de 4 h/semaine
+de l'offre « Acelerado » (`inscription.html`, section des plans). Aucun backend fictif
+n'a été ajouté ; les composants sont structurés pour recevoir de vraies données plus tard.
+
+### Mesure
+
+`pathway-v3.js` utilise `window.PathwayAnalytics` (aucune stack ajoutée) et émet
+`starting_point_selected`, `methodology_viewed`, `program_preview_viewed`,
+`teachers_viewed`, `testimonials_viewed`, `pricing_viewed`. Les clics porteurs de
+`data-cta` restent suivis par `analytics.js` (`hero-primary`, `hero-secondary`,
+`proof-placement`, `proof-program`…).

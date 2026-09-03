@@ -29,9 +29,9 @@ document.documentElement.classList.add('js');
     const hoursReference = document.querySelector('[data-hours-reference]');
     const pricingReference = document.querySelector('[data-pricing-reference]');
 
-    if (heroLabel) heroLabel.textContent = copy('heroLabel', 'Objetivo NCLC 7 · Preparación TEF Canada y TCF Canada');
+    if (heroLabel) heroLabel.textContent = copy('heroLabel', 'Objetivo NCLC 7 · TEF y TCF Canada');
     if (heroTitle) heroTitle.innerHTML = copy('heroTitleHtml', 'Tu ruta al NCLC 7 empieza por <span>un plan que sí cabe en tu vida.</span>');
-    if (heroLead) heroLead.textContent = copy('heroLead', 'Pathway mide tu nivel, define la intensidad que exige tu fecha y te acompaña con clases privadas hasta el NCLC 7 en el TEF Canada o el TCF Canada.');
+    if (heroLead) heroLead.textContent = copy('heroLead', 'Evaluamos tu nivel, definimos el ritmo que tu fecha exige y organizamos contigo un recorrido semanal hasta las competencias de tu objetivo.');
     if (honestyNote) honestyNote.hidden = false;
     if (pricingChoice) pricingChoice.hidden = false;
     if (hoursReference) hoursReference.hidden = false;
@@ -55,16 +55,17 @@ document.documentElement.classList.add('js');
       element.textContent = copy('simulations', '2 simulacros TEF / TCF');
     });
     document.querySelectorAll('[data-cta="header-evaluation"], [data-cta="hero-evaluation"], [data-cta="closing-evaluation"], [data-cta="mobile-evaluation"], [data-cta^="plan-"]').forEach(link => {
-      link.href = copy('evaluationHref', 'test-placement.html');
+      link.href = copy('evaluationHref', '../test-placement.html');
     });
-    if (weekTitle) weekTitle.textContent = copy('weekTitle', 'La intensidad que exige tu objetivo, organizada semana a semana.');
-    if (weekCopy) weekCopy.textContent = copy('weekCopy', 'Según tu nivel, tu fecha y tus necesidades, eliges un ritmo de 2, 4 o 6 horas* por semana en clases privadas, además de una práctica guiada entre sesiones.');
+    if (weekTitle) weekTitle.textContent = copy('weekTitle', 'Una semana con Pathway');
+    if (weekCopy) weekCopy.textContent = copy('weekCopy', 'Ejemplo con el ritmo Acelerado, 4 h* por semana: dos clases privadas y la práctica guiada que las conecta.');
     if (weekList) {
       weekList.innerHTML = copy('weekListHtml', `
-        <li><span>Tu modalidad</span><div><strong>Clases privadas en vivo</strong><small>2, 4 o 6 horas* por semana según tu plan</small></div><b>2 · 4 · 6 h*</b></li>
-        <li><span>Entre sesiones</span><div><strong>Práctica dirigida</strong><small>Ejercicios específicos conectados con tu última clase</small></div><b>Guiada</b></li>
-        <li><span>Después de cada clase</span><div><strong>Correcciones continuas</strong><small>Feedback oral y escrito sobre tus prioridades</small></div><b>Continuo</b></li>
-        <li><span>Cada etapa</span><div><strong>Control del progreso</strong><small>Objetivos semanales y simulacros antes del TEF o el TCF</small></div><b>Medible</b></li>
+        <li><span>Lunes</span><div><strong>Clase privada en vivo</strong><small>Práctica activa y corrección inmediata</small></div><b>2 h</b></li>
+        <li><span>Martes</span><div><strong>Práctica dirigida</strong><small>Ejercicios conectados con tu última clase</small></div><b>25 min</b></li>
+        <li><span>Miércoles</span><div><strong>Corrección y feedback</strong><small>Qué repetir, por qué y cómo mejorarlo</small></div><b>20 min</b></li>
+        <li><span>Jueves</span><div><strong>Clase privada en vivo</strong><small>La prioridad de la semana, trabajada al hablar</small></div><b>2 h</b></li>
+        <li><span>Viernes</span><div><strong>Simulacro o repaso</strong><small>Según la etapa de tu ciclo</small></div><b>Según etapa</b></li>
       `);
     }
 
@@ -522,4 +523,35 @@ document.documentElement.classList.add('js');
     .catch(() => {
       setAll('[data-data-status]', homeCopy.dataStatus?.fallback || 'datos de respaldo incluidos');
     });
+
+  // MESURE — s'appuie sur analytics.js (les clics porteurs de data-cta sont déjà suivis).
+  const analytics = () => window.PathwayAnalytics;
+  document.querySelectorAll('[data-level]').forEach(button => {
+    button.addEventListener('click', () => {
+      analytics()?.track('starting_point_selected', { profile: button.textContent.trim() });
+    });
+  });
+
+  const viewedSections = [
+    ['#recorrido', 'methodology_viewed'],
+    ['#en-la-practica', 'program_preview_viewed'],
+    ['#profesores', 'teachers_viewed'],
+    ['#historias', 'testimonials_viewed'],
+    ['#planes', 'pricing_viewed']
+  ].map(([selector, event]) => [document.querySelector(selector), event]).filter(([section]) => section);
+
+  if ('IntersectionObserver' in window && viewedSections.length) {
+    const seen = new Set();
+    const viewObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const match = viewedSections.find(([section]) => section === entry.target);
+        if (!match || seen.has(match[1])) return;
+        seen.add(match[1]);
+        analytics()?.track(match[1]);
+        viewObserver.unobserve(entry.target);
+      });
+    }, { threshold: .3 });
+    viewedSections.forEach(([section]) => viewObserver.observe(section));
+  }
 })();
