@@ -9,6 +9,61 @@ document.documentElement.classList.add('js');
   const copy = (key, fallback) => homeCopy[key] ?? fallback;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  const programCarousel = document.querySelector('[data-program-carousel]');
+  if (programCarousel) {
+    const slides = [...programCarousel.querySelectorAll('[data-program-slide]')];
+    const previous = programCarousel.querySelector('[data-program-previous]');
+    const next = programCarousel.querySelector('[data-program-next]');
+    const pagination = programCarousel.querySelector('[data-program-pagination]');
+    const count = programCarousel.querySelector('[data-program-count]');
+    const status = programCarousel.querySelector('[data-program-status]');
+    let current = 0;
+    let pointerStart = null;
+
+    const showProgram = index => {
+      current = (index + slides.length) % slides.length;
+      slides.forEach((slide, slideIndex) => {
+        slide.hidden = slideIndex !== current;
+      });
+      [...pagination.children].forEach((dot, dotIndex) => {
+        dot.setAttribute('aria-current', String(dotIndex === current));
+      });
+      count.textContent = `${current + 1} / ${slides.length}`;
+      status.textContent = `Programa ${slides[current].querySelector('h2').textContent.replace('Programa ', '')}, diapositiva ${current + 1} de ${slides.length}`;
+    };
+
+    slides.forEach((slide, index) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'program-carousel-dot';
+      dot.setAttribute('aria-label', `Ver programa ${slide.querySelector('h2').textContent.replace('Programa ', '')}`);
+      dot.addEventListener('click', () => showProgram(index));
+      pagination.append(dot);
+    });
+
+    previous.addEventListener('click', () => showProgram(current - 1));
+    next.addEventListener('click', () => showProgram(current + 1));
+    programCarousel.addEventListener('keydown', event => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      showProgram(current + (event.key === 'ArrowRight' ? 1 : -1));
+    });
+    programCarousel.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse') return;
+      pointerStart = { x: event.clientX, y: event.clientY };
+    }, { passive: true });
+    programCarousel.addEventListener('pointerup', event => {
+      if (!pointerStart) return;
+      const deltaX = event.clientX - pointerStart.x;
+      const deltaY = event.clientY - pointerStart.y;
+      pointerStart = null;
+      if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      showProgram(current + (deltaX < 0 ? 1 : -1));
+    }, { passive: true });
+    programCarousel.addEventListener('pointercancel', () => { pointerStart = null; });
+    showProgram(0);
+  }
+
   // La variante Pathway conserve l'architecture C, mais précise immédiatement
   // l'objectif NCLC 7 et présente le programme comme la force de frappe principale.
   if (usesPathwayPalette) {
