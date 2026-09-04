@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="pathway-v3.css?v=v3-20260903">
+  <link rel="stylesheet" href="pathway-v3.css?v=v3-20260904-programs">
   <script src="../site-config.js"></script>
   <script>window.PathwayHomeCopy = Object.assign({ assetBase: '../' }, window.PathwayHomeCopy);</script>
   <script>
@@ -78,35 +78,41 @@
           </ul>
         </div>
 
-        <!-- APERÇU DE PARCOURS — montre le concept Pathway au lieu de le décrire. -->
-        <aside class="route-preview" aria-labelledby="route-preview-title">
-          <div class="route-preview-head">
-            <span class="step-label" id="route-preview-title">Tu recorrido</span>
-            <span class="route-preview-tag">Ejemplo</span>
+        <!-- PROGRAMAS — teaser minimal : le détail reste sur les pages de niveau. -->
+        <aside class="program-carousel" data-program-carousel role="region" aria-roledescription="carrusel" aria-label="Programas de francés por nivel" tabindex="0">
+          <div class="program-carousel-track">
+            <article class="program-slide program-slide-a1" data-program-slide role="group" aria-roledescription="diapositiva" aria-label="1 de 4: programa A1">
+              <span class="program-slide-kicker">Programa Pathway</span>
+              <strong class="program-slide-level" aria-hidden="true">A1</strong>
+              <h2>Programa A1</h2>
+              <a class="button program-slide-cta" href="programas/a1/" data-cta="program-a1">Ver el programa A1 <span aria-hidden="true">→</span></a>
+            </article>
+            <article class="program-slide program-slide-a2" data-program-slide role="group" aria-roledescription="diapositiva" aria-label="2 de 4: programa A2" hidden>
+              <span class="program-slide-kicker">Programa Pathway</span>
+              <strong class="program-slide-level" aria-hidden="true">A2</strong>
+              <h2>Programa A2</h2>
+              <a class="button program-slide-cta" href="programas/a2/" data-cta="program-a2">Ver el programa A2 <span aria-hidden="true">→</span></a>
+            </article>
+            <article class="program-slide program-slide-b1" data-program-slide role="group" aria-roledescription="diapositiva" aria-label="3 de 4: programa B1" hidden>
+              <span class="program-slide-kicker">Programa Pathway</span>
+              <strong class="program-slide-level" aria-hidden="true">B1</strong>
+              <h2>Programa B1</h2>
+              <a class="button program-slide-cta" href="programas/b1/" data-cta="program-b1">Ver el programa B1 <span aria-hidden="true">→</span></a>
+            </article>
+            <article class="program-slide program-slide-b2" data-program-slide role="group" aria-roledescription="diapositiva" aria-label="4 de 4: programa B2" hidden>
+              <span class="program-slide-kicker">Programa Pathway</span>
+              <strong class="program-slide-level" aria-hidden="true">B2</strong>
+              <h2>Programa B2</h2>
+              <a class="button program-slide-cta" href="programas/b2/" data-cta="program-b2">Ver el programa B2 <span aria-hidden="true">→</span></a>
+            </article>
           </div>
-
-          <p class="route-preview-jump"><b>B1</b> <i aria-hidden="true">→</i> <b class="is-goal">NCLC 7</b></p>
-          <p class="route-preview-goal">Objetivo · TEF Canada o TCF Canada</p>
-
-          <div class="route-preview-progress">
-            <div class="route-preview-track"><span style="--progress: 62%"></span></div>
-            <p><span>Progreso hacia tu objetivo</span><b>62 %</b></p>
+          <div class="program-carousel-controls">
+            <button type="button" class="program-carousel-arrow" data-program-previous aria-label="Ver el programa anterior">←</button>
+            <div class="program-carousel-pagination" data-program-pagination aria-label="Elegir un programa"></div>
+            <span class="program-carousel-count" data-program-count aria-hidden="true">1 / 4</span>
+            <button type="button" class="program-carousel-arrow" data-program-next aria-label="Ver el programa siguiente">→</button>
           </div>
-
-          <dl class="route-preview-facts">
-            <div><dt>Ritmo recomendado</dt><dd>4 h / semana</dd></div>
-            <div><dt>Próximo paso</dt><dd>Comprensión oral</dd></div>
-          </dl>
-
-          <figure class="route-preview-teacher">
-            <img src="../assets/pathway-teacher-portrait-01-360.webp" width="360" height="450" loading="eager" fetchpriority="high" decoding="async" alt="Ryan, profesor de francés de Pathway">
-            <figcaption>
-              <strong>Ryan</strong>
-              <span>Tu profesor · 2 clases esta semana</span>
-            </figcaption>
-          </figure>
-
-          <small class="route-preview-note">Ejemplo de recorrido. El tuyo se define después de la evaluación inicial.</small>
+          <p class="sr-only" data-program-status aria-live="polite" aria-atomic="true">Programa A1, diapositiva 1 de 4</p>
         </aside>
       </div>
 
@@ -572,6 +578,6 @@
   <script src="../crs-engine.js"></script>
   <script src="../ircc-data.js"></script>
   <script src="../analytics.js"></script>
-  <script src="pathway-v3.js?v=v3-20260903"></script>
+  <script src="pathway-v3.js?v=v3-20260904-programs"></script>
 </body>
 </html>
