@@ -87,7 +87,7 @@ if (forbiddenInV3.length) {
 if (!v3Markup.includes('name="robots" content="noindex')) {
   throw new Error('v3/index.html doit rester en noindex tant que /v3 est un bac à sable.');
 }
-await cp(v3Source, v3Output, { recursive: true });
+await cp(v3Source, v3Output, { recursive: true, filter: source => !source.endsWith('.md') });
 
 // Garde-fou : la page servie sur le domaine reste exactement index-v2.html.
 if (await readFile(resolve(client, 'index.html'), 'utf8') !== canonicalHome) {
