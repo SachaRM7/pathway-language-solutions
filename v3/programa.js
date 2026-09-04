@@ -37,19 +37,19 @@
       examTitle: 'Pourquoi certains employés préfèrent-ils venir au bureau ?',
       examAudio: '../../../assets/audio/placement-b1.wav',
       examOptions: ['Leurs déplacements sont remboursés', 'Leur connexion est trop instable', 'Ils se concentrent mieux auprès de leurs collègues', 'Ils travaillent aussi le week-end'],
-      self: ['Je comprends la thèse et la réserve d’un texte court.', 'Je relie deux idées avec un connecteur adapté.', 'Je donne une opinion et je nuance mon désaccord.']
+      self: ['Comprendo la tesis y la reserva de un texto breve.', 'Relaciono dos ideas con un conector adecuado.', 'Doy mi opinión y matizo mi desacuerdo.']
     },
     B2: {
       unitTitle: 'Construire et vérifier un argument',
-      objective: 'Identifier l’implicite, conserver une nuance lors d’une reformulation et structurer une prise de position complexe.',
-      skills: ['Compréhension de conclusions implicites', 'Reformulation fidèle et précise', 'Argumentation structurée et objection polie'],
+      objective: 'Identificar lo implícito, conservar los matices al reformular y estructurar una toma de posición compleja.',
+      skills: ['Comprensión de conclusiones implícitas', 'Reformulación fiel y precisa', 'Argumentación estructurada y objeción cortés'],
       context: 'L’accès immédiat à l’information donne l’impression que toute réponse est à portée de main. Pourtant, distinguer une source fiable d’une affirmation séduisante exige du temps, des méthodes et une vigilance que la vitesse de consultation ne garantit pas.',
       unitQuestion: 'Quelle conclusion implicite se dégage du texte ?',
       unitOptions: ['La rapidité garantit la fiabilité', 'Toute information en ligne est trompeuse', 'Disposer de l’information ne dispense pas de la vérifier', 'La vérification devient inutile'],
       examTitle: 'Quelle est l’idée principale de l’extrait ?',
       examAudio: '../../../assets/audio/placement-b2.wav',
       examOptions: ['Le numérique supprime les tâches répétitives', 'Il faut abandonner les outils numériques', 'La technique suffit à protéger la concentration', 'Les outils aident si l’on en limite aussi l’usage'],
-      self: ['Je repère une conclusion implicite et les présupposés d’un texte.', 'Je reformule une idée sans perdre sa nuance.', 'Je structure une objection complexe avec précision et courtoisie.']
+      self: ['Identifico una conclusión implícita y los presupuestos de un texto.', 'Reformulo una idea sin perder sus matices.', 'Estructuro una objeción compleja con precisión y cortesía.']
     }
   };
 
@@ -66,7 +66,7 @@
 
   document.querySelector('[data-exam-content]').innerHTML =
     '<div><ul class="exam-facts"><li><strong>4 exámenes</strong><span>uno al final de cada segmento del nivel</span></li><li><strong>1 extracto aquí</strong><span>para entender el tipo de actividad</span></li><li><strong>Seguimiento humano</strong><span>la producción se confirma con el profesor</span></li></ul></div>' +
-    '<article class="exam-preview"><span class="exam-label">Examen de muestra · segmento 1 de 4</span><h3 lang="fr">' + data.examTitle + '</h3><audio controls preload="metadata" src="' + data.examAudio + '">Tu navegador no permite reproducir este audio.</audio><ol class="sample-options" lang="fr">' + list(data.examOptions) + '</ol><p class="sample-source-note">Audio y consigna reales del banco Pathway. Este extracto no reproduce el examen completo del segmento.</p></article>';
+    '<article class="exam-preview"><span class="exam-label">Examen de muestra · extracto de 1 de los 4 segmentos</span><h3 lang="fr">' + data.examTitle + '</h3><audio controls preload="metadata" src="' + data.examAudio + '">Tu navegador no permite reproducir este audio.</audio><ol class="sample-options" lang="fr">' + list(data.examOptions) + '</ol><p class="sample-source-note">Audio y consigna reales del banco Pathway. Este extracto no reproduce el examen completo del segmento.</p></article>';
 
   document.querySelector('[data-self-content]').innerHTML =
     data.self.map((statement, index) =>
