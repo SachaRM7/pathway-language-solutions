@@ -6,7 +6,6 @@ const root = process.cwd();
 const dist = resolve(root, 'dist');
 const client = resolve(dist, 'client');
 const server = resolve(dist, 'server');
-const metadata = resolve(dist, '.openai');
 const canonicalHome = await readFile(resolve(root, 'index-v2.html'), 'utf8');
 const sectionSignature = markup => [...markup.matchAll(/<section class="([^"]+)"/g)].map(match => match[1]);
 const canonicalHomeSections = sectionSignature(canonicalHome);
@@ -54,14 +53,13 @@ const assets = [
   'og-pathway.png', 'robots.txt', 'sitemap.xml', 'crs-engine.js', 'ircc-data.js',
   'pathway-v2.css', 'pathway-page-shell.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
   'placement-test.css', 'test.css', 'placement-test.js', 'test.js', 'placement-scoring.js',
-  'inscription.html', 'inscription.js', 'resource.css', 'resource.js',
+  'inscription.html', 'inscription.js', 'inscription.css', 'resource.css', 'resource.js',
   'calculator.css', 'calculator.js', 'conditions-nclc7.css', 'conditions-nclc7.js'
 ];
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(client, { recursive: true });
 await mkdir(server, { recursive: true });
-await mkdir(metadata, { recursive: true });
 
 for (const asset of assets) {
   const destination = asset === 'index-v2.html' ? 'index.html' : asset;
@@ -72,7 +70,6 @@ await cp(resolve(root, 'index-v2.html'), resolve(client, 'couleurs.html'));
 await cp(resolve(root, 'assets'), resolve(client, 'assets'), { recursive: true });
 await mkdir(resolve(client, 'i18n'), { recursive: true });
 await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.css'), { recursive: false });
-await cp(resolve(root, '.openai', 'hosting.json'), resolve(metadata, 'hosting.json'));
 
 for (const page of ['condiciones.html', 'conditions-nclc7.html', 'calculador.html', 'calculateur-crs.html']) {
   assertSharedShell(await readFile(resolve(root, page), 'utf8'), page);
@@ -87,7 +84,7 @@ for (const locale of Object.keys(LOCALES)) {
       assertHomeParity(markup, `${locale}/${page}`);
       assertMobileExperience(markup, `${locale}/${page}`, true);
     }
-    else assertSharedShell(markup, `${locale}/${page}`);
+    else if (page !== 'inscription.html') assertSharedShell(markup, `${locale}/${page}`);
     await writeFile(resolve(localeDir, page), markup, 'utf8');
   }
 }

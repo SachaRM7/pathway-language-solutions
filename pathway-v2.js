@@ -338,11 +338,26 @@ document.documentElement.classList.add('js');
       const slides = [...carousel.querySelectorAll('[data-story-slide]')];
       const controls = carousel.querySelector('[data-carousel-controls]');
       let current = 0;
+      let dots;
 
       const show = index => {
         current = (index + slides.length) % slides.length;
         if (mobileStoriesQuery.matches) return;
         slides.forEach((slide, slideIndex) => { slide.hidden = slideIndex !== current; });
+        [...(dots?.children || [])].forEach((dot, dotIndex) => dot.setAttribute('aria-current', String(dotIndex === current)));
+      };
+
+      const syncHeight = () => {
+        if (mobileStoriesQuery.matches) return;
+        slides.forEach(slide => {
+          slide.hidden = false;
+          slide.style.minHeight = '';
+        });
+        const maxHeight = Math.ceil(Math.max(...slides.map(slide => slide.getBoundingClientRect().height)));
+        slides.forEach((slide, slideIndex) => {
+          slide.hidden = slideIndex !== current;
+          slide.style.minHeight = `${maxHeight}px`;
+        });
       };
 
       if (controls && slides.length > 1) {
@@ -358,12 +373,24 @@ document.documentElement.classList.add('js');
         next.setAttribute('aria-label', homeCopy.carousel?.next || 'Testimonio siguiente');
         next.textContent = '→';
 
+        dots = document.createElement('div');
+        dots.className = 'carousel-dots';
+        dots.setAttribute('aria-label', homeCopy.carousel?.choose || 'Elegir un testimonio');
+        slides.forEach((_, index) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'carousel-dot';
+          dot.setAttribute('aria-label', `${homeCopy.carousel?.writtenItem || 'Ver testimonio'} ${index + 1}`);
+          dot.addEventListener('click', () => show(index));
+          dots.append(dot);
+        });
+
         previous.addEventListener('click', () => show(current - 1));
         next.addEventListener('click', () => show(current + 1));
-        controls.replaceChildren(previous, next);
+        controls.replaceChildren(previous, dots, next);
       }
 
-      return { slides, controls, show, get current() { return current; } };
+      return { slides, controls, show, syncHeight, get current() { return current; } };
     });
 
     const syncStoryLayout = () => {
@@ -379,12 +406,23 @@ document.documentElement.classList.add('js');
           return;
         }
         group.show(group.current);
+        group.syncHeight();
       });
       if (!isMobile) storyDeck.scrollLeft = 0;
     };
 
     syncStoryLayout();
     mobileStoriesQuery.addEventListener('change', syncStoryLayout);
+    let storyResizeTimer;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(storyResizeTimer);
+      storyResizeTimer = window.setTimeout(() => {
+        if (!mobileStoriesQuery.matches) storyGroups.forEach(group => group.syncHeight());
+      }, 120);
+    }, { passive: true });
+    document.fonts?.ready.then(() => {
+      if (!mobileStoriesQuery.matches) storyGroups.forEach(group => group.syncHeight());
+    });
     setupSwipeDeck(storyDeck, '[data-story-slide]', document.querySelector('[data-story-deck-index]'));
   }
 

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="placement.css?v=20260815-complete">
+  <link rel="stylesheet" href="inscription.css?v=20260831-stepper">
   <link rel="canonical" href="https://pathway-languages.com/inscription.html">
   <link rel="alternate" hreflang="es" href="https://pathway-languages.com/inscription.html">
   <link rel="alternate" hreflang="fr" href="https://pathway-languages.com/fr/inscription.html">
@@ -21,115 +21,146 @@
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
-  <header class="flow-header">
-    <div class="flow-header-inner">
-      <a class="flow-brand" href="index-v2.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
-      <a class="flow-back" href="test-placement.html">← Volver al resultado</a>
-      <nav class="language-switcher" aria-label="Seleccionar idioma" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.7rem;font-weight:700"><a href="inscription.html" lang="es" hreflang="es" aria-current="page">ES</a><a href="fr/inscription.html" lang="fr" hreflang="fr">FR</a><a href="en/inscription.html" lang="en" hreflang="en">EN</a><a href="de/inscription.html" lang="de" hreflang="de">DE</a></nav>
-    </div>
+  <header class="ins-hd">
+    <a class="ins-brand" href="index-v2.html"><img src="pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a>
+    <a class="ins-back" href="test-placement.html">← Volver al resultado</a>
+    <nav class="lang-switch" aria-label="Seleccionar idioma"><a href="inscription.html" lang="es" hreflang="es" aria-current="page">ES</a><a href="fr/inscription.html" lang="fr" hreflang="fr">FR</a><a href="en/inscription.html" lang="en" hreflang="en">EN</a><a href="de/inscription.html" lang="de" hreflang="de">DE</a></nav>
   </header>
 
-  <main class="enroll-shell" id="contenido">
-    <header class="enroll-head">
-      <div>
-        <span class="eyebrow" data-enroll-eyebrow>Después del placement</span>
-        <h1 data-enroll-title>Elige tu ritmo. Propón tus horarios.</h1>
-        <p data-enroll-intro>Pathway revisará tu resultado y comprobará la disponibilidad real antes de bloquear un horario. El pago solo se solicita después de esa confirmación.</p>
-      </div>
-      <aside class="journey" aria-label="Etapas de inscripción">
-        <ol>
-          <li data-journey-first>Test de placement completado</li>
-          <li>Oferta y preferencias horarias</li>
-          <li>Confirmación de un profesor</li>
-          <li>Pago seguro de la inscripción</li>
-        </ol>
-      </aside>
-    </header>
+  <main class="ins-shell" id="contenido">
+    <div class="ins-head">
+      <span class="eyebrow" data-enroll-eyebrow>Después del placement · <span data-head-level>Nivel por confirmar</span></span>
+      <h1 data-enroll-title>Elige tu ritmo. Propón tus horarios.</h1>
+      <p data-enroll-intro>Pathway revisa tu resultado y comprueba la disponibilidad real antes de bloquear un horario. El pago solo se pide después de esa confirmación.</p>
+    </div>
 
-    <div class="enroll-grid">
-      <form class="enroll-form" data-enroll-form>
-        <fieldset class="form-section" data-rhythm-section>
-          <legend>1. Elige el volumen semanal</legend>
-          <p>Estas son las dos ofertas disponibles antes de la confirmación del horario. La duración exacta depende de tu nivel acreditado y de tu fecha objetivo.</p>
-          <div class="choice-grid offer-choice-grid rhythm-grid">
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Esencial" data-hours="2 h/semana" data-monthly="185 CAD/mes" data-cycle="943,50 CAD · ciclo de 6 meses" data-suggested-days="2" checked><span><b>2 h / semana</b><strong>Esencial</strong><small data-plan-duration>ciclo de 6 meses desde A1</small><em><i>185 CAD / mes</i><i>943,50 CAD / ciclo*</i></em></span></label>
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Acelerado 3h" data-hours="3 h/semana" data-monthly="277,50 CAD/mes" data-cycle="1.179,50 CAD · ciclo de 5 meses" data-suggested-days="3"><span><b>3 h / semana</b><strong>Ritmo estable</strong><small data-plan-duration>ciclo de 5 meses desde A1</small><em><i>277,50 CAD / mes</i><i>1.179,50 CAD / ciclo*</i></em></span></label>
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Acelerado" data-hours="4 h/semana" data-monthly="370 CAD/mes" data-cycle="1.572,50 CAD · ciclo de 5 meses" data-suggested-days="3"><span><b>4 h / semana</b><strong>Acelerado</strong><small data-plan-duration>ciclo de 5 meses desde A1</small><em><i>370 CAD / mes</i><i>1.572,50 CAD / ciclo*</i></em></span></label>
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Intensivo 5h" data-hours="5 h/semana" data-monthly="462,50 CAD/mes" data-cycle="1.572,50 CAD · ciclo de 4 meses" data-suggested-days="4"><span><b>5 h / semana</b><strong>Intensivo</strong><small data-plan-duration>ciclo de 4 meses desde A1</small><em><i>462,50 CAD / mes</i><i>1.572,50 CAD / ciclo*</i></em></span></label>
-            <label class="choice offer-choice"><input type="radio" name="plan" value="Intensivo" data-hours="6 h/semana" data-monthly="555 CAD/mes" data-cycle="1.887 CAD · ciclo de 4 meses" data-suggested-days="4"><span><b>6 h / semana</b><strong>Prioridad</strong><small data-plan-duration>ciclo de 4 meses desde A1</small><em><i>555 CAD / mes</i><i>1.887 CAD / ciclo*</i></em></span></label>
+    <ol class="steps" data-steps>
+      <li data-step="0" class="active"><div class="bar"><i></i></div><span class="lbl"><span class="num">1</span><span class="t">Ritmo</span></span></li>
+      <li data-step="1"><div class="bar"><i></i></div><span class="lbl"><span class="num">2</span><span class="t">Inscripción</span></span></li>
+      <li data-step="2"><div class="bar"><i></i></div><span class="lbl"><span class="num">3</span><span class="t">Horarios</span></span></li>
+      <li data-step="3"><div class="bar"><i></i></div><span class="lbl"><span class="num">4</span><span class="t">Contacto</span></span></li>
+    </ol>
+
+    <div class="ins-grid">
+      <form class="ins-card" data-enroll-form novalidate>
+        <!-- STEP 1 · Ritmo -->
+        <fieldset class="panel on" data-panel="0" data-rhythm-section>
+          <legend>Elige el volumen semanal</legend>
+          <p class="sub">Ofertas de referencia antes de confirmar el horario. La duración exacta depende de tu nivel acreditado y de tu fecha objetivo.</p>
+          <div class="choices rhythm">
+            <label class="opt"><input type="radio" name="plan" value="Esencial" data-hours="2 h/semana" data-monthly="185 CAD/mes" data-cycle="943,50 CAD · ciclo de 6 meses" data-suggested-days="2" checked><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">2 h<span class="tag">Esencial</span></span><small data-plan-duration>ciclo de 6 meses desde A1</small><span class="price"><i>185 CAD/mes</i> · <i>943,50 CAD/ciclo*</i></span></span></label>
+            <label class="opt"><input type="radio" name="plan" value="Acelerado 3h" data-hours="3 h/semana" data-monthly="277,50 CAD/mes" data-cycle="1.179,50 CAD · ciclo de 5 meses" data-suggested-days="3"><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">3 h<span class="tag">Estable</span></span><small data-plan-duration>ciclo de 5 meses desde A1</small><span class="price"><i>277,50 CAD/mes</i> · <i>1.179,50 CAD/ciclo*</i></span></span></label>
+            <label class="opt"><input type="radio" name="plan" value="Acelerado" data-hours="4 h/semana" data-monthly="370 CAD/mes" data-cycle="1.572,50 CAD · ciclo de 5 meses" data-suggested-days="3"><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">4 h<span class="tag">Acelerado</span></span><small data-plan-duration>ciclo de 5 meses desde A1</small><span class="price"><i>370 CAD/mes</i> · <i>1.572,50 CAD/ciclo*</i></span></span></label>
+            <label class="opt"><input type="radio" name="plan" value="Intensivo 5h" data-hours="5 h/semana" data-monthly="462,50 CAD/mes" data-cycle="1.572,50 CAD · ciclo de 4 meses" data-suggested-days="4"><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">5 h<span class="tag">Intensivo</span></span><small data-plan-duration>ciclo de 4 meses desde A1</small><span class="price"><i>462,50 CAD/mes</i> · <i>1.572,50 CAD/ciclo*</i></span></span></label>
+            <label class="opt"><input type="radio" name="plan" value="Intensivo" data-hours="6 h/semana" data-monthly="555 CAD/mes" data-cycle="1.887 CAD · ciclo de 4 meses" data-suggested-days="4"><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">6 h<span class="tag">Prioridad</span></span><small data-plan-duration>ciclo de 4 meses desde A1</small><span class="price"><i>555 CAD/mes</i> · <i>1.887 CAD/ciclo*</i></span></span></label>
           </div>
         </fieldset>
 
-        <fieldset class="form-section" data-billing-section>
-          <legend>2. Forma de inscripción</legend>
-          <p>Los precios son referencias basadas en el volumen semanal elegido. Pathway confirmará el calendario exacto antes del pago.</p>
-          <div class="choice-grid">
-            <label class="choice"><input type="radio" name="billing" value="Mensual" checked><span><strong>Mensual</strong><small>Mes a mes, sin permanencia</small></span></label>
-            <label class="choice"><input type="radio" name="billing" value="Ciclo"><span><strong>Ciclo* −15 %</strong><small>Inscripción directa por el ciclo completo</small></span></label>
+        <!-- STEP 2 · Inscripción -->
+        <fieldset class="panel" data-panel="1" data-billing-section>
+          <legend>Forma de inscripción</legend>
+          <p class="sub">Los precios son referencias según el volumen semanal elegido. Pathway confirma el calendario exacto antes del pago.</p>
+          <div class="choices two">
+            <label class="opt"><input type="radio" name="billing" value="Mensual" checked><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">Mensual</span><small>Mes a mes, sin permanencia</small></span></label>
+            <label class="opt"><input type="radio" name="billing" value="Ciclo"><span class="box"><span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="h">Ciclo* −15%</span><small>Inscripción directa por el ciclo completo</small></span></label>
           </div>
-          <p class="billing-condition">* Un ciclo corresponde al dominio de un nivel CECRL, como A1, A2, B1 o B2. Si empiezas por un mes y luego pasas al ciclo, la reducción aplicada al ciclo es del 10 %.</p>
-          <p class="registration-fee-note"><strong>Cuota de inscripción única: 15 USD.</strong> Se añade al primer pago, después de confirmar el horario.</p>
+          <p class="note">* Un ciclo corresponde al dominio de un nivel CECRL (A1, A2, B1 o B2). Si empiezas por un mes y luego pasas al ciclo, la reducción aplicada al ciclo es del 10 %.</p>
+          <p class="note fee"><strong>Cuota de inscripción única: 15 USD.</strong> Se añade al primer pago, después de confirmar el horario.</p>
         </fieldset>
 
-        <fieldset class="form-section">
-          <legend data-schedule-legend>3. Preferencias horarias</legend>
-          <p>Selecciona varias posibilidades para que Pathway pueda encontrar una combinación compatible. Esto todavía no bloquea un horario.</p>
-          <p class="schedule-guidance" data-schedule-guidance>Para un ritmo de 3 h/semana, intenta proponer al menos 3 días posibles. No tienen que convertirse todos en días de clase.</p>
-          <div class="field-grid">
-            <label class="field"><span>Zona horaria</span><select name="timezone" required><option value="">Selecciona</option><option>Hora del Este · Toronto / Montréal</option><option>Hora Central · Winnipeg</option><option>Hora de la Montaña · Calgary</option><option>Hora del Pacífico · Vancouver</option><option>Otra zona horaria</option></select></label>
-            <label class="field"><span>Fecha ideal de inicio</span><input type="date" name="startDate" required></label>
+        <!-- STEP 3 · Horarios -->
+        <fieldset class="panel" data-panel="2">
+          <legend data-schedule-legend>Preferencias horarias</legend>
+          <p class="sub">Propón varias posibilidades para que Pathway encuentre una combinación compatible. Esto todavía no bloquea un horario.</p>
+          <p class="guidance" data-schedule-guidance>Para un ritmo de 2 h/semana, intenta proponer al menos 2 días posibles. No tienen que convertirse todos en días de clase.</p>
+          <div class="fields">
+            <div class="f"><label for="tz">Zona horaria</label><select id="tz" name="timezone" required><option value="">Selecciona</option><option>Hora del Este · Toronto / Montréal</option><option>Hora Central · Winnipeg</option><option>Hora de la Montaña · Calgary</option><option>Hora del Pacífico · Vancouver</option><option>Otra zona horaria</option></select></div>
+            <div class="f"><label for="sd">Fecha ideal de inicio</label><input id="sd" type="date" name="startDate" required></div>
           </div>
-          <p><strong>Días posibles</strong></p>
-          <div class="check-grid day-grid" data-day-options>
-            <label class="check-choice" aria-label="Lunes"><input type="checkbox" name="days" value="Lunes"><span aria-hidden="true">L</span><span class="sr-only">Lunes</span></label>
-            <label class="check-choice" aria-label="Martes"><input type="checkbox" name="days" value="Martes"><span aria-hidden="true">M</span><span class="sr-only">Martes</span></label>
-            <label class="check-choice" aria-label="Miércoles"><input type="checkbox" name="days" value="Miércoles"><span aria-hidden="true">M</span><span class="sr-only">Miércoles</span></label>
-            <label class="check-choice" aria-label="Jueves"><input type="checkbox" name="days" value="Jueves"><span aria-hidden="true">J</span><span class="sr-only">Jueves</span></label>
-            <label class="check-choice" aria-label="Viernes"><input type="checkbox" name="days" value="Viernes"><span aria-hidden="true">V</span><span class="sr-only">Viernes</span></label>
-            <label class="check-choice" aria-label="Sábado"><input type="checkbox" name="days" value="Sábado"><span aria-hidden="true">S</span><span class="sr-only">Sábado</span></label>
-            <label class="check-choice" aria-label="Domingo"><input type="checkbox" name="days" value="Domingo"><span aria-hidden="true">D</span><span class="sr-only">Domingo</span></label>
-            <label class="check-choice any-day-choice" aria-label="Cualquier día"><input type="checkbox" name="days" value="Cualquier día"><span aria-hidden="true">Cualquier día</span></label>
+          <p class="subhead">Días posibles</p>
+          <div class="chips" data-day-options>
+            <label class="chip"><input type="checkbox" name="days" value="Lunes"><span class="b">Lun</span></label>
+            <label class="chip"><input type="checkbox" name="days" value="Martes"><span class="b">Mar</span></label>
+            <label class="chip"><input type="checkbox" name="days" value="Miércoles"><span class="b">Mié</span></label>
+            <label class="chip"><input type="checkbox" name="days" value="Jueves"><span class="b">Jue</span></label>
+            <label class="chip"><input type="checkbox" name="days" value="Viernes"><span class="b">Vie</span></label>
+            <label class="chip"><input type="checkbox" name="days" value="Sábado"><span class="b">Sáb</span></label>
+            <label class="chip"><input type="checkbox" name="days" value="Domingo"><span class="b">Dom</span></label>
+            <label class="chip wide"><input type="checkbox" name="days" value="Cualquier día"><span class="b">Cualquier día</span></label>
           </div>
-          <p><strong>Franjas posibles</strong></p>
-          <div class="check-grid" data-time-options>
-            <label class="check-choice"><input type="checkbox" name="times" value="Mañana · 6:00–12:00">Mañana · 6–12 h</label>
-            <label class="check-choice"><input type="checkbox" name="times" value="Tarde · 12:00–17:00">Tarde · 12–17 h</label>
-            <label class="check-choice"><input type="checkbox" name="times" value="Noche · 17:00–22:00">Noche · 17–22 h</label>
+          <p class="subhead">Franjas posibles</p>
+          <div class="chips" data-time-options>
+            <label class="chip"><input type="checkbox" name="times" value="Mañana · 6:00–12:00"><span class="b">Mañana · 6–12h</span></label>
+            <label class="chip"><input type="checkbox" name="times" value="Tarde · 12:00–17:00"><span class="b">Tarde · 12–17h</span></label>
+            <label class="chip"><input type="checkbox" name="times" value="Noche · 17:00–22:00"><span class="b">Noche · 17–22h</span></label>
           </div>
-          <label class="field" style="margin-top:.8rem"><span>Precisiones útiles</span><textarea name="scheduleNote" placeholder="Ej.: martes y jueves después de las 18 h, nunca el viernes…"></textarea></label>
+          <div class="f wide" style="margin-top:1rem"><label for="note">Precisiones útiles</label><textarea id="note" name="scheduleNote" placeholder="Ej.: martes y jueves después de las 18 h, nunca el viernes…"></textarea></div>
         </fieldset>
 
-        <fieldset class="form-section">
-          <legend data-contact-legend>4. Contacto para confirmar</legend>
-          <div class="field-grid">
-            <label class="field"><span>Nombre completo</span><input type="text" name="name" autocomplete="name" required aria-describedby="error-name"></label>
-            <label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" required></label>
-            <label class="field"><span>WhatsApp</span><input type="tel" name="phone" autocomplete="tel" placeholder="+1…" required></label>
-            <label class="field field-wide"><span>Objetivo</span><textarea name="objective" autocomplete="off" required placeholder="Ej.: alcanzar NCLC 7 para mi proyecto de residencia"></textarea></label>
-            <label class="field"><span>Fecha objetivo TEF / TCF</span><input type="date" name="examDate"></label>
+        <!-- STEP 4 · Contacto -->
+        <fieldset class="panel" data-panel="3">
+          <legend data-contact-legend>Contacto para confirmar</legend>
+          <p class="sub">Pathway te escribe para proponerte un horario compatible. Sin compromiso de pago en esta etapa.</p>
+          <div class="fields">
+            <div class="f"><label for="name">Nombre completo</label><input id="name" type="text" name="name" autocomplete="name" placeholder="Tu nombre y apellido" required></div>
+            <div class="f"><label for="email">Email</label><input id="email" type="email" name="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" required></div>
+            <div class="f wide">
+              <span class="lbltxt" id="phone-lbl">WhatsApp</span>
+              <div class="tel-row" data-tel-country aria-describedby="phone-lbl">
+                <div class="tel-country">
+                  <button type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Seleccionar país" data-tel-toggle>
+                    <span class="flag" data-tel-flag>🇵🇪</span><span class="dial" data-tel-dial>+51</span><span class="caret" aria-hidden="true">▾</span>
+                  </button>
+                  <div class="tel-menu" role="listbox" aria-label="Países" data-tel-menu>
+                    <input class="tel-search" type="text" placeholder="Buscar país…" aria-label="Buscar país" data-tel-search>
+                    <div data-tel-list></div>
+                  </div>
+                </div>
+                <input class="tel-number f-control" type="tel" name="phone" inputmode="tel" autocomplete="tel-national" placeholder="Número" required data-tel-number style="border:1.5px solid var(--line);border-radius:12px;padding:.8rem .9rem;font-family:inherit;font-size:.92rem;background:var(--white);color:var(--ink)">
+                <input type="hidden" name="dialCode" value="+51" data-tel-dialinput>
+                <input type="hidden" name="countryIso" value="PE" data-tel-iso>
+              </div>
+            </div>
+            <div class="f wide"><label for="obj">Objetivo</label><textarea id="obj" name="objective" autocomplete="off" required placeholder="Ej.: alcanzar NCLC 7 para mi proyecto de residencia"></textarea></div>
+            <div class="f"><label for="exam">Fecha objetivo TEF / TCF</label><input id="exam" type="date" name="examDate"></div>
           </div>
         </fieldset>
+
+        <p class="form-error" data-form-error hidden></p>
+
+        <div class="ins-nav">
+          <button type="button" class="btn btn-ghost" data-prev disabled>← Anterior</button>
+          <button type="button" class="btn btn-coral" data-next>Siguiente →</button>
+        </div>
       </form>
 
-      <aside class="enroll-summary" aria-live="polite">
+      <aside class="sum" aria-live="polite">
         <span>Tu solicitud</span>
         <h2>Resumen antes de confirmar</h2>
-        <dl class="summary-list">
-          <div><dt>Nivel estimado</dt><dd data-summary-level>Por confirmar</dd></div>
-          <div><dt>Ritmo</dt><dd data-summary-plan>Esencial · 2 h/semana</dd></div>
-          <div><dt>Inscripción</dt><dd data-summary-billing>Mensual</dd></div>
-          <div><dt>Precio de referencia</dt><dd data-summary-price>185 CAD/mes</dd></div>
-          <div><dt>Cuota de inscripción</dt><dd>15 USD · una vez</dd></div>
-          <div><dt>Disponibilidades</dt><dd data-summary-schedule>Por completar</dd></div>
-        </dl>
-        <button class="button button-coral" type="button" data-submit-request>Solicitar confirmación de horario</button>
-        <p class="form-error" data-form-error hidden></p>
-        <p class="payment-note">Aquí no se cobra ningún pago. Pathway confirma primero un horario y después envía el enlace de pago correspondiente. La cuota de inscripción única es de 15 USD.</p>
+        <details open>
+          <summary>Ver resumen</summary>
+          <dl>
+            <div class="row"><dt>Nivel estimado</dt><dd data-summary-level>Por confirmar</dd></div>
+            <div class="row"><dt>Ritmo</dt><dd data-summary-plan>Esencial · 2 h/semana</dd></div>
+            <div class="row"><dt>Inscripción</dt><dd data-summary-billing>Mensual</dd></div>
+            <div class="row"><dt>Precio de referencia</dt><dd class="big" data-summary-price>185 CAD/mes</dd></div>
+            <div class="row"><dt>Cuota de inscripción</dt><dd>15 USD · una vez</dd></div>
+            <div class="row"><dt>Disponibilidades</dt><dd data-summary-schedule>Por completar</dd></div>
+          </dl>
+        </details>
+        <button class="btn btn-coral cta" type="button" data-submit-request>Solicitar confirmación de horario</button>
+        <p class="pay">Aquí no se cobra ningún pago. Pathway confirma primero un horario y después envía el enlace de pago correspondiente. La cuota de inscripción única es de 15 USD.</p>
       </aside>
     </div>
+
+    <footer class="ins-foot">Pathway Language Solutions · Tu solicitud no reserva un horario hasta la confirmación escrita de Pathway. Cuota de inscripción única: 15 USD. * Un ciclo corresponde al dominio de un nivel CECRL (A1, A2, B1 o B2); pago directo: 15 % de reducción. Si cambias después de un primer mes, la reducción es del 10 %.</footer>
   </main>
 
-  <footer class="flow-footer">Pathway Language Solutions · Tu solicitud no reserva un horario hasta la confirmación escrita de Pathway. Cuota de inscripción única: 15 USD. * Un ciclo corresponde al dominio de un nivel CECRL (A1, A2, B1 o B2); pago directo: 15 % de reducción. Si cambias después de un primer mes, la reducción es del 10 %.</footer>
-  <script src="inscription.js?v=20260821-cycle-duration"></script>
+  <div class="mbar" data-mbar>
+    <div class="p">Precio de referencia<b data-mbar-price>185 CAD/mes</b></div>
+    <button class="btn btn-coral" type="button" data-mbar-action>Siguiente →</button>
+  </div>
+
+  <script src="inscription.js?v=20260831-stepper"></script>
 </body>
 </html>

@@ -73,6 +73,138 @@ export const LOCALES = {
 
 Object.assign(LOCALES.fr, { methodLabel: 'Méthode Pathway', plansLabel: 'Tarifs', plansTitle: '2 à 6 heures par semaine', plansCopy: 'Les prix sont des références. Le paiement direct d’un cycle inclut 15 % de réduction ; commencer par un mois puis passer à un cycle communique une réduction de 10 %.', directReduction: '−15 % en paiement direct', priceNote: 'Les prix sont indicatifs ; le rythme exact est confirmé après le test de placement.', privateLesson: 'Cours privé · accompagnement en direct', questions: 'questions', conservative: 'orientation prudente', weighted: 'estimation pondérée et précise', testNotice: 'La lecture, l’écoute et la grammaire/vocabulaire reçoivent une note sur 100 uniquement lorsqu’elles sont mesurées. L’expression orale n’est pas évaluée automatiquement et doit être confirmée en direct. Chaque question de compréhension orale donne droit à une seule écoute ; la pause et la reprise ne consomment pas une écoute.', placementLabel: 'Placement · A1–B2', enrollmentLabel: 'Pathway · inscription', fullName: 'Nom complet', email: 'Email', whatsapp: 'WhatsApp', days: 'Jours possibles', anyDay: 'Tous les jours', formError: 'Veuillez compléter les champs obligatoires et choisir un jour.', requiredError: 'Ce champ est obligatoire.', emailError: 'Saisissez une adresse e-mail valide.', dayError: 'Choisissez au moins un jour.', daysFull: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'], switchAfterMonth: 'Après un premier mois, le passage à un cycle communique une réduction de 10 %.' });
 Object.assign(LOCALES.en, { methodLabel: 'Pathway method', plansLabel: 'Plans', plansTitle: '2–6 hours per week', plansCopy: 'Prices are references. Direct cycle payment includes a 15% reduction; starting with one month and switching to a cycle communicates a 10% reduction.', directReduction: '−15% direct', priceNote: 'Prices are references; the exact rhythm is confirmed after the placement test.', privateLesson: 'Private lesson · live support', questions: 'questions', conservative: 'conservative estimate', weighted: 'weighted and precise', testNotice: 'Reading, listening and grammar/vocabulary receive /100 only when measured. Speaking is not auto-evaluated and must be confirmed live. Each listening question allows a single listen; pause/resume does not consume a listen.', placementLabel: 'Placement · A1–B2', enrollmentLabel: 'Pathway · enrolment', fullName: 'Full name', email: 'Email', whatsapp: 'WhatsApp', days: 'Possible days', anyDay: 'Any day', formError: 'Please complete every required field and choose a day.', requiredError: 'This field is required.', emailError: 'Enter a valid email address.', dayError: 'Choose at least one day.', daysFull: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], switchAfterMonth: 'After a first month, switching to a cycle communicates a 10% reduction.' });
+Object.assign(LOCALES.fr, { enroll: {
+  title: 'Offre et horaires', description: 'Choisissez votre offre Pathway, vos préférences horaires et préparez la confirmation d’inscription.',
+  skip: 'Aller au contenu', back: '← Retour au résultat', home: 'Accueil',
+  eyebrowPrefix: 'Après le placement · ', h1: 'Choisissez votre rythme. Proposez vos horaires.',
+  intro: 'Pathway vérifie votre résultat et la disponibilité réelle avant de bloquer un horaire. Le paiement n’est demandé qu’après cette confirmation.',
+  steps: ['Rythme', 'Inscription', 'Horaires', 'Contact'],
+  s1Legend: 'Choisissez le volume hebdomadaire', s1Sub: 'Offres de référence avant de confirmer l’horaire. La durée exacte dépend de votre niveau et de votre date objectif.',
+  planTags: ['Essentiel', 'Stable', 'Accéléré', 'Intensif', 'Priorité'], cycleShort: 'cycle', planMonthsA1: [6, 5, 5, 4, 4],
+  s2Legend: 'Formule d’inscription', s2Sub: 'Les prix sont indicatifs selon le volume choisi. Pathway confirme le calendrier exact avant le paiement.',
+  billingMonthly: 'Mensuel', billingMonthlyDesc: 'Mois par mois, sans engagement', billingCycle: 'Cycle* −15 %', billingCycleDesc: 'Inscription directe pour le cycle complet',
+  cycleNote: '* Un cycle correspond à la maîtrise d’un niveau CECRL (A1, A2, B1 ou B2). Si vous commencez par un mois puis passez au cycle, la réduction est de 10 %.',
+  feeNote: '<strong>Frais d’inscription uniques : 15 USD.</strong> Ajoutés au premier paiement, après confirmation de l’horaire.',
+  s3Legend: 'Préférences horaires', s3Sub: 'Proposez plusieurs possibilités pour que Pathway trouve une combinaison compatible. Cela ne bloque pas encore d’horaire.',
+  tzLabel: 'Fuseau horaire', tzSelect: 'Sélectionnez', tzOptions: ['Heure de l’Est · Toronto / Montréal', 'Heure centrale · Winnipeg', 'Heure des Rocheuses · Calgary', 'Heure du Pacifique · Vancouver', 'Autre fuseau horaire'],
+  startLabel: 'Date de début idéale', daysLabel: 'Jours possibles', slotsLabel: 'Créneaux possibles',
+  slots: [['Matin · 6:00–12:00', 'Matin · 6–12h'], ['Après-midi · 12:00–17:00', 'Après-midi · 12–17h'], ['Soir · 17:00–22:00', 'Soir · 17–22h']],
+  notesLabel: 'Précisions utiles', notesPlaceholder: 'Ex. : mardi et jeudi après 18 h, jamais le vendredi…',
+  s4Legend: 'Contact pour confirmer', s4Sub: 'Pathway vous écrit pour proposer un horaire compatible. Sans engagement de paiement à cette étape.',
+  nameLabel: 'Nom complet', namePlaceholder: 'Votre nom et prénom', emailLabel: 'Email', emailPlaceholder: 'votremail@exemple.com',
+  waLabel: 'WhatsApp', numberPlaceholder: 'Numéro', searchPlaceholder: 'Rechercher un pays…',
+  objLabel: 'Objectif', objPlaceholder: 'Ex. : atteindre NCLC 7 pour mon projet de résidence', examLabel: 'Date objectif TEF / TCF',
+  navPrev: '← Précédent', navNext: 'Suivant →',
+  sumEyebrow: 'Votre demande', sumTitle: 'Récapitulatif avant de confirmer', sumSee: 'Voir le récapitulatif',
+  sumLevel: 'Niveau estimé', sumRhythm: 'Rythme', sumEnroll: 'Inscription', sumPrice: 'Prix de référence', sumFee: 'Frais d’inscription', feeOnce: '15 USD · une fois', sumAvail: 'Disponibilités',
+  sumCta: 'Demander la confirmation de l’horaire', payNote: 'Aucun paiement ici. Pathway confirme d’abord un horaire puis envoie le lien de paiement. Les frais d’inscription uniques sont de 15 USD.',
+  footer: 'Pathway Language Solutions · Votre demande ne réserve pas d’horaire avant la confirmation écrite de Pathway. Frais d’inscription uniques : 15 USD.', mbarPrice: 'Prix de référence',
+  js: {
+    levelSuffix: '· estimé', byConfirm: 'À confirmer', headLevel: 'Niveau {L} estimé', headLevelUnknown: 'Niveau à confirmer',
+    durationA1: 'cycle de {m} mois depuis A1', durationOther: '≈ {m} mois depuis {L}',
+    urgentEyebrow: 'Votre date d’abord', urgentTitle: 'Dites-nous quand vous pouvez étudier et votre date objectif.', urgentIntro: 'Nous comparerons votre date, votre niveau et vos disponibilités pour vous recommander un rythme réaliste avant tout paiement.',
+    noResults: 'Aucun résultat', urgentPlan: 'À recommander selon votre date', urgentBilling: 'À choisir après la recommandation', urgentPrice: 'Après confirmation du rythme',
+    cycleReduction: '{c} · réduction directe 15 %', daysTbd: 'Jours à définir', slotTbd: 'créneau à définir', toComplete: 'À compléter',
+    guidance: 'Pour un rythme de {h}, proposez au moins {n} jours possibles. Ils ne deviennent pas tous des jours de cours.',
+    required: 'Ce champ est obligatoire.', badEmail: 'Saisissez un email valide.', badValue: 'Vérifiez cette valeur.',
+    pickDay: 'Choisissez un jour ou « Tous les jours ».', pickSlot: 'Choisissez au moins un créneau.',
+    next: 'Suivant →', review: 'Vérifier la demande ✓', submitMobile: 'Demander l’horaire',
+    msgIntro: 'Bonjour Pathway, j’ai terminé le test de placement et je souhaite demander la confirmation d’un horaire.',
+    msgIntroUrgent: 'Bonjour Pathway, j’ai peu de temps avant mon objectif et je veux savoir quel rythme est réaliste.',
+    msgClose: 'Je comprends que l’horaire et le prix final doivent être confirmés avant le paiement.',
+    msgRhythmUrgent: 'À recommander selon ma date et mon niveau', msgEnrollUrgent: 'À choisir après la recommandation',
+    toRecommend: 'À recommander', toChoose: 'À choisir', fee: '15 USD (une seule fois)', none: 'Aucune', tbd: 'À définir',
+    lblName: 'Nom complet', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objectif', lblLevel: 'Niveau estimé', lblRhythm: 'Rythme de référence', lblEnroll: 'Inscription', lblPrice: 'Prix de référence', lblFee: 'Frais d’inscription : 15 USD (une seule fois)', lblTz: 'Fuseau horaire', lblStart: 'Début idéal', lblDays: 'Jours possibles', lblSlots: 'Créneaux possibles', lblExam: 'Date objectif TEF/TCF', lblNotes: 'Précisions'
+  }
+} });
+Object.assign(LOCALES.en, { enroll: {
+  title: 'Offer and schedule', description: 'Choose your Pathway offer, your schedule preferences and prepare your enrolment confirmation.',
+  skip: 'Skip to content', back: '← Back to result', home: 'Home',
+  eyebrowPrefix: 'After the placement · ', h1: 'Choose your rhythm. Propose your schedule.',
+  intro: 'Pathway reviews your result and checks real availability before blocking a schedule. Payment is only requested after that confirmation.',
+  steps: ['Rhythm', 'Enrolment', 'Schedule', 'Contact'],
+  s1Legend: 'Choose your weekly volume', s1Sub: 'Reference offers before confirming the schedule. The exact duration depends on your level and target date.',
+  planTags: ['Essential', 'Steady', 'Accelerated', 'Intensive', 'Priority'], cycleShort: 'cycle', planMonthsA1: [6, 5, 5, 4, 4],
+  s2Legend: 'Enrolment type', s2Sub: 'Prices are references based on the weekly volume chosen. Pathway confirms the exact calendar before payment.',
+  billingMonthly: 'Monthly', billingMonthlyDesc: 'Month to month, no commitment', billingCycle: 'Cycle* −15%', billingCycleDesc: 'Direct enrolment for the full cycle',
+  cycleNote: '* One cycle corresponds to mastering one CEFR level (A1, A2, B1 or B2). If you start with a month then move to a cycle, the reduction is 10%.',
+  feeNote: '<strong>One-time enrolment fee: 15 USD.</strong> Added to the first payment, after the schedule is confirmed.',
+  s3Legend: 'Schedule preferences', s3Sub: 'Propose several possibilities so Pathway can find a compatible combination. This does not block a schedule yet.',
+  tzLabel: 'Time zone', tzSelect: 'Select', tzOptions: ['Eastern Time · Toronto / Montréal', 'Central Time · Winnipeg', 'Mountain Time · Calgary', 'Pacific Time · Vancouver', 'Other time zone'],
+  startLabel: 'Ideal start date', daysLabel: 'Possible days', slotsLabel: 'Possible slots',
+  slots: [['Morning · 6:00–12:00', 'Morning · 6–12h'], ['Afternoon · 12:00–17:00', 'Afternoon · 12–17h'], ['Evening · 17:00–22:00', 'Evening · 17–22h']],
+  notesLabel: 'Useful details', notesPlaceholder: 'E.g. Tuesday and Thursday after 6 pm, never Friday…',
+  s4Legend: 'Contact to confirm', s4Sub: 'Pathway writes to you to propose a compatible schedule. No payment commitment at this stage.',
+  nameLabel: 'Full name', namePlaceholder: 'Your first and last name', emailLabel: 'Email', emailPlaceholder: 'youremail@example.com',
+  waLabel: 'WhatsApp', numberPlaceholder: 'Number', searchPlaceholder: 'Search a country…',
+  objLabel: 'Objective', objPlaceholder: 'E.g. reach NCLC 7 for my residency project', examLabel: 'Target TEF / TCF date',
+  navPrev: '← Previous', navNext: 'Next →',
+  sumEyebrow: 'Your request', sumTitle: 'Summary before confirming', sumSee: 'See summary',
+  sumLevel: 'Estimated level', sumRhythm: 'Rhythm', sumEnroll: 'Enrolment', sumPrice: 'Reference price', sumFee: 'Enrolment fee', feeOnce: '15 USD · once', sumAvail: 'Availability',
+  sumCta: 'Request schedule confirmation', payNote: 'No payment here. Pathway first confirms a schedule then sends the payment link. The one-time enrolment fee is 15 USD.',
+  footer: 'Pathway Language Solutions · Your request does not reserve a schedule until Pathway’s written confirmation. One-time enrolment fee: 15 USD.', mbarPrice: 'Reference price',
+  js: {
+    levelSuffix: '· estimated', byConfirm: 'To confirm', headLevel: '{L} level estimated', headLevelUnknown: 'Level to confirm',
+    durationA1: '{m}-month cycle from A1', durationOther: '≈ {m} months from {L}',
+    urgentEyebrow: 'Your date first', urgentTitle: 'Tell us when you can study and your target date.', urgentIntro: 'We will compare your date, level and availability to recommend a realistic rhythm before any payment.',
+    noResults: 'No results', urgentPlan: 'To recommend based on your date', urgentBilling: 'To choose after the recommendation', urgentPrice: 'After confirming the rhythm',
+    cycleReduction: '{c} · 15% direct reduction', daysTbd: 'Days to define', slotTbd: 'slot to define', toComplete: 'To complete',
+    guidance: 'For a rhythm of {h}, propose at least {n} possible days. Not all of them become class days.',
+    required: 'This field is required.', badEmail: 'Enter a valid email.', badValue: 'Check this value.',
+    pickDay: 'Select a day or “Any day”.', pickSlot: 'Select at least one slot.',
+    next: 'Next →', review: 'Review request ✓', submitMobile: 'Request schedule',
+    msgIntro: 'Hi Pathway, I finished the placement test and want to request schedule confirmation.',
+    msgIntroUrgent: 'Hi Pathway, I have little time before my goal and want to know which rhythm is realistic.',
+    msgClose: 'I understand the schedule and final price must be confirmed before payment.',
+    msgRhythmUrgent: 'To recommend based on my date and level', msgEnrollUrgent: 'To choose after the recommendation',
+    toRecommend: 'To recommend', toChoose: 'To choose', fee: '15 USD (one time)', none: 'None', tbd: 'To define',
+    lblName: 'Full name', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objective', lblLevel: 'Estimated level', lblRhythm: 'Reference rhythm', lblEnroll: 'Enrolment', lblPrice: 'Reference price', lblFee: 'Enrolment fee: 15 USD (one time)', lblTz: 'Time zone', lblStart: 'Ideal start', lblDays: 'Possible days', lblSlots: 'Possible slots', lblExam: 'Target TEF/TCF date', lblNotes: 'Details'
+  }
+} });
+Object.assign(LOCALES.de, { enroll: {
+  title: 'Angebot und Zeiten', description: 'Wählen Sie Ihr Pathway-Angebot, Ihre Zeitpräferenzen und bereiten Sie die Anmeldebestätigung vor.',
+  skip: 'Zum Inhalt springen', back: '← Zurück zum Ergebnis', home: 'Startseite',
+  eyebrowPrefix: 'Nach der Einstufung · ', h1: 'Wählen Sie Ihren Rhythmus. Schlagen Sie Zeiten vor.',
+  intro: 'Pathway prüft Ihr Ergebnis und die tatsächliche Verfügbarkeit, bevor ein Termin blockiert wird. Die Zahlung wird erst nach dieser Bestätigung verlangt.',
+  steps: ['Rhythmus', 'Anmeldung', 'Zeiten', 'Kontakt'],
+  s1Legend: 'Wählen Sie das Wochenvolumen', s1Sub: 'Richtangebote vor der Terminbestätigung. Die genaue Dauer hängt von Ihrem Niveau und Zieldatum ab.',
+  planTags: ['Basis', 'Stabil', 'Beschleunigt', 'Intensiv', 'Priorität'], cycleShort: 'Zyklus', planMonthsA1: [6, 5, 5, 4, 4],
+  s2Legend: 'Anmeldeform', s2Sub: 'Die Preise sind Richtwerte je nach gewähltem Wochenvolumen. Pathway bestätigt den genauen Kalender vor der Zahlung.',
+  billingMonthly: 'Monatlich', billingMonthlyDesc: 'Monat für Monat, ohne Bindung', billingCycle: 'Zyklus* −15 %', billingCycleDesc: 'Direkte Anmeldung für den gesamten Zyklus',
+  cycleNote: '* Ein Zyklus entspricht dem Beherrschen einer GER-Stufe (A1, A2, B1 oder B2). Wenn Sie mit einem Monat beginnen und dann zum Zyklus wechseln, beträgt die Ermäßigung 10 %.',
+  feeNote: '<strong>Einmalige Anmeldegebühr: 15 USD.</strong> Wird der ersten Zahlung nach der Terminbestätigung hinzugefügt.',
+  s3Legend: 'Zeitpräferenzen', s3Sub: 'Schlagen Sie mehrere Möglichkeiten vor, damit Pathway eine passende Kombination findet. Das blockiert noch keinen Termin.',
+  tzLabel: 'Zeitzone', tzSelect: 'Auswählen', tzOptions: ['Ostzeit · Toronto / Montréal', 'Zentralzeit · Winnipeg', 'Bergzeit · Calgary', 'Pazifikzeit · Vancouver', 'Andere Zeitzone'],
+  startLabel: 'Ideales Startdatum', daysLabel: 'Mögliche Tage', slotsLabel: 'Mögliche Zeitfenster',
+  slots: [['Morgen · 6:00–12:00', 'Morgen · 6–12h'], ['Nachmittag · 12:00–17:00', 'Nachmittag · 12–17h'], ['Abend · 17:00–22:00', 'Abend · 17–22h']],
+  notesLabel: 'Nützliche Hinweise', notesPlaceholder: 'Z. B. Dienstag und Donnerstag nach 18 Uhr, freitags nie…',
+  s4Legend: 'Kontakt zur Bestätigung', s4Sub: 'Pathway schreibt Ihnen, um einen passenden Termin vorzuschlagen. In dieser Phase keine Zahlungsverpflichtung.',
+  nameLabel: 'Vollständiger Name', namePlaceholder: 'Ihr Vor- und Nachname', emailLabel: 'E-Mail', emailPlaceholder: 'ihremail@beispiel.com',
+  waLabel: 'WhatsApp', numberPlaceholder: 'Nummer', searchPlaceholder: 'Land suchen…',
+  objLabel: 'Ziel', objPlaceholder: 'Z. B. NCLC 7 für mein Aufenthaltsprojekt erreichen', examLabel: 'Zieldatum TEF / TCF',
+  navPrev: '← Zurück', navNext: 'Weiter →',
+  sumEyebrow: 'Ihre Anfrage', sumTitle: 'Zusammenfassung vor der Bestätigung', sumSee: 'Zusammenfassung ansehen',
+  sumLevel: 'Geschätztes Niveau', sumRhythm: 'Rhythmus', sumEnroll: 'Anmeldung', sumPrice: 'Richtpreis', sumFee: 'Anmeldegebühr', feeOnce: '15 USD · einmalig', sumAvail: 'Verfügbarkeiten',
+  sumCta: 'Terminbestätigung anfragen', payNote: 'Hier wird keine Zahlung fällig. Pathway bestätigt zuerst einen Termin und sendet dann den Zahlungslink. Die einmalige Anmeldegebühr beträgt 15 USD.',
+  footer: 'Pathway Language Solutions · Ihre Anfrage reserviert keinen Termin bis zur schriftlichen Bestätigung von Pathway. Einmalige Anmeldegebühr: 15 USD.', mbarPrice: 'Richtpreis',
+  js: {
+    levelSuffix: '· geschätzt', byConfirm: 'Zu bestätigen', headLevel: 'Niveau {L} geschätzt', headLevelUnknown: 'Niveau zu bestätigen',
+    durationA1: 'Zyklus von {m} Monaten ab A1', durationOther: '≈ {m} Monate ab {L}',
+    urgentEyebrow: 'Zuerst Ihr Datum', urgentTitle: 'Sagen Sie uns, wann Sie lernen können und Ihr Zieldatum.', urgentIntro: 'Wir vergleichen Ihr Datum, Ihr Niveau und Ihre Verfügbarkeit, um vor jeder Zahlung einen realistischen Rhythmus zu empfehlen.',
+    noResults: 'Keine Ergebnisse', urgentPlan: 'Je nach Ihrem Datum zu empfehlen', urgentBilling: 'Nach der Empfehlung zu wählen', urgentPrice: 'Nach Bestätigung des Rhythmus',
+    cycleReduction: '{c} · 15 % Direktrabatt', daysTbd: 'Tage festzulegen', slotTbd: 'Zeitfenster festzulegen', toComplete: 'Auszufüllen',
+    guidance: 'Für einen Rhythmus von {h} schlagen Sie mindestens {n} mögliche Tage vor. Nicht alle werden zu Unterrichtstagen.',
+    required: 'Dieses Feld ist erforderlich.', badEmail: 'Geben Sie eine gültige E-Mail ein.', badValue: 'Prüfen Sie diesen Wert.',
+    pickDay: 'Wählen Sie einen Tag oder „Jeder Tag“.', pickSlot: 'Wählen Sie mindestens ein Zeitfenster.',
+    next: 'Weiter →', review: 'Anfrage prüfen ✓', submitMobile: 'Termin anfragen',
+    msgIntro: 'Hallo Pathway, ich habe den Einstufungstest abgeschlossen und möchte eine Terminbestätigung anfragen.',
+    msgIntroUrgent: 'Hallo Pathway, ich habe wenig Zeit bis zu meinem Ziel und möchte wissen, welcher Rhythmus realistisch ist.',
+    msgClose: 'Mir ist klar, dass Termin und Endpreis vor der Zahlung bestätigt werden müssen.',
+    msgRhythmUrgent: 'Je nach meinem Datum und Niveau zu empfehlen', msgEnrollUrgent: 'Nach der Empfehlung zu wählen',
+    toRecommend: 'Zu empfehlen', toChoose: 'Zu wählen', fee: '15 USD (einmalig)', none: 'Keine', tbd: 'Festzulegen',
+    lblName: 'Vollständiger Name', lblEmail: 'E-Mail', lblWa: 'WhatsApp', lblObj: 'Ziel', lblLevel: 'Geschätztes Niveau', lblRhythm: 'Referenz-Rhythmus', lblEnroll: 'Anmeldung', lblPrice: 'Richtpreis', lblFee: 'Anmeldegebühr: 15 USD (einmalig)', lblTz: 'Zeitzone', lblStart: 'Idealer Beginn', lblDays: 'Mögliche Tage', lblSlots: 'Mögliche Zeitfenster', lblExam: 'Zieldatum TEF/TCF', lblNotes: 'Hinweise'
+  }
+} });
 Object.assign(LOCALES.de, { methodLabel: 'Pathway-Methode', plansLabel: 'Pläne', plansTitle: '2–6 Stunden pro Woche', plansCopy: 'Die Preise sind Richtwerte. Direkte Zykluszahlung enthält 15 % Ermäßigung; ein erster Monat und der anschließende Wechsel zu einem Zyklus kommunizieren 10 % Ermäßigung.', directReduction: '−15 % direkt', priceNote: 'Richtpreise; der genaue Rhythmus wird nach dem Einstufungstest bestätigt.', privateLesson: 'Privatunterricht · Live-Begleitung', questions: 'Fragen', conservative: 'vorsichtige Orientierung', weighted: 'gewichtet und präzise', testNotice: 'Lesen, Hören und Grammatik/Wortschatz erhalten nur dann eine Punktzahl von 100, wenn sie gemessen werden. Sprechen wird nicht automatisch bewertet und muss live bestätigt werden. Jeder Audioausschnitt darf zweimal gestartet werden; Pause und Fortsetzen verbrauchen keine weitere Hörung.', placementLabel: 'Einstufung · A1–B2', enrollmentLabel: 'Pathway · Anmeldung', fullName: 'Vollständiger Name', email: 'E-Mail', whatsapp: 'WhatsApp', days: 'Mögliche Tage', anyDay: 'Jeder Tag', formError: 'Bitte füllen Sie alle Pflichtfelder aus und wählen Sie einen Tag.', requiredError: 'Dieses Feld ist erforderlich.', emailError: 'Geben Sie eine gültige E-Mail-Adresse ein.', dayError: 'Wählen Sie mindestens einen Tag.', daysFull: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'], switchAfterMonth: 'Nach einem ersten Monat bedeutet der Wechsel zu einem Zyklus eine Ermäßigung von 10 %.' });
 
 const pageNames = ['index.html', 'test.html', 'inscription.html', 'calculateur-crs.html', 'conditions-nclc7.html', 'politique-confidentialite.html', 'ressources.html', 'merci.html'];
@@ -422,11 +554,63 @@ const articleV2 = (locale, t, kind) => {
 
 const thanksV2 = (locale, t) => `<section class="locale-section locale-article locale-thanks"><span class="eyebrow">Pathway · ${t.thanksTitle}</span><h1>${t.thanksTitle}</h1><p class="article-lead">${t.thanksCopy}</p><div class="article-sections">${t.thanksSteps.map(step => `<section><span>${step[0]}</span><div><h2>${step[1]}</h2><p>${step[2]}</p></div></section>`).join('')}</div><a class="button primary" href="./">${t.homeCta} →</a></section>`;
 
+// Config HubSpot partagée pour les pages localisées (mettre portalId/formId puis rebuild).
+const HUBSPOT_CFG = { portalId: '', formId: '', region: 'na1' };
+const gfmt = (str, map) => String(str).replace(/\{(\w+)\}/g, (_, k) => (map && map[k] != null ? map[k] : ''));
+
+// Page inscription localisée : autonome (même design que l'ES via inscription.css/js).
+const enrollmentPage = (locale, t) => {
+  const e = t.enroll;
+  const CHECK = '<span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  const planMeta = [['Esencial', '2 h', '2'], ['Acelerado 3h', '3 h', '3'], ['Acelerado', '4 h', '3'], ['Intensivo 5h', '5 h', '4'], ['Intensivo', '6 h', '4']];
+  const planCards = planMeta.map((p, i) => {
+    const row = t.prices[i];
+    const monthly = row[1];
+    const cycleAmount = row[2].split(' · ')[0];
+    const cardCycle = `${cycleAmount}/${e.cycleShort}*`;
+    const durDefault = gfmt(e.js.durationA1, { m: e.planMonthsA1[i] });
+    return `<label class="opt"><input type="radio" name="plan" value="${p[0]}" data-tag="${e.planTags[i]}" data-hours="${row[0]}" data-monthly="${monthly}" data-cycle="${row[2]}" data-suggested-days="${p[2]}"${i === 0 ? ' checked' : ''}><span class="box">${CHECK}<span class="h">${p[1]}<span class="tag">${e.planTags[i]}</span></span><small data-plan-duration>${durDefault}</small><span class="price"><i>${monthly}</i> · <i>${cardCycle}</i></span></span></label>`;
+  }).join('');
+  const cycleTag = e.billingCycle.split('*')[0].trim();
+  const dayChips = t.daysFull.map(d => `<label class="chip"><input type="checkbox" name="days" value="${d}"><span class="b">${d.slice(0, 3)}</span></label>`).join('')
+    + `<label class="chip wide"><input type="checkbox" name="days" value="${t.anyDay}"><span class="b">${t.anyDay}</span></label>`;
+  const slotChips = e.slots.map(s => `<label class="chip"><input type="checkbox" name="times" value="${s[0]}"><span class="b">${s[1]}</span></label>`).join('');
+  const tzOpts = `<option value="">${e.tzSelect}</option>` + e.tzOptions.map(o => `<option>${o}</option>`).join('');
+  const langs = [['es', 'ES', '../inscription.html'], ['fr', 'FR', '../fr/inscription.html'], ['en', 'EN', '../en/inscription.html'], ['de', 'DE', '../de/inscription.html']]
+    .map(([c, lab, href]) => `<a href="${href}" lang="${c}" hreflang="${c}"${c === locale ? ' aria-current="page"' : ''}>${lab}</a>`).join('');
+  const alternates = [['es', `${SITE}/inscription.html`], ...Object.keys(LOCALES).map(c => [c, `${SITE}/${c}/inscription.html`])]
+    .map(([c, href]) => `<link rel="alternate" hreflang="${c}" href="${href}">`).join('');
+  return `<!doctype html>
+<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5efe4"><meta name="robots" content="noindex,nofollow"><meta name="description" content="${e.description}"><title>${e.title} | Pathway</title><link rel="icon" href="../pathway-mark.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../inscription.css?v=20260831-stepper"><link rel="canonical" href="${SITE}/${locale}/inscription.html">${alternates}<script src="../site-config.js"></script></head>
+<body><a class="skip-link" href="#contenido">${e.skip}</a>
+<header class="ins-hd"><a class="ins-brand" href="./"><img src="../pathway-mark.svg" alt=""><span>Pathway<small>Language Solutions</small></span></a><a class="ins-back" href="test.html">${e.back}</a><nav class="lang-switch" aria-label="Language">${langs}</nav></header>
+<main class="ins-shell" id="contenido">
+<div class="ins-head"><span class="eyebrow" data-enroll-eyebrow>${e.eyebrowPrefix}<span data-head-level>${e.js.headLevelUnknown}</span></span><h1 data-enroll-title>${e.h1}</h1><p data-enroll-intro>${e.intro}</p></div>
+<ol class="steps" data-steps><li data-step="0" class="active"><div class="bar"><i></i></div><span class="lbl"><span class="num">1</span><span class="t">${e.steps[0]}</span></span></li><li data-step="1"><div class="bar"><i></i></div><span class="lbl"><span class="num">2</span><span class="t">${e.steps[1]}</span></span></li><li data-step="2"><div class="bar"><i></i></div><span class="lbl"><span class="num">3</span><span class="t">${e.steps[2]}</span></span></li><li data-step="3"><div class="bar"><i></i></div><span class="lbl"><span class="num">4</span><span class="t">${e.steps[3]}</span></span></li></ol>
+<div class="ins-grid">
+<form class="ins-card" data-enroll-form novalidate>
+<fieldset class="panel on" data-panel="0" data-rhythm-section><legend>${e.s1Legend}</legend><p class="sub">${e.s1Sub}</p><div class="choices rhythm">${planCards}</div></fieldset>
+<fieldset class="panel" data-panel="1" data-billing-section><legend>${e.s2Legend}</legend><p class="sub">${e.s2Sub}</p><div class="choices two"><label class="opt"><input type="radio" name="billing" value="Mensual" data-tag="${e.billingMonthly}" checked><span class="box">${CHECK}<span class="h">${e.billingMonthly}</span><small>${e.billingMonthlyDesc}</small></span></label><label class="opt"><input type="radio" name="billing" value="Ciclo" data-tag="${cycleTag}"><span class="box">${CHECK}<span class="h">${e.billingCycle}</span><small>${e.billingCycleDesc}</small></span></label></div><p class="note">${e.cycleNote}</p><p class="note fee">${e.feeNote}</p></fieldset>
+<fieldset class="panel" data-panel="2"><legend data-schedule-legend>${e.s3Legend}</legend><p class="sub">${e.s3Sub}</p><p class="guidance" data-schedule-guidance>${gfmt(e.js.guidance, { h: t.prices[0][0], n: '2' })}</p><div class="fields"><div class="f"><label for="tz">${e.tzLabel}</label><select id="tz" name="timezone" required>${tzOpts}</select></div><div class="f"><label for="sd">${e.startLabel}</label><input id="sd" type="date" name="startDate" required></div></div><p class="subhead">${e.daysLabel}</p><div class="chips" data-day-options>${dayChips}</div><p class="subhead">${e.slotsLabel}</p><div class="chips" data-time-options>${slotChips}</div><div class="f wide" style="margin-top:1rem"><label for="note">${e.notesLabel}</label><textarea id="note" name="scheduleNote" placeholder="${e.notesPlaceholder}"></textarea></div></fieldset>
+<fieldset class="panel" data-panel="3"><legend data-contact-legend>${e.s4Legend}</legend><p class="sub">${e.s4Sub}</p><div class="fields"><div class="f"><label for="name">${e.nameLabel}</label><input id="name" type="text" name="name" autocomplete="name" placeholder="${e.namePlaceholder}" required></div><div class="f"><label for="email">${e.emailLabel}</label><input id="email" type="email" name="email" autocomplete="email" placeholder="${e.emailPlaceholder}" required></div><div class="f wide"><span class="lbltxt" id="phone-lbl">${e.waLabel}</span><div class="tel-row" data-tel-country aria-describedby="phone-lbl"><div class="tel-country"><button type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="${e.waLabel}" data-tel-toggle><span class="flag" data-tel-flag>🇵🇪</span><span class="dial" data-tel-dial>+51</span><span class="caret" aria-hidden="true">▾</span></button><div class="tel-menu" role="listbox" data-tel-menu><input class="tel-search" type="text" placeholder="${e.searchPlaceholder}" aria-label="${e.searchPlaceholder}" data-tel-search><div data-tel-list></div></div></div><input class="tel-number" type="tel" name="phone" inputmode="tel" autocomplete="tel-national" placeholder="${e.numberPlaceholder}" required data-tel-number style="border:1.5px solid var(--line);border-radius:12px;padding:.8rem .9rem;font-family:inherit;font-size:.92rem;background:var(--white);color:var(--ink)"><input type="hidden" name="dialCode" value="+51" data-tel-dialinput><input type="hidden" name="countryIso" value="PE" data-tel-iso></div></div><div class="f wide"><label for="obj">${e.objLabel}</label><textarea id="obj" name="objective" autocomplete="off" required placeholder="${e.objPlaceholder}"></textarea></div><div class="f"><label for="exam">${e.examLabel}</label><input id="exam" type="date" name="examDate"></div></div></fieldset>
+<p class="form-error" data-form-error hidden></p>
+<div class="ins-nav"><button type="button" class="btn btn-ghost" data-prev disabled>${e.navPrev}</button><button type="button" class="btn btn-coral" data-next>${e.navNext}</button></div>
+</form>
+<aside class="sum" aria-live="polite"><span>${e.sumEyebrow}</span><h2>${e.sumTitle}</h2><details open><summary>${e.sumSee}</summary><dl><div class="row"><dt>${e.sumLevel}</dt><dd data-summary-level>${e.js.byConfirm}</dd></div><div class="row"><dt>${e.sumRhythm}</dt><dd data-summary-plan>${e.planTags[0]} · ${t.prices[0][0]}</dd></div><div class="row"><dt>${e.sumEnroll}</dt><dd data-summary-billing>${e.billingMonthly}</dd></div><div class="row"><dt>${e.sumPrice}</dt><dd class="big" data-summary-price>${t.prices[0][1]}</dd></div><div class="row"><dt>${e.sumFee}</dt><dd>${e.feeOnce}</dd></div><div class="row"><dt>${e.sumAvail}</dt><dd data-summary-schedule>${e.js.toComplete}</dd></div></dl></details><button class="btn btn-coral cta" type="button" data-submit-request>${e.sumCta}</button><p class="pay">${e.payNote}</p></aside>
+</div>
+<footer class="ins-foot">${e.footer}</footer>
+</main>
+<div class="mbar" data-mbar><div class="p">${e.mbarPrice}<b data-mbar-price>${t.prices[0][1]}</b></div><button class="btn btn-coral" type="button" data-mbar-action>${e.js.next}</button></div>
+<script>window.PATHWAY_ENROLL=${JSON.stringify(e.js)};window.PATHWAY_HUBSPOT=${JSON.stringify(HUBSPOT_CFG)};</script>
+<script src="../inscription.js?v=20260831-stepper"></script>
+</body></html>`;
+};
+
 export function renderLocalePage(locale, page) {
   const t = LOCALES[locale];
   if (page === 'index.html') return homeV2(locale, t);
   if (page === 'test.html') return shellV2(locale, page, t.testTitle, t.testCopy, testV2(locale, t), '<link rel="stylesheet" href="../placement.css">', ' data-base-path=".."');
-  if (page === 'inscription.html') return shellV2(locale, page, t.enrollmentTitle, t.enrollmentCopy, enrollment(locale, t), '<link rel="stylesheet" href="../placement.css">');
+  if (page === 'inscription.html') return enrollmentPage(locale, t);
   if (page === 'calculateur-crs.html') return shellV2(locale, page, t.calculatorTitle, t.calculatorCopy, calculatorV2(locale, t), '<link rel="stylesheet" href="../calculator.css">');
   if (page === 'conditions-nclc7.html') return shellV2(locale, page, t.conditionsTitle, t.conditionsCopy, articleV2(locale, t, 'conditions'));
   if (page === 'politique-confidentialite.html') return shellV2(locale, page, t.privacyTitle, t.privacyCopy, articleV2(locale, t, 'privacy'));

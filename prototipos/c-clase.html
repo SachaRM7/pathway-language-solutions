@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prototipo C · Entra en clase — Pathway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#07140F; --night-2:#0C1F18; --cream:#F3EEE3; --cream-2:#FBF8F1;
+  --muted:#9FB1A8; --muted-ink:#5D6E66; --gold:#D9B25A; --line:rgba(243,238,227,.14);
+  --line-light:#E0DACB;
+  --disp:"Bricolage Grotesque",system-ui,sans-serif; --sans:"Karla",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--night);color:var(--cream);font-family:var(--sans);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{width:min(1240px,calc(100% - 48px));margin-inline:auto}
+h1,h2,h3{margin:0;font-family:var(--disp);font-weight:600;letter-spacing:-.035em;line-height:1.03;text-wrap:balance}
+h1{font-size:clamp(3rem,8.5vw,7rem);font-weight:700}
+h2{font-size:clamp(2.2rem,5vw,4.2rem)}
+h3{font-size:1.5rem;letter-spacing:-.02em}
+p{margin:0 0 1.05em}
+section{padding:clamp(80px,11vw,150px) 0}
+.eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 22px}
+.lede{font-size:clamp(1.05rem,1.5vw,1.22rem);color:var(--muted);max-width:56ch}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 28px;text-decoration:none;font-weight:700;font-size:.92rem;letter-spacing:.01em;background:var(--gold);color:#1A1204;border:1px solid var(--gold);border-radius:2px;transition:.2s}
+.btn:hover{background:#e6c273;border-color:#e6c273}
+.btn.line{background:transparent;color:var(--cream);border-color:rgba(243,238,227,.35)}
+.btn.line:hover{background:rgba(243,238,227,.08);border-color:var(--cream)}
+.btn.dark{background:var(--night);border-color:var(--night);color:var(--cream)}
+.btn.dark:hover{background:var(--night-2);border-color:var(--night-2)}
+
+/* placeholder media */
+.ph{position:relative;overflow:hidden;background:
+  radial-gradient(120% 80% at 30% 20%,rgba(217,178,90,.16),transparent 60%),
+  linear-gradient(150deg,#14312A,#0A1E18 60%,#132B24);
+  border:1px solid var(--line);display:grid;place-items:center}
+.ph::after{content:attr(data-label);position:absolute;left:14px;bottom:14px;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);background:rgba(7,20,15,.7);border:1px dashed rgba(217,178,90,.5);padding:6px 10px}
+.ph svg{opacity:.32}
+
+/* nav */
+.nav{position:fixed;inset:0 0 auto;z-index:60;transition:background .3s,border-color .3s}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:82px;gap:24px}
+.nav.solid{background:rgba(7,20,15,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:var(--disp);font-weight:700;font-size:1.18rem;letter-spacing:-.02em}
+.brand i{width:8px;height:28px;background:var(--gold);display:block}
+.brand small{display:block;font-family:var(--sans);font-size:.55rem;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-top:2px}
+.nav nav{display:flex;align-items:center;gap:32px;font-size:.86rem;font-weight:600;letter-spacing:.02em}
+.nav nav a{text-decoration:none;color:var(--muted)}
+.nav nav a:hover{color:var(--cream)}
+
+/* hero */
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;padding:112px 0 clamp(48px,6vw,80px);overflow:hidden}
+.hero-media .ph::after{top:96px;bottom:auto;left:auto;right:24px}
+.hero-media{position:absolute;inset:0;z-index:0}
+.hero-media .ph{width:100%;height:100%;border:0}
+.hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,20,15,.72) 0%,rgba(7,20,15,.35) 40%,rgba(7,20,15,.95) 100%)}
+.hero .wrap{position:relative;z-index:1}
+.hero h1{max-width:15ch;margin-bottom:26px}
+.hero h1 span{color:var(--gold)}
+.hero-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:44px;flex-wrap:wrap}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.hero-facts{display:flex;gap:34px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:20px;margin-top:44px;width:100%}
+.hero-facts div b{display:block;font-family:var(--disp);font-size:1.6rem;font-weight:700;letter-spacing:-.03em}
+.hero-facts div span{font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* sticky story */
+.story{background:var(--cream);color:var(--night)}
+.story .eyebrow{color:#9A7A1E}
+.story-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(30px,5vw,80px);align-items:start}
+.story-sticky{position:sticky;top:120px}
+.story-sticky p{color:var(--muted-ink)}
+.beat{border-top:1px solid var(--line-light);padding:44px 0}
+.beat:last-child{border-bottom:1px solid var(--line-light)}
+.beat-n{font-size:.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#9A7A1E;margin-bottom:14px}
+.beat h3{margin-bottom:12px;font-size:1.75rem}
+.beat p{color:var(--muted-ink);margin-bottom:20px;max-width:52ch}
+.beat .ph{aspect-ratio:16/10;background:radial-gradient(120% 80% at 30% 20%,rgba(154,122,30,.12),transparent 60%),linear-gradient(150deg,#E3DDCE,#D5CFBE);border-color:var(--line-light)}
+.beat .ph::after{color:#7C6B3F;background:rgba(251,248,241,.86);border-color:#B9AE8B}
+.beat .ph svg{opacity:.3}
+
+/* teachers */
+.teachers{background:var(--night-2)}
+.t-head{display:flex;justify-content:space-between;align-items:end;gap:40px;flex-wrap:wrap;margin-bottom:58px}
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(18px,2.4vw,32px)}
+.t-card{position:relative}
+.t-card .ph{aspect-ratio:3/4}
+.t-card .ph::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(7,20,15,.9) 100%);z-index:1}
+.t-over{position:absolute;left:24px;right:24px;bottom:22px;z-index:2}
+.t-over h3{font-size:1.4rem;margin-bottom:2px}
+.t-over span{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.t-card > p{font-size:.93rem;color:var(--muted);margin:18px 0 12px}
+.t-card ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:7px}
+.t-card li{font-size:.74rem;font-weight:600;border:1px solid var(--line);padding:5px 11px;color:var(--muted)}
+
+/* route */
+.route{background:var(--cream);color:var(--night)}
+.route .eyebrow{color:#9A7A1E}
+.route .lede{color:var(--muted-ink)}
+.route-list{margin-top:56px;border-top:1px solid var(--night)}
+.route-row{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center;padding:26px 0;border-bottom:1px solid var(--line-light)}
+.route-row b{font-family:var(--disp);font-size:clamp(1.4rem,2.6vw,2rem);font-weight:600;letter-spacing:-.03em}
+.route-row .bar{height:6px;background:#9A7A1E;opacity:.22;min-width:40px}
+.route-row .dur{font-family:var(--disp);font-size:clamp(1.4rem,2.6vw,2rem);font-weight:600;letter-spacing:-.03em;text-align:right;color:#7A5F13}
+.route-note{margin-top:24px;font-size:.85rem;color:var(--muted-ink);max-width:70ch}
+
+/* pricing */
+.pricing .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:56px}
+.plan{background:var(--night);padding:38px 32px;display:flex;flex-direction:column}
+.plan.best{background:var(--night-2);outline:1px solid var(--gold);outline-offset:-1px}
+.plan .who{font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);min-height:18px}
+.plan h3{margin:16px 0 14px;font-size:2rem}
+.plan .price{font-family:var(--disp);font-size:3rem;font-weight:700;letter-spacing:-.045em;line-height:1}
+.plan .price small{font-family:var(--sans);font-size:.78rem;font-weight:600;letter-spacing:0;color:var(--muted)}
+.plan .hrs{font-size:.92rem;color:var(--muted);padding:14px 0 22px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.plan p.for{font-size:.93rem;color:var(--muted);flex:1}
+.plan .btn{width:100%}
+.included{margin-top:28px;border:1px solid var(--line);padding:24px 28px;font-size:.92rem;color:var(--muted)}
+.included b{color:var(--cream)}
+
+/* commitment */
+.commit{background:var(--cream);color:var(--night)}
+.commit .eyebrow{color:#9A7A1E}
+.commit .wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(30px,5vw,80px);align-items:center}
+.commit p{color:var(--muted-ink)}
+.commit-card{border:1px solid #9A7A1E;padding:30px}
+.commit-card b{display:block;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7A5F13;margin-bottom:16px}
+.commit-card ul{list-style:none;padding:0;margin:0;font-size:.92rem}
+.commit-card li{padding:10px 0 10px 26px;position:relative;border-bottom:1px solid var(--line-light)}
+.commit-card li:last-child{border-bottom:0}
+.commit-card li::before{content:"✓";position:absolute;left:0;color:#9A7A1E;font-weight:700}
+
+/* quotes */
+.quotes{background:var(--night-2)}
+.q-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:52px}
+.qc{background:var(--night-2);padding:34px 30px;display:flex;flex-direction:column;justify-content:space-between;gap:26px}
+.qc blockquote{margin:0;font-family:var(--disp);font-size:1.24rem;font-weight:500;line-height:1.35;letter-spacing:-.02em}
+.qc figcaption{font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border-top:1px solid var(--line);padding-top:18px}
+
+/* context band */
+.ctx{background:var(--night);border-block:1px solid var(--line);padding:clamp(48px,6vw,80px) 0}
+.ctx .wrap{display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.ctx-nums{display:flex;align-items:center;gap:22px}
+.ctx-nums div b{display:block;font-family:var(--disp);font-size:2.6rem;font-weight:700;letter-spacing:-.045em;line-height:1}
+.ctx-nums div span{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ctx-nums .off b{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--gold);text-decoration-thickness:2px}
+.ctx-nums .on b{color:var(--gold)}
+.ctx-nums i{font-style:normal;color:var(--muted);font-size:1.2rem}
+.ctx p{margin:0;max-width:46ch;color:var(--muted);font-size:.95rem}
+
+/* eval + faq */
+.eval{background:var(--cream);color:var(--night)}
+.eval .eyebrow{color:#9A7A1E}
+.eval .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,80px);align-items:start}
+.eval p{color:var(--muted-ink)}
+.eval-steps{list-style:none;padding:0;margin:0;counter-reset:s}
+.eval-steps li{counter-increment:s;padding:22px 0 22px 58px;border-bottom:1px solid var(--line-light);position:relative}
+.eval-steps li:first-child{border-top:1px solid var(--night)}
+.eval-steps li::before{content:"0" counter(s);position:absolute;left:0;top:24px;font-family:var(--disp);font-size:.85rem;font-weight:700;letter-spacing:.1em;color:#9A7A1E}
+.eval-steps b{display:block;font-family:var(--disp);font-size:1.15rem;font-weight:600;margin-bottom:3px}
+.eval-steps span{font-size:.93rem;color:var(--muted-ink)}
+
+.faq{margin-top:44px;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;padding:24px 48px 24px 0;position:relative;font-family:var(--disp);font-size:1.2rem;font-weight:600;letter-spacing:-.02em}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";position:absolute;right:6px;top:21px;font-family:var(--sans);font-size:1.5rem;font-weight:400;color:var(--gold)}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);font-size:.95rem;padding-right:56px}
+
+.closing{text-align:center;background:radial-gradient(60% 100% at 50% 0,rgba(217,178,90,.14),transparent 70%),var(--night-2)}
+.closing h2{max-width:16ch;margin:0 auto 20px}
+.closing p{color:var(--muted);max-width:50ch;margin:0 auto 32px}
+
+footer{background:#050F0B;color:var(--muted);font-size:.83rem;padding:64px 0 46px;border-top:1px solid var(--line)}
+.f-top{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:34px;padding-bottom:34px;border-bottom:1px solid var(--line)}
+.f-col h4{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cream);margin:0 0 14px}
+.f-col a{display:block;color:var(--muted);text-decoration:none;margin-bottom:8px}
+.f-col a:hover{color:var(--cream)}
+.f-legal{margin-top:28px;max-width:92ch;line-height:1.75;font-size:.78rem}
+.f-legal a{color:var(--gold)}
+
+@media(max-width:960px){
+  .story-grid,.commit .wrap,.eval .wrap{grid-template-columns:1fr}
+  .story-sticky{position:static}
+  .t-grid,.q-grid,.pricing .plans{grid-template-columns:1fr}
+  .route-row{grid-template-columns:1fr auto}
+  .route-row .bar{display:none}
+  .f-top{grid-template-columns:1fr 1fr}
+  .nav nav a:not(.btn){display:none}
+  .hero{min-height:92svh}
+  .hero-facts{gap:22px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#"><i></i><span>Pathway<small>LANGUAGE SOLUTIONS</small></span></a>
+    <nav>
+      <a href="#clase">La clase</a>
+      <a href="#profesores">Profesores</a>
+      <a href="#ruta">Tu ruta</a>
+      <a href="#precios">Precios</a>
+      <a class="btn" href="#evaluacion">Evaluación gratuita</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="hero-media">
+    <div class="ph" data-label="Foto real · clase o profesor en pantalla completa">
+      <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#D9B25A" stroke-width=".8"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>
+    </div>
+  </div>
+  <div class="wrap">
+    <p class="eyebrow">Instituto de francés · Clases privadas en línea</p>
+    <h1>Aquí se aprende <span>hablando</span>, desde la primera clase.</h1>
+    <div class="hero-bottom">
+      <div>
+        <p class="lede">Profesores nativos, clases uno a uno y un único objetivo: llevarte a NCLC 7 en el TEF Canada dentro del plazo que tienes.</p>
+        <div class="hero-cta">
+          <a class="btn" href="#evaluacion">Reservar mi evaluación gratuita</a>
+          <a class="btn line" href="#clase">Entrar en una clase ↓</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-facts">
+      <div><b>1 a 1</b><span>Clases privadas en vivo</span></div>
+      <div><b>Nativos</b><span>Profesores de lengua francesa</span></div>
+      <div><b>NCLC 7</b><span>Objetivo del programa</span></div>
+      <div><b>Sin permanencia</b><span>Pago mensual</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="clase" class="story">
+  <div class="wrap story-grid">
+    <div class="story-sticky">
+      <p class="eyebrow">Una semana en Pathway</p>
+      <h2>Así es por dentro.</h2>
+      <p style="margin-top:22px">No una promesa de método: lo que ocurre, en orden, entre el lunes que empiezas y el día del examen.</p>
+      <a class="btn dark" href="#evaluacion" style="margin-top:14px">Probar una evaluación</a>
+    </div>
+    <div>
+      <article class="beat">
+        <p class="beat-n">01 · La clase</p>
+        <h3>60 minutos, tú y tu profesor.</h3>
+        <p>Expresión oral con los roles reales del TEF: pedir, convencer, argumentar. El profesor corrige en directo y anota lo que hay que repetir. Hablas desde la primera sesión.</p>
+        <div class="ph" data-label="Captura real · clase en vivo"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#7C6B3F" stroke-width="1"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg></div>
+      </article>
+      <article class="beat">
+        <p class="beat-n">02 · La corrección</p>
+        <h3>Tu escrito vuelve anotado.</h3>
+        <p>Los tipos de texto que exige el examen, corregidos uno a uno y devueltos por escrito. No un “bien” genérico: qué falló, por qué y cómo se dice mejor.</p>
+        <div class="ph" data-label="Captura real · corrección escrita"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#7C6B3F" stroke-width="1"><path d="M4 20h16M6 16l10-10 3 3L9 19H6z"/></svg></div>
+      </article>
+      <article class="beat">
+        <p class="beat-n">03 · El cuaderno</p>
+        <h3>Nada se pierde entre clases.</h3>
+        <p>Cada sesión se graba y queda en tu cuaderno virtual junto al material del tema. Puedes volver a verla, repasar y avanzar a tu ritmo. Y si te surge una duda, la dejas en el canal de consultas.</p>
+        <div class="ph" data-label="Captura real · cuaderno virtual"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#7C6B3F" stroke-width="1"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h7"/></svg></div>
+      </article>
+      <article class="beat">
+        <p class="beat-n">04 · Los talleres</p>
+        <h3>Practicar con otros, sin costo.</h3>
+        <p>Talleres prácticos gratuitos abiertos a los alumnos: se habla, se comparte y se pone en común lo trabajado en privado. Es donde la clase deja de ser un ejercicio.</p>
+        <div class="ph" data-label="Captura real · taller práctico"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#7C6B3F" stroke-width="1"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="11" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15.5 20c0-2.2 1.5-4 3.5-4s3 1.4 3 4"/></svg></div>
+      </article>
+      <article class="beat">
+        <p class="beat-n">05 · El simulacro</p>
+        <h3>Que el día del TEF no sea la primera vez.</h3>
+        <p>Dos simulacros completos en condiciones reales, con cronómetro, antes de presentarte. Sabrás cómo se siente el examen antes de pagarlo.</p>
+        <div class="ph" data-label="Captura real · simulacro"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#7C6B3F" stroke-width="1"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="profesores" class="teachers">
+  <div class="wrap">
+    <div class="t-head">
+      <div>
+        <p class="eyebrow">Quién te enseña</p>
+        <h2 style="max-width:14ch">Las horas que compras son las suyas.</h2>
+      </div>
+      <p class="lede" style="margin:0;max-width:36ch">Nativos de lengua francesa, con formación en enseñanza del FLE y experiencia con alumnos hispanohablantes.</p>
+    </div>
+    <div class="t-grid">
+      <article class="t-card">
+        <div class="ph" data-label="Retrato real"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#D9B25A" stroke-width=".9"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <div class="t-over"><h3>[Nombre]</h3><span>Profesor de FLE · [País]</span></div>
+        </div>
+        <p>[Dos frases sobre su recorrido y su manera de dar clase.]</p>
+        <ul><li>[Máster FLE]</li><li>[X años enseñando]</li><li>[Expresión oral TEF]</li></ul>
+      </article>
+      <article class="t-card">
+        <div class="ph" data-label="Retrato real"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#D9B25A" stroke-width=".9"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <div class="t-over"><h3>[Nombre]</h3><span>Profesora de FLE · [País]</span></div>
+        </div>
+        <p>[Dos frases sobre su recorrido y su manera de dar clase.]</p>
+        <ul><li>[DAEFLE]</li><li>[X años enseñando]</li><li>[Producción escrita]</li></ul>
+      </article>
+      <article class="t-card">
+        <div class="ph" data-label="Retrato real"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#D9B25A" stroke-width=".9"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <div class="t-over"><h3>[Nombre]</h3><span>Profesor de FLE · [País]</span></div>
+        </div>
+        <p>[Dos frases sobre su recorrido y su manera de dar clase.]</p>
+        <ul><li>[Máster FLE]</li><li>[X años enseñando]</li><li>[Comprensión oral]</li></ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="ruta" class="route">
+  <div class="wrap">
+    <p class="eyebrow">Tu punto de partida</p>
+    <h2 style="max-width:18ch">Cuánto tardarías tú.</h2>
+    <p class="lede" style="margin-top:20px">Construimos el calendario hacia atrás: desde la fecha en que necesitas el resultado, restando el examen y el plazo de respuesta.</p>
+    <div class="route-list">
+      <div class="route-row"><b>Desde cero</b><span class="bar" style="width:180px"></span><span class="dur">10 – 12 meses</span></div>
+      <div class="route-row"><b>Desde A1 / A2</b><span class="bar" style="width:135px"></span><span class="dur">7 – 9 meses</span></div>
+      <div class="route-row"><b>Desde B1</b><span class="bar" style="width:90px"></span><span class="dur">4 – 6 meses</span></div>
+      <div class="route-row"><b>Desde B1+ / B2 bajo</b><span class="bar" style="width:60px"></span><span class="dur">3 – 4 meses</span></div>
+    </div>
+    <p class="route-note">Estimaciones orientativas, no una promesa de duración: el ritmo depende del nivel inicial, la práctica y la disponibilidad de cada alumno. El examen de ubicación gratuito ajusta el calendario.</p>
+  </div>
+</section>
+
+<section id="precios" class="pricing">
+  <div class="wrap">
+    <p class="eyebrow">Modalidades</p>
+    <h2 style="max-width:16ch">Un ritmo acorde con tu fecha límite.</h2>
+    <div class="plans">
+      <article class="plan">
+        <span class="who">Más de 18 meses</span>
+        <h3>Esencial</h3>
+        <div class="price">175 <small>CAD / mes</small></div>
+        <p class="hrs">8 horas al mes · 2 h por semana</p>
+        <p class="for">Para quien empieza con tiempo por delante y quiere avanzar sin sobrecargar la semana.</p>
+        <a class="btn line" href="#evaluacion">Evaluar mi nivel</a>
+      </article>
+      <article class="plan best">
+        <span class="who">El más elegido · 12 a 18 meses</span>
+        <h3>Acelerado</h3>
+        <div class="price">335 <small>CAD / mes</small></div>
+        <p class="hrs">16 horas al mes · 4 h por semana</p>
+        <p class="for">Compatible con un trabajo a tiempo completo. El equilibrio entre ritmo real y vida real.</p>
+        <a class="btn" href="#evaluacion">Construir mi calendario</a>
+      </article>
+      <article class="plan">
+        <span class="who">Menos de 12 meses</span>
+        <h3>Intensivo</h3>
+        <div class="price">505 <small>CAD / mes</small></div>
+        <p class="hrs">24 horas al mes · 6 h por semana</p>
+        <p class="for">Para plazos cortos y permisos que vencen. Ritmo de avance prioritario.</p>
+        <a class="btn line" href="#evaluacion">Evaluar la viabilidad</a>
+      </article>
+    </div>
+    <p class="included"><b>Las tres incluyen:</b> clases privadas en vivo con profesor nativo · seguimiento y canal de consultas · grabaciones y cuaderno virtual · talleres prácticos gratuitos · preparación específica al formato TEF · dos simulacros completos · examen de ubicación inicial. <b>Pago mensual, sin permanencia.</b></p>
+  </div>
+</section>
+
+<section class="commit">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Compromiso NCLC 7</p>
+      <h2>Si completas el programa y no alcanzas el nivel, seguimos contigo sin costo.</h2>
+      <p class="lede" style="margin-top:22px">NCLC es la escala oficial canadiense para medir el francés. NCLC 7 equivale aproximadamente a un B2 y debe demostrarse en las cuatro competencias: comprensión y expresión, oral y escrita. Nuestro compromiso cubre ese resultado lingüístico.</p>
+      <a class="btn dark" href="#">Leer las condiciones completas</a>
+    </div>
+    <div class="commit-card">
+      <b>Para que aplique</b>
+      <ul>
+        <li>90 % de asistencia a las clases</li>
+        <li>Tareas entregadas</li>
+        <li>Dos simulacros completados</li>
+        <li>Examen presentado en la fecha recomendada</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="quotes">
+  <div class="wrap">
+    <p class="eyebrow">Alumnos</p>
+    <h2 style="max-width:16ch">La confianza también se entrena.</h2>
+    <div class="q-grid">
+      <figure class="qc" style="margin:0"><blockquote>“En Pathway encontré un método claro y un acompañamiento cercano. Cada clase me ayudó a avanzar con más confianza hacia mis objetivos.”</blockquote><figcaption>Oscar · Perú</figcaption></figure>
+      <figure class="qc" style="margin:0"><blockquote>“Los profesores tienen mucha paciencia y hacen las clases dinámicas. He podido mejorar mi pronunciación y sentirme más seguro al hablar francés.”</blockquote><figcaption>Pablo · México</figcaption></figure>
+      <figure class="qc" style="margin:0"><blockquote>“Todos participamos y aprendemos de manera práctica. Las clases me han ayudado a desarrollar competencias reales, no solo teoría.”</blockquote><figcaption>Karla · Costa Rica</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<div class="ctx">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow" style="margin-bottom:16px">Por qué NCLC 7</p>
+      <div class="ctx-nums">
+        <div class="off"><b>516</b><span>Ronda general</span></div>
+        <i>vs</i>
+        <div class="on"><b>399</b><span>Ronda francófona</span></div>
+      </div>
+    </div>
+    <p>Con NCLC 7, tu perfil puede competir en otra ronda de Express Entry — y además suma puntos CRS. La explicación completa, con datos oficiales de IRCC, está en una página aparte.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn line" href="#">La explicación →</a>
+      <a class="btn line" href="#">Calculadora CRS →</a>
+    </div>
+  </div>
+</div>
+
+<section id="evaluacion" class="eval">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Evaluación inicial · 20 minutos · Gratuita</p>
+      <h2>Primero, una respuesta honesta.</h2>
+      <p class="lede" style="margin-top:22px">Antes de inscribirte determinamos si el objetivo cabe realmente dentro de tu plazo. Si no cabe, también te lo decimos.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:26px">
+        <a class="btn dark" href="#">Reservar mi evaluación</a>
+        <a class="btn" href="#">Escribir por WhatsApp</a>
+      </div>
+    </div>
+    <ol class="eval-steps">
+      <li><b>Medimos tu punto de partida</b><span>Examen de ubicación gratuito en las cuatro competencias. Tu nivel real, no el que crees tener.</span></li>
+      <li><b>Construimos el calendario hacia atrás</b><span>Desde la fecha en que necesitas el resultado, incluyendo examen y plazo de respuesta.</span></li>
+      <li><b>Te damos un veredicto</b><span>Si es viable, qué ritmo exige. Y también si el tiempo no alcanza.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap" style="max-width:840px">
+    <p class="eyebrow">Preguntas frecuentes</p>
+    <h2>Sin letra pequeña.</h2>
+    <div class="faq">
+      <details open><summary>¿Quién da las clases?</summary><p>Profesores nativos de lengua francesa con formación en enseñanza del FLE y experiencia con alumnos hispanohablantes. Conocerás a tu profesor en la evaluación inicial.</p></details>
+      <details><summary>¿Cómo es una clase exactamente?</summary><p>60 minutos, uno a uno, en vivo por videollamada. Se graba, queda en tu cuaderno virtual y recibes corrección escrita de tus producciones. Cada sesión trabaja una competencia concreta del examen.</p></details>
+      <details><summary>¿Puedo prepararme solo con apps y YouTube?</summary><p>El estudio autónomo ayuda a construir vocabulario y comprensión. El reto adicional es el formato: la expresión oral tiene roles definidos, la escrita exige tipos de texto precisos y ciertos errores afectan la evaluación. Presentar el examen sin entrenar sus tareas puede obligarte a repetirlo y esperar otra fecha.</p></details>
+      <details><summary>¿TEF o TCF?</summary><p>Ambos son aceptados por IRCC y ninguno es oficialmente más fácil. La disponibilidad de centros y fechas cambia según la ciudad; durante la evaluación revisamos la opción más realista para tu calendario.</p></details>
+      <details><summary>¿Se puede pagar en cuotas?</summary><p>El pago es mensual, mes a mes, sin permanencia ni un monto total por adelantado.</p></details>
+      <details><summary>¿Y si quiero instalarme en Quebec?</summary><p>Este programa apunta a las rondas francófonas de Express Entry fuera de Quebec. Para un proyecto quebequense preparamos el TEFAQ o el TCF Québec, que es otro camino.</p></details>
+    </div>
+    <p style="margin-top:26px;font-size:.9rem"><a href="#" style="color:var(--gold)">Ver todas las preguntas →</a></p>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <p class="eyebrow">Empieza por lo simple</p>
+    <h2>Conoce tu nivel real antes de decidir nada.</h2>
+    <p>Examen de ubicación y evaluación de calendario, gratuitos y sin compromiso.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="btn" href="#">Reservar mi evaluación gratuita</a>
+      <a class="btn line" href="#">Escribir por WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-top">
+      <div>
+        <a class="brand" href="#" style="color:var(--cream)"><i></i><span>Pathway<small>LANGUAGE SOLUTIONS</small></span></a>
+        <p style="margin-top:18px;max-width:32ch">Instituto de idiomas. Clases en línea en español, desde Perú, para alumnos en Canadá y América Latina.</p>
+      </div>
+      <div class="f-col"><h4>Programa</h4><a href="#">Preparación TEF Canada</a><a href="#">Guía NCLC 7</a><a href="#">Francés para Quebec</a></div>
+      <div class="f-col"><h4>Herramientas</h4><a href="#">Calculadora CRS</a><a href="#">Explicación Express Entry</a><a href="#">Examen de ubicación</a></div>
+      <div class="f-col"><h4>Contacto</h4><a href="mailto:contact@pathway-languages.com">contact@pathway-languages.com</a><a href="#">WhatsApp · +51 989 887 516</a><a href="#">Privacidad</a><a href="#">Condiciones</a></div>
+    </div>
+    <p class="f-legal">Pathway Language Solutions es un instituto de idiomas. No ofrece servicios de consultoría migratoria ni representa candidatos ante IRCC; para asesoría sobre un expediente migratorio consulta a un profesional regulado por el CICC. Los puntajes, cortes y políticas de Express Entry pueden cambiar en cada ronda y ningún corte futuro está garantizado. Las duraciones indicadas son estimaciones orientativas. © 2026 Pathway Language Solutions.</p>
+  </div>
+</footer>
+
+<script>
+const nav = document.getElementById('nav');
+const onScroll = () => nav.classList.toggle('solid', window.scrollY > 40);
+onScroll();
+addEventListener('scroll', onScroll, {passive:true});
+</script>
+</body>
+</html>

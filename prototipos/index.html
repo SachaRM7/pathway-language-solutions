@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pathway · 3 prototypes de refonte</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F2C25;--muted:#5B7069;--line:#E2E8E4;--bg:#F5F7F5;--gold:#C39A2B;--brand:#155E4C}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Manrope",system-ui,sans-serif;line-height:1.6}
+.wrap{width:min(1080px,calc(100% - 44px));margin:auto;padding:56px 0 80px}
+h1{font-size:clamp(2rem,4vw,3rem);letter-spacing:-.03em;margin:0 0 12px}
+.sub{color:var(--muted);max-width:70ch;margin:0 0 14px}
+.shared{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 28px;margin:28px 0 40px}
+.shared h2{font-size:1rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin:0 0 14px}
+.shared ul{margin:0;padding-left:20px;color:var(--muted);font-size:.95rem;columns:2;column-gap:36px}
+.shared li{margin-bottom:7px;break-inside:avoid}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.swatch{height:120px;display:flex}
+.swatch i{flex:1}
+.card-body{padding:24px;display:flex;flex-direction:column;flex:1}
+.tag{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.card h3{margin:0 0 10px;font-size:1.35rem;letter-spacing:-.02em}
+.card p{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+.card dl{margin:0 0 20px;font-size:.85rem;border-top:1px solid var(--line)}
+.card dt{font-weight:800;padding-top:10px;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.card dd{margin:2px 0 10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.card a{margin-top:auto;display:block;text-align:center;text-decoration:none;font-weight:700;padding:13px;border-radius:11px;background:var(--brand);color:#fff}
+.card a:hover{background:#0B3A2F}
+.note{margin-top:40px;background:#FDF6E4;border:1px solid #EAD9A8;border-radius:14px;padding:20px 24px;font-size:.9rem;color:#6B551A}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.shared ul{columns:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Refonte Pathway — 3 directions</h1>
+  <p class="sub">Trois architectures complètes, pas trois habillages. Chacune répond au même diagnostic mais avec une logique de lecture différente. Ouvre les trois, scrolle jusqu'en bas, et dis-moi laquelle tu retiens (tu peux aussi piocher : « A pour le style, B pour le configurateur »).</p>
+
+  <div class="shared">
+    <h2>Corrections communes aux trois</h2>
+    <ul>
+      <li>Le CRS passe en <strong>outil secondaire</strong> : une bande compacte + page dédiée, plus 5 sections de démonstration</li>
+      <li><strong>Pathway apparaît dans les 10 premières secondes</strong> : qui, quoi, pour qui, comment</li>
+      <li>Nouvelle section <strong>« qui t'enseigne »</strong> avec photos, diplômes, ancienneté</li>
+      <li>Nouvelle section <strong>« comment se passe une semaine »</strong> : la classe, la correction, le carnet, les simulations</li>
+      <li>Témoignages vidéo « próximamente » <strong>supprimés</strong></li>
+      <li>« GARANTÍA DE RESULTADO » devient <strong>« Compromiso NCLC 7 »</strong></li>
+      <li>Disclaimers <strong>centralisés en pied de page</strong>, plus répétés à chaque section</li>
+      <li>Gmail remplacé par <strong>contact@pathway-languages.com</strong></li>
+      <li>Homepage passée de <strong>11 sections denses à ~8 sections respirées</strong></li>
+      <li>Contenu long déplacé vers des <strong>pages dédiées</strong> (explication Express Entry, FAQ complète)</li>
+    </ul>
+  </div>
+
+  <div class="grid">
+    <article class="card">
+      <div class="swatch"><i style="background:#F6F3EC"></i><i style="background:#132A24"></i><i style="background:#B08D2E"></i></div>
+      <div class="card-body">
+        <span class="tag">Prototype A</span>
+        <h3>El Instituto</h3>
+        <p>Éditorial, calme, premium. Beaucoup de blanc, filets fins, typographie serif. On lit un institut, pas une landing page. Les profs arrivent en 3ᵉ section.</p>
+        <dl>
+          <dt>Ambiance</dt><dd>Papier crème, serif Fraunces, or discret</dd>
+          <dt>Force</dt><dd>La note « institut premium » monte le plus</dd>
+          <dt>Risque</dt><dd>Moins direct pour convertir vite</dd>
+        </dl>
+        <a href="a-instituto.html">Ouvrir le prototype A →</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="swatch"><i style="background:#FFFFFF"></i><i style="background:#155E4C"></i><i style="background:#DFF3E4"></i></div>
+      <div class="card-body">
+        <span class="tag">Prototype B</span>
+        <h3>Tu ruta</h3>
+        <p>Orienté produit. Le hero contient un <strong>configurateur</strong> : niveau + délai → durée, rythme, prix, verdict. Zéro lecture obligatoire pour comprendre l'offre.</p>
+        <dl>
+          <dt>Ambiance</dt><dd>Blanc, vert, cartes arrondies, Manrope</dd>
+          <dt>Force</dt><dd>Charge cognitive la plus basse, conversion la plus forte</dd>
+          <dt>Risque</dt><dd>Plus « SaaS » que « institut »</dd>
+        </dl>
+        <a href="b-ruta.html">Ouvrir le prototype B →</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="swatch"><i style="background:#07140F"></i><i style="background:#D9B25A"></i><i style="background:#F3EEE3"></i></div>
+      <div class="card-body">
+        <span class="tag">Prototype C</span>
+        <h3>Entra en clase</h3>
+        <p>Immersif et narratif. Hero plein écran, puis un scroll sticky « une semaine en Pathway » en 5 temps. Vend l'envie d'apprendre <em>là</em>.</p>
+        <dl>
+          <dt>Ambiance</dt><dd>Vert nuit, or, display Bricolage</dd>
+          <dt>Force</dt><dd>Le plus désirable, le plus mémorable</dd>
+          <dt>Risque</dt><dd>Dépend le plus de la qualité des photos réelles</dd>
+        </dl>
+        <a href="c-clase.html">Ouvrir le prototype C →</a>
+      </div>
+    </article>
+  </div>
+
+  <p class="note"><strong>À noter :</strong> les blocs photo sont des emplacements marqués (cadre pointillé + libellé). Aucune photo, aucun nom de professeur et aucun témoignage n'a été inventé : les champs sont entre crochets, à remplir avec les vraies données avant mise en ligne.</p>
+</div>
+</body>
+</html>
