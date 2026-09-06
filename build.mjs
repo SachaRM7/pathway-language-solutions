@@ -71,6 +71,26 @@ await cp(resolve(root, 'assets'), resolve(client, 'assets'), { recursive: true }
 await mkdir(resolve(client, 'i18n'), { recursive: true });
 await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.css'), { recursive: false });
 
+// Bac à sable /v3 : copié tel quel, sans aucune influence sur la racine.
+// Règle du bac à sable : v3 ne sert que ses propres feuilles de style et scripts.
+// Les médias et pages secondaires partagés restent à la racine et sont appelés en ../.
+const v3Source = resolve(root, 'v3');
+const v3Output = resolve(client, 'v3');
+const v3Markup = await readFile(resolve(v3Source, 'index.html'), 'utf8');
+const forbiddenInV3 = ['pathway-v2.css', 'pathway-v2.js'].filter(reference => v3Markup.includes(reference));
+if (forbiddenInV3.length) {
+  throw new Error(`v3/index.html doit rester isolé de la racine : ${forbiddenInV3.join(', ')}`);
+}
+if (!v3Markup.includes('name="robots" content="noindex')) {
+  throw new Error('v3/index.html doit rester en noindex tant que /v3 est un bac à sable.');
+}
+await cp(v3Source, v3Output, { recursive: true, filter: source => !source.endsWith('.md') });
+
+// Garde-fou : la page servie sur le domaine reste exactement index-v2.html.
+if (await readFile(resolve(client, 'index.html'), 'utf8') !== canonicalHome) {
+  throw new Error("La page d'accueil publiée ne correspond plus à index-v2.html.");
+}
+
 for (const page of ['condiciones.html', 'conditions-nclc7.html', 'calculador.html', 'calculateur-crs.html']) {
   assertSharedShell(await readFile(resolve(root, page), 'utf8'), page);
 }
@@ -97,4 +117,4 @@ await writeFile(resolve(server, 'index.js'), `export default {
 `, 'utf8');
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
-console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees for Pathway.`);
+console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the /v3 sandbox for Pathway.`);

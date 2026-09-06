@@ -30,3 +30,11 @@ Les événements prêts à être mesurés sont : `cta_click`, `whatsapp_click`, 
 ## 5. Maintenance des données IRCC
 
 Les rondes et règles CRS sont chargées depuis les sources officielles avec un cache et des valeurs de secours. Vérifier les tests après toute modification d’IRCC. Le contenu ne promet jamais qu’un prochain tirage conservera le même seuil.
+
+## 6. Bac à sable /v3
+
+La prochaine version du site se prépare sous `/v3/`, servie sur
+`https://pathway-languages.com/v3/`. Elle est isolée : ses propres `pathway-v3.css` et
+`pathway-v3.js`, `noindex` actif et `Disallow: /v3/` dans `robots.txt`. Le site affiché
+sur le nom de domaine reste `index-v2.html` et n'est pas affecté. Les règles détaillées
+sont dans `v3/README.md`.
