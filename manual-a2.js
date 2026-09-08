@@ -4,14 +4,8 @@
   if (!book) return;
   const mobile = matchMedia('(max-width: 700px)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const groups = [
-    ['table-matieres', [2], 'Tabla de contenidos'],
-    ['sommaire', [3,4], 'Índice detallado'],
-    ['unite-1', [5,6,7,8,9,10,11], 'Unidad 1'],
-    ['examen-a', [87,88,89,90,91], 'Examen A'],
-    ['autoevaluation', [91], 'Autoevaluación']
-  ];
-  const pages = groups.flatMap(([key, numbers, title]) => numbers.map(n => ({src:`/assets/manual-a2/${key}-${n}.webp`, title, n})));
+  const pages = window.PathwayManualPages;
+  if (!Array.isArray(pages) || !pages.length) return;
   const left = $('#left-page'), right = $('#right-page'), leaf = $('#leaf');
   let current = 0, busy = false, opened = false, autoTimer, gesture;
   const end = () => mobile.matches ? pages.length - 1 : pages.length;
@@ -21,7 +15,7 @@
     if (i < 0) return intro;
     if (i >= pages.length) return outro;
     const p = pages[i];
-    return `<img class="page-art${[9,10,14,15].includes(i)?' cropped':''}" src="${p.src}" alt="${p.title} · página ${p.n} del manual A2" draggable="false">`;
+    return `<img class="page-art" src="${p.src}" alt="${p.title} · página ${p.n} del manual A2" draggable="false">`;
   }
   function sync() {
     $('#previous').disabled = $('#edge-prev').disabled = busy || !opened || current === 0;
@@ -32,8 +26,8 @@
     const prev = !mobile.matches && current > 0 ? pages[current-1] : null;
     $('#page-label').textContent = opened ? `${p.title} · ${prev && prev.n !== p.n ? `p. ${prev.n} / ${p.n}` : `p. ${p.n}`}` : 'Manuel de français · A2';
     $('#progress').style.width = opened ? `${Math.min((current+1)/pages.length,1)*100}%` : '0%';
-    const index = current >= 15 ? 15 : current >= 10 ? 10 : current >= 3 ? 3 : current >= 1 ? 1 : 0;
-    $('#chapter').value = String(index);
+    const chapterStart = pages.findIndex(page => page.key === p.key);
+    $('#chapter').value = String(chapterStart);
   }
   function render() { left.innerHTML = markup(current-1); right.innerHTML = markup(current); sync(); }
   async function prepare(indices) {
@@ -108,5 +102,8 @@
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
   mobile.addEventListener('change',()=>{ if(busy){setTimeout(()=>{current=Math.min(mobile.matches?current:Math.ceil(current/2)*2,end());render();},1200);return;}current=Math.min(mobile.matches?current:Math.ceil(current/2)*2,end());render(); });
   render();
-  autoTimer=setTimeout(open,reduced.matches?0:850);
+  // Count the reading time only once the actual cover image is visible.
+  $('#cover img').decode().catch(() => {}).then(() => {
+    if (!opened && !busy) autoTimer=setTimeout(open,4000);
+  });
 })();
