@@ -68,10 +68,12 @@
     if (mobile.matches || forward) right.innerHTML=markup(target);
     else left.innerHTML=markup(target-1);
     if (!reduced.matches) {
+      // Filters flatten the 3D faces, making the front appear mirrored on the back.
+      // Keep shading on the face pseudo-elements and animate only the rotation.
       const animation=leaf.animate([
-        {transform:'rotateY(0deg)',filter:'brightness(1)'},
-        {transform:`rotateY(${forward?-85:85}deg)`,filter:'brightness(.88)',offset:.5},
-        {transform:`rotateY(${forward?-180:180}deg)`,filter:'brightness(1)'}
+        {transform:'rotateY(0deg)'},
+        {transform:`rotateY(${forward?-85:85}deg)`,offset:.5},
+        {transform:`rotateY(${forward?-180:180}deg)`}
       ],{duration:820,easing:'cubic-bezier(.25,.65,.3,1)',fill:'forwards'});
       try {await animation.finished;} catch {}
       animation.cancel();
