@@ -11,7 +11,7 @@
       unitQuestion: 'Où habite Lucas ?',
       unitOptions: ['À Paris', 'À Lima', 'À Montréal', 'À Québec'],
       examTitle: 'Où travaille Camille ?',
-      examAudio: '../../../assets/audio/placement-a1.wav',
+      examAudio: '/assets/audio/placement-a1.wav',
       examOptions: ['Dans une école', 'Dans une librairie', 'Dans un restaurant', 'Dans un hôpital'],
       self: ['Me presento con mi nombre, origen e idiomas.', 'Identifico lugares y horarios en mensajes breves.', 'Formulo una petición sencilla con una expresión de cortesía.']
     },
@@ -23,7 +23,7 @@
       unitQuestion: 'Que doit faire le locataire avant vendredi ?',
       unitOptions: ['Quitter son logement', 'Fermer les robinets', 'Réparer le lave-linge', 'Téléphoner au propriétaire'],
       examTitle: 'Quand aura lieu le nouveau rendez-vous ?',
-      examAudio: '../../../assets/audio/placement-a2.wav',
+      examAudio: '/assets/audio/placement-a2.wav',
       examOptions: ['Mercredi à midi', 'Jeudi 15 à 10 h 30', 'Jeudi à 15 h', 'Vendredi à 10 h 30'],
       self: ['Comprendo la información principal de un aviso cotidiano.', 'Puedo pedir que se cambie una cita de forma cortés.', 'Explico una situación pasada con frases enlazadas.']
     },
@@ -35,7 +35,7 @@
       unitQuestion: 'Qu’est-ce qu’un modèle de travail hybride ?',
       unitOptions: ['Travailler toujours à distance', 'Remplacer les réunions par des messages', 'Alterner télétravail et présence au bureau', 'Partager son poste entre deux entreprises'],
       examTitle: 'Pourquoi certains employés préfèrent-ils venir au bureau ?',
-      examAudio: '../../../assets/audio/placement-b1.wav',
+      examAudio: '/assets/audio/placement-b1.wav',
       examOptions: ['Leurs déplacements sont remboursés', 'Leur connexion est trop instable', 'Ils se concentrent mieux auprès de leurs collègues', 'Ils travaillent aussi le week-end'],
       self: ['Comprendo la tesis y la reserva de un texto breve.', 'Relaciono dos ideas con un conector adecuado.', 'Doy mi opinión y matizo mi desacuerdo.']
     },
@@ -47,7 +47,7 @@
       unitQuestion: 'Quelle conclusion implicite se dégage du texte ?',
       unitOptions: ['La rapidité garantit la fiabilité', 'Toute information en ligne est trompeuse', 'Disposer de l’information ne dispense pas de la vérifier', 'La vérification devient inutile'],
       examTitle: 'Quelle est l’idée principale de l’extrait ?',
-      examAudio: '../../../assets/audio/placement-b2.wav',
+      examAudio: '/assets/audio/placement-b2.wav',
       examOptions: ['Le numérique supprime les tâches répétitives', 'Il faut abandonner les outils numériques', 'La technique suffit à protéger la concentration', 'Les outils aident si l’on en limite aussi l’usage'],
       self: ['Identifico una conclusión implícita y los presupuestos de un texto.', 'Reformulo una idea sin perder sus matices.', 'Estructuro una objeción compleja con precisión y cortesía.']
     }
@@ -61,7 +61,7 @@
   document.querySelector('[data-unit-content]').innerHTML =
     '<div><div class="program-objective"><span>Objetivo pedagógico</span><h3>' + data.unitTitle + '</h3><p>' + data.objective + '</p></div>' +
     '<ul class="program-skills" aria-label="Competencias trabajadas">' + list(data.skills) + '</ul>' +
-    '<figure class="real-material"><img src="../../../assets/pathway-zoom-course-laptop-768.webp" width="768" height="512" loading="lazy" decoding="async" alt="Material de vocabulario Pathway compartido durante una clase privada en línea"><figcaption>Material real utilizado en una clase privada Pathway.</figcaption></figure></div>' +
+    '<figure class="real-material"><img src="/assets/pathway-zoom-course-laptop-768.webp" width="768" height="512" loading="lazy" decoding="async" alt="Material de vocabulario Pathway compartido durante una clase privada en línea"><figcaption>Material real utilizado en una clase privada Pathway.</figcaption></figure></div>' +
     '<article class="sample-activity"><span class="sample-label">Actividad real · banco Pathway</span><p class="sample-context" lang="fr">' + data.context + '</p><h3 class="sample-question" lang="fr">' + data.unitQuestion + '</h3><ol class="sample-options" lang="fr">' + list(data.unitOptions) + '</ol><p class="sample-source-note">Extracto real del banco de actividades A1–B2 ya disponible en Pathway. No representa por sí solo una unidad completa.</p></article>';
 
   document.querySelector('[data-exam-content]').innerHTML =

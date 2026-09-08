@@ -110,7 +110,7 @@ document.documentElement.classList.add('js');
       element.textContent = copy('simulations', '2 simulacros TEF / TCF');
     });
     document.querySelectorAll('[data-cta="header-evaluation"], [data-cta="hero-evaluation"], [data-cta="closing-evaluation"], [data-cta="mobile-evaluation"], [data-cta^="plan-"]').forEach(link => {
-      link.href = copy('evaluationHref', '../test-placement.html');
+      link.href = copy('evaluationHref', '/test-placement.html');
     });
     if (weekTitle) weekTitle.textContent = copy('weekTitle', 'Una semana con Pathway');
     if (weekCopy) weekCopy.textContent = copy('weekCopy', 'Ejemplo con el ritmo Acelerado, 4 h* por semana: dos clases privadas y la práctica guiada que las conecta.');

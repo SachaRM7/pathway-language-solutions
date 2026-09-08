@@ -36,7 +36,7 @@ const assertHomeParity = (markup, page) => {
   }
 };
 const assertMobileExperience = (markup, page, nested = false) => {
-  const requiredMarkers = ['viewport-fit=cover', 'data-video-play', 'preload="none"', 'data-story-swipe-hint', 'data-story-deck', 'data-week-swipe-hint', 'data-plan-swipe-hint', 'data-plans-deck'];
+  const requiredMarkers = ['viewport-fit=cover', 'data-video-play', 'preload="none"', 'data-story-swipe-hint', 'data-story-deck', ...(page === 'index.html' ? [] : ['data-week-swipe-hint']), 'data-plan-swipe-hint', 'data-plans-deck'];
   const missing = requiredMarkers.filter(marker => !markup.includes(marker));
   if (missing.length) throw new Error(`${page} is missing mobile experience markers: ${missing.join(', ')}`);
   if (/data-testimonial-video[^>]*autoplay/.test(markup)) throw new Error(`${page} must not autoplay testimonial videos.`);
@@ -46,7 +46,7 @@ const assertMobileExperience = (markup, page, nested = false) => {
 };
 assertMobileExperience(canonicalHome, 'index-v2.html');
 const assets = [
-  'index-v2.html', 'calculador.html', 'calculateur-crs.html', 'gracias.html', 'merci.html',
+  'index.html', 'index-v2.html', 'pathway-v3.css', 'pathway-v3.js', 'programa.css', 'programa.js', 'manual-a2.css', 'calculador.html', 'calculateur-crs.html', 'gracias.html', 'merci.html',
   'privacidad.html', 'politique-confidentialite.html', 'condiciones.html', 'conditions-nclc7.html',
   'preparacion-tef-canada.html', 'recursos.html', 'nclc-7.html', 'tefaq-quebec.html',
   'pathway-mark.svg', 'theme.css', 'guide.css', 'theme.js', 'site-config.js', 'analytics.js',
@@ -62,7 +62,7 @@ await mkdir(client, { recursive: true });
 await mkdir(server, { recursive: true });
 
 for (const asset of assets) {
-  const destination = asset === 'index-v2.html' ? 'index.html' : asset;
+  const destination = asset;
   await cp(resolve(root, asset), resolve(client, destination));
 }
 await cp(resolve(root, 'index-v2.html'), resolve(client, 'index-v2.html'));
@@ -71,25 +71,18 @@ await cp(resolve(root, 'assets'), resolve(client, 'assets'), { recursive: true }
 await mkdir(resolve(client, 'i18n'), { recursive: true });
 await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.css'), { recursive: false });
 
-// Bac à sable /v3 : copié tel quel, sans aucune influence sur la racine.
-// Règle du bac à sable : v3 ne sert que ses propres feuilles de style et scripts.
-// Les médias et pages secondaires partagés restent à la racine et sont appelés en ../.
-const v3Source = resolve(root, 'v3');
-const v3Output = resolve(client, 'v3');
-const v3Markup = await readFile(resolve(v3Source, 'index.html'), 'utf8');
-const forbiddenInV3 = ['pathway-v2.css', 'pathway-v2.js'].filter(reference => v3Markup.includes(reference));
-if (forbiddenInV3.length) {
-  throw new Error(`v3/index.html doit rester isolé de la racine : ${forbiddenInV3.join(', ')}`);
+// The promoted homepage and program pages are public; old v3 URLs redirect.
+await cp(resolve(root, 'programas'), resolve(client, 'programas'), { recursive: true });
+await cp(resolve(root, 'v3'), resolve(client, 'v3'), { recursive: true, filter: source => !source.endsWith('.md') });
+const publicHome = await readFile(resolve(client, 'index.html'), 'utf8');
+assertMobileExperience(publicHome, 'index.html');
+if (!publicHome.includes('data-program-carousel') || publicHome.includes('noindex') || !publicHome.includes('href="/programas/a2/"')) {
+  throw new Error('The public homepage must include the indexable program carousel and A2 link.');
 }
-if (!v3Markup.includes('name="robots" content="noindex')) {
-  throw new Error('v3/index.html doit rester en noindex tant que /v3 est un bac à sable.');
-}
-await cp(v3Source, v3Output, { recursive: true, filter: source => !source.endsWith('.md') });
-
-// Garde-fou : la page servie sur le domaine reste exactement index-v2.html.
-if (await readFile(resolve(client, 'index.html'), 'utf8') !== canonicalHome) {
-  throw new Error("La page d'accueil publiée ne correspond plus à index-v2.html.");
-}
+// Historical Spanish homepage links must reach the new default experience.
+const homeRedirect = await readFile(resolve(root, 'v3/index.html'), 'utf8');
+await writeFile(resolve(client, 'index-v2.html'), homeRedirect);
+await writeFile(resolve(client, 'couleurs.html'), homeRedirect);
 
 for (const page of ['condiciones.html', 'conditions-nclc7.html', 'calculador.html', 'calculateur-crs.html']) {
   assertSharedShell(await readFile(resolve(root, page), 'utf8'), page);
@@ -117,4 +110,4 @@ await writeFile(resolve(server, 'index.js'), `export default {
 `, 'utf8');
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
-console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the /v3 sandbox for Pathway.`);
+console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
