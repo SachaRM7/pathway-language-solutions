@@ -79,6 +79,24 @@ assertMobileExperience(publicHome, 'index.html');
 if (!publicHome.includes('data-program-carousel') || publicHome.includes('noindex') || !publicHome.includes('href="/programas/a2/"')) {
   throw new Error('The public homepage must include the indexable program carousel and A2 link.');
 }
+const manualReaderPage = await readFile(resolve(root, 'programas', 'a2', 'index.html'), 'utf8');
+const manualReaderScript = await readFile(resolve(root, 'manual-a2.js'), 'utf8');
+const manualReaderStyles = await readFile(resolve(root, 'manual-a2.css'), 'utf8');
+const fullscreenMarkers = [
+  [manualReaderPage, 'id="fullscreen-open"'],
+  [manualReaderPage, 'aria-pressed="false"'],
+  [manualReaderScript, 'requestFullscreen'],
+  [manualReaderScript, "classList.toggle('is-reader-fullscreen'"],
+  [manualReaderStyles, '.reader-shell.is-reader-fullscreen'],
+  [manualReaderStyles, 'env(safe-area-inset-top)']
+];
+if (fullscreenMarkers.some(([source, marker]) => !source.includes(marker))) {
+  throw new Error('The A2 reader must keep a persistent, safe-area-aware fullscreen mode with page navigation.');
+}
+const commitmentPage = await readFile(resolve(root, 'condiciones.html'), 'utf8');
+for (const marker of ['proyeccion-b1', 'evaluacion-b2', 'consolidacion', '4 meses', 'se factura normalmente']) {
+  if (!commitmentPage.includes(marker)) throw new Error(`The NCLC 7 commitment is missing the required stage: ${marker}.`);
+}
 // Historical Spanish homepage links must reach the new default experience.
 const homeRedirect = await readFile(resolve(root, 'v3/index.html'), 'utf8');
 await writeFile(resolve(client, 'index-v2.html'), homeRedirect);

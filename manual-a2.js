@@ -2,6 +2,8 @@
   const $ = s => document.querySelector(s);
   const book = $('#book');
   if (!book) return;
+  const shell = $('#manual');
+  const fullscreenButton = $('#fullscreen-open');
   const mobile = matchMedia('(max-width: 700px)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const pages = window.PathwayManualPages;
@@ -100,6 +102,45 @@
   };
   $('#zoom-close').onclick=()=>dialog.close();
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+  const nativeFullscreenElement=()=>document.fullscreenElement||document.webkitFullscreenElement;
+  const setReaderFullscreen=active=>{
+    shell.classList.toggle('is-reader-fullscreen',active);
+    document.documentElement.classList.toggle('manual-fullscreen-active',active);
+    document.body.classList.toggle('manual-fullscreen-active',active);
+    fullscreenButton.setAttribute('aria-pressed',String(active));
+    fullscreenButton.setAttribute('aria-label',active?'Salir de la pantalla completa':'Abrir el manual en pantalla completa');
+    $('#fullscreen-label').textContent=active?'Salir':'Pantalla completa';
+    $('#fullscreen-icon').textContent=active?'×':'↗';
+    if(active) shell.scrollTop=0;
+  };
+  fullscreenButton.onclick=async()=>{
+    const active=shell.classList.contains('is-reader-fullscreen');
+    if(active){
+      try {
+        if(nativeFullscreenElement()&&document.exitFullscreen) await document.exitFullscreen();
+        else if(nativeFullscreenElement()&&document.webkitExitFullscreen) document.webkitExitFullscreen();
+      } catch {}
+      setReaderFullscreen(false);
+      return;
+    }
+    setReaderFullscreen(true);
+    try {
+      if(shell.requestFullscreen) await shell.requestFullscreen();
+      else if(shell.webkitRequestFullscreen) shell.webkitRequestFullscreen();
+    } catch {
+      // Keep the fixed overlay when element fullscreen is unavailable,
+      // notably on some iOS Safari versions.
+    }
+  };
+  const syncNativeFullscreen=()=>{
+    if(nativeFullscreenElement()===shell) setReaderFullscreen(true);
+    else if(nativeFullscreenElement()==null&&shell.classList.contains('is-reader-fullscreen')) setReaderFullscreen(false);
+  };
+  document.addEventListener('fullscreenchange',syncNativeFullscreen);
+  document.addEventListener('webkitfullscreenchange',syncNativeFullscreen);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&shell.classList.contains('is-reader-fullscreen')&&!nativeFullscreenElement()&&!dialog.open) setReaderFullscreen(false);
+  });
   mobile.addEventListener('change',()=>{ if(busy){setTimeout(()=>{current=Math.min(mobile.matches?current:Math.ceil(current/2)*2,end());render();},1200);return;}current=Math.min(mobile.matches?current:Math.ceil(current/2)*2,end());render(); });
   render();
   // Count the reading time only once the actual cover image is visible.
