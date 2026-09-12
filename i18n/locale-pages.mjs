@@ -84,7 +84,7 @@ Object.assign(LOCALES.fr, { enroll: {
   s2Legend: 'Formule d’inscription', s2Sub: 'Les prix sont indicatifs selon le volume choisi. Pathway confirme le calendrier exact avant le paiement.',
   billingMonthly: 'Mensuel', billingMonthlyDesc: 'Mois par mois, sans engagement', billingCycle: 'Cycle* −15 %', billingCycleDesc: 'Inscription directe pour le cycle complet',
   cycleNote: '* Un cycle correspond à la maîtrise d’un niveau CECRL (A1, A2, B1 ou B2). Si vous commencez par un mois puis passez au cycle, la réduction est de 10 %.',
-  feeNote: '<strong>Frais d’inscription uniques : 15 USD.</strong> Ajoutés au premier paiement, après confirmation de l’horaire.',
+  feeNote: '<strong>Frais d’inscription uniques : 15 CAD.</strong> Ajoutés au premier paiement, après confirmation de l’horaire.',
   s3Legend: 'Préférences horaires', s3Sub: 'Proposez plusieurs possibilités pour que Pathway trouve une combinaison compatible. Cela ne bloque pas encore d’horaire.',
   tzLabel: 'Fuseau horaire', tzSelect: 'Sélectionnez', tzOptions: ['Heure de l’Est · Toronto / Montréal', 'Heure centrale · Winnipeg', 'Heure des Rocheuses · Calgary', 'Heure du Pacifique · Vancouver', 'Autre fuseau horaire'],
   startLabel: 'Date de début idéale', daysLabel: 'Jours possibles', slotsLabel: 'Créneaux possibles',
@@ -96,9 +96,9 @@ Object.assign(LOCALES.fr, { enroll: {
   objLabel: 'Objectif', objPlaceholder: 'Ex. : atteindre NCLC 7 pour mon projet de résidence', examLabel: 'Date objectif TEF / TCF',
   navPrev: '← Précédent', navNext: 'Suivant →',
   sumEyebrow: 'Votre demande', sumTitle: 'Récapitulatif avant de confirmer', sumSee: 'Voir le récapitulatif',
-  sumLevel: 'Niveau estimé', sumRhythm: 'Rythme', sumEnroll: 'Inscription', sumPrice: 'Prix de référence', sumFee: 'Frais d’inscription', feeOnce: '15 USD · une fois', sumAvail: 'Disponibilités',
-  sumCta: 'Demander la confirmation de l’horaire', payNote: 'Aucun paiement ici. Pathway confirme d’abord un horaire puis envoie le lien de paiement. Les frais d’inscription uniques sont de 15 USD.',
-  footer: 'Pathway Language Solutions · Votre demande ne réserve pas d’horaire avant la confirmation écrite de Pathway. Frais d’inscription uniques : 15 USD.', mbarPrice: 'Prix de référence',
+  sumLevel: 'Niveau estimé', sumRhythm: 'Rythme', sumEnroll: 'Inscription', sumPrice: 'Prix de référence', sumFee: 'Frais d’inscription', feeOnce: '15 CAD · une fois', sumAvail: 'Disponibilités',
+  sumCta: 'Demander la confirmation de l’horaire', payNote: 'Aucun paiement ici. Pathway confirme d’abord un horaire puis envoie le lien de paiement. Les frais d’inscription uniques sont de 15 CAD.',
+  footer: 'Pathway Language Solutions · Votre demande ne réserve pas d’horaire avant la confirmation écrite de Pathway. Frais d’inscription uniques : 15 CAD.', mbarPrice: 'Prix de référence',
   js: {
     levelSuffix: '· estimé', byConfirm: 'À confirmer', headLevel: 'Niveau {L} estimé', headLevelUnknown: 'Niveau à confirmer',
     durationA1: 'cycle de {m} mois depuis A1', durationOther: '≈ {m} mois depuis {L}',
@@ -113,8 +113,8 @@ Object.assign(LOCALES.fr, { enroll: {
     msgIntroUrgent: 'Bonjour Pathway, j’ai peu de temps avant mon objectif et je veux savoir quel rythme est réaliste.',
     msgClose: 'Je comprends que l’horaire et le prix final doivent être confirmés avant le paiement.',
     msgRhythmUrgent: 'À recommander selon ma date et mon niveau', msgEnrollUrgent: 'À choisir après la recommandation',
-    toRecommend: 'À recommander', toChoose: 'À choisir', fee: '15 USD (une seule fois)', none: 'Aucune', tbd: 'À définir',
-    lblName: 'Nom complet', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objectif', lblLevel: 'Niveau estimé', lblRhythm: 'Rythme de référence', lblEnroll: 'Inscription', lblPrice: 'Prix de référence', lblFee: 'Frais d’inscription : 15 USD (une seule fois)', lblTz: 'Fuseau horaire', lblStart: 'Début idéal', lblDays: 'Jours possibles', lblSlots: 'Créneaux possibles', lblExam: 'Date objectif TEF/TCF', lblNotes: 'Précisions'
+    toRecommend: 'À recommander', toChoose: 'À choisir', fee: '15 CAD (une seule fois)', none: 'Aucune', tbd: 'À définir',
+    lblName: 'Nom complet', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objectif', lblLevel: 'Niveau estimé', lblRhythm: 'Rythme de référence', lblEnroll: 'Inscription', lblPrice: 'Prix de référence', lblFee: 'Frais d’inscription : 15 CAD (une seule fois)', lblTz: 'Fuseau horaire', lblStart: 'Début idéal', lblDays: 'Jours possibles', lblSlots: 'Créneaux possibles', lblExam: 'Date objectif TEF/TCF', lblNotes: 'Précisions'
   }
 } });
 Object.assign(LOCALES.en, { enroll: {
@@ -128,7 +128,7 @@ Object.assign(LOCALES.en, { enroll: {
   s2Legend: 'Enrolment type', s2Sub: 'Prices are references based on the weekly volume chosen. Pathway confirms the exact calendar before payment.',
   billingMonthly: 'Monthly', billingMonthlyDesc: 'Month to month, no commitment', billingCycle: 'Cycle* −15%', billingCycleDesc: 'Direct enrolment for the full cycle',
   cycleNote: '* One cycle corresponds to mastering one CEFR level (A1, A2, B1 or B2). If you start with a month then move to a cycle, the reduction is 10%.',
-  feeNote: '<strong>One-time enrolment fee: 15 USD.</strong> Added to the first payment, after the schedule is confirmed.',
+  feeNote: '<strong>One-time enrolment fee: 15 CAD.</strong> Added to the first payment, after the schedule is confirmed.',
   s3Legend: 'Schedule preferences', s3Sub: 'Propose several possibilities so Pathway can find a compatible combination. This does not block a schedule yet.',
   tzLabel: 'Time zone', tzSelect: 'Select', tzOptions: ['Eastern Time · Toronto / Montréal', 'Central Time · Winnipeg', 'Mountain Time · Calgary', 'Pacific Time · Vancouver', 'Other time zone'],
   startLabel: 'Ideal start date', daysLabel: 'Possible days', slotsLabel: 'Possible slots',
@@ -140,9 +140,9 @@ Object.assign(LOCALES.en, { enroll: {
   objLabel: 'Objective', objPlaceholder: 'E.g. reach NCLC 7 for my residency project', examLabel: 'Target TEF / TCF date',
   navPrev: '← Previous', navNext: 'Next →',
   sumEyebrow: 'Your request', sumTitle: 'Summary before confirming', sumSee: 'See summary',
-  sumLevel: 'Estimated level', sumRhythm: 'Rhythm', sumEnroll: 'Enrolment', sumPrice: 'Reference price', sumFee: 'Enrolment fee', feeOnce: '15 USD · once', sumAvail: 'Availability',
-  sumCta: 'Request schedule confirmation', payNote: 'No payment here. Pathway first confirms a schedule then sends the payment link. The one-time enrolment fee is 15 USD.',
-  footer: 'Pathway Language Solutions · Your request does not reserve a schedule until Pathway’s written confirmation. One-time enrolment fee: 15 USD.', mbarPrice: 'Reference price',
+  sumLevel: 'Estimated level', sumRhythm: 'Rhythm', sumEnroll: 'Enrolment', sumPrice: 'Reference price', sumFee: 'Enrolment fee', feeOnce: '15 CAD · once', sumAvail: 'Availability',
+  sumCta: 'Request schedule confirmation', payNote: 'No payment here. Pathway first confirms a schedule then sends the payment link. The one-time enrolment fee is 15 CAD.',
+  footer: 'Pathway Language Solutions · Your request does not reserve a schedule until Pathway’s written confirmation. One-time enrolment fee: 15 CAD.', mbarPrice: 'Reference price',
   js: {
     levelSuffix: '· estimated', byConfirm: 'To confirm', headLevel: '{L} level estimated', headLevelUnknown: 'Level to confirm',
     durationA1: '{m}-month cycle from A1', durationOther: '≈ {m} months from {L}',
@@ -157,8 +157,8 @@ Object.assign(LOCALES.en, { enroll: {
     msgIntroUrgent: 'Hi Pathway, I have little time before my goal and want to know which rhythm is realistic.',
     msgClose: 'I understand the schedule and final price must be confirmed before payment.',
     msgRhythmUrgent: 'To recommend based on my date and level', msgEnrollUrgent: 'To choose after the recommendation',
-    toRecommend: 'To recommend', toChoose: 'To choose', fee: '15 USD (one time)', none: 'None', tbd: 'To define',
-    lblName: 'Full name', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objective', lblLevel: 'Estimated level', lblRhythm: 'Reference rhythm', lblEnroll: 'Enrolment', lblPrice: 'Reference price', lblFee: 'Enrolment fee: 15 USD (one time)', lblTz: 'Time zone', lblStart: 'Ideal start', lblDays: 'Possible days', lblSlots: 'Possible slots', lblExam: 'Target TEF/TCF date', lblNotes: 'Details'
+    toRecommend: 'To recommend', toChoose: 'To choose', fee: '15 CAD (one time)', none: 'None', tbd: 'To define',
+    lblName: 'Full name', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objective', lblLevel: 'Estimated level', lblRhythm: 'Reference rhythm', lblEnroll: 'Enrolment', lblPrice: 'Reference price', lblFee: 'Enrolment fee: 15 CAD (one time)', lblTz: 'Time zone', lblStart: 'Ideal start', lblDays: 'Possible days', lblSlots: 'Possible slots', lblExam: 'Target TEF/TCF date', lblNotes: 'Details'
   }
 } });
 Object.assign(LOCALES.de, { enroll: {
@@ -172,7 +172,7 @@ Object.assign(LOCALES.de, { enroll: {
   s2Legend: 'Anmeldeform', s2Sub: 'Die Preise sind Richtwerte je nach gewähltem Wochenvolumen. Pathway bestätigt den genauen Kalender vor der Zahlung.',
   billingMonthly: 'Monatlich', billingMonthlyDesc: 'Monat für Monat, ohne Bindung', billingCycle: 'Zyklus* −15 %', billingCycleDesc: 'Direkte Anmeldung für den gesamten Zyklus',
   cycleNote: '* Ein Zyklus entspricht dem Beherrschen einer GER-Stufe (A1, A2, B1 oder B2). Wenn Sie mit einem Monat beginnen und dann zum Zyklus wechseln, beträgt die Ermäßigung 10 %.',
-  feeNote: '<strong>Einmalige Anmeldegebühr: 15 USD.</strong> Wird der ersten Zahlung nach der Terminbestätigung hinzugefügt.',
+  feeNote: '<strong>Einmalige Anmeldegebühr: 15 CAD.</strong> Wird der ersten Zahlung nach der Terminbestätigung hinzugefügt.',
   s3Legend: 'Zeitpräferenzen', s3Sub: 'Schlagen Sie mehrere Möglichkeiten vor, damit Pathway eine passende Kombination findet. Das blockiert noch keinen Termin.',
   tzLabel: 'Zeitzone', tzSelect: 'Auswählen', tzOptions: ['Ostzeit · Toronto / Montréal', 'Zentralzeit · Winnipeg', 'Bergzeit · Calgary', 'Pazifikzeit · Vancouver', 'Andere Zeitzone'],
   startLabel: 'Ideales Startdatum', daysLabel: 'Mögliche Tage', slotsLabel: 'Mögliche Zeitfenster',
@@ -184,9 +184,9 @@ Object.assign(LOCALES.de, { enroll: {
   objLabel: 'Ziel', objPlaceholder: 'Z. B. NCLC 7 für mein Aufenthaltsprojekt erreichen', examLabel: 'Zieldatum TEF / TCF',
   navPrev: '← Zurück', navNext: 'Weiter →',
   sumEyebrow: 'Ihre Anfrage', sumTitle: 'Zusammenfassung vor der Bestätigung', sumSee: 'Zusammenfassung ansehen',
-  sumLevel: 'Geschätztes Niveau', sumRhythm: 'Rhythmus', sumEnroll: 'Anmeldung', sumPrice: 'Richtpreis', sumFee: 'Anmeldegebühr', feeOnce: '15 USD · einmalig', sumAvail: 'Verfügbarkeiten',
-  sumCta: 'Terminbestätigung anfragen', payNote: 'Hier wird keine Zahlung fällig. Pathway bestätigt zuerst einen Termin und sendet dann den Zahlungslink. Die einmalige Anmeldegebühr beträgt 15 USD.',
-  footer: 'Pathway Language Solutions · Ihre Anfrage reserviert keinen Termin bis zur schriftlichen Bestätigung von Pathway. Einmalige Anmeldegebühr: 15 USD.', mbarPrice: 'Richtpreis',
+  sumLevel: 'Geschätztes Niveau', sumRhythm: 'Rhythmus', sumEnroll: 'Anmeldung', sumPrice: 'Richtpreis', sumFee: 'Anmeldegebühr', feeOnce: '15 CAD · einmalig', sumAvail: 'Verfügbarkeiten',
+  sumCta: 'Terminbestätigung anfragen', payNote: 'Hier wird keine Zahlung fällig. Pathway bestätigt zuerst einen Termin und sendet dann den Zahlungslink. Die einmalige Anmeldegebühr beträgt 15 CAD.',
+  footer: 'Pathway Language Solutions · Ihre Anfrage reserviert keinen Termin bis zur schriftlichen Bestätigung von Pathway. Einmalige Anmeldegebühr: 15 CAD.', mbarPrice: 'Richtpreis',
   js: {
     levelSuffix: '· geschätzt', byConfirm: 'Zu bestätigen', headLevel: 'Niveau {L} geschätzt', headLevelUnknown: 'Niveau zu bestätigen',
     durationA1: 'Zyklus von {m} Monaten ab A1', durationOther: '≈ {m} Monate ab {L}',
@@ -201,8 +201,8 @@ Object.assign(LOCALES.de, { enroll: {
     msgIntroUrgent: 'Hallo Pathway, ich habe wenig Zeit bis zu meinem Ziel und möchte wissen, welcher Rhythmus realistisch ist.',
     msgClose: 'Mir ist klar, dass Termin und Endpreis vor der Zahlung bestätigt werden müssen.',
     msgRhythmUrgent: 'Je nach meinem Datum und Niveau zu empfehlen', msgEnrollUrgent: 'Nach der Empfehlung zu wählen',
-    toRecommend: 'Zu empfehlen', toChoose: 'Zu wählen', fee: '15 USD (einmalig)', none: 'Keine', tbd: 'Festzulegen',
-    lblName: 'Vollständiger Name', lblEmail: 'E-Mail', lblWa: 'WhatsApp', lblObj: 'Ziel', lblLevel: 'Geschätztes Niveau', lblRhythm: 'Referenz-Rhythmus', lblEnroll: 'Anmeldung', lblPrice: 'Richtpreis', lblFee: 'Anmeldegebühr: 15 USD (einmalig)', lblTz: 'Zeitzone', lblStart: 'Idealer Beginn', lblDays: 'Mögliche Tage', lblSlots: 'Mögliche Zeitfenster', lblExam: 'Zieldatum TEF/TCF', lblNotes: 'Hinweise'
+    toRecommend: 'Zu empfehlen', toChoose: 'Zu wählen', fee: '15 CAD (einmalig)', none: 'Keine', tbd: 'Festzulegen',
+    lblName: 'Vollständiger Name', lblEmail: 'E-Mail', lblWa: 'WhatsApp', lblObj: 'Ziel', lblLevel: 'Geschätztes Niveau', lblRhythm: 'Referenz-Rhythmus', lblEnroll: 'Anmeldung', lblPrice: 'Richtpreis', lblFee: 'Anmeldegebühr: 15 CAD (einmalig)', lblTz: 'Zeitzone', lblStart: 'Idealer Beginn', lblDays: 'Mögliche Tage', lblSlots: 'Mögliche Zeitfenster', lblExam: 'Zieldatum TEF/TCF', lblNotes: 'Hinweise'
   }
 } });
 Object.assign(LOCALES.de, { methodLabel: 'Pathway-Methode', plansLabel: 'Pläne', plansTitle: '2–6 Stunden pro Woche', plansCopy: 'Die Preise sind Richtwerte. Direkte Zykluszahlung enthält 15 % Ermäßigung; ein erster Monat und der anschließende Wechsel zu einem Zyklus kommunizieren 10 % Ermäßigung.', directReduction: '−15 % direkt', priceNote: 'Richtpreise; der genaue Rhythmus wird nach dem Einstufungstest bestätigt.', privateLesson: 'Privatunterricht · Live-Begleitung', questions: 'Fragen', conservative: 'vorsichtige Orientierung', weighted: 'gewichtet und präzise', testNotice: 'Lesen, Hören und Grammatik/Wortschatz erhalten nur dann eine Punktzahl von 100, wenn sie gemessen werden. Sprechen wird nicht automatisch bewertet und muss live bestätigt werden. Jeder Audioausschnitt darf zweimal gestartet werden; Pause und Fortsetzen verbrauchen keine weitere Hörung.', placementLabel: 'Einstufung · A1–B2', enrollmentLabel: 'Pathway · Anmeldung', fullName: 'Vollständiger Name', email: 'E-Mail', whatsapp: 'WhatsApp', days: 'Mögliche Tage', anyDay: 'Jeder Tag', formError: 'Bitte füllen Sie alle Pflichtfelder aus und wählen Sie einen Tag.', requiredError: 'Dieses Feld ist erforderlich.', emailError: 'Geben Sie eine gültige E-Mail-Adresse ein.', dayError: 'Wählen Sie mindestens einen Tag.', daysFull: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'], switchAfterMonth: 'Nach einem ersten Monat bedeutet der Wechsel zu einem Zyklus eine Ermäßigung von 10 %.' });

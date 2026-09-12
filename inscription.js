@@ -24,9 +24,9 @@
     msgIntroUrgent: 'Hola Pathway, tengo poco tiempo antes de mi objetivo y quiero saber qué ritmo es viable.',
     msgClose: 'Entiendo que el horario y el precio final deben ser confirmados antes del pago.',
     msgRhythmUrgent: 'Por recomendar según mi fecha y nivel', msgEnrollUrgent: 'Por elegir después de la recomendación',
-    toRecommend: 'Por recomendar', toChoose: 'Por elegir', fee: '15 USD (una sola vez)', none: 'Ninguna', tbd: 'Por definir',
+    toRecommend: 'Por recomendar', toChoose: 'Por elegir', fee: '15 CAD (una sola vez)', none: 'Ninguna', tbd: 'Por definir',
     lblName: 'Nombre completo', lblEmail: 'Email', lblWa: 'WhatsApp', lblObj: 'Objetivo', lblLevel: 'Nivel estimado',
-    lblRhythm: 'Ritmo de referencia', lblEnroll: 'Inscripción', lblPrice: 'Precio de referencia', lblFee: 'Cuota de inscripción: 15 USD (una sola vez)',
+    lblRhythm: 'Ritmo de referencia', lblEnroll: 'Inscripción', lblPrice: 'Precio de referencia', lblFee: 'Cuota de inscripción: 15 CAD (una sola vez)',
     lblTz: 'Zona horaria', lblStart: 'Inicio ideal', lblDays: 'Días posibles', lblSlots: 'Franjas posibles', lblExam: 'Fecha objetivo TEF/TCF', lblNotes: 'Precisiones'
   }, window.PATHWAY_ENROLL || {});
   const fmt = (str, map) => String(str).replace(/\{(\w+)\}/g, (_, k) => (map && map[k] != null ? map[k] : ''));
