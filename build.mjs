@@ -7,10 +7,8 @@ const dist = resolve(root, 'dist');
 const client = resolve(dist, 'client');
 const server = resolve(dist, 'server');
 const canonicalHome = await readFile(resolve(root, 'index-v2.html'), 'utf8');
-const canonicalV4Home = await readFile(resolve(root, 'v4', 'index.html'), 'utf8');
 const sectionSignature = markup => [...markup.matchAll(/<section class="([^"]+)"/g)].map(match => match[1]);
 const canonicalHomeSections = sectionSignature(canonicalHome);
-const canonicalV4HomeSections = sectionSignature(canonicalV4Home);
 const sharedShellHref = 'pathway-page-shell.css';
 const assertSharedShell = (markup, page) => {
   if (!markup.includes('class="pathway-page"') || !markup.includes(sharedShellHref)) {
@@ -113,20 +111,12 @@ for (const locale of Object.keys(LOCALES)) {
   const localeDir = resolve(client, locale);
   await mkdir(localeDir, { recursive: true });
   for (const page of pageNames) {
-    let markup;
+    const markup = renderLocalePage(locale, page);
     if (page === 'index.html') {
-      markup = await readFile(resolve(root, locale, 'index.html'), 'utf8');
-      const localizedSections = sectionSignature(markup);
-      if (!markup.includes('/v4/home.css') || !markup.includes('/v4/home.js')) {
-        throw new Error(`${locale}/${page} must use the V4 homepage assets.`);
-      }
-      if (JSON.stringify(localizedSections) !== JSON.stringify(canonicalV4HomeSections)) {
-        throw new Error(`${locale}/${page} must preserve every V4 homepage section and CSS class.`);
-      }
-    } else {
-      markup = renderLocalePage(locale, page);
-      if (page !== 'inscription.html') assertSharedShell(markup, `${locale}/${page}`);
+      assertHomeParity(markup, `${locale}/${page}`);
+      assertMobileExperience(markup, `${locale}/${page}`, true);
     }
+    else if (page !== 'inscription.html') assertSharedShell(markup, `${locale}/${page}`);
     await writeFile(resolve(localeDir, page), markup, 'utf8');
   }
 }

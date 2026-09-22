@@ -167,14 +167,14 @@ main { padding-top: var(--header-height); }
 .skill-track { display: block; height: 8px; border-radius: 8px; background: color-mix(in srgb, var(--sage) 16%, var(--paper)); overflow: hidden; }
 .skill-fill { display: block; width: var(--score); height: 100%; border-radius: inherit; background: #77877d; }
 .skill-report.is-skill-prepared .skill-fill { transform: scaleX(0); transform-origin: left center; will-change: transform; }
-.skill-report.is-skill-animated .skill-fill { animation: skill-fill-reveal 920ms cubic-bezier(.22,.78,.24,1) both; }
-.skill-report.is-skill-animated .skill-row:nth-child(2) .skill-fill { animation-delay: 180ms; }
-.skill-report.is-skill-animated .skill-row:nth-child(3) .skill-fill { animation-delay: 360ms; }
+.skill-report.is-skill-animated .skill-fill { animation: skill-fill-reveal 1350ms cubic-bezier(.22,.72,.24,1) both; }
+.skill-report.is-skill-animated .skill-row:nth-child(2) .skill-fill { animation-delay: 1850ms; }
+.skill-report.is-skill-animated .skill-row:nth-child(3) .skill-fill { animation-delay: 3700ms; }
 
 @keyframes skill-fill-reveal {
   0% { transform: scaleX(0); }
-  74% { transform: scaleX(1.035); }
-  88% { transform: scaleX(.992); }
+  84% { transform: scaleX(1.012); }
+  94% { transform: scaleX(.998); }
   100% { transform: scaleX(1); }
 }
 .skill-row.is-priority .skill-fill { background: var(--action); }
