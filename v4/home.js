@@ -1,5 +1,57 @@
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const track = (event, details) => window.PathwayAnalytics?.track(event, details);
+const pageLanguage = (document.documentElement.lang || 'es').split('-')[0];
+const translations = {
+  es: {
+    menuOpen: 'Abrir el menú',
+    menuClose: 'Cerrar el menú',
+    stage: 'etapa',
+    of: 'de',
+    pauseAnimation: 'Pausar animación',
+    resumeAnimation: 'Reanudar animación',
+    skills: { reading: 'comprensión escrita', listening: 'comprensión oral', grammarVocabulary: 'gramática y vocabulario' },
+    yourResult: 'Tu resultado',
+    estimatedLevel: level => `Tu nivel estimado: ${level}.`,
+    firstCyclePriority: skill => `Prioridad del primer ciclo: ${skill}.`
+  },
+  fr: {
+    menuOpen: 'Ouvrir le menu',
+    menuClose: 'Fermer le menu',
+    stage: 'étape',
+    of: 'sur',
+    pauseAnimation: 'Mettre l’animation en pause',
+    resumeAnimation: 'Reprendre l’animation',
+    skills: { reading: 'compréhension écrite', listening: 'compréhension orale', grammarVocabulary: 'grammaire et vocabulaire' },
+    yourResult: 'Votre résultat',
+    estimatedLevel: level => `Votre niveau estimé : ${level}.`,
+    firstCyclePriority: skill => `Priorité du premier cycle : ${skill}.`
+  },
+  en: {
+    menuOpen: 'Open menu',
+    menuClose: 'Close menu',
+    stage: 'stage',
+    of: 'of',
+    pauseAnimation: 'Pause animation',
+    resumeAnimation: 'Resume animation',
+    skills: { reading: 'written comprehension', listening: 'listening comprehension', grammarVocabulary: 'grammar and vocabulary' },
+    yourResult: 'Your result',
+    estimatedLevel: level => `Your estimated level: ${level}.`,
+    firstCyclePriority: skill => `First-cycle priority: ${skill}.`
+  },
+  de: {
+    menuOpen: 'Menü öffnen',
+    menuClose: 'Menü schließen',
+    stage: 'Etappe',
+    of: 'von',
+    pauseAnimation: 'Animation pausieren',
+    resumeAnimation: 'Animation fortsetzen',
+    skills: { reading: 'Leseverstehen', listening: 'Hörverstehen', grammarVocabulary: 'Grammatik und Wortschatz' },
+    yourResult: 'Ihr Ergebnis',
+    estimatedLevel: level => `Ihr geschätztes Niveau: ${level}.`,
+    firstCyclePriority: skill => `Priorität des ersten Zyklus: ${skill}.`
+  }
+};
+const t = translations[pageLanguage] || translations.es;
 
 function setupNavigation() {
   const header = document.querySelector('[data-header]');
@@ -11,7 +63,7 @@ function setupNavigation() {
   function setOpen(open, returnFocus = false) {
     toggle.setAttribute('aria-expanded', String(open));
     menu.classList.toggle('is-open', open);
-    menuLabel.textContent = open ? 'Cerrar el menú' : 'Abrir el menú';
+    menuLabel.textContent = open ? t.menuClose : t.menuOpen;
     if (returnFocus) toggle.focus();
   }
 
@@ -91,7 +143,7 @@ function setupPrograms() {
     carousel.dataset.current = String(current);
     animation?.cancel();
     if (announce) {
-      status.textContent = `${slide.dataset.level}, etapa ${current + 1} de ${slides.length}`;
+      status.textContent = `${slide.dataset.level}, ${t.stage} ${current + 1} ${t.of} ${slides.length}`;
       track('program_viewed', { level: slide.dataset.level, version: 'v4' });
       if (!reducedMotion.matches) {
         animation = slide.animate([
@@ -160,7 +212,7 @@ function setupTeachers() {
   pause.addEventListener('click', () => {
     manuallyPaused = !manuallyPaused;
     pause.setAttribute('aria-pressed', String(manuallyPaused));
-    pauseLabel.textContent = manuallyPaused ? 'Reanudar animación' : 'Pausar animación';
+    pauseLabel.textContent = manuallyPaused ? t.resumeAnimation : t.pauseAnimation;
     pauseIcon.setAttribute('href', manuallyPaused ? '#i-play' : '#i-pause');
     syncTimer();
   });
@@ -192,7 +244,7 @@ function restorePlacementResult() {
   } catch {
     return;
   }
-  const skills = { reading: 'comprensión escrita', listening: 'comprensión oral', grammarVocabulary: 'gramática y vocabulario' };
+  const skills = t.skills;
   const scores = result?.skillScores;
   if (!['A1', 'A2', 'B1', 'B2'].includes(result?.level) || !scores) return;
   if (!Object.keys(skills).every(key => Number.isFinite(scores[key]) && scores[key] >= 0 && scores[key] <= 100)) return;
@@ -202,9 +254,9 @@ function restorePlacementResult() {
 
   const report = document.querySelector('[data-skill-report]');
   const priorityLabel = report.querySelector('.priority-label');
-  report.querySelector('[data-result-label]').textContent = 'Tu resultado';
-  report.querySelector('[data-result-summary]').textContent = `Tu nivel estimado: ${result.level}.`;
-  report.querySelector('[data-result-priority]').textContent = `Prioridad del primer ciclo: ${skills[weakest]}.`;
+  report.querySelector('[data-result-label]').textContent = t.yourResult;
+  report.querySelector('[data-result-summary]').textContent = t.estimatedLevel(result.level);
+  report.querySelector('[data-result-priority]').textContent = t.firstCyclePriority(skills[weakest]);
   for (const [key] of Object.entries(skills)) {
     const row = report.querySelector(`[data-skill="${key}"]`);
     const score = Math.round(scores[key]);
@@ -213,6 +265,37 @@ function restorePlacementResult() {
     row.classList.toggle('is-priority', key === weakest);
     if (key === weakest) row.querySelector('dt').append(priorityLabel);
   }
+}
+
+function setupSkillReportAnimation() {
+  const report = document.querySelector('[data-skill-report]');
+  if (!report || reducedMotion.matches) return;
+
+  report.classList.add('is-skill-prepared');
+  let played = false;
+
+  const reveal = () => {
+    if (played) return;
+    played = true;
+    report.dataset.skillAnimationPlayed = 'true';
+    requestAnimationFrame(() => report.classList.add('is-skill-animated'));
+  };
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      reveal();
+      observer.disconnect();
+    }, { threshold: .35, rootMargin: '0px 0px -8% 0px' });
+    observer.observe(report);
+  } else {
+    reveal();
+  }
+
+  reducedMotion.addEventListener('change', event => {
+    if (!event.matches) return;
+    report.classList.remove('is-skill-prepared', 'is-skill-animated');
+  });
 }
 
 function setupSectionTracking() {
@@ -239,6 +322,7 @@ setupNavigation();
 setupPrograms();
 setupTeachers();
 restorePlacementResult();
+setupSkillReportAnimation();
 setupSectionTracking();
 document.querySelectorAll('.menu-toggle, .stage-button, .round-button, .teacher-pause').forEach(button => {
   button.disabled = false;
