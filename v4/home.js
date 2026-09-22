@@ -307,7 +307,7 @@ function setupSkillReportAnimation() {
       if (cancelled) return;
       await animateRow(row);
       if (cancelled) return;
-      await wait(350);
+      await wait(250);
     }
   };
 
