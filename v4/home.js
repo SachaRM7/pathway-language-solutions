@@ -1,0 +1,247 @@
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const track = (event, details) => window.PathwayAnalytics?.track(event, details);
+
+function setupNavigation() {
+  const header = document.querySelector('[data-header]');
+  const toggle = document.querySelector('[data-menu-toggle]');
+  const menu = document.querySelector('[data-menu]');
+  const menuLabel = toggle.querySelector('[data-menu-label]');
+  const desktop = window.matchMedia('(min-width: 1024px)');
+
+  function setOpen(open, returnFocus = false) {
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.classList.toggle('is-open', open);
+    menuLabel.textContent = open ? 'Cerrar el menÃº' : 'Abrir el menÃº';
+    if (returnFocus) toggle.focus();
+  }
+
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  menu.addEventListener('click', event => {
+    const link = event.target.closest('a');
+    if (!link) return;
+    const wasOpen = menu.classList.contains('is-open');
+    setOpen(false);
+    if (wasOpen && link.hash && link.pathname === location.pathname) {
+      const destination = document.getElementById(link.hash.slice(1));
+      if (destination) {
+        destination.tabIndex = -1;
+        destination.focus({ preventScroll: true });
+      }
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menu.classList.contains('is-open')) setOpen(false, true);
+  });
+  document.addEventListener('click', event => {
+    if (!header.contains(event.target)) setOpen(false);
+  });
+  desktop.addEventListener('change', () => {
+    if (desktop.matches) setOpen(false);
+  });
+
+  const updateHeader = () => header.classList.toggle('is-scrolled', window.scrollY > 12);
+  window.addEventListener('scroll', updateHeader, { passive: true });
+  updateHeader();
+
+  const links = [...menu.querySelectorAll('a[href^="#"]')];
+  const sections = links.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        for (const link of links) {
+          if (link.hash === `#${entry.target.id}`) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
+      }
+    }, { rootMargin: '-15% 0px -65% 0px', threshold: 0 });
+    sections.forEach(section => observer.observe(section));
+  }
+}
+
+function setupPrograms() {
+  const carousel = document.querySelector('[data-program-carousel]');
+  const slides = [...carousel.querySelectorAll('[data-program-slide]')];
+  const buttons = [...carousel.querySelectorAll('[data-stage]')];
+  const dots = [...carousel.querySelectorAll('[data-route-dot]')];
+  const link = carousel.querySelector('[data-program-link]');
+  const label = carousel.querySelector('[data-program-link-label]');
+  const count = carousel.querySelector('[data-program-count]');
+  const status = carousel.querySelector('[data-program-status]');
+  const progress = carousel.querySelector('[data-route-progress]');
+  let current = 0;
+  let animation;
+  let pointerStart;
+  let lastSwipe = -Infinity;
+
+  function show(index, announce = true) {
+    current = (index + slides.length) % slides.length;
+    slides.forEach((slide, slideIndex) => { slide.hidden = slideIndex !== current; });
+    buttons.forEach((button, buttonIndex) => {
+      button.classList.toggle('is-current', buttonIndex === current);
+      button.setAttribute('aria-pressed', String(buttonIndex === current));
+    });
+    dots.forEach((dot, dotIndex) => dot.classList.toggle('is-complete', dotIndex <= current));
+    progress.style.strokeDashoffset = String(100 - current / (slides.length - 1) * 100);
+    const slide = slides[current];
+    link.href = slide.dataset.href;
+    link.dataset.cta = `v4-program-${slide.dataset.level.toLowerCase().replaceAll(' ', '-')}`;
+    label.textContent = slide.dataset.linkLabel;
+    count.textContent = `${current + 1}/${slides.length}`;
+    carousel.dataset.current = String(current);
+    animation?.cancel();
+    if (announce) {
+      status.textContent = `${slide.dataset.level}, etapa ${current + 1} de ${slides.length}`;
+      track('program_viewed', { level: slide.dataset.level, version: 'v4' });
+      if (!reducedMotion.matches) {
+        animation = slide.animate([
+          { opacity: 0, transform: 'translateY(6px)' },
+          { opacity: 1, transform: 'translateY(0)' }
+        ], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      }
+    }
+  }
+
+  carousel.querySelector('[data-program-previous]').addEventListener('click', () => show(current - 1));
+  carousel.querySelector('[data-program-next]').addEventListener('click', () => show(current + 1));
+  buttons.forEach((button, index) => button.addEventListener('click', () => show(index)));
+  carousel.addEventListener('keydown', event => {
+    const destinations = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: slides.length - 1 };
+    if (!(event.key in destinations) || event.altKey || event.metaKey || event.ctrlKey) return;
+    event.preventDefault();
+    show(destinations[event.key]);
+    if (event.target.matches('[data-stage]')) buttons[current].focus({ preventScroll: true });
+  });
+  carousel.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse') return;
+    pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+  }, { passive: true });
+  carousel.addEventListener('pointerup', event => {
+    if (!pointerStart || pointerStart.id !== event.pointerId) return;
+    const dx = event.clientX - pointerStart.x;
+    const dy = event.clientY - pointerStart.y;
+    pointerStart = null;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    lastSwipe = performance.now();
+    show(current + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+  carousel.addEventListener('pointercancel', () => { pointerStart = null; });
+  carousel.addEventListener('click', event => {
+    if (performance.now() - lastSwipe < 350) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) animation?.cancel();
+  });
+  show(0, false);
+}
+
+function setupTeachers() {
+  const stage = document.querySelector('[data-teacher-stage]');
+  const pause = stage.querySelector('[data-teacher-pause]');
+  const pauseLabel = pause.querySelector('span');
+  const pauseIcon = pause.querySelector('use');
+  let visible = false;
+  let manuallyPaused = false;
+  let timer;
+
+  function syncTimer() {
+    clearInterval(timer);
+    timer = undefined;
+    if (!visible || manuallyPaused || document.hidden || reducedMotion.matches) return;
+    timer = window.setInterval(() => {
+      stage.classList.add('has-swapped');
+      stage.dataset.front = stage.dataset.front === 'first' ? 'second' : 'first';
+    }, 2500);
+  }
+
+  pause.addEventListener('click', () => {
+    manuallyPaused = !manuallyPaused;
+    pause.setAttribute('aria-pressed', String(manuallyPaused));
+    pauseLabel.textContent = manuallyPaused ? 'Reanudar animaciÃ³n' : 'Pausar animaciÃ³n';
+    pauseIcon.setAttribute('href', manuallyPaused ? '#i-play' : '#i-pause');
+    syncTimer();
+  });
+  document.addEventListener('visibilitychange', syncTimer);
+  window.addEventListener('pagehide', () => clearInterval(timer));
+  window.addEventListener('pageshow', syncTimer);
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) stage.classList.remove('has-swapped');
+    syncTimer();
+  });
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      syncTimer();
+    }, { threshold: .15 });
+    observer.observe(stage);
+  } else {
+    visible = true;
+    syncTimer();
+  }
+}
+
+function restorePlacementResult() {
+  let result;
+  try {
+    const saved = window.sessionStorage.getItem('pathwayPlacementResult');
+    if (!saved) return;
+    result = JSON.parse(saved);
+  } catch {
+    return;
+  }
+  const skills = { reading: 'comprensiÃ³n escrita', listening: 'comprensiÃ³n oral', grammarVocabulary: 'gramÃ¡tica y vocabulario' };
+  const scores = result?.skillScores;
+  if (!['A1', 'A2', 'B1', 'B2'].includes(result?.level) || !scores) return;
+  if (!Object.keys(skills).every(key => Number.isFinite(scores[key]) && scores[key] >= 0 && scores[key] <= 100)) return;
+  const weakest = Object.hasOwn(skills, result.weakestSkill)
+    ? result.weakestSkill
+    : Object.keys(skills).reduce((previous, key) => scores[key] < scores[previous] ? key : previous);
+
+  const report = document.querySelector('[data-skill-report]');
+  const priorityLabel = report.querySelector('.priority-label');
+  report.querySelector('[data-result-label]').textContent = 'Tu resultado';
+  report.querySelector('[data-result-summary]').textContent = `Tu nivel estimado: ${result.level}.`;
+  report.querySelector('[data-result-priority]').textContent = `Prioridad del primer ciclo: ${skills[weakest]}.`;
+  for (const [key] of Object.entries(skills)) {
+    const row = report.querySelector(`[data-skill="${key}"]`);
+    const score = Math.round(scores[key]);
+    row.style.setProperty('--score', `${score}%`);
+    row.querySelector('[data-skill-value]').textContent = `${score}/100`;
+    row.classList.toggle('is-priority', key === weakest);
+    if (key === weakest) row.querySelector('dt').append(priorityLabel);
+  }
+}
+
+function setupSectionTracking() {
+  if (!('IntersectionObserver' in window)) return;
+  const events = {
+    'en-la-practica': 'program_preview_viewed',
+    recorrido: 'methodology_viewed',
+    'tu-semana': 'weekly_preview_viewed',
+    programa: 'program_progress_viewed',
+    profesores: 'teachers_viewed',
+    experiencia: 'experience_viewed'
+  };
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      track(events[entry.target.id], { version: 'v4' });
+      observer.unobserve(entry.target);
+    }
+  }, { threshold: .25 });
+  Object.keys(events).forEach(id => observer.observe(document.getElementById(id)));
+}
+
+setupNavigation();
+setupPrograms();
+setupTeachers();
+restorePlacementResult();
+setupSectionTracking();
+document.querySelectorAll('.menu-toggle, .stage-button, .round-button, .teacher-pause').forEach(button => {
+  button.disabled = false;
+});
+document.querySelector('[data-year]').textContent = String(new Date().getFullYear());
+

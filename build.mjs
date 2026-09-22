@@ -74,6 +74,7 @@ await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.cs
 // The promoted homepage and program pages are public; old v3 URLs redirect.
 await cp(resolve(root, 'programas'), resolve(client, 'programas'), { recursive: true });
 await cp(resolve(root, 'v3'), resolve(client, 'v3'), { recursive: true, filter: source => !source.endsWith('.md') });
+await cp(resolve(root, 'v4'), resolve(client, 'v4'), { recursive: true, filter: source => !source.endsWith('.md') });
 const publicHome = await readFile(resolve(client, 'index.html'), 'utf8');
 assertMobileExperience(publicHome, 'index.html');
 if (!publicHome.includes('data-program-carousel') || publicHome.includes('noindex') || !publicHome.includes('href="/programas/a2/"')) {
@@ -129,3 +130,4 @@ await writeFile(resolve(server, 'index.js'), `export default {
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
+
