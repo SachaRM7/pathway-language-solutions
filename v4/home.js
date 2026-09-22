@@ -11,7 +11,7 @@ function setupNavigation() {
   function setOpen(open, returnFocus = false) {
     toggle.setAttribute('aria-expanded', String(open));
     menu.classList.toggle('is-open', open);
-    menuLabel.textContent = open ? 'Cerrar el menÃº' : 'Abrir el menÃº';
+    menuLabel.textContent = open ? 'Cerrar el menú' : 'Abrir el menú';
     if (returnFocus) toggle.focus();
   }
 
@@ -160,7 +160,7 @@ function setupTeachers() {
   pause.addEventListener('click', () => {
     manuallyPaused = !manuallyPaused;
     pause.setAttribute('aria-pressed', String(manuallyPaused));
-    pauseLabel.textContent = manuallyPaused ? 'Reanudar animaciÃ³n' : 'Pausar animaciÃ³n';
+    pauseLabel.textContent = manuallyPaused ? 'Reanudar animación' : 'Pausar animación';
     pauseIcon.setAttribute('href', manuallyPaused ? '#i-play' : '#i-pause');
     syncTimer();
   });
@@ -192,7 +192,7 @@ function restorePlacementResult() {
   } catch {
     return;
   }
-  const skills = { reading: 'comprensiÃ³n escrita', listening: 'comprensiÃ³n oral', grammarVocabulary: 'gramÃ¡tica y vocabulario' };
+  const skills = { reading: 'comprensión escrita', listening: 'comprensión oral', grammarVocabulary: 'gramática y vocabulario' };
   const scores = result?.skillScores;
   if (!['A1', 'A2', 'B1', 'B2'].includes(result?.level) || !scores) return;
   if (!Object.keys(skills).every(key => Number.isFinite(scores[key]) && scores[key] >= 0 && scores[key] <= 100)) return;
