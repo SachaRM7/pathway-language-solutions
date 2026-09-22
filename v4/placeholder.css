@@ -1,0 +1,122 @@
+.placeholder-page { min-height: 100vh; background: var(--cream); }
+.placeholder-page .site-header { background: color-mix(in srgb, var(--cream) 94%, transparent); }
+.placeholder-main { min-height: calc(100vh - 90px); background: var(--cream); }
+.placeholder-stage,
+.under-construction-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: calc(100vh - 90px);
+  display: grid;
+  place-items: center;
+  padding: clamp(72px, 9vw, 128px) 24px 72px;
+  background: var(--cream);
+}
+.under-construction-section { display: none; scroll-margin-top: 92px; }
+.under-construction-section:target { display: grid; }
+.placeholder-copy {
+  position: relative;
+  z-index: 3;
+  width: min(900px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+.placeholder-eyebrow {
+  margin: 0 0 30px;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .32em;
+  color: var(--ink);
+}
+.placeholder-copy h1,
+.placeholder-copy h2 {
+  margin: 0;
+  font-family: Outfit, Arial, sans-serif;
+  font-size: clamp(52px, 6.2vw, 88px);
+  font-weight: 600;
+  line-height: .98;
+  letter-spacing: -.045em;
+  color: var(--ink);
+}
+.placeholder-copy h1 span,
+.placeholder-copy h2 span { color: var(--action); }
+.placeholder-body {
+  width: min(720px, 100%);
+  margin: 34px auto 0;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.55;
+  color: var(--muted);
+}
+.placeholder-later {
+  margin: 18px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.placeholder-back { display: inline-flex; margin-top: 34px; }
+.placeholder-shape {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--sage) 70%, var(--cream));
+  opacity: .72;
+}
+.placeholder-shape-top { width: 420px; height: 420px; top: -245px; right: -155px; }
+.placeholder-shape-bottom { width: 520px; height: 520px; left: -250px; bottom: -330px; }
+.placeholder-thread {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  bottom: 8%;
+  width: 100%;
+  height: 44%;
+  pointer-events: none;
+}
+.placeholder-thread path {
+  fill: none;
+  stroke: var(--action);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  opacity: .88;
+}
+.placeholder-illustration {
+  position: relative;
+  z-index: 2;
+  width: 240px;
+  height: 180px;
+  margin: 34px auto 0;
+}
+.book {
+  position: absolute;
+  left: 50%;
+  width: 185px;
+  height: 28px;
+  transform: translateX(-50%);
+  border-radius: 8px 14px 14px 8px;
+  box-shadow: inset -26px 0 0 color-mix(in srgb, var(--cream) 85%, white);
+}
+.book-one { bottom: 20px; background: var(--action); }
+.book-two { bottom: 50px; width: 205px; background: color-mix(in srgb, var(--terracotta) 25%, var(--cream)); }
+.book-three { bottom: 80px; width: 176px; background: var(--ink); }
+.sprout { position: absolute; left: 50%; bottom: 106px; width: 92px; height: 80px; transform: translateX(-50%); }
+.sprout b {
+  position: absolute; left: 44px; bottom: 0; width: 4px; height: 60px;
+  border-radius: 4px; background: var(--ink); transform: rotate(-6deg);
+}
+.sprout i { position: absolute; width: 40px; height: 24px; background: var(--ink); border-radius: 100% 0 100% 0; }
+.sprout i:first-child { left: 8px; top: 18px; transform: rotate(24deg); }
+.sprout i:nth-child(2) { right: 4px; top: 0; transform: scaleX(-1) rotate(18deg); }
+@media (max-width: 767px) {
+  .placeholder-stage,
+  .under-construction-section { min-height: calc(100svh - 72px); padding: 72px 20px 56px; }
+  .placeholder-eyebrow { margin-bottom: 22px; font-size: 10px; }
+  .placeholder-copy h1,
+  .placeholder-copy h2 { font-size: clamp(44px, 13vw, 60px); }
+  .placeholder-body { margin-top: 26px; font-size: 17px; }
+  .placeholder-later { font-size: 18px; }
+  .placeholder-illustration { width: 210px; transform: scale(.9); transform-origin: center top; margin-top: 28px; }
+  .placeholder-shape-top { width: 260px; height: 260px; top: -140px; right: -120px; }
+  .placeholder-shape-bottom { width: 360px; height: 360px; left: -220px; bottom: -230px; }
+  .placeholder-thread { bottom: 7%; width: 165%; left: -32%; }
+}
