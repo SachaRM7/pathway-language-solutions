@@ -271,21 +271,51 @@ function setupSkillReportAnimation() {
   const report = document.querySelector('[data-skill-report]');
   if (!report || reducedMotion.matches) return;
 
+  const rows = [...report.querySelectorAll('.skill-row:not(.skill-pending)')];
+  if (!rows.length) return;
+
   report.classList.add('is-skill-prepared');
   let played = false;
+  let cancelled = false;
 
-  const reveal = () => {
+  const wait = duration => new Promise(resolve => window.setTimeout(resolve, duration));
+
+  const animateRow = row => new Promise(resolve => {
+    const fill = row.querySelector('.skill-fill');
+    if (!fill) {
+      resolve();
+      return;
+    }
+
+    const finish = () => {
+      fill.removeEventListener('animationend', finish);
+      row.classList.remove('is-skill-running');
+      row.classList.add('is-skill-done');
+      resolve();
+    };
+
+    fill.addEventListener('animationend', finish, { once: true });
+    row.classList.add('is-skill-running');
+  });
+
+  const reveal = async () => {
     if (played) return;
     played = true;
     report.dataset.skillAnimationPlayed = 'true';
-    requestAnimationFrame(() => report.classList.add('is-skill-animated'));
+
+    for (const row of rows) {
+      if (cancelled) return;
+      await animateRow(row);
+      if (cancelled) return;
+      await wait(500);
+    }
   };
 
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
-      reveal();
       observer.disconnect();
+      reveal();
     }, { threshold: .35, rootMargin: '0px 0px -8% 0px' });
     observer.observe(report);
   } else {
@@ -294,7 +324,12 @@ function setupSkillReportAnimation() {
 
   reducedMotion.addEventListener('change', event => {
     if (!event.matches) return;
-    report.classList.remove('is-skill-prepared', 'is-skill-animated');
+    cancelled = true;
+    rows.forEach(row => {
+      row.classList.remove('is-skill-running');
+      row.classList.add('is-skill-done');
+    });
+    report.classList.remove('is-skill-prepared');
   });
 }
 
