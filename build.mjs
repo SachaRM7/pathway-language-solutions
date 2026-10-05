@@ -1,6 +1,8 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { LOCALES, pageNames, renderLocalePage } from './i18n/locale-pages.mjs';
+import { renderPricing, renderReviews } from './v4/render.js';
+import { buildV4Routes } from './scripts/build-v4-routes.mjs';
 
 const root = process.cwd();
 const dist = resolve(root, 'dist');
@@ -75,6 +77,12 @@ await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.cs
 await cp(resolve(root, 'programas'), resolve(client, 'programas'), { recursive: true });
 await cp(resolve(root, 'v3'), resolve(client, 'v3'), { recursive: true, filter: source => !source.endsWith('.md') });
 await cp(resolve(root, 'v4'), resolve(client, 'v4'), { recursive: true, filter: source => !source.endsWith('.md') });
+const v4HomePath = resolve(client, 'v4/index.html');
+const v4Home = (await readFile(v4HomePath, 'utf8'))
+  .replace('<!-- pricing-cards -->', renderPricing('monthly'))
+  .replace('<!-- written-reviews -->', renderReviews(0));
+await writeFile(v4HomePath, v4Home, 'utf8');
+await buildV4Routes({ outDir: client, rootDir: root });
 const publicHome = await readFile(resolve(client, 'index.html'), 'utf8');
 assertMobileExperience(publicHome, 'index.html');
 if (!publicHome.includes('data-program-carousel') || publicHome.includes('noindex') || !publicHome.includes('href="/programas/a2/"')) {
@@ -130,4 +138,3 @@ await writeFile(resolve(server, 'index.js'), `export default {
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
-

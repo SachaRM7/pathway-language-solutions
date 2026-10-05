@@ -1,4 +1,7 @@
 .menu-toggle, .program-controls, .teacher-pause { display: none; }
+.billing-switch, .review-pagination, .video-arrow { display: none; }
+[data-round-date] { visibility: hidden; }
+[data-ircc-status], [data-ircc-updated] { display: none; }
 .stage-button:disabled { opacity: 1; }
 .no-script-programs { inset: auto 20px 12px; justify-content: center; gap: 20px; }
 .no-script-programs a { display: inline-flex; align-items: center; min-height: 48px; }
@@ -16,4 +19,3 @@
 @media (max-width: 767px) {
   .teacher-stage { aspect-ratio: auto; min-height: 270px; }
 }
-
