@@ -31,6 +31,8 @@ Les événements prêts à être mesurés sont : `cta_click`, `whatsapp_click`, 
 
 Les rondes et règles CRS sont chargées depuis les sources officielles avec un cache et des valeurs de secours. Vérifier les tests après toute modification d’IRCC. Le contenu ne promet jamais qu’un prochain tirage conservera le même seuil.
 
+Le navigateur tente d’abord de lire canada.ca directement. Si c’est impossible (réseau, CORS), il utilise `v4/data/ircc-rounds.json`, une copie de la source officielle régénérée par le workflow de déploiement à chaque push et toutes les 4 heures (`node scripts/refresh-v4-ircc.mjs`). Si IRCC change le format ou renomme la catégorie francophone ou CEC, le rafraîchissement échoue : le site reste en ligne avec la dernière copie, mais l’exécution GitHub Actions passe en rouge et GitHub envoie une notification. Il faut alors ajuster `CATEGORIES` dans `v4/ircc-rounds.js`.
+
 ## 6. Bac à sable /v3
 
 La prochaine version du site se prépare sous `/v3/`, servie sur

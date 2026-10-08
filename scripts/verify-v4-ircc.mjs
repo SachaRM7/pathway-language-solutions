@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { parseOfficialRounds, parseSnapshot, validIsoDate, buildRoundSource } from '../v4/ircc-rounds.js';
 
 const snapshot = JSON.parse(await readFile(new URL('../v4/data/ircc-rounds.json', import.meta.url), 'utf8'));
-const options = { ceilingDate: '2026-10-05' };
+const options = { ceilingDate: new Date().toISOString().slice(0, 10) };
 const rounds = Object.values(snapshot.categories).map(round => ({ drawDate: round.date, drawCRS: String(round.score), drawName: round.name, drawNumber: round.drawNumber }));
 let checks = 0;
 function check(name, test) { test(); checks++; console.log(`PASS ${name}`); }
@@ -11,8 +11,8 @@ check('real date accepted', () => assert(validIsoDate('2026-08-19')));
 for (const date of ['2026-02-30', '2026-8-9', '', 'invalid']) check(`invalid date rejected: ${date}`, () => assert(!validIsoDate(date)));
 check('official round categories and scores', () => {
   const value = parseOfficialRounds({ rounds }, options);
-  assert.equal(value.categories.french.score, 382);
-  assert.equal(value.categories.cec.score, 518);
+  assert.equal(value.categories.french.score, snapshot.categories.french.score);
+  assert.equal(value.categories.cec.score, snapshot.categories.cec.score);
   assert.notEqual(value.categories.french.name, value.categories.cec.name);
 });
 for (const payload of [null, {}, { rounds: [] }, { rounds: [rounds[0]] }]) check('incomplete payload rejected', () => assert.throws(() => parseOfficialRounds(payload, options)));
@@ -22,7 +22,7 @@ check('same-day higher round number wins', () => {
   const value = parseOfficialRounds({ rounds: [...rounds, { ...rounds[0], drawNumber: '999', drawCRS: '400' }] }, options);
   assert.equal(value.categories.french.score, 400);
 });
-check('dated snapshot accepted', () => assert.equal(parseSnapshot(snapshot, options).verifiedAt, '2026-10-05'));
+check('dated snapshot accepted', () => assert.equal(parseSnapshot(snapshot, options).verifiedAt, snapshot.verifiedAt));
 check('undated snapshot rejected', () => assert.throws(() => parseSnapshot({ ...snapshot, verifiedAt: null }, options)));
 check('future verification rejected', () => assert.throws(() => parseSnapshot({ ...snapshot, verifiedAt: '2099-01-01' }, options)));
 check('missing snapshot category rejected', () => assert.throws(() => parseSnapshot({ ...snapshot, categories: {} }, options)));

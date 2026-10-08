@@ -6,18 +6,22 @@
   const RULES_VERSION = '2026-06-22';
   const ROUNDS_CACHE_KEY = 'pathway-ircc-rounds-v3';
   const RULES_CACHE_KEY = 'pathway-ircc-rules-v1';
+  // Same-origin copy of the official rounds, refreshed by the deploy workflow.
+  // Used when the browser cannot read canada.ca directly (network, CORS).
+  const SNAPSHOT_PATH = 'v4/data/ircc-rounds.json';
+  const SCRIPT_URL = global.document && global.document.currentScript ? global.document.currentScript.src : '';
   const FALLBACK = {
-    cec: { score: 516, date: '2026-07-21', name: 'Canadian Experience Class', draw: '428' },
-    french: { score: 399, date: '2026-07-22', name: 'French-Language proficiency 2026-Version 2', draw: '429' },
+    cec: { score: 518, date: '2026-09-29', name: 'Canadian Experience Class', draw: '446' },
+    french: { score: 382, date: '2026-08-19', name: 'French-Language proficiency 2026-Version 2', draw: '437' },
     history: {
       cec: [
+        { score: 518, date: '2026-09-29', name: 'Canadian Experience Class', draw: '446' },
         { score: 516, date: '2026-07-21', name: 'Canadian Experience Class', draw: '428' },
         { score: 517, date: '2026-07-07', name: 'Canadian Experience Class', draw: '424' },
-        { score: 516, date: '2026-06-23', name: 'Canadian Experience Class', draw: '420' }
       ]
     },
     metrics: { frenchYear: 2026, frenchInvitations: 40500, frenchRoundCount: 8 },
-    fetchedAt: '2026-07-24T00:00:00.000Z',
+    fetchedAt: '2026-10-05T11:32:09.140Z',
     source: 'fallback'
   };
 
@@ -93,7 +97,43 @@
       return result;
     } catch (_) {
       const cached = readCache(ROUNDS_CACHE_KEY, value => value && value.cec && value.french && value.history && value.metrics);
-      return cached ? { ...cached, source: 'cache' } : FALLBACK;
+      const snapshot = await loadSnapshot();
+      // Keep whichever copy carries the most recent official round.
+      const best = [cached, snapshot].filter(Boolean)
+        .sort((left, right) => newestDate(right).localeCompare(newestDate(left)))[0];
+      return best ? { ...best, source: 'cache' } : FALLBACK;
+    }
+  }
+
+  function newestDate(value) {
+    return [value.cec.date, value.french.date].sort().pop();
+  }
+
+  function snapshotRound(value) {
+    const round = { drawCRS: value && value.score, drawDate: value && value.date, drawName: value && value.name, drawNumber: value && value.drawNumber };
+    return validRound(round) ? normalize(round) : null;
+  }
+
+  async function loadSnapshot() {
+    try {
+      const url = new URL(SNAPSHOT_PATH, SCRIPT_URL || global.location.href);
+      const response = await fetch(url.href, { cache: 'no-store' });
+      if (!response.ok) return null;
+      const payload = await response.json();
+      const categories = payload && payload.categories || {};
+      const cec = snapshotRound(categories.cec);
+      const french = snapshotRound(categories.french);
+      if (!cec || !french) return null;
+      return {
+        cec,
+        french,
+        history: { cec: [cec] },
+        metrics: {},
+        fetchedAt: payload.fetchedAt || null,
+        origin: 'snapshot'
+      };
+    } catch (_) {
+      return null;
     }
   }
 

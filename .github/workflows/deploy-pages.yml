@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Redeploy regularly so new IRCC rounds reach the site without a code push.
+  schedule:
+    - cron: '23 */4 * * *'
 
 permissions:
   contents: read
@@ -29,6 +32,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Refresh IRCC rounds snapshot
+        id: ircc
+        continue-on-error: true
+        run: node scripts/refresh-v4-ircc.mjs
+
+      - name: Verify IRCC parser
+        run: node scripts/verify-v4-ircc.mjs
+
       - name: Build
         run: npm run build
 
@@ -48,3 +59,11 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # The site was still deployed with the last committed snapshot, but a
+      # failed refresh must be visible (red run + GitHub notification).
+      - name: Report IRCC refresh failure
+        if: steps.ircc.outcome == 'failure'
+        run: |
+          echo "::error::IRCC rounds could not be refreshed from canada.ca; the site shows the last committed snapshot. See the 'Refresh IRCC rounds snapshot' step."
+          exit 1

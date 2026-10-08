@@ -45,7 +45,23 @@ async function fetchOfficialRounds() {
   }
 }
 
-const parsed = parseOfficialRounds(await fetchOfficialRounds(), { ceilingDate: assertCeiling(ceilingDate) });
+const payload = await fetchOfficialRounds();
+const parsed = parseOfficialRounds(payload, { ceilingDate: assertCeiling(ceilingDate) });
+
+// IRCC renames categories from time to time. If a recent French or CEC round
+// no longer matches our category patterns, the site would silently keep an
+// old round as "latest", so fail loudly instead.
+const recentLimit = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10);
+const unmatched = payload.rounds.filter(round => {
+  const name = String(round && round.drawName || '');
+  if (String(round && round.drawDate || '') < recentLimit) return false;
+  if (/fran(?:c|ç)ais|francophon|french/i.test(name)) return !/french[- ]language proficiency/i.test(name);
+  if (/canadian experience/i.test(name)) return !/^canadian experience class\b/i.test(name);
+  return false;
+});
+if (unmatched.length) {
+  throw new Error(`Unrecognised IRCC category names: ${[...new Set(unmatched.map(round => round.drawName))].join(', ')}. Update CATEGORIES in v4/ircc-rounds.js.`);
+}
 const verifiedAt = new Date().toISOString();
 const snapshot = {
   verifiedAt: verifiedAt.slice(0, 10),
