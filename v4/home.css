@@ -666,3 +666,10 @@ main { padding-top: var(--header-height); }
   .teacher-stage { min-height: 270px; gap: 12px; }
 }
 
+/* Pathway icon library (v4/icons.js): one stroke for every icon. */
+.icon { stroke-width: 1.75; }
+.icon-inline { display: inline-block; width: 1em; height: 1em; vertical-align: -.14em; }
+.button .icon, .text-link .icon { width: 18px; height: 18px; }
+.round-button .icon { stroke-width: 1.75; }
+.objective-label .icon.maple { width: 22px; height: 22px; }
+

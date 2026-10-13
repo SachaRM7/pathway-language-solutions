@@ -52,3 +52,9 @@ Les pages programmes V4 sont générées par `scripts/build-v4-programs.mjs` à 
 Les pages qui étaient « en refonte » ont maintenant leur version V4, générée par `scripts/build-v4-pages.mjs` (guides NCLC 7 et TEF, conditions, confidentialité, cookies, aviso legal) et `scripts/v4-flows.mjs` (test de niveau, calculateur CRS, inscription). Le texte juridique des conditions et de la confidentialité, ainsi que le HTML et les scripts du test, du calculateur et de l'inscription, sont repris tels quels depuis les pages actuelles de chaque langue : seule la mise en page change (`v4/pages.css`, `v4/flows.css`). Les textes des guides et des nouvelles pages sont dans `scripts/v4-pages-content.mjs`.
 
 L'aviso legal ne mentionne que des informations vérifiables (activité, contact, propriété intellectuelle). Si une raison sociale, une adresse ou un numéro d'enregistrement doivent y figurer, les ajouter dans `NEW_LEGAL.legal` de `scripts/v4-pages-content.mjs`.
+
+## 8. Bibliothèque d'icônes
+
+Toutes les icônes du site viennent de `v4/icons.js` : grille 24 × 24, uniquement en contour, un seul trait (1,75, réglé dans `v4/home.css`), extrémités et angles arrondis, rayon 2,5 sur les rectangles. Pour ajouter une icône, la dessiner dans `ICONS` selon ces règles, puis l'utiliser avec `<svg class="icon"><use href="#i-nom"/></svg>`.
+
+À la construction, `scripts/apply-icons.mjs` injecte la bibliothèque dans chaque page publiée, remplace les anciennes icônes dessinées à la main et transforme en icônes les caractères → ← ↓ ↗ ‹ › ＋ ✕ ✓ écrits dans le texte. `v4/icons-runtime.js` fait la même conversion pour le texte que les scripts modifient (boutons « Suivant → », plein écran du lecteur…).

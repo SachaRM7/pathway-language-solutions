@@ -14,6 +14,7 @@
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { icon } from '../v4/icons.js';
 import { LANGS, esc, prefix, v4Chrome } from './build-v4-programs.mjs';
 import { ROUTES, UI, GUIDES, LEGAL_CARD, LEGAL_CTA, NEW_LEGAL } from './v4-pages-content.mjs';
 import { FLOWS, renderFlow } from './v4-flows.mjs';
@@ -33,7 +34,7 @@ const linkFor = (lang, key) => {
 };
 const fillLinks = (html, lang) => html.replace(/\{(\w+)\}/g, (match, key) => (ROUTES[key] ? linkFor(lang, key) : match));
 
-const arrow = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
+const arrow = icon('i-arrow');
 
 export function shell({ lang, key, title, description, main, homeMarkup, bodyClass = '', head = '', headAfter = '', scripts = '' }) {
   const ui = UI[lang];

@@ -102,8 +102,8 @@ function setupSocials() {
   const container = document.querySelector('[data-social-links]');
   if (!container) return;
   const icons = {
-    instagram: '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
-    tiktok: '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 3v12.5a4.5 4.5 0 1 1-4.5-4.5M14 3c0 4 2 6 6 6"/></svg>'
+    instagram: '<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>',
+    tiktok: '<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-tiktok"/></svg>'
   };
   for (const [network, url] of Object.entries(LINKS.social)) {
     if (!url) continue;

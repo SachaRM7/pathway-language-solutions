@@ -117,7 +117,7 @@
     fullscreenButton.setAttribute('aria-pressed',String(active));
     fullscreenButton.setAttribute('aria-label',active?t.closeFullscreen:t.openFullscreen);
     $('#fullscreen-label').textContent=active?t.exit:t.fullscreen;
-    $('#fullscreen-icon').textContent=active?'×':'↗';
+    $('#fullscreen-icon').textContent=active?'✕':'↗';
     if(active) shell.scrollTop=0;
   };
   fullscreenButton.onclick=async()=>{

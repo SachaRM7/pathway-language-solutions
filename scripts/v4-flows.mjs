@@ -7,6 +7,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { icon } from '../v4/icons.js';
 import { esc, prefix } from './build-v4-programs.mjs';
 import { UI } from './v4-pages-content.mjs';
 
@@ -44,7 +45,7 @@ const COPY = {
   }
 };
 
-const arrow = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
+const arrow = icon('i-arrow');
 
 // Pieces of the current page: what is inside <main>, and what follows it
 // (mobile bars, inline configuration, scripts) without the old footer.

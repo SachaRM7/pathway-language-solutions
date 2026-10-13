@@ -17,6 +17,7 @@
 
 import { access, readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
+import { applyIcons } from './apply-icons.mjs';
 
 const SITE_ORIGIN = 'https://pathway-languages.com';
 const PLACEHOLDER_MARKER = 'class="placeholder-page"';
@@ -117,7 +118,7 @@ export async function makeV4Default({ outDir }) {
     if (!page.placeholder) {
       const file = fileFor(outDir, target);
       await mkdir(dirname(file), { recursive: true });
-      const markup = rewrite(page.markup)
+      const markup = applyIcons(rewrite(page.markup))
         .replace(/<meta name="robots" content="noindex, ?(follow|nofollow)">/, '<meta name="robots" content="index, follow">');
       await writeFile(file, markup, 'utf8');
     }

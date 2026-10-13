@@ -22,7 +22,7 @@
 .pg-lead + .pg-lead { margin-top: 12px; }
 .pg-lead a { color: var(--ink); font-weight: 600; }
 .pg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; margin-top: 32px; }
-.pg-actions .button svg, .pg-cta .button svg, .pg-links svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+.pg-links .icon { width: 18px; height: 18px; }
 
 /* Summary card (sage panel, as on the homepage). */
 .pg-card { padding: clamp(24px, 3vw, 36px); border: 1px solid var(--line); border-radius: 18px; background: var(--sage-wash); box-shadow: 0 24px 48px -36px rgb(18 43 38 / 45%); }
