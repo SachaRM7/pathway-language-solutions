@@ -1,0 +1,27 @@
+{
+  "level": "A2",
+  "segments": [
+    { "letter": "A", "name": "Rappels & vie quotidienne", "units": "1–16", "desc": "Présent, auxiliaires, connecteurs simples, futur proche, expressions avec être / avoir, impératif et recommandations." },
+    { "letter": "B", "name": "Raconter au passé", "units": "17–32", "desc": "Passé composé, accord du participe, négation et interrogation, marqueurs temporels, pronominaux, imparfait et choix des deux temps." },
+    { "letter": "C", "name": "Décrire & caractériser", "units": "33–48", "desc": "Adjectifs, comparatif et superlatif, pronoms COD / COI / toniques / en / y, démonstratifs et possessifs, portrait et description." },
+    { "letter": "D", "name": "Exprimer & relier ses idées", "units": "49–64", "desc": "Relatifs, futur simple, hypothèse, conditionnel, conseil, opinion, cause, but, gérondif, connecteurs logiques et production écrite." }
+  ],
+  "self_assessment": [
+    "conjuguer les verbes au présent (3 groupes)",
+    "utiliser être, avoir et les semi-auxiliaires",
+    "relier mes idées (connecteurs simples)",
+    "parler de mes projets (futur proche)",
+    "employer les expressions avec être / avoir",
+    "donner un ordre, un conseil (impératif, il faut)"
+  ],
+  "unit_title": "Le présent — verbes du 1er groupe (-er)",
+  "unit_time": "1 h – 1 h 30",
+  "exam_title": "Examen A",
+  "exam_time": "1 h 45",
+  "rule": "50/100, avec un minimum de 5/25 dans chaque épreuve.",
+  "scripts": {
+    "unite-1": "Bonjour ! Je m'appelle Camille. Le matin, je travaille dans un bureau. À midi, je mange avec mes collègues. Le soir, je regarde un film et j'écoute de la musique.",
+    "examen-a": "Julie se lève à 7 heures. Le matin, elle prend son petit-déjeuner et elle écoute la radio. Elle travaille dans une école : elle est professeure. Le week-end, elle fait du vélo et elle voit ses amis. Elle aime sa vie parce qu'elle a un travail intéressant et du temps pour ses loisirs."
+  },
+  "scripts_source": "97"
+}

@@ -1,0 +1,51 @@
+{
+  "level": "B2",
+  "segments": [
+    {
+      "letter": "A",
+      "name": "Argumentation avancée et nuance",
+      "units": "1–16",
+      "desc": "Consolidation B1, registres de langue, nuance et concession, subjonctif avancé, doute, discours rapporté, mise en relief, connecteurs complexes, synthèse d'opinions."
+    },
+    {
+      "letter": "B",
+      "name": "Analyse, hypothèse et discours complexe",
+      "units": "17–32",
+      "desc": "Conditionnel passé, irréel du passé, regret et reproche, voix passive, gérondif, nominalisation, discours académique, relatifs composés, cohérence textuelle, cause et concession avancées."
+    },
+    {
+      "letter": "C",
+      "name": "Société, culture et monde contemporain",
+      "units": "33–48",
+      "desc": "Désinformation, intelligence artificielle, écologie, travail, immigration, document audiovisuel, résumé et synthèse, débat complexe, littérature et cinéma, argumentation écrite B2, présentation longue."
+    },
+    {
+      "letter": "D",
+      "name": "Immersion académique & préparation TCF",
+      "units": "49–64",
+      "desc": "Français académique et dissertation, courrier professionnel, comprendre un cours et un article long, entretien approfondi, réunion, synthèse de documents et synthèse orale, méthodes des quatre épreuves du TCF, stratégies du jour J et mini-bilan de compréhension."
+    }
+  ],
+  "segment_a": [
+    "Révisions intensives B1",
+    "Registres de langue",
+    "Nuancer son opinion",
+    "Concession, opposition, restriction",
+    "Débat structuré",
+    "Reformulation et précision",
+    "Subjonctif avancé",
+    "Incertitude et doute",
+    "Discours rapporté",
+    "Mise en relief",
+    "Connecteurs complexes",
+    "CO intensive (chroniques)",
+    "Synthèse d'opinions",
+    "Production écrite argumentative",
+    "Révisions, simulation"
+  ],
+  "unit_title": "Révisions intensives B1, temps verbaux et connecteurs complexes",
+  "unit_time": "2 h – 2 h 30",
+  "exam_title": "Bilan interne · opinion, nuance et débat",
+  "exam_time": "2 h",
+  "rule": "Règle de décision interne : avancer si total ≥ 60/100 et chaque compétence ≥ 12/25 ; avancer avec remédiation ciblée si total ≥ 60/100 et une seule compétence entre 8 et 11/25 (seconde tentative de cette compétence, version B, sous 2 semaines) ; remédiation puis seconde tentative complète (version B) si total < 60/100, ou une compétence < 8/25, ou deux compétences < 12/25."
+}

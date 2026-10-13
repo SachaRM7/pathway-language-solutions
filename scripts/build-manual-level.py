@@ -13,6 +13,7 @@ Outputs:
   assets/manual-<level>/reader/<section>-<n>.webp, <section>.pdf,
       manuel-<level>-extraits.pdf, pages.js
   programas/<level>/index.html
+  v4/data/manuals/<level>.json (facts reused by the V4 program pages)
 """
 import html
 import json
@@ -282,6 +283,10 @@ def main():
     content = read_content(cfg, source)
     page = ROOT / f'programas/{level}/index.html'
     page.write_text(render_page(level, cfg, manifest, content), encoding='utf-8')
+    # Facts for the V4 program pages (scripts/build-v4-programs.mjs).
+    data = ROOT / f'v4/data/manuals/{level}.json'
+    data.parent.mkdir(parents=True, exist_ok=True)
+    data.write_text(json.dumps({'level': cfg['title'], **content}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     size = sum(p.stat().st_size for p in (ROOT / f'assets/manual-{level}').rglob('*') if p.is_file())
     print(f'{level}: {len(manifest)} pages, assets {size / 1e6:.1f} MB, unit 1 "{content["unit_title"]}"')
 

@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
 import { buildV4Routes, resolveEnrollPreferences, rebaseHtml, buildAdapterSource, PLAN_VALUES, BILLING_VALUES } from './build-v4-routes.mjs';
 import { PRICING } from '../v4/content.js';
+import { buildV4Programs } from './build-v4-programs.mjs';
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let checks = 0;
@@ -26,6 +27,8 @@ try {
   // the placeholders. Seeding it lets us assert every local ref resolves.
   await cp(join(rootDir, 'v4'), join(outBase, 'v4'), { recursive: true });
   const result = await buildV4Routes({ rootDir, outDir: outBase });
+  // Production then generates the program pages over their placeholders.
+  await buildV4Programs({ rootDir, outDir: outBase });
   const v4 = result.v4Dir;
   const read = (name) => readFile(join(v4, name), 'utf8');
 

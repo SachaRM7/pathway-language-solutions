@@ -3,6 +3,8 @@ import { resolve } from 'node:path';
 import { LOCALES, pageNames, renderLocalePage } from './i18n/locale-pages.mjs';
 import { renderPricing, renderReviews } from './v4/render.js';
 import { buildV4Routes } from './scripts/build-v4-routes.mjs';
+import { buildV4Programs } from './scripts/build-v4-programs.mjs';
+import { makeV4Default } from './scripts/build-v4-default.mjs';
 
 const root = process.cwd();
 const dist = resolve(root, 'dist');
@@ -83,6 +85,8 @@ const v4Home = (await readFile(v4HomePath, 'utf8'))
   .replace('<!-- written-reviews -->', renderReviews(0));
 await writeFile(v4HomePath, v4Home, 'utf8');
 await buildV4Routes({ outDir: client, rootDir: root });
+// The V4 program pages replace their placeholders with the manual reader.
+await buildV4Programs({ outDir: client, rootDir: root });
 const publicHome = await readFile(resolve(client, 'index.html'), 'utf8');
 assertMobileExperience(publicHome, 'index.html');
 if (!publicHome.includes('data-program-carousel') || publicHome.includes('noindex') || !publicHome.includes('href="/programas/a2/"')) {
@@ -136,5 +140,9 @@ await writeFile(resolve(server, 'index.js'), `export default {
 };
 `, 'utf8');
 
+// V4 is the default experience: homepages and unfinished V4 pages redirect.
+const v4Default = await makeV4Default({ outDir: client });
+
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
+console.log(`V4 is the default: ${v4Default.homes.length} homepages and ${v4Default.placeholders.length} unfinished V4 pages redirect.`);

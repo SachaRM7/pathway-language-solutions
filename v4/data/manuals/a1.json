@@ -1,0 +1,51 @@
+{
+  "level": "A1",
+  "segments": [
+    {
+      "letter": "A",
+      "name": "La présentation complète",
+      "units": "1–16",
+      "desc": "Saluer, se présenter, poser des questions, être et avoir, les verbes en -er (et quelques verbes irréguliers fréquents : aller, faire), les nombres, la date et l'heure, les pays et nationalités, l'adresse, l'état civil, les professions, la famille."
+    },
+    {
+      "letter": "B",
+      "name": "Sujets simples au présent",
+      "units": "17–32",
+      "desc": "Les couleurs, les articles, le présent, les vêtements, les saisons, les repas, commander, se déplacer et demander son chemin, les transports, acheter un billet."
+    },
+    {
+      "letter": "C",
+      "name": "La description & parler de soi",
+      "units": "33–48",
+      "desc": "Le corps, la description physique et morale, les pronoms toniques, la routine, les émotions, la santé, la nature, les animaux, la maison et les meubles."
+    },
+    {
+      "letter": "D",
+      "name": "Activités & loisirs",
+      "units": "49–64",
+      "desc": "Les loisirs, le cinéma, les sports, la fréquence, le quotidien, les semi-auxiliaires, les courses, l'hôtel, les projets, les invitations, les goûts et l'avis."
+    }
+  ],
+  "segment_a": [
+    "Saluer et prendre congé",
+    "Se présenter & la négation",
+    "Poser des questions",
+    "Être et avoir",
+    "Les verbes en -er",
+    "Les nombres",
+    "Les jours et les mois",
+    "La date et le lieu de naissance",
+    "L'heure",
+    "Les pays",
+    "Les nationalités",
+    "L'adresse",
+    "L'état civil",
+    "Les professions",
+    "La famille"
+  ],
+  "unit_title": "Saluer et prendre congé",
+  "unit_time": "45 min · essentiel 30 min · approfondi 1 h",
+  "exam_title": "Bilan interne · se présenter et présenter quelqu'un",
+  "exam_time": "1 h 30",
+  "rule": "Règle de décision interne : avancer si total ≥ 60/100 et chaque compétence ≥ 12/25 ; avancer avec remédiation ciblée si total ≥ 60/100 et une seule compétence entre 8 et 11/25 (scores entiers : 8 ≤ score < 12) (seconde tentative de cette compétence, version B, sous 2 semaines) ; remédiation puis seconde tentative complète (version B) si total < 60/100, ou une compétence < 8/25, ou deux compétences < 12/25."
+}

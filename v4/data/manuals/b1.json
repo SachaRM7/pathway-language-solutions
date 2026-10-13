@@ -1,0 +1,51 @@
+{
+  "level": "B1",
+  "segments": [
+    {
+      "letter": "A",
+      "name": "Opinion, argumentation et interaction",
+      "units": "1–16",
+      "desc": "Consolidation A2, connecteurs logiques, opinion et désaccord, argumentation, conseil, introduction au subjonctif."
+    },
+    {
+      "letter": "B",
+      "name": "Récits, hypothèses et expansion d'idées",
+      "units": "17–32",
+      "desc": "Plus-que-parfait, système du récit, conditionnel, hypothèses, relatifs (dont), pronoms doubles, émotions, cause/conséquence."
+    },
+    {
+      "letter": "C",
+      "name": "Société, culture et médias",
+      "units": "33–48",
+      "desc": "Médias, réseaux, écologie, travail, lecture authentique, possibilité, certitude/doute, débat, culture francophone, résumé, argumentation."
+    },
+    {
+      "letter": "D",
+      "name": "Immersion canadienne & préparation TCF",
+      "units": "49–64",
+      "desc": "Projet d'installation, démarches, jeux de rôles, courriel formel, essai, synthèse, préparation à la simulation."
+    }
+  ],
+  "segment_a": [
+    "Révision des temps",
+    "Connecteurs logiques",
+    "Exprimer son opinion",
+    "Accord / désaccord",
+    "Développer un argument",
+    "Débat guidé",
+    "Donner un conseil",
+    "Introduction au subjonctif",
+    "Conseiller un ami",
+    "Exprimer le but",
+    "Comparaison et nuance",
+    "Podcast d'opinion (CO)",
+    "Production écrite guidée",
+    "Interaction en tête-à-tête",
+    "Révision, simulation"
+  ],
+  "unit_title": "Révision des temps, présent, passé composé, imparfait, futur",
+  "unit_time": "1 h 30 – 2 h",
+  "exam_title": "Bilan interne · donner son avis, conseiller, nuancer",
+  "exam_time": "2 h",
+  "rule": "Règle de décision interne : avancer si total ≥ 60/100 et chaque compétence ≥ 12/25 ; avancer avec remédiation ciblée si total ≥ 60/100 et une seule compétence entre 8 et 11/25 (seconde tentative de cette compétence, version B, sous 2 semaines) ; remédiation puis seconde tentative complète (version B) si total < 60/100, ou une compétence < 8/25, ou deux compétences < 12/25."
+}

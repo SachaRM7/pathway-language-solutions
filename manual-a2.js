@@ -13,13 +13,18 @@
   const end = () => mobile.matches ? pages.length - 1 : pages.length;
   // Shared by every level page; the level comes from the book's data-level.
   const level = book.dataset.level || 'A2';
+  // Interface strings; Spanish defaults keep the legacy /programas pages as they were.
+  let i18n = {};
+  try { i18n = JSON.parse(book.dataset.i18n || '{}'); } catch {}
+  const t = Object.assign({ page: 'página', manual: 'manual', cta: 'Evaluar mi nivel →', ctaHref: '/test-placement.html', fullscreen: 'Pantalla completa', exit: 'Salir', openFullscreen: 'Abrir el manual en pantalla completa', closeFullscreen: 'Salir de la pantalla completa', chapters: {} }, i18n);
+  const chapter = p => t.chapters[p.key] || p.title;
   const intro = `<div class="book-inside"><img src="/pathway-mark.svg" alt="Pathway"><small>Manuel de français · ${level}</small><h2>Le français,<br>page après page.</h2><p>Extraits du manuel original.<br>64 unités · 4 segments</p><small>Pathway Language Solutions</small></div>`;
-  const outro = '<div class="book-inside"><small>La suite commence avec vous</small><h2>Un nouveau chapitre.</h2><p>Découvrez votre point de départ avec un professeur Pathway.</p><a href="/test-placement.html">Evaluar mi nivel →</a></div>';
+  const outro = `<div class="book-inside"><small>La suite commence avec vous</small><h2>Un nouveau chapitre.</h2><p>Découvrez votre point de départ avec un professeur Pathway.</p><a href="${t.ctaHref}">${t.cta}</a></div>`;
   function markup(i) {
     if (i < 0) return intro;
     if (i >= pages.length) return outro;
     const p = pages[i];
-    return `<img class="page-art" src="${p.src}" alt="${p.title} · página ${p.n} del manual ${level}" draggable="false">`;
+    return `<img class="page-art" src="${p.src}" alt="${chapter(p)} · ${t.page} ${p.n} · ${t.manual} ${level}" draggable="false">`;
   }
   function sync() {
     $('#previous').disabled = $('#edge-prev').disabled = busy || !opened || current === 0;
@@ -28,7 +33,7 @@
     $('#chapter').disabled = busy;
     const p = pages[Math.min(current, pages.length-1)];
     const prev = !mobile.matches && current > 0 ? pages[current-1] : null;
-    $('#page-label').textContent = opened ? `${p.title} · ${prev && prev.n !== p.n ? `p. ${prev.n} / ${p.n}` : `p. ${p.n}`}` : `Manuel de français · ${level}`;
+    $('#page-label').textContent = opened ? `${chapter(p)} · ${prev && prev.n !== p.n ? `p. ${prev.n} / ${p.n}` : `p. ${p.n}`}` : `Manuel de français · ${level}`;
     $('#progress').style.width = opened ? `${Math.min((current+1)/pages.length,1)*100}%` : '0%';
     const chapterStart = pages.findIndex(page => page.key === p.key);
     $('#chapter').value = String(chapterStart);
@@ -110,8 +115,8 @@
     document.documentElement.classList.toggle('manual-fullscreen-active',active);
     document.body.classList.toggle('manual-fullscreen-active',active);
     fullscreenButton.setAttribute('aria-pressed',String(active));
-    fullscreenButton.setAttribute('aria-label',active?'Salir de la pantalla completa':'Abrir el manual en pantalla completa');
-    $('#fullscreen-label').textContent=active?'Salir':'Pantalla completa';
+    fullscreenButton.setAttribute('aria-label',active?t.closeFullscreen:t.openFullscreen);
+    $('#fullscreen-label').textContent=active?t.exit:t.fullscreen;
     $('#fullscreen-icon').textContent=active?'×':'↗';
     if(active) shell.scrollTop=0;
   };

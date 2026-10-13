@@ -1,0 +1,114 @@
+/* V4 program pages: the shared manual reader (/manual-a2.css) restyled with
+   the V4 palette and type, plus the page intro, walkthrough and closing CTA. */
+
+.v4-program {
+  /* Variables the shared reader stylesheet expects. */
+  --font-display: Outfit, Arial, sans-serif;
+  --coral-dark: var(--action);
+  --ink-soft: var(--muted);
+  --manual-green: var(--ink);
+  background: var(--cream);
+}
+
+/* Intro */
+.pgm-intro { padding-block: clamp(40px, 6vw, 88px) clamp(32px, 4vw, 56px); }
+.pgm-intro-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: clamp(32px, 6vw, 96px); align-items: center; }
+.pgm-trail { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; color: var(--muted); font-size: 14px; }
+.pgm-trail a { text-decoration: none; border-bottom: 1px solid var(--line); }
+.pgm-trail a:hover { color: var(--action); border-color: var(--action); }
+.pgm-intro h1 { margin-bottom: 24px; }
+.pgm-intro h1 span { color: var(--action); }
+.pgm-lead { max-width: 40rem; color: var(--muted); font-size: 19px; line-height: 1.5; }
+.pgm-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; margin-top: 32px; }
+
+.pgm-card { position: relative; display: grid; gap: 28px; padding: clamp(28px, 3vw, 40px); border-radius: 18px; color: var(--paper); background: var(--ink); box-shadow: 0 24px 48px -32px rgb(18 43 38 / 60%); }
+.pgm-card::after { content: ''; position: absolute; inset: 14px; border: 1px solid rgb(255 250 242 / 14%); border-radius: 12px; pointer-events: none; }
+.pgm-card-level { font-family: Outfit, Arial, sans-serif; font-size: clamp(72px, 8vw, 112px); font-weight: 700; line-height: .9; letter-spacing: -.05em; }
+.pgm-card dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; }
+.pgm-card dl div { display: flex; flex-direction: column-reverse; gap: 4px; padding-top: 12px; border-top: 1px solid rgb(255 250 242 / 22%); }
+.pgm-card dd { margin: 0; font-family: Outfit, Arial, sans-serif; font-size: 28px; font-weight: 600; line-height: 1; }
+.pgm-card dt { color: rgb(255 250 242 / 72%); font-size: 12px; line-height: 1.35; }
+.pgm-levels { position: relative; z-index: 1; display: flex; gap: 8px; }
+.pgm-levels a { flex: 1; min-height: 44px; display: grid; place-items: center; border: 1px solid rgb(255 250 242 / 30%); border-radius: 10px; font-weight: 600; text-decoration: none; transition: background 180ms var(--ease), color 180ms var(--ease); }
+.pgm-levels a:hover { background: rgb(255 250 242 / 12%); }
+.pgm-levels a[aria-current="page"] { color: var(--ink); background: var(--paper); border-color: var(--paper); }
+
+/* Reader, on a paper band */
+.v4-program .reader-shell { max-width: none; margin: 0; padding: clamp(28px, 4vw, 48px) max(var(--gutter), calc((100% - 1350px) / 2)); background: var(--paper); border-block: 1px solid var(--line); scroll-margin-top: var(--header-height); }
+.v4-program .reader-heading > div > span { color: var(--muted); font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+.v4-program .reader-heading h2 { margin: 6px 0; font-size: clamp(22px, 2.4vw, 30px); letter-spacing: -.035em; }
+.v4-program .reader-heading h2 b { color: var(--action); margin-left: 6px; }
+.v4-program .reader-heading > a { color: var(--ink); font-size: 14px; font-weight: 600; border-bottom: 1.5px solid var(--muted); }
+.v4-program .reader-toolbar { border-top-color: var(--line); }
+.v4-program .reader-toolbar label { color: var(--muted); font-size: 13px; }
+.v4-program .reader-toolbar select { color: var(--ink); font-size: 14px; font-weight: 600; }
+.v4-program .reader-toolbar button, .v4-program .reader-bottom button { color: var(--ink); font-size: 13px; }
+.v4-program .reader-toolbar .reader-fullscreen-trigger { background: var(--ink); color: var(--paper); border-radius: 10px; box-shadow: none; }
+.v4-program .reader-toolbar .reader-fullscreen-trigger:hover { background: #24483e; box-shadow: none; }
+.v4-program .reader-shell.is-reader-fullscreen { background: var(--cream); }
+.v4-program .reader-shell.is-reader-fullscreen .reader-fullscreen-trigger { background: var(--action); }
+.v4-program .book-cover { background: var(--ink); }
+.v4-program .book-cover > span { background: rgb(18 43 38 / 92%); color: var(--paper); font-size: 12px; font-weight: 600; }
+.v4-program #page-label { font-weight: 600; }
+.v4-program .reader-progress > span { background: var(--terracotta); }
+.v4-program .reader-bottom a { color: var(--ink); font-weight: 600; }
+.v4-program #page-zoom header { font-family: 'DM Sans', Arial, sans-serif; }
+
+/* Walkthrough */
+.v4-program .manual-layout { padding-block: clamp(56px, 7vw, 104px) 24px; grid-template-columns: 220px minmax(0, 1fr); }
+.v4-program .manual-nav { top: calc(var(--header-height) + 24px); }
+.v4-program .manual-nav > span { color: var(--muted); font-weight: 600; letter-spacing: .2em; }
+.v4-program .manual-nav a { font-size: 15px; border-bottom-color: var(--line); }
+.v4-program .manual-nav a b { color: var(--action); font-weight: 600; }
+.v4-program .manual-nav .manual-download { margin-top: 20px; border: 0; font-weight: 600; }
+.v4-program .manual-section { border-bottom-color: var(--line); scroll-margin-top: calc(var(--header-height) + 16px); }
+.v4-program .manual-section .eyebrow { margin-bottom: 16px; }
+.v4-program .manual-section h2 { font-family: Outfit, Arial, sans-serif; font-weight: 600; font-size: clamp(32px, 3.4vw, 46px); }
+.v4-program .manual-section > p { font-size: 17px; color: var(--muted); }
+.v4-program .segment { border-top-color: var(--line); }
+.v4-program .segment-letter { background: var(--sage-wash); color: var(--ink); font-family: Outfit, Arial, sans-serif; font-weight: 600; }
+.v4-program .segment small { font-size: 13px; font-weight: 600; }
+.v4-program .segment h3 { font-size: 21px; }
+.v4-program .segment p { font-size: 15px; }
+.v4-program .manual-reader { background: var(--paper); border-color: var(--line); border-radius: 14px; }
+.v4-program .manual-reader summary { background: var(--sage-wash); font-size: 15px; }
+.v4-program .manual-reader summary:hover { background: color-mix(in srgb, var(--sage) 40%, var(--paper)); }
+.v4-program .manual-reader summary > span:last-child { font-size: 13px; }
+.v4-program .manual-sheet figcaption { font-size: 12px; }
+.v4-program .manual-download { font-size: 14px; color: var(--ink); }
+.v4-program .unit-stages { font-size: 16px; }
+.v4-program .exam-parts span { border-top-color: var(--line); font-size: 15px; }
+.v4-program .exam-parts b { font-size: 13px; font-weight: 600; }
+.v4-program .teacher-script { border-top-color: var(--line); font-size: 15px; }
+.v4-program .teacher-script blockquote { background: var(--sage-wash); border-left-color: var(--terracotta); }
+.v4-program .manual-section .manual-note { font-size: 14px; color: var(--muted); }
+.v4-program .manual-assessment { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+.v4-program .assessment-row { border-top-color: var(--line); }
+.v4-program .assessment-row legend { font-size: 16px; }
+.v4-program .assessment-row label { background: var(--cream); font-size: 14px; border-radius: 10px; }
+.v4-program .assessment-row label:has(input:checked) { background: var(--paper); border-color: var(--ink); color: var(--ink); }
+.v4-program .manual-reset { font-size: 14px; }
+
+/* Closing CTA */
+.pgm-cta { padding-block: clamp(32px, 5vw, 64px) clamp(64px, 8vw, 112px); }
+.pgm-cta-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(32px, 4vw, 56px); border-radius: 18px; background: var(--sage-wash); border: 1px solid var(--line); }
+.pgm-cta h2 { margin-bottom: 12px; }
+.pgm-cta-inner p:not(.eyebrow) { max-width: 36rem; color: var(--muted); font-size: 17px; }
+.pgm-cta .button { flex: none; }
+
+@media (max-width: 1100px) {
+  .pgm-intro-grid { grid-template-columns: 1fr; }
+  .pgm-card { max-width: 560px; }
+}
+@media (max-width: 900px) {
+  .v4-program .manual-layout { grid-template-columns: 1fr; gap: 0; }
+  .v4-program .manual-nav { position: static; margin-bottom: 32px; }
+}
+@media (max-width: 700px) {
+  .pgm-lead { font-size: 17px; }
+  .pgm-card dl { gap: 8px; }
+  .pgm-card dd { font-size: 24px; }
+  .v4-program .reader-shell { padding: 20px 16px; }
+  .v4-program .reader-heading > a { font-size: 0; }
+  .pgm-cta-inner { flex-direction: column; align-items: flex-start; }
+}

@@ -40,3 +40,11 @@ La prochaine version du site se prépare sous `/v3/`, servie sur
 `pathway-v3.js`, `noindex` actif et `Disallow: /v3/` dans `robots.txt`. Le site affiché
 sur le nom de domaine reste `index-v2.html` et n'est pas affecté. Les règles détaillées
 sont dans `v3/README.md`.
+
+## 7. V4, affichage par défaut
+
+Depuis le 13 octobre 2026, `pathway-languages.com` affiche la V4 : `/`, `/fr/`, `/en/` et `/de/` redirigent vers `/v4/`, `/v4/fr/`, `/v4/en/` et `/v4/de/`, en conservant les paramètres (UTM) et l'ancre. Les redirections sont générées à la construction par `scripts/build-v4-default.mjs`.
+
+Toute page V4 encore « en refonte » (classe `placeholder-page`) redirige vers la page qui fonctionne sur le site actuel (test de niveau, inscription, calculateur, NCLC 7, TEF…). Dès qu'une page V4 est refaite, sa redirection disparaît d'elle-même à la construction suivante. La construction échoue si une page d'attente n'a aucune page de repli.
+
+Les pages programmes V4 (`/v4/programas/<niveau>/` et leurs versions fr, en, de) sont générées par `scripts/build-v4-programs.mjs` à partir de `v4/data/manuals/<niveau>.json` et des images de `assets/manual-<niveau>/`. Les textes d'interface traduits sont dans ce script.
