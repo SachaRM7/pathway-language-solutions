@@ -11,13 +11,15 @@
   const left = $('#left-page'), right = $('#right-page'), leaf = $('#leaf');
   let current = 0, busy = false, opened = false, autoTimer, gesture;
   const end = () => mobile.matches ? pages.length - 1 : pages.length;
-  const intro = '<div class="book-inside"><img src="/pathway-mark.svg" alt="Pathway"><small>Manuel de français · A2</small><h2>Le français,<br>page après page.</h2><p>Extraits du manuel original.<br>64 unités · 4 segments</p><small>Pathway Language Solutions</small></div>';
+  // Shared by every level page; the level comes from the book's data-level.
+  const level = book.dataset.level || 'A2';
+  const intro = `<div class="book-inside"><img src="/pathway-mark.svg" alt="Pathway"><small>Manuel de français · ${level}</small><h2>Le français,<br>page après page.</h2><p>Extraits du manuel original.<br>64 unités · 4 segments</p><small>Pathway Language Solutions</small></div>`;
   const outro = '<div class="book-inside"><small>La suite commence avec vous</small><h2>Un nouveau chapitre.</h2><p>Découvrez votre point de départ avec un professeur Pathway.</p><a href="/test-placement.html">Evaluar mi nivel →</a></div>';
   function markup(i) {
     if (i < 0) return intro;
     if (i >= pages.length) return outro;
     const p = pages[i];
-    return `<img class="page-art" src="${p.src}" alt="${p.title} · página ${p.n} del manual A2" draggable="false">`;
+    return `<img class="page-art" src="${p.src}" alt="${p.title} · página ${p.n} del manual ${level}" draggable="false">`;
   }
   function sync() {
     $('#previous').disabled = $('#edge-prev').disabled = busy || !opened || current === 0;
@@ -26,7 +28,7 @@
     $('#chapter').disabled = busy;
     const p = pages[Math.min(current, pages.length-1)];
     const prev = !mobile.matches && current > 0 ? pages[current-1] : null;
-    $('#page-label').textContent = opened ? `${p.title} · ${prev && prev.n !== p.n ? `p. ${prev.n} / ${p.n}` : `p. ${p.n}`}` : 'Manuel de français · A2';
+    $('#page-label').textContent = opened ? `${p.title} · ${prev && prev.n !== p.n ? `p. ${prev.n} / ${p.n}` : `p. ${p.n}`}` : `Manuel de français · ${level}`;
     $('#progress').style.width = opened ? `${Math.min((current+1)/pages.length,1)*100}%` : '0%';
     const chapterStart = pages.findIndex(page => page.key === p.key);
     $('#chapter').value = String(chapterStart);
