@@ -5,6 +5,7 @@ import { renderPricing, renderReviews } from './v4/render.js';
 import { buildV4Routes } from './scripts/build-v4-routes.mjs';
 import { buildV4Programs } from './scripts/build-v4-programs.mjs';
 import { makeV4Default } from './scripts/build-v4-default.mjs';
+import { buildV4Pages } from './scripts/build-v4-pages.mjs';
 
 const root = process.cwd();
 const dist = resolve(root, 'dist');
@@ -140,7 +141,9 @@ await writeFile(resolve(server, 'index.js'), `export default {
 };
 `, 'utf8');
 
-// The V4 design is served at the root addresses; /v4/… redirects there.
+// Redesigned V4 pages replace their placeholders, then the V4 design is
+// served at the root addresses; /v4/… redirects there.
+await buildV4Pages({ outDir: client, rootDir: root });
 const v4Default = await makeV4Default({ outDir: client });
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;

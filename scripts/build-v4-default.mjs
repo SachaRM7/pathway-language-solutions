@@ -71,7 +71,9 @@ export function redirectPage(target, lang = 'es') {
 async function fallbackFor(outDir, route, promoted) {
   const legacy = route.replace(/^\/v4/, '');
   const name = legacy.split('/').pop();
-  const candidates = [ALIASES[route], legacy, `/${name === 'nclc7.html' ? 'nclc-7.html' : name}`].filter(Boolean);
+  // nclc7.html is an older name of the NCLC 7 guide of the same language.
+  const sibling = name === 'nclc7.html' ? legacy.replace(/nclc7\.html$/, 'nclc-7.html') : null;
+  const candidates = [sibling, ALIASES[route], legacy, `/${name === 'nclc7.html' ? 'nclc-7.html' : name}`].filter(Boolean);
   for (const candidate of candidates) {
     if (promoted.has(candidate)) return candidate;
     const file = fileFor(outDir, candidate);

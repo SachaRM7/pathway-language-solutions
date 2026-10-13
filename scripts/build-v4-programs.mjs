@@ -20,7 +20,7 @@ export const LANGS = ['es', 'fr', 'en', 'de'];
 const READER_VERSION = 'reader-8';
 const SITE_ORIGIN = 'https://pathway-languages.com';
 
-const prefix = lang => (lang === 'es' ? '/v4/' : `/v4/${lang}/`);
+export const prefix = lang => (lang === 'es' ? '/v4/' : `/v4/${lang}/`);
 export const programPath = (lang, level) => `${prefix(lang)}programas/${level}/`;
 
 const UI = {
@@ -174,10 +174,10 @@ const COPY = {
   }
 };
 
-const esc = value => String(value)
+export const esc = value => String(value)
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
-function between(markup, start, end, label) {
+export function between(markup, start, end, label) {
   const from = markup.indexOf(start);
   const to = from < 0 ? -1 : markup.indexOf(end, from);
   if (from < 0 || to < 0) throw new Error(`V4 ${label} not found`);
@@ -186,7 +186,8 @@ function between(markup, start, end, label) {
 
 // Reuse the V4 home header and footer of the language so navigation, legal
 // links and the language switcher stay identical across V4 pages.
-function chrome(homeMarkup, lang, level) {
+// hrefFor(code) gives the same page in another language.
+export function v4Chrome(homeMarkup, lang, hrefFor) {
   const home = prefix(lang);
   let header = between(homeMarkup, '<header class="site-header" data-header>', '</header>', 'header');
   // The Spanish home has the new footer; fr, en and de still use the first one.
@@ -198,9 +199,11 @@ function chrome(homeMarkup, lang, level) {
   footer = footer.replace(/href="#([^"]+)"/g, `href="${home}#$1"`);
   header = header.replace(/<div class="language-switcher"[\s\S]*?<\/div>/, switcher => switcher
     .replace(/ aria-current="page"/g, '')
-    .replace(/<a href="[^"]*" lang="(es|fr|en|de)"/g, (_, code) => `<a href="${programPath(code, level)}" lang="${code}"${code === lang ? ' aria-current="page"' : ''}`));
+    .replace(/<a href="[^"]*" lang="(es|fr|en|de)"/g, (_, code) => `<a href="${hrefFor(code)}" lang="${code}"${code === lang ? ' aria-current="page"' : ''}`));
   return { header, footer, icons };
 }
+
+const chrome = (homeMarkup, lang, level) => v4Chrome(homeMarkup, lang, code => programPath(code, level));
 
 function readerManifest(source) {
   const match = source.match(/window\.PathwayManualPages\s*=\s*(\[[\s\S]*\]);?\s*$/);
