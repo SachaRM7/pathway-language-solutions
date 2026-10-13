@@ -140,9 +140,9 @@ await writeFile(resolve(server, 'index.js'), `export default {
 };
 `, 'utf8');
 
-// V4 is the default experience: homepages and unfinished V4 pages redirect.
+// The V4 design is served at the root addresses; /v4/… redirects there.
 const v4Default = await makeV4Default({ outDir: client });
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
-console.log(`V4 is the default: ${v4Default.homes.length} homepages and ${v4Default.placeholders.length} unfinished V4 pages redirect.`);
+console.log(`V4 design served at the root: ${v4Default.promoted.length} pages; ${v4Default.redirects.length} unfinished V4 pages keep the current-site page.`);

@@ -43,8 +43,8 @@ sont dans `v3/README.md`.
 
 ## 7. V4, affichage par défaut
 
-Depuis le 13 octobre 2026, `pathway-languages.com` affiche la V4 : `/`, `/fr/`, `/en/` et `/de/` redirigent vers `/v4/`, `/v4/fr/`, `/v4/en/` et `/v4/de/`, en conservant les paramètres (UTM) et l'ancre. Les redirections sont générées à la construction par `scripts/build-v4-default.mjs`.
+Depuis le 13 octobre 2026, `pathway-languages.com` affiche le design V4 sans `/v4` dans l'adresse : `/`, `/fr/`, `/en/`, `/de/`, `/programas/<niveau>/`, `/condiciones.html`, `/privacidad.html`, `/inscription.html`… À la construction, `scripts/build-v4-default.mjs` publie chaque page V4 terminée à son adresse racine et réécrit les liens internes. Les styles, scripts et images restent servis depuis `/v4/`. Les anciennes adresses `/v4/…` redirigent vers l'adresse racine, avec les paramètres (UTM) et l'ancre.
 
-Toute page V4 encore « en refonte » (classe `placeholder-page`) redirige vers la page qui fonctionne sur le site actuel (test de niveau, inscription, calculateur, NCLC 7, TEF…). Dès qu'une page V4 est refaite, sa redirection disparaît d'elle-même à la construction suivante. La construction échoue si une page d'attente n'a aucune page de repli.
+Une page V4 encore « en refonte » (classe `placeholder-page`) n'est pas publiée : les liens pointent vers la page qui fonctionne sur le site actuel (test de niveau, calculateur, NCLC 7, TEF…). Dès qu'elle est refaite, elle remplace automatiquement la page actuelle à la construction suivante. La construction échoue si une page d'attente n'a aucune page de repli.
 
-Les pages programmes V4 (`/v4/programas/<niveau>/` et leurs versions fr, en, de) sont générées par `scripts/build-v4-programs.mjs` à partir de `v4/data/manuals/<niveau>.json` et des images de `assets/manual-<niveau>/`. Les textes d'interface traduits sont dans ce script.
+Les pages programmes V4 sont générées par `scripts/build-v4-programs.mjs` à partir de `v4/data/manuals/<niveau>.json` et des images de `assets/manual-<niveau>/`. Les textes d'interface traduits sont dans ce script.
