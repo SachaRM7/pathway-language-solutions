@@ -1,0 +1,24 @@
+{
+  "name": "pathway-motion-r3-review",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Focused signature-line revision: three modular films and one seamless master",
+  "dependencies": {
+    "@remotion/cli": "4.0.519",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.519"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "studio": "remotion studio src/index.tsx",
+    "check": "tsc --noEmit",
+    "frames": "node render.mjs frames",
+    "animatics": "node render.mjs video",
+    "assemble": "python assemble.py",
+    "verify": "node verify-motion.cjs"
+  }
+}

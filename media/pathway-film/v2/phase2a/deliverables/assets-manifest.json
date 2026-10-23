@@ -1,0 +1,127 @@
+{
+  "phase": "2A review prototype, not final V2",
+  "master": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "frames": 600
+  },
+  "video_review": {
+    "width": 1280,
+    "height": 720,
+    "duration_seconds": 20,
+    "audio": false
+  },
+  "opening_for_animatics": "C",
+  "timing_variants": {
+    "A": {
+      "hold": [
+        16,
+        20
+      ]
+    },
+    "B": {
+      "hold": [
+        17,
+        20
+      ],
+      "extra_A2_entry": 0.4,
+      "extra_human_guidance": 0.6
+    }
+  },
+  "local_files": [
+    {
+      "path": "public/DM-Sans-500.ttf",
+      "bytes": 48308,
+      "sha256": "376427b5322148d8de1e03f263bcca4935a2d60ba71d9f94f4947ab664c711ae",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/DM-Sans-600.ttf",
+      "bytes": 48280,
+      "sha256": "b79a2ea7a38f33fd96a282fadb9ce97626bb0724a44d21075859f0e50239993a",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/OFL-DM-Sans.txt",
+      "bytes": 4482,
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/OFL-Outfit.txt",
+      "bytes": 4389,
+      "sha256": "c676351bf8576b9aba743cd5eaa8c0e7ee0d51f805d720447b4df4ddb6a2e416",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/Outfit-500.ttf",
+      "bytes": 47800,
+      "sha256": "9a9f465776e653cd6175661d844555e08684d432518f1d2c621bcb3006598f9c",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/Outfit-600.ttf",
+      "bytes": 48456,
+      "sha256": "8900df5726b5a6f23e723594f11d5ea27e695bd85c884f18d88ed080544fe205",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/Outfit-700.ttf",
+      "bytes": 48340,
+      "sha256": "49dcdf653a004a2575b3de649f5e4c549d774fecddf317812330edd0ad70685a",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    },
+    {
+      "path": "public/pathway-mark.svg",
+      "bytes": 958,
+      "sha256": "d755f0a050a7d9ef347dd754440e10a6d923e12c9cbc7cade0d52e30c61c0960",
+      "source": "Existing Pathway V1 project; logo checked against https://pathway-languages.com/pathway-mark.svg"
+    }
+  ],
+  "pedagogy": {
+    "source": "https://pathway-languages.com/assets/manual-a2/unite-1.pdf",
+    "page": 2,
+    "text": [
+      "je parle",
+      "tu parles"
+    ],
+    "representation": "Typeset extract; no PDF raster used"
+  },
+  "opening_B": {
+    "text": [
+      "bonjour",
+      "parler"
+    ],
+    "sources": [
+      "https://pathway-languages.com/programas/a2/",
+      "https://pathway-languages.com/assets/manual-a2/unite-1.pdf"
+    ],
+    "waveform": "Original symbolic vector; not a recording"
+  },
+  "opening_C": {
+    "text": "Tu siguiente paso.",
+    "source": "https://pathway-languages.com/",
+    "type": "Creative adaptation of brand vocabulary"
+  },
+  "logo": {
+    "original_path": "M8 49c7.5-4.2 15.5-6.3 24-6.3S48.5 44.8 56 49",
+    "exact_subdivision": "Two cubic curves split into three each using De Casteljau; six final cubic segments preserve the same locus",
+    "placement": {
+      "translate": [
+        570,
+        280
+      ],
+      "scale": 3.1
+    },
+    "source_path_color": "#FB8669",
+    "animated_line_color": "#C76F56"
+  },
+  "generated_graphics": [
+    "continuous line",
+    "paper surface",
+    "opening B waveform"
+  ],
+  "reference_video_assets_used": [],
+  "final_production_authorized": false
+}
