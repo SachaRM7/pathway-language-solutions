@@ -121,7 +121,7 @@ function showLogin(err, sent = false) {
       <p class="sub">Enviamos un enlace a <b>${esc(loginEmail)}</b>. Ábrelo en este dispositivo para entrar.</p>
       ${err ? `<p class="form-error" role="alert">${esc(err)}</p>` : ''}
       <form id="codeForm" class="form" novalidate>
-        <label class="field" for="loginCode">¿El correo trae un código de 6 cifras? Escríbelo aquí<input id="loginCode" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+        <label class="field" for="loginCode">¿El correo trae un código? Escríbelo aquí<input id="loginCode" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}"></label>
         <button class="btn btn-dark" type="submit">Entrar con el código</button>
       </form>
       <button class="ob-link" type="button" id="otherEmail" style="justify-self:start">Usar otro correo</button>`;
@@ -129,7 +129,7 @@ function showLogin(err, sent = false) {
     $('#codeForm').onsubmit = async e => {
       e.preventDefault();
       const token = $('#loginCode').value.replace(/\D/g, '');
-      if (token.length !== 6) return showLogin('El código tiene 6 cifras.', true);
+      if (token.length < 6 || token.length > 8) return showLogin('Escribe el código completo que aparece en el correo.', true);
       const { error } = await sb.auth.verifyOtp({ email: loginEmail, token, type: 'email' });
       if (error) return showLogin('Código incorrecto o caducado. Pide un enlace nuevo.', true);
     };
