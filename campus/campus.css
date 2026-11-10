@@ -314,7 +314,7 @@ td .who { display: flex; align-items: center; gap: 12px; font-weight: 700; }
 .status.warn::before { background: var(--butter-ink); }
 .field { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .field input, .field select { width: 100%; height: 48px; padding: 0 16px; border-radius: 14px; border: 0; background: var(--soft); color: var(--ink); font-weight: 500; font-size: 15px; }
-.field input:focus, .field select:focus { outline: 2px solid var(--ink); }
+.field input:focus, .field select:focus, .field input:focus-visible, .field select:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--ink); }
 .form { display: grid; gap: 12px; }
 .form-2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -441,9 +441,9 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .line { min-height: 76px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; padding: 12px; border-radius: 22px; background: var(--soft); }
 .type-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
 .inline-input { width: 8.5ch; height: 1.35em; padding: 0 10px; border: 0; border-radius: 12px; background: var(--peach); color: var(--peach-ink); font: inherit; letter-spacing: inherit; }
-.inline-input:focus { outline: 2.5px solid var(--coral); }
+.inline-input:focus, .inline-input:focus-visible { outline: none; box-shadow: inset 0 0 0 2.5px var(--coral); }
 .answer-area { width: 100%; padding: 18px 20px; border-radius: 20px; border: 0; background: var(--soft); font: 700 22px/1.4 var(--font); letter-spacing: -.02em; resize: none; color: var(--ink); }
-.answer-area:focus { outline: 2.5px solid var(--ink); }
+.answer-area:focus, .answer-area:focus-visible { outline: none; box-shadow: inset 0 0 0 2.5px var(--ink); }
 .keys { display: flex; flex-wrap: wrap; gap: 6px; }
 .keys button { min-width: 44px; height: 44px; padding: 0 12px; border-radius: 12px; background: var(--soft); font-weight: 700; font-size: 17px; }
 .match { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
