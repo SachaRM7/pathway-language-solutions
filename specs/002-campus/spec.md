@@ -5,7 +5,7 @@
 **Status**: Prototype validé à discuter — pas encore en production
 **Input**: Construire une plateforme d'apprentissage ambitieuse, accessible depuis le site vitrine, pour donner aux élèves de la matière entre les cours en visio : exercices, révisions, préparation TEF, gamification. Moderne, très travaillée côté UI / UX, 100 % fonctionnelle.
 
-**Prototype** : `prototipos/campus.html` (fichier autonome, données de démonstration, `noindex`, non publié par `build.mjs`). Version 2 : nouvelle direction visuelle après le premier retour.
+**Prototype** : `prototipos/campus.html` (fichier autonome, données de démonstration, `noindex`, non publié par `build.mjs`). Version 2 : nouvelle direction visuelle, validée en thème clair. Version 3 : onboarding, choix TEF / TCF, thème sombre revu (cartes pastel claires sur fond noir).
 
 ## Décisions déjà prises
 
@@ -15,6 +15,8 @@
 | Volume | 2 professeurs, quelques dizaines d'élèves, moins de 100 connectés en même temps. |
 | Langue | Interface en espagnol d'abord ; le contenu travaillé est en français. Les autres langues du site (FR, EN, DE) viendront après. |
 | Services tiers | Accord pour Supabase (comptes, base de données, fichiers) et pour une IA de correction en option. |
+| Examens | Les élèves passent en général le TEF Canada et le TCF Canada. Le choix se fait à l'onboarding (TEF, TCF, les deux, ou à définir) et règle le format des simulacres. |
+| Supabase | Projet « Pathway » sur l'offre gratuite, région Canada (Central). Exposition automatique des nouvelles tables désactivée, RLS automatique activée : les droits sont accordés table par table dans le schéma. |
 | Architecture | Le site vitrine reste sur GitHub Pages (`pathway-languages.com`). Le campus est servi par le même dépôt et le même déploiement, sous `/campus/`. Seule nouveauté : un projet Supabase. |
 
 ## Principes
@@ -25,6 +27,22 @@
 4. **Rien d'inventé.** Les estimations NCLC sont présentées comme indicatives ; le campus ne promet aucun résultat d'examen ni de tirage Express Entry.
 
 ## User Scenarios & Testing
+
+### User Story 0 — Préparer son plan à la première connexion (P1)
+
+L'élève invité ouvre le campus pour la première fois et règle son plan en sept écrans, environ deux minutes.
+
+**Independent Test** : se connecter avec un compte neuf, terminer l'onboarding, vérifier que le tableau de bord, l'objectif du jour et les simulacres reflètent les choix.
+
+1. Accueil personnalisé : prénom, professeur, horaire des cours.
+2. Motivation : résidence permanente, études, travail, autre.
+3. Examen : TEF Canada, TCF Canada, les deux (recommandé) ou à définir avec le professeur.
+4. Date visée : mois sur les 18 prochains mois, ou pas encore de date.
+5. Niveau de départ : prérempli depuis le test de niveau, modifiable, lien pour refaire le test.
+6. Rythme : objectif quotidien (10, 15 ou 25 minutes), heure et canal du rappel (WhatsApp ou e-mail).
+7. Récapitulatif du plan, visible par le professeur, puis entrée dans le campus.
+
+L'élève peut modifier ces choix plus tard dans son profil. Le professeur voit le plan avant le cours suivant.
 
 ### User Story 1 — Faire ses devoirs entre deux cours (P1)
 

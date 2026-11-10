@@ -6,14 +6,15 @@
 - [x] T002 Architecture, coûts, méthode de contenu et phases dans `specs/002-campus/plan.md`.
 - [x] T003 Prototype cliquable élève + professeur dans `prototipos/campus.html` (unité 1 de l'A2 jouable, données de démonstration).
 - [x] T004 Premier retour : direction visuelle refaite (prototype v2).
-- [ ] T004b Retours de Ryan et Abdrahim sur le prototype v2.
-- [ ] T005 (reporté à plus tard, à la demande de Sacha) Pathway crée le projet Supabase et le compte d'envoi d'e-mails ; transmet l'URL et la clé publique.
+- [x] T004b Prototype v3 : onboarding, choix TEF / TCF, thème sombre revu.
+- [ ] T004c Retours de Ryan et Abdrahim sur le prototype v3.
+- [ ] T005 Pathway crée le projet Supabase (région Canada Central, voir spec) et transmet l'URL et la clé publique ; compte d'envoi d'e-mails ensuite.
 
 ## Phase 1 : base
 
 - [ ] T010 Schéma Postgres, règles RLS et données de test (`campus/db/`).
 - [ ] T011 `scripts/build-campus.mjs` : publication sous `/campus/`, `noindex` tant que le campus est fermé, vérifications de construction.
-- [ ] T012 Connexion, invitation des élèves, rôles.
+- [ ] T012 Connexion, invitation des élèves, rôles, onboarding (profil, examen, date, niveau, rythme).
 - [ ] T013 Coque de l'application (navigation, thème, icônes V4) et tableau de bord élève.
 - [ ] T014 Moteur d'exercices (7 types) et lecteur de leçon, repris du prototype.
 - [ ] T015 XP, niveaux, objectif du jour, séries et protecteurs, badges.

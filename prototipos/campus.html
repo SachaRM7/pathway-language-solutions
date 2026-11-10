@@ -35,22 +35,26 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e0e10; --panel: #18181b; --ink: #f4f4f5; --ink-2: #a3a3ab; --ink-3: #6f6f78; --line: #27272b; --soft: #1f1f23;
-    --coral: #ff7452; --on-ink: #0e0e10;
-    --peach: #3a2219; --peach-ink: #ffb79e; --lilac: #25213d; --lilac-ink: #bdb2ff; --mint: #15301f; --mint-ink: #82d9a6;
-    --butter: #342a0f; --butter-ink: #f2cd6b; --sky: #16243c; --sky-ink: #9fc2ff; --good: #4cc786;
-    --shadow: 0 0 0 1px #27272b; color-scheme: dark;
+    --bg: #0c0c0e; --panel: #17171a; --ink: #f4f4f5; --ink-2: #a3a3ab; --ink-3: #6f6f78; --line: #27272b; --soft: #212125;
+    --coral: #ff6a45; --on-ink: #0c0c0e;
+    --peach: #ffd8c8; --lilac: #ddd6ff; --mint: #c8ecd5; --butter: #ffe9a6; --sky: #cde1ff;
+    --shadow: 0 0 0 1px #232327; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0e0e10; --panel: #18181b; --ink: #f4f4f5; --ink-2: #a3a3ab; --ink-3: #6f6f78; --line: #27272b; --soft: #1f1f23;
-  --coral: #ff7452; --on-ink: #0e0e10;
-  --peach: #3a2219; --peach-ink: #ffb79e; --lilac: #25213d; --lilac-ink: #bdb2ff; --mint: #15301f; --mint-ink: #82d9a6;
-  --butter: #342a0f; --butter-ink: #f2cd6b; --sky: #16243c; --sky-ink: #9fc2ff; --good: #4cc786;
-  --shadow: 0 0 0 1px #27272b; color-scheme: dark;
+  --bg: #0c0c0e; --panel: #17171a; --ink: #f4f4f5; --ink-2: #a3a3ab; --ink-3: #6f6f78; --line: #27272b; --soft: #212125;
+  --coral: #ff6a45; --on-ink: #0c0c0e;
+  --peach: #ffd8c8; --lilac: #ddd6ff; --mint: #c8ecd5; --butter: #ffe9a6; --sky: #cde1ff;
+  --shadow: 0 0 0 1px #232327; color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+/* Pastel surfaces keep dark text in both themes: in dark mode they read as bright cards on a black ground. */
+.tile.peach, .tile.lilac, .tile.mint, .tile.butter, .tile.sky, .date-block, .side-promo, .l-foot.good, .l-foot.bad, .end-stats div, .audio-card, .ob-art {
+  --ink: #141414; --ink-2: #4b4b52; --ink-3: #77777f; --panel: #ffffff; --on-ink: #ffffff; --soft: #f3f3f2; --line: #e3e3e5;
+  color: var(--ink);
+}
+
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
@@ -270,7 +274,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .mini-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; height: 110px; margin-top: 8px; }
 .mini-bars div { display: grid; justify-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--ink-3); align-self: end; }
 .mini-bars i { width: 100%; border-radius: 8px; background: var(--lilac); }
-.mini-bars div:first-child i { background: var(--lilac-ink); }
+.mini-bars div:first-child i { background: var(--coral); }
 .mini-bars div:first-child { color: var(--ink); }
 
 /* Mock exams */
@@ -331,6 +335,75 @@ td .who { display: flex; align-items: center; gap: 12px; font-weight: 700; }
 .chips span { display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 999px; background: var(--soft); font-size: 13px; font-weight: 700; color: var(--ink-2); }
 .chips input:checked + span { background: var(--ink); color: var(--on-ink); }
 .chips input:focus-visible + span { outline: 2.5px solid var(--coral); outline-offset: 2px; }
+
+/* Onboarding */
+.ob { position: fixed; inset: 0; z-index: 55; background: var(--bg); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (min-width: 900px) { .ob { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+.ob-art { position: relative; overflow: hidden; height: 128px; margin: 12px max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); border-radius: 28px; background: var(--peach); transition: background .5s var(--ease); }
+@media (min-width: 900px) { .ob-art { height: auto; margin: 16px 0 16px max(16px, env(safe-area-inset-left, 0px)); border-radius: 36px; } }
+.ob-logo { position: absolute; top: 18px; left: 20px; display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -.04em; }
+@media (min-width: 900px) { .ob-logo { top: 32px; left: 36px; } }
+.ob-word { position: absolute; left: 18px; bottom: -.16em; font-size: 92px; font-weight: 800; letter-spacing: -.07em; line-height: 1; color: var(--coral); white-space: nowrap; animation: in .5s var(--ease) both; }
+@media (min-width: 900px) { .ob-word { left: 36px; font-size: clamp(110px, 10vw, 168px); } }
+.ob-sticker { position: absolute; display: none; padding: 12px 18px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow); font-weight: 700; font-size: 16px; letter-spacing: -.02em; white-space: nowrap; animation: in .6s var(--ease) both; }
+.ob-sticker small { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0; }
+@media (min-width: 900px) { .ob-sticker { display: block; } .o1 { top: 26%; left: 12%; transform: rotate(-5deg); } .o2 { top: 42%; right: 12%; transform: rotate(4deg); } }
+.ob-main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; min-width: 0; padding: 18px max(20px, env(safe-area-inset-right, 0px)) 18px max(20px, env(safe-area-inset-left, 0px)); }
+@media (min-width: 900px) { .ob-main { padding: 36px 56px; } }
+.ob-top, .ob-foot, .ob-q { width: 100%; max-width: 540px; margin: 0 auto; }
+.ob-top { display: flex; align-items: center; gap: 14px; }
+.ob-top .round { box-shadow: none; background: var(--panel); }
+.ob-top .round:disabled { opacity: .3; cursor: default; }
+.ob-steps { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+.ob-steps i { height: 6px; border-radius: 99px; background: var(--line); transition: background .3s; }
+.ob-steps i.on { background: var(--ink); }
+.ob-body { overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; min-width: 0; padding: 24px 2px; }
+.ob-body > .ob-q { margin-block: auto; }
+.ob-q { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; animation: slide .4s var(--ease) both; }
+.ob-q h1 { font-size: clamp(30px, 4vw, 42px); letter-spacing: -.05em; }
+.ob-q .sub { color: var(--ink-2); font-size: 16px; margin-top: -6px; }
+.choices { display: grid; gap: 10px; }
+.choice { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 22px; background: var(--panel); box-shadow: inset 0 0 0 1.5px var(--line); text-align: left; transition: box-shadow .15s, transform .1s; }
+.choice:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+.choice:active { transform: scale(.99); }
+.choice[aria-pressed="true"] { box-shadow: inset 0 0 0 2.5px var(--ink); }
+.choice .ci { width: 46px; height: 46px; flex: none; border-radius: 15px; display: grid; place-items: center; background: var(--soft); transition: background .15s, color .15s; }
+.choice[aria-pressed="true"] .ci { background: var(--ink); color: var(--on-ink); }
+.choice b { display: block; font-size: 16px; letter-spacing: -.02em; }
+.choice small { display: block; color: var(--ink-2); font-size: 13px; font-weight: 500; }
+.choice .end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.choice .tick { width: 24px; height: 24px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); display: grid; place-items: center; }
+.choice .tick .icon { width: 14px; height: 14px; stroke-width: 2.8; opacity: 0; }
+.choice[aria-pressed="true"] .tick { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+.choice[aria-pressed="true"] .tick .icon { opacity: 1; }
+.tag-rec { height: 24px; padding: 0 10px; border-radius: 99px; display: inline-flex; align-items: center; background: var(--mint); color: var(--mint-ink); font-size: 11px; font-weight: 800; white-space: nowrap; }
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.month { height: 62px; border-radius: 18px; background: var(--panel); box-shadow: inset 0 0 0 1.5px var(--line); display: grid; place-content: center; text-align: center; font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
+.month small { display: block; font-size: 11px; color: var(--ink-3); font-weight: 600; letter-spacing: 0; }
+.month[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+.month[aria-pressed="true"] small { color: inherit; opacity: .6; }
+.month.wide { grid-column: 1 / -1; height: 52px; }
+.lvl-pick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.lvl-pick button { aspect-ratio: 1; border-radius: 24px; background: var(--panel); box-shadow: inset 0 0 0 1.5px var(--line); display: grid; place-content: center; gap: 2px; font-weight: 800; font-size: clamp(24px, 4vw, 32px); letter-spacing: -.05em; }
+.lvl-pick small { font-size: 11px; font-weight: 600; color: var(--ink-3); letter-spacing: 0; }
+.lvl-pick button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+.lvl-pick button[aria-pressed="true"] small { color: inherit; opacity: .65; }
+.ob-extra { display: grid; gap: 10px; margin-top: 6px; }
+.ob-extra h3 { font-size: 15px; letter-spacing: -.02em; }
+.seg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg-chips button { height: 42px; padding: 0 16px; border-radius: 999px; background: var(--panel); box-shadow: inset 0 0 0 1.5px var(--line); font-weight: 700; font-size: 13px; }
+.seg-chips button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+.plan { display: grid; gap: 8px; }
+.plan div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 18px; background: var(--panel); font-size: 14px; }
+.plan span { color: var(--ink-2); font-weight: 600; }
+.plan b { text-align: right; letter-spacing: -.01em; }
+.plan .first { background: var(--peach); color: #141414; }
+.plan .first span { color: var(--peach-ink); }
+.ob-link { font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; color: var(--ink-2); }
+.ob-link:hover { color: var(--coral); }
+.ob-foot { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.ob-foot .btn { min-width: 190px; }
+.ob-foot .hint { margin-right: auto; font-size: 13px; color: var(--ink-3); font-weight: 600; }
 
 /* Lesson player */
 .lesson { position: fixed; inset: 0; z-index: 50; background: var(--panel); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding-top: env(safe-area-inset-top, 0px); }
@@ -473,7 +546,7 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
     <a class="logo" href="#inicio"><span class="logo-mark"><svg class="icon"><use href="#i-route"/></svg></span>Pathway</a>
     <nav class="nav" id="sideNav"></nav>
     <div class="side-promo" id="promo"></div>
-    <div class="side-foot"><span>Prototipo · datos de ejemplo</span><button type="button" id="resetDemo">Reiniciar</button></div>
+    <div class="side-foot"><button type="button" id="replayOb">Ver la bienvenida</button><button type="button" id="resetDemo">Reiniciar demo</button></div>
   </aside>
   <main id="main" tabindex="-1"></main>
 </div>
@@ -487,6 +560,18 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
   </div>
   <div class="l-body" id="lessonBody"></div>
   <div class="l-foot" id="lessonFoot"><div class="foot-in" id="footIn"></div></div>
+</div>
+
+<div class="ob" id="ob" hidden role="dialog" aria-modal="true" aria-label="Bienvenida al campus">
+  <div class="ob-art" id="obArt"></div>
+  <div class="ob-main">
+    <div class="ob-top">
+      <button type="button" class="round" id="obBack" aria-label="Atrás"><svg class="icon" style="transform:rotate(180deg)"><use href="#i-arrow"/></svg></button>
+      <div class="ob-steps" id="obSteps" aria-hidden="true"></div>
+    </div>
+    <div class="ob-body" id="obBody"></div>
+    <div class="ob-foot" id="obFoot"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -566,13 +651,13 @@ const STUDENTS = [
 ];
 
 /* State */
-const KEY = 'pathway-campus-demo-v2';
+const KEY = 'pathway-campus-demo-v3';
 const fresh = () => ({
   mode: 'alumno', xp: 1240, todayXp: 20, goal: 50, streak: 12, doneToday: false,
   lessonDone: false, lessonXp: 0, lessonsTotal: 37, perfect: 4,
   badges: ['racha7', 'simulacro'], newBadges: [],
   last6: [40, 65, 50, 30, 80, 55], deck: DECK.map(c => ({ ...c })), reviewed: 0,
-  challenge: 3, groupXp: 1420
+  challenge: 3, groupXp: 1420, onboarded: false, profile: null
 });
 let S = fresh();
 try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v && v.xp) S = { ...fresh(), ...v }; } catch (e) {}
@@ -614,7 +699,7 @@ function renderNav(cur) {
   $('#tabbar').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join('');
   $('#promo').innerHTML = S.mode === 'profesor'
     ? `<span>Próxima clase</span><b>Jueves · 18:00</b><span>Valentina R. · Unidad 2</span>`
-    : `<span>Próximo simulacro</span><b>Sábado 28 de nov</b><span>Compréhension orale · 40 min</span>`;
+    : `<span>Próximo simulacro</span><b>Sábado 28 de nov</b><span>${examChoices()[0] === 'tcf' ? 'TCF' : 'TEF'} · Compréhension orale</span>`;
 }
 const topBar = (id, title, sub) => `<header class="top">
   <div><h1 id="${id}">${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>
@@ -676,7 +761,7 @@ function viewInicio() {
         <div class="lv"><b>B2</b><div class="track"><i style="width:0"></i></div><small>64 unidades</small></div>
         <span class="lv-goal">${icon('target')}NCLC 7</span>
       </div>
-      <p class="muted" style="margin-top:20px;font-size:14px">NCLC 7 en las cuatro competencias abre las rondas Express Entry por competencia en francés.</p>
+      <p class="muted" style="margin-top:20px;font-size:14px">${S.profile ? `<b style="color:var(--ink)">${EXAMS[S.profile.examen] || EXAMS.nose}${S.profile.fecha && S.profile.fecha !== 'nose' ? ' · ' + fechaLabel(S.profile.fecha) : ''}.</b> ` : ''}NCLC 7 en las cuatro competencias abre las rondas Express Entry por competencia en francés.</p>
     </article>
     <article class="tile c-5">
       <div class="tile-head"><h2>Tu semana</h2><span class="pill ghost num">${vals.reduce((a, b) => a + b, 0)} XP</span></div>
@@ -750,23 +835,30 @@ function viewRepasar() {
   </section>`;
 }
 
+let simExam = null;
+const examChoices = () => { const e = S.profile && S.profile.examen; return e === 'tef' ? ['tef'] : e === 'tcf' ? ['tcf'] : ['tef', 'tcf']; };
 function viewSimulacros() {
+  const choices = examChoices();
+  if (!choices.includes(simExam)) simExam = choices[0];
+  const dur = simExam === 'tcf' ? ['35 min', '60 min', '60 min', '12 min'] : ['40 min', '60 min', '60 min', '15 min'];
+  const name = simExam === 'tcf' ? 'TCF Canada' : 'TEF Canada';
   const sk = [
-    { k: 'Compréhension orale', v: 6, d: '40 min', icon: 'speaker', c: 'sky' },
-    { k: 'Compréhension écrite', v: 6, d: '60 min', icon: 'book', c: 'lilac' },
-    { k: 'Expression écrite', v: 5, d: '60 min', icon: 'pen', c: 'peach' },
-    { k: 'Expression orale', v: 5, d: '15 min', icon: 'mic', c: 'butter' }
+    { k: 'Compréhension orale', v: 6, d: dur[0], icon: 'speaker', c: 'sky' },
+    { k: 'Compréhension écrite', v: 6, d: dur[1], icon: 'book', c: 'lilac' },
+    { k: 'Expression écrite', v: 5, d: dur[2], icon: 'pen', c: 'peach' },
+    { k: 'Expression orale', v: 5, d: dur[3], icon: 'mic', c: 'butter' }
   ];
   const gauge = v => {
     const r = 49, c = 2 * Math.PI * r;
     return `<svg class="gauge" viewBox="0 0 120 120" role="img" aria-label="NCLC ${v} de 10, meta 7"><circle class="t" cx="60" cy="60" r="${r}"/><circle class="v" cx="60" cy="60" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - v / 10)).toFixed(1)}"/><circle class="goal" cx="60" cy="60" r="${r}" stroke-dasharray="2.5 ${c.toFixed(1)}" transform="rotate(${-90 + 252} 60 60)"/><text x="60" y="64" text-anchor="middle" class="num">${v}</text><text x="60" y="82" text-anchor="middle" class="sub">NCLC</text></svg>`;
   };
   return `<section class="view" aria-labelledby="h-sim">
-  ${topBar('h-sim', 'Simulacros TEF', 'Último simulacro: 25 de octubre · la marca naranja es tu meta, NCLC 7')}
+  ${topBar('h-sim', 'Simulacros', 'Último simulacro: 25 de octubre · la marca naranja es tu meta, NCLC 7')}
+  ${choices.length > 1 ? `<div class="seg-tabs" role="group" aria-label="Examen">${choices.map(x => `<button type="button" data-exam="${x}" aria-pressed="${x === simExam}"><b>${x === 'tcf' ? 'C' : 'E'}</b>${x === 'tcf' ? 'TCF Canada' : 'TEF Canada'}</button>`).join('')}</div>` : ''}
   <div class="exam-grid">${sk.map(s => `<article class="tile ${s.c} exam"><div class="row"><span class="pill">${icon(s.icon)}${s.d}</span></div>
       <div style="display:flex;justify-content:center">${gauge(s.v)}</div>
       <div class="row"><h3>${s.k}</h3><button class="round" style="box-shadow:none" aria-label="Empezar ${s.k}" data-toast="Los simulacros llegan en la fase 2. En este prototipo se juega la unidad 1.">${icon('arrow')}</button></div></article>`).join('')}</div>
-  <p class="faint" style="font-size:13px">Estimación orientativa en formato TEF Canada; no sustituye el resultado oficial.</p>
+  <p class="faint" style="font-size:13px">Estimación orientativa en formato ${name}; no sustituye el resultado oficial.</p>
   </section>`;
 }
 
@@ -838,12 +930,13 @@ function route() {
 window.addEventListener('hashchange', () => { flipped = false; route(); });
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-start],[data-toast],[data-unit],[data-say],[data-rate],[data-seg],[data-mode],#flash');
+  const t = e.target.closest('[data-start],[data-toast],[data-unit],[data-say],[data-rate],[data-seg],[data-exam],[data-mode],#flash');
   if (!t) return;
   if (t.matches('[data-say]')) { e.stopPropagation(); if (!speak(t.dataset.say, .9, t)) toast('Este navegador no tiene voz francesa. En la plataforma, el audio lo graban los profesores.'); return; }
   if (t.matches('[data-mode]')) { location.hash = t.dataset.mode === 'profesor' ? 'profesor' : 'inicio'; return; }
   if (t.matches('[data-start]')) return startLesson();
   if (t.matches('[data-toast]')) return toast(t.dataset.toast);
+  if (t.matches('[data-exam]')) { simExam = t.dataset.exam; $('#main').innerHTML = viewSimulacros(); return; }
   if (t.matches('[data-seg]')) { seg = +t.dataset.seg; $('#main').innerHTML = viewRuta(); return; }
   if (t.matches('[data-unit]')) {
     const u = t.dataset.unit;
@@ -1093,8 +1186,111 @@ document.addEventListener('keydown', e => {
     if (flipped && /^[1-4]$/.test(e.key)) rate(+e.key - 1);
   }
 });
-$('#resetDemo').onclick = () => { S = fresh(); save(); flipped = false; seg = 0; if (location.hash === '#inicio') route(); else location.hash = 'inicio'; toast('Demo reiniciada.'); };
+/* Onboarding */
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MONTHS_L = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const monthList = () => { const out = []; for (let i = 0; i < 18; i++) { const m = (11 + i) % 12, y = 2026 + Math.floor((11 + i) / 12); out.push({ v: `${y}-${String(m + 1).padStart(2, '0')}`, m, y }); } return out; };
+const fechaLabel = v => { if (!v || v === 'nose') return 'Por definir'; const [y, m] = v.split('-'); return `${MONTHS_L[+m - 1]} de ${y}`; };
+const EXAMS = { tef: 'TEF Canada', tcf: 'TCF Canada', ambos: 'TEF y TCF Canada', nose: 'Por definir con tu profesor' };
+const MOTIVOS = { rp: 'Residencia permanente', estudios: 'Estudiar en Canadá', trabajo: 'Trabajar en francés', otro: 'Proyecto personal' };
+const RITMOS = { 30: '10 min al día', 50: '15 min al día', 80: '25 min al día' };
+const OB = [
+  { id: 'hola', c: 'peach', word: 'Bonjour', st: [['Valentina R.', 'Invitada por Ryan'], ['A2', 'Tu nivel de partida']] },
+  { id: 'motivo', c: 'lilac', word: 'Pourquoi ?', st: [['Express Entry', 'NCLC 7'], ['Québec', 'PEQ, PSTQ']], key: 'motivo', title: '¿Para qué aprendes francés?', sub: 'Elegimos los temas y los ejemplos según tu proyecto.',
+    opts: [{ v: 'rp', t: 'Residencia permanente', d: 'Express Entry y programas provinciales', ic: 'target' }, { v: 'estudios', t: 'Estudiar en Canadá', d: 'Universidad, college o cégep', ic: 'book' }, { v: 'trabajo', t: 'Trabajar en francés', d: 'Entrevistas, correos y reuniones', ic: 'users' }, { v: 'otro', t: 'Otro proyecto', d: 'Familia, viajes o gusto personal', ic: 'sparkle' }] },
+  { id: 'examen', c: 'sky', word: 'TEF · TCF', st: [['TEF Canada', '4 pruebas'], ['TCF Canada', '4 pruebas']], key: 'examen', title: '¿Qué examen vas a presentar?', sub: 'IRCC acepta los dos. Tus simulacros seguirán el formato que elijas, y puedes cambiarlo después.',
+    opts: [{ v: 'ambos', t: 'Los dos', d: 'Lo que hace la mayoría de nuestros alumnos', ic: 'cards', rec: true }, { v: 'tef', t: 'TEF Canada', d: 'Simulacros con el formato del TEF', ic: 'timer' }, { v: 'tcf', t: 'TCF Canada', d: 'Simulacros con el formato del TCF', ic: 'timer' }, { v: 'nose', t: 'Aún no lo sé', d: 'Lo decides con tu profesor', ic: 'users' }] },
+  { id: 'fecha', c: 'butter', word: '2027', st: [['Fecha objetivo', 'aproximada']], key: 'fecha', title: '¿Cuándo quieres presentarlo?', sub: 'Una fecha aproximada basta para organizar tu ritmo.' },
+  { id: 'nivel', c: 'mint', word: 'A2', st: [['Test de nivel', '3 de noviembre']], key: 'nivel', title: 'Tu nivel de partida', sub: 'Según tu test de nivel. Corrígelo si tu profesor te indicó otro.' },
+  { id: 'ritmo', c: 'peach', word: '15 min', st: [['Meta diaria', 'tu racha']], key: 'goal', title: '¿Cuánto tiempo al día?', sub: 'Tu meta diaria. Cumplirla mantiene tu racha.',
+    opts: [{ v: 30, t: '10 min al día', d: 'Tranquilo · 30 XP', ic: 'timer' }, { v: 50, t: '15 min al día', d: 'Regular · 50 XP', ic: 'timer', rec: true }, { v: 80, t: '25 min al día', d: 'Intenso · 80 XP', ic: 'flame' }] },
+  { id: 'plan', c: 'lilac', word: 'NCLC 7', st: [['Tu plan', 'listo']] }
+];
+let ob = { i: 0, p: {} };
+const obEl = $('#ob');
+function openOnboarding() {
+  ob = { i: 0, p: { nivel: 'A2', recordatorio: 'noche', canal: 'whatsapp', ...(S.profile || {}) } };
+  obEl.hidden = false; document.body.classList.add('no-scroll'); renderOb();
+}
+function obWord(step) {
+  if (step.id === 'fecha' && ob.p.fecha && ob.p.fecha !== 'nose') { const [y, m] = ob.p.fecha.split('-'); return `${MONTHS[+m - 1]} ${y.slice(2)}`; }
+  if (step.id === 'nivel') return ob.p.nivel || 'A2';
+  if (step.id === 'ritmo' && ob.p.goal) return RITMOS[ob.p.goal].replace(' al día', '');
+  if (step.id === 'examen' && ob.p.examen === 'tef') return 'TEF';
+  if (step.id === 'examen' && ob.p.examen === 'tcf') return 'TCF';
+  return step.word;
+}
+function obReady(step) { return !step.key || step.key === 'nivel' || ob.p[step.key] != null; }
+function renderOb() {
+  const step = OB[ob.i];
+  const art = $('#obArt');
+  art.style.background = `var(--${step.c})`;
+  art.innerHTML = `<span class="ob-logo"><span class="logo-mark"><svg class="icon"><use href="#i-route"/></svg></span>Pathway</span>
+    ${step.st.map((s, i) => `<span class="ob-sticker o${i + 1}">${esc(s[0])}<small>${esc(s[1])}</small></span>`).join('')}
+    <span class="ob-word" aria-hidden="true">${esc(obWord(step))}</span>`;
+  $('#obSteps').innerHTML = OB.map((_, i) => `<i class="${i <= ob.i ? 'on' : ''}"></i>`).join('');
+  $('#obBack').disabled = ob.i === 0;
+  let h = '';
+  if (step.id === 'hola') {
+    h = `<h1>Hola, Valentina</h1><p class="sub">Ryan te invitó al campus de Pathway: ejercicios, repaso y simulacros entre tus clases. Dos minutos para preparar tu plan.</p>
+      <div class="plan"><div><span>Tu profesor</span><b>Ryan</b></div><div><span>Tus clases</span><b>Martes y jueves · 18:00</b></div></div>`;
+  } else if (step.opts) {
+    h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="choices" role="radiogroup">${step.opts.map(o => `<button type="button" class="choice" role="radio" data-ob="${step.key}" data-v="${o.v}" aria-pressed="${String(ob.p[step.key]) === String(o.v)}" aria-checked="${String(ob.p[step.key]) === String(o.v)}"><span class="ci">${icon(o.ic)}</span><span><b>${o.t}</b><small>${o.d}</small></span><span class="end">${o.rec ? '<span class="tag-rec">Recomendado</span>' : ''}<span class="tick">${icon('check')}</span></span></button>`).join('')}</div>`;
+    if (step.id === 'ritmo') {
+      const rem = [['manana', 'Mañana · 8:00'], ['mediodia', 'Mediodía · 12:30'], ['noche', 'Noche · 20:00'], ['no', 'Sin recordatorio']];
+      h += `<div class="ob-extra"><h3>Recordatorio diario</h3><div class="seg-chips">${rem.map(([v, t]) => `<button type="button" data-ob="recordatorio" data-v="${v}" aria-pressed="${ob.p.recordatorio === v}">${t}</button>`).join('')}</div>
+        ${ob.p.recordatorio !== 'no' ? `<div class="seg-chips">${[['whatsapp', 'Por WhatsApp'], ['correo', 'Por correo']].map(([v, t]) => `<button type="button" data-ob="canal" data-v="${v}" aria-pressed="${ob.p.canal === v}">${t}</button>`).join('')}</div>` : ''}</div>`;
+    }
+  } else if (step.id === 'fecha') {
+    h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="months">${monthList().map(m => `<button type="button" class="month" data-ob="fecha" data-v="${m.v}" aria-pressed="${ob.p.fecha === m.v}">${MONTHS[m.m]}<small>${m.y}</small></button>`).join('')}
+      <button type="button" class="month wide" data-ob="fecha" data-v="nose" aria-pressed="${ob.p.fecha === 'nose'}">Aún no tengo fecha</button></div>`;
+  } else if (step.id === 'nivel') {
+    h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="lvl-pick">${['A1', 'A2', 'B1', 'B2'].map(l => `<button type="button" data-ob="nivel" data-v="${l}" aria-pressed="${ob.p.nivel === l}">${l}<small>${l === 'A2' ? 'Tu test' : { A1: 'Principiante', B1: 'Intermedio', B2: 'Avanzado' }[l]}</small></button>`).join('')}</div>
+      <a class="ob-link" href="https://pathway-languages.com/test-placement.html" target="_blank" rel="noopener">Volver a hacer el test de nivel</a>`;
+  } else if (step.id === 'plan') {
+    const p = ob.p;
+    h = `<h1>Tu plan está listo</h1><p class="sub">Ryan lo verá antes de tu próxima clase. Puedes cambiarlo cuando quieras en tu perfil.</p>
+      <div class="plan">
+        <div><span>Objetivo</span><b>${p.motivo === 'rp' || !p.motivo ? 'NCLC 7 en las 4 competencias' : MOTIVOS[p.motivo]}</b></div>
+        <div><span>Examen</span><b>${EXAMS[p.examen] || EXAMS.nose}</b></div>
+        <div><span>Fecha</span><b>${fechaLabel(p.fecha)}</b></div>
+        <div><span>Nivel de partida</span><b>${p.nivel}</b></div>
+        <div><span>Meta diaria</span><b>${RITMOS[p.goal] || RITMOS[50]}</b></div>
+        <div><span>Recordatorio</span><b>${p.recordatorio === 'no' ? 'Ninguno' : `${{ manana: '8:00', mediodia: '12:30', noche: '20:00' }[p.recordatorio]} · ${p.canal === 'correo' ? 'correo' : 'WhatsApp'}`}</b></div>
+        <div class="first"><span>Primera lección</span><b>${A2.unit1.title}</b></div>
+      </div>`;
+  }
+  $('#obBody').innerHTML = `<div class="ob-q">${h}</div>`;
+  $('#obBody').scrollTop = 0;
+  const last = ob.i === OB.length - 1;
+  $('#obFoot').innerHTML = `<span class="hint">${ob.i + 1} de ${OB.length}</span><button type="button" class="btn btn-dark" id="obNext" ${obReady(step) ? '' : 'disabled'}>${ob.i === 0 ? 'Empezar' : last ? 'Entrar al campus' : 'Continuar'}<span class="arrow">${icon('arrow')}</span></button>`;
+  $('#obNext').onclick = obNext;
+}
+function obNext() {
+  if (!obReady(OB[ob.i])) return;
+  if (ob.i < OB.length - 1) { ob.i++; return renderOb(); }
+  S.profile = { motivo: 'rp', examen: 'nose', fecha: 'nose', goal: 50, ...ob.p };
+  S.goal = S.profile.goal; S.onboarded = true; S.mode = 'alumno'; save();
+  obEl.hidden = true; document.body.classList.remove('no-scroll');
+  if (location.hash !== '#inicio') location.hash = 'inicio'; else route();
+  confetti(); toast('Bienvenida al campus, Valentina.');
+}
+$('#obBack').onclick = () => { if (ob.i > 0) { ob.i--; renderOb(); } };
+obEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-ob]'); if (!b) return;
+  const k = b.dataset.ob; let v = b.dataset.v; if (k === 'goal') v = +v;
+  ob.p[k] = v; renderOb();
+  if (k !== 'recordatorio' && k !== 'canal') setTimeout(() => $(`[data-ob="${k}"][data-v="${b.dataset.v}"]`)?.focus(), 0);
+});
+document.addEventListener('keydown', e => {
+  if (obEl.hidden) return;
+  if (e.key === 'Enter' && !(e.target.closest && e.target.closest('[data-ob],a,#obBack'))) { e.preventDefault(); obNext(); }
+});
+
+$('#resetDemo').onclick = () => { S = fresh(); save(); flipped = false; seg = 0; if (location.hash !== '#inicio') location.hash = 'inicio'; else route(); openOnboarding(); };
+$('#replayOb').onclick = openOnboarding;
 route();
+if (!S.onboarded) openOnboarding();
 })();
 </script>
 
