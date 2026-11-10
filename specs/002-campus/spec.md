@@ -5,7 +5,7 @@
 **Status**: Prototype validé à discuter — pas encore en production
 **Input**: Construire une plateforme d'apprentissage ambitieuse, accessible depuis le site vitrine, pour donner aux élèves de la matière entre les cours en visio : exercices, révisions, préparation TEF, gamification. Moderne, très travaillée côté UI / UX, 100 % fonctionnelle.
 
-**Prototype** : `prototipos/campus.html` (fichier autonome, données de démonstration, `noindex`, non publié par `build.mjs`).
+**Prototype** : `prototipos/campus.html` (fichier autonome, données de démonstration, `noindex`, non publié par `build.mjs`). Version 2 : nouvelle direction visuelle après le premier retour.
 
 ## Décisions déjà prises
 
@@ -92,7 +92,7 @@ L'élève révise des cartes (vocabulaire, conjugaisons, erreurs) qui reviennent
 - **FR-010** : Simulacres TEF chronométrés et estimation NCLC indicative (phase 2).
 - **FR-011** : Productions écrites et orales, correction professeur, pré-correction IA en option (phase 3).
 - **FR-012** : Rappels par e-mail (devoir, série en danger), puis WhatsApp si souhaité.
-- **FR-013** : Identité V4 (Outfit, DM Sans, palette officielle), thème clair et sombre, accessible au clavier, utilisable à 360 px.
+- **FR-013** : Direction visuelle propre au campus, validée sur le prototype v2 : fond neutre, tuiles pastel en grille « bento », typographie Plus Jakarta Sans, boutons en pilule, le corail de Pathway comme seule couleur vive. Thème clair et sombre, accessible au clavier, utilisable à 360 px.
 - **FR-014** : Le site vitrine existant, son déploiement et ses tests ne changent pas, à l'exception du lien FR-001.
 
 ### Key Entities

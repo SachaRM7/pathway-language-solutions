@@ -5,8 +5,9 @@
 - [x] T001 Spécification dans `specs/002-campus/spec.md`.
 - [x] T002 Architecture, coûts, méthode de contenu et phases dans `specs/002-campus/plan.md`.
 - [x] T003 Prototype cliquable élève + professeur dans `prototipos/campus.html` (unité 1 de l'A2 jouable, données de démonstration).
-- [ ] T004 Retours de Sacha, Ryan et Abdrahim sur le prototype ; ajuster la spec.
-- [ ] T005 Pathway crée le projet Supabase et le compte d'envoi d'e-mails ; transmet l'URL et la clé publique.
+- [x] T004 Premier retour : direction visuelle refaite (prototype v2).
+- [ ] T004b Retours de Ryan et Abdrahim sur le prototype v2.
+- [ ] T005 (reporté à plus tard, à la demande de Sacha) Pathway crée le projet Supabase et le compte d'envoi d'e-mails ; transmet l'URL et la clé publique.
 
 ## Phase 1 : base
 

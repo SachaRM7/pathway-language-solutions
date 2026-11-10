@@ -40,7 +40,7 @@ Les tarifs sont ceux affichés publiquement ; ils sont à confirmer au moment de
 
 À 1 h par jour, 5 jours par semaine, on peut valider à peu près 10 unités par semaine : le segment A de l'A2 prend environ 2 semaines, l'A2 complet environ 6 à 7 semaines. C'est suffisant pour la phase 1. Les quatre niveaux prendront plusieurs mois ; on les ouvre au fil de l'eau.
 
-**Besoin** : les manuels sources. Les PDF A1, B1 et B2 sont numériques (texte extractible). L'A2 est un PDF numérisé : sa source Word, si elle existe, ferait gagner beaucoup de temps. Ils ne doivent pas être versionnés dans ce dépôt public.
+**Sources** : le dossier Drive « Pathway Languages » contient, pour chaque niveau, uniquement des PDF (aucun fichier Word) : manuel apprenant, manuel complet ou guide enseignant, examens de segments en version élève et professeur (avec corrigés), bilans, registre de correction, carte de progression. Le B1 et le B2 ont aussi un examen blanc TCF Canada, et le B2 une matrice pédagogique U1–U64. Les versions professeur servent de corrigés pour les exercices et les examens du campus. Si une source Word de l'A2 existe (le PDF utilisé jusqu'ici était numérisé), elle ferait gagner du temps. Ces fichiers ne doivent pas être versionnés dans ce dépôt public.
 
 **Audio** : les textes de compréhension orale sont enregistrés par Ryan et Abdrahim (téléphone, pièce calme), ou par une synthèse vocale de qualité validée par l'équipe. La voix du navigateur sert uniquement au prototype.
 
