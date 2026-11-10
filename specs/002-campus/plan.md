@@ -63,4 +63,4 @@ Les tarifs sont ceux affichés publiquement ; ils sont à confirmer au moment de
 
 - **Contenu en retard sur le code** : on ouvre le campus unité par unité. Le prototype montre que 8 exercices bien faits suffisent à rendre une unité utile.
 - **Adoption** : les devoirs donnés en cours sont le moteur principal. Les professeurs doivent y renvoyer systématiquement.
-- **Données personnelles** : peu de données (nom, e-mail, progression). Mettre à jour la politique de confidentialité avant l'ouverture, et choisir une région Supabase au Canada si elle est proposée.
+- **Données personnelles** : peu de données (nom, e-mail, progression). Pathway est enregistrée au Pérou : la Ley 29733 s'applique et encadre le transfert des données hors du Pérou (Supabase, aux États-Unis). Avant l'ouverture, mettre à jour la politique de confidentialité (hébergeur, pays, finalités) et faire valider ce point par le conseil juridique de Pathway.

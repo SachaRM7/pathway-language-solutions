@@ -8,7 +8,7 @@
 - [x] T004 Premier retour : direction visuelle refaite (prototype v2).
 - [x] T004b Prototype v3 : onboarding, choix TEF / TCF, thème sombre revu.
 - [ ] T004c Retours de Ryan et Abdrahim sur le prototype v3.
-- [ ] T005 Pathway crée le projet Supabase (région Canada Central, voir spec) et transmet l'URL et la clé publique ; compte d'envoi d'e-mails ensuite.
+- [ ] T005 Pathway crée le projet Supabase (région Americas / East US, voir spec) et transmet l'URL et la clé publique ; compte d'envoi d'e-mails ensuite.
 
 ## Phase 1 : base
 
@@ -22,7 +22,7 @@
 - [ ] T017 Vue professeur : groupe, alertes, erreurs fréquentes.
 - [ ] T018 Contenu : unités 1 à 16 de l'A2 + examen A, rédigées puis validées par Sacha.
 - [ ] T019 Lien « Campus » dans l'en-tête du site vitrine, toutes langues.
-- [ ] T020 Mise à jour de la politique de confidentialité.
+- [ ] T020 Mise à jour de la politique de confidentialité (Ley 29733, hébergement aux États-Unis), validée par le conseil juridique de Pathway.
 - [ ] T021 Test avec 3 à 5 élèves volontaires avant ouverture à tous.
 
 ## Phase 2 : profondeur
