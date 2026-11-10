@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /gracias.html
+Disallow: /campus/
 
 Sitemap: https://pathway-languages.com/sitemap.xml
