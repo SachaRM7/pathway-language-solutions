@@ -61,7 +61,7 @@ Toutes les icônes du site viennent de `v4/icons.js` : grille 24 × 24, uniqueme
 
 ## 9. Hébergement sur Cloudflare Workers
 
-Depuis novembre 2026, le site est servi par un Worker Cloudflare (`pathway-languages`), connecté à ce dépôt GitHub par Workers Builds : chaque push sur `main` reconstruit et publie le site, sans passer par GitHub Actions.
+Depuis novembre 2026, le site est servi par un Worker Cloudflare (`pathway-language`, adresse de test `pathway-language.sacha4dev.workers.dev`), connecté à ce dépôt GitHub par Workers Builds : chaque push sur `main` reconstruit et publie le site, sans passer par GitHub Actions.
 
 - Configuration : `wrangler.jsonc`. Code du Worker : `worker/index.js`.
 - Commande de build : `npm run build:cloudflare` (rafraîchit la copie IRCC, la vérifie, puis construit le site). Commande de déploiement : `npx wrangler deploy`.
