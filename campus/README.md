@@ -29,7 +29,7 @@ Supabase → **Authentication** :
 
 - **Sign In / Providers** → désactiver **Allow new users to sign up**. Seules les personnes invitées par Pathway peuvent entrer.
 - **URL Configuration** → **Site URL** : `https://pathway-languages.com/campus/`. Ajouter la même adresse dans **Redirect URLs**.
-- **Emails** → modèle **Magic Link** : ajouter la ligne `Tu código: {{ .Token }}`. L'élève peut ainsi taper le code dans le campus si le lien s'ouvre dans un autre navigateur (fréquent sur téléphone).
+- **Emails** → modèle **Magic Link** : ajouter la ligne `Tu código: {{ .Token }}`. L'élève peut ainsi taper le code dans le campus si le lien s'ouvre dans un autre navigateur (fréquent sur téléphone). Supabase ne permet de modifier les modèles qu'une fois un SMTP personnalisé branché (étape 3) : à faire à ce moment-là, en traduisant aussi les e-mails en espagnol.
 
 ### 3. Envoi des e-mails
 

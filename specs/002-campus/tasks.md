@@ -9,8 +9,8 @@
 - [x] T004b Prototype v3 : onboarding, choix TEF / TCF, thème sombre revu.
 - [ ] T004c Retours de Ryan et Abdrahim sur le prototype v3.
 - [x] T005 Projet Supabase créé (Canada Central), URL et clé publique dans `campus/config.js`.
-- [ ] T006 Pathway exécute `campus/db/001_init.sql` et règle l'authentification (voir `campus/README.md`).
-- [ ] T007 Service d'envoi d'e-mails (SMTP) avant d'inviter les élèves.
+- [x] T006 SQL 001 et 002 exécutés ; inscriptions libres fermées ; Site URL et Redirect URL réglées.
+- [ ] T007 Service d'envoi d'e-mails (SMTP) avant d'inviter les élèves. Il permet aussi de modifier les modèles d'e-mail (code à 6 chiffres, textes en espagnol) : Supabase les bloque sans SMTP personnalisé.
 
 ## Phase 1 : base
 
