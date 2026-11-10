@@ -8,7 +8,7 @@
 - [x] T004 Premier retour : direction visuelle refaite (prototype v2).
 - [x] T004b Prototype v3 : onboarding, choix TEF / TCF, thème sombre revu.
 - [ ] T004c Retours de Ryan et Abdrahim sur le prototype v3.
-- [ ] T005 Pathway crée le projet Supabase (région Americas / East US, voir spec) et transmet l'URL et la clé publique ; compte d'envoi d'e-mails ensuite.
+- [ ] T005 Pathway crée le projet Supabase (fait : région Canada Central) et transmet l'URL et la clé publique ; compte d'envoi d'e-mails ensuite.
 
 ## Phase 1 : base
 
