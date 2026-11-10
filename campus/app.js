@@ -627,7 +627,7 @@ function inviteTile() {
         <div class="form-2"><label class="field" for="invEmail">Correo<input id="invEmail" type="email" inputmode="email" autocomplete="off" required placeholder="alumno@correo.com"></label>
           <label class="field" for="invName">Nombre y apellido<input id="invName" required maxlength="120" placeholder="Valentina Rojas"></label></div>
         <div class="form-2"><label class="field" for="invLevel">Nivel<select id="invLevel">${LEVELS.map(l => `<option ${l === 'A2' ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-          ${admin ? `<label class="field" for="invTeacher">Profesor<select id="invTeacher">${A.staff.teachers.map(t => `<option value="${t.id}" ${t.id === A.profile.id ? 'selected' : ''}>${esc(t.full_name)}${t.role === 'admin' ? ' (admin)' : ''}</option>`).join('')}</select></label>`
+          ${admin ? `<label class="field" for="invTeacher">Profesor<select id="invTeacher">${A.staff.teachers.map(t => `<option value="${t.id}" ${t.id === A.profile.id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label>`
             : `<div class="field">Profesor<input value="${esc(A.profile.full_name)}" disabled></div>`}</div>
         ${admin ? `<label class="field" for="invRole">Tipo de cuenta<select id="invRole"><option value="student" selected>Alumno</option><option value="teacher">Profesor</option></select></label>` : ''}
         <button class="btn btn-dark" type="submit">${icon('plus')}Enviar la invitación</button>
@@ -650,7 +650,7 @@ function membersTile() {
         <div class="form-2"><label class="field" for="mName">Nombre<input id="mName" required maxlength="120" value="${esc(m.full_name)}"></label>
           <label class="field" for="mRole">Tipo de cuenta<select id="mRole"><option value="student" ${m.role === 'student' ? 'selected' : ''}>Alumno</option><option value="teacher" ${m.role === 'teacher' ? 'selected' : ''}>Profesor</option></select></label></div>
         <div class="form-2"><label class="field" for="mLevel">Nivel<select id="mLevel">${LEVELS.map(l => `<option ${l === m.level ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-          <label class="field" for="mTeacher">Profesor<select id="mTeacher"><option value="">Sin profesor</option>${teachers.filter(t => t.id !== m.id).map(t => `<option value="${t.id}" ${t.id === m.teacher_id ? 'selected' : ''}>${esc(t.full_name)}${t.role === 'admin' ? ' (admin)' : ''}</option>`).join('')}</select></label></div>
+          <label class="field" for="mTeacher">Profesor<select id="mTeacher"><option value="">Sin profesor</option>${teachers.filter(t => t.id !== m.id).map(t => `<option value="${t.id}" ${t.id === m.teacher_id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar</button><button class="btn btn-light btn-sm" type="button" data-member-cancel>Cancelar</button></div>
       </form>`;
     }
