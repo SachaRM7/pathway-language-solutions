@@ -147,8 +147,9 @@ await writeFile(resolve(server, 'index.js'), `export default {
 await buildV4Pages({ outDir: client, rootDir: root });
 const v4Default = await makeV4Default({ outDir: client });
 // The student and teacher campus is a separate app under /campus/ (noindex, invitation only).
-await buildCampus({ outDir: client, rootDir: root });
+const campus = await buildCampus({ outDir: client, rootDir: root });
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
+console.log(`Campus published at /campus/ and linked from ${campus.linked} page headers.`);
 console.log(`V4 design served at the root: ${v4Default.promoted.length} pages; ${v4Default.redirects.length} unfinished V4 pages keep the current-site page.`);

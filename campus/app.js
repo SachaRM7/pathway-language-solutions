@@ -34,9 +34,11 @@ const fmtDate = (d, opts, tz = tzOf()) => new Intl.DateTimeFormat('es', { timeZo
 const A = {
   session: null, profile: null, teacher: null,
   units: [], unitInfo: {}, runs: [], assignments: [], xp: [], due: 0, badges: [], myBadges: new Set(),
-  staff: { overview: [], errors: [] }, seg: null, simExam: null
+  staff: { overview: [], errors: [] }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
+const teacherMode = () => isStaff() && A.mode === 'profesor';
+try { A.mode = localStorage.getItem('campus-mode') === 'alumno' ? 'alumno' : 'profesor'; } catch (e) { /* private mode */ }
 
 const SEGMENTS = {
   A2: [
@@ -77,7 +79,7 @@ async function boot() {
   if (!A.session) return showLogin(authError ? 'El enlace ya no es válido. Pide uno nuevo.' : '');
   try { await loadAll(); } catch (e) { fail(e, 'No pudimos cargar tu campus. Revisa tu conexión.'); }
   $('#login').hidden = true;
-  if (!isStaff() && !A.profile.onboarded_at) return openOnboarding(true);
+  if (A.profile.role === 'student' && !A.profile.onboarded_at) return openOnboarding(true);
   showApp();
 }
 sb.auth.onAuthStateChange((event, session) => {
@@ -138,7 +140,7 @@ async function loadAll() {
   const uid = A.session.user.id;
   const [prof, units, ex, runs, asg, xp, due, badges, mine, teacher] = await Promise.all([
     sb.from('profiles').select('*').eq('id', uid).single(),
-    sb.from('units').select('id,level,segment,number,title,manual_time').order('level').order('number'),
+    sb.from('units').select('id,level,segment,number,title,manual_time,cards').order('level').order('number'),
     sb.from('exercises').select('unit_id,status'),
     sb.from('lesson_runs').select('unit_id,total,first_try_correct,xp,finished_at').eq('user_id', uid).order('finished_at'),
     sb.from('assignment_students').select('completed_at, assignment:assignments(id,unit_id,due_on,note,created_at)').eq('student_id', uid),
@@ -160,7 +162,22 @@ async function loadAll() {
   A.badges = badges.data;
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
+  await loadWeekly();
   if (isStaff()) await loadStaff();
+}
+async function loadWeekly() {
+  const { data, error } = await sb.rpc('weekly_challenge');
+  A.weekly = error ? null : data;
+}
+async function maybeClaimWeekly() {
+  await loadWeekly();
+  const w = A.weekly;
+  if (!w || w.claimed || w.days < w.goal_days) return;
+  const { data, error } = await sb.rpc('claim_weekly_challenge');
+  if (error || !data || !data.awarded) return;
+  A.weekly = data;
+  toast(`Reto de la semana cumplido: +${data.bonus} XP`);
+  await refresh(); render();
 }
 async function loadStaff() {
   const [ov, er] = await Promise.all([sb.rpc('teacher_overview'), sb.rpc('teacher_common_errors')]);
@@ -202,7 +219,7 @@ const TNAV = [
   { id: 'grupo', label: 'Mi grupo', icon: 'users' },
   { id: 'contenido', label: 'Contenido', icon: 'book' }
 ];
-const navItems = () => isStaff() ? TNAV : SNAV;
+const navItems = () => teacherMode() ? TNAV : SNAV;
 const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, grupo: viewGrupo, contenido: viewContenido };
 
 function currentView() {
@@ -215,18 +232,69 @@ function renderNav(cur) {
   $('#tabbar').hidden = false;
   $('#tabbar').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join('');
   const p = A.profile;
-  $('#promo').innerHTML = isStaff()
+  $('#promo').innerHTML = teacherMode()
     ? `<span>${p.role === 'admin' ? 'Administración' : 'Profesor'}</span><b>${esc(p.full_name)}</b><span>${A.staff.overview.length} alumno${A.staff.overview.length === 1 ? '' : 's'}</span>`
     : (p.next_class_at ? `<span>Próxima clase</span><b>${esc(cap(fmtDate(new Date(p.next_class_at), { weekday: 'long', day: 'numeric', month: 'short' })))}</b><span>${fmtDate(new Date(p.next_class_at), { hour: '2-digit', minute: '2-digit' })}${A.teacher ? ' · ' + esc(A.teacher.full_name) : ''}</span>`
       : `<span>Tu objetivo</span><b>NCLC 7</b><span>${esc(EXAMS[p.exam] || 'Examen por definir')}</span>`);
   $('#sideFoot').innerHTML = `<span>${esc(firstName(p.full_name))}</span><button type="button" data-action="menu">Mi cuenta</button>`;
 }
 function topBar(id, title, sub) {
-  const p = A.profile;
+  const p = A.profile, notes = notifications();
+  let seen = ''; try { seen = localStorage.getItem('campus-seen') || ''; } catch (e) { /* ignore */ }
+  const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
   return `<header class="top"><div><h1 id="${id}">${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">
+      ${teacherMode() ? '' : `<div class="menu-wrap"><label class="search" for="campusSearch">${icon('search')}<input id="campusSearch" type="search" autocomplete="off" placeholder="Buscar una unidad, un verbo…" value="${esc(A.search)}"></label><div id="searchSlot"></div></div>`}
+      ${isStaff() ? `<div class="switch" role="group" aria-label="Vista"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode()}">Profesor</button></div>` : ''}
+      <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
       <div class="menu-wrap"><button type="button" class="round ava-btn" data-action="menu" aria-label="Mi cuenta" aria-haspopup="true"><span class="ava">${esc(initials(p.full_name))}</span></button><div id="menuSlot"></div></div>
     </div></header>`;
+}
+function notifications() {
+  const out = [];
+  if (teacherMode()) {
+    const inactive = A.staff.overview.filter(s => s.onboarded && (daysSince(s.last_activity) == null || daysSince(s.last_activity) >= 4)).length;
+    const fresh = A.staff.overview.filter(s => !s.onboarded).length;
+    if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#grupo' });
+    if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#grupo' });
+    return out;
+  }
+  for (const a of openHomework()) {
+    const u = unitById(a.unit_id); if (!u) continue;
+    const due = a.due_on ? ' · para el ' + fmtDate(new Date(a.due_on + 'T12:00:00Z'), { weekday: 'long', day: 'numeric' }, 'UTC') : '';
+    out.push({ key: 'hw' + a.id, ic: 'pen', text: `${A.teacher ? esc(firstName(A.teacher.full_name)) + ' te asignó' : 'Tarea:'} la unidad ${u.number}${due}.`, start: u.id });
+  }
+  if (A.profile.next_class_at && new Date(A.profile.next_class_at) > new Date()) {
+    const d = new Date(A.profile.next_class_at);
+    out.push({ key: 'class' + A.profile.next_class_at, ic: 'video', text: `Próxima clase: ${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' })} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}.`, href: '#inicio' });
+  }
+  if (A.due) out.push({ key: 'due' + A.due, ic: 'cards', text: `${A.due} tarjeta${A.due > 1 ? 's' : ''} para repasar hoy.`, href: '#repasar' });
+  return out;
+}
+function toggleBell() {
+  const slot = $('#bellSlot'); if (!slot) return;
+  if (slot.innerHTML) { slot.innerHTML = ''; return; }
+  closeMenus();
+  const notes = notifications();
+  try { localStorage.setItem('campus-seen', notes.map(n => n.key).join('|')); } catch (e) { /* ignore */ }
+  $('[data-action="bell"] .pip')?.remove();
+  slot.innerHTML = `<div class="menu menu-wide" role="menu"><div class="who"><b>Notificaciones</b></div>${notes.length ? notes.map(n => n.start
+    ? `<button type="button" role="menuitem" data-start="${n.start}">${icon(n.ic)}<span>${n.text}</span></button>`
+    : `<a role="menuitem" href="${n.href}">${icon(n.ic)}<span>${n.text}</span></a>`).join('') : '<p class="menu-empty">Nada nuevo por ahora.</p>'}</div>`;
+}
+function closeMenus() { for (const id of ['#menuSlot', '#bellSlot', '#searchSlot']) { const s = $(id); if (s) s.innerHTML = ''; } }
+function runSearch(q) {
+  A.search = q;
+  const slot = $('#searchSlot'); if (!slot) return;
+  const n = q.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (n.length < 2) { slot.innerHTML = ''; return; }
+  const plain = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const units = A.units.filter(u => playable(u) && (plain(u.title).includes(n) || `unidad ${u.number}` === n || String(u.number) === n)).slice(0, 5);
+  const words = [];
+  for (const u of A.units) for (const c of (u.cards || [])) if (playable(u) && (plain(c.front).includes(n) || plain(c.back).includes(n))) words.push({ u, c });
+  slot.innerHTML = `<div class="menu menu-wide" role="listbox">${units.map(u => `<button type="button" data-start="${u.id}">${icon('route')}<span><b>${esc(u.title)}</b><small>Unidad ${u.number} · ${u.level}</small></span></button>`).join('')}
+    ${words.slice(0, 6).map(w => `<button type="button" data-say="${esc(w.c.front)}">${icon('speaker')}<span><b>${esc(w.c.front)}</b><small>${esc(w.c.back)} · unidad ${w.u.number}</small></span></button>`).join('')}
+    ${!units.length && !words.length ? `<p class="menu-empty">Sin resultados para «${esc(q.trim())}».</p>` : ''}</div>`;
 }
 function render() {
   if (!A.profile) return;
@@ -245,6 +313,7 @@ window.addEventListener('hashchange', () => { flipped = false; if (A.profile && 
 function toggleMenu() {
   const slot = $('#menuSlot'); if (!slot) return;
   if (slot.innerHTML) { slot.innerHTML = ''; return; }
+  closeMenus();
   const p = A.profile;
   slot.innerHTML = `<div class="menu" role="menu"><div class="who"><b>${esc(p.full_name)}</b>${esc(A.session.user.email)}</div>
     ${isStaff() ? '' : `<button type="button" role="menuitem" data-action="plan">${icon('target')}Mi plan</button>`}
@@ -326,13 +395,25 @@ function viewInicio() {
         : `<p class="muted" style="font-size:14px">Tu profesor aún no programó la próxima clase.</p>`}
       <div class="teacher"><span class="ava sm">${esc(initials(A.teacher?.full_name || 'P'))}</span><b>${esc(A.teacher?.full_name || 'Tu profesor')}</b>${nc && p.class_link ? `<a class="btn btn-dark btn-sm" style="margin-left:auto" href="${esc(p.class_link)}" target="_blank" rel="noopener">Unirse</a>` : ''}</div>
     </article>
-    <article class="tile mint c-3">
+    ${challengeTile()}
+  </div></section>`;
+}
+
+function challengeTile() {
+  const w = A.weekly;
+  if (!w) return `<article class="tile mint c-3">
       <p class="label" style="color:var(--mint-ink)">Repaso</p>
       <p class="big num" style="margin-top:12px">${A.due}<span style="font-size:18px;color:var(--mint-ink)"> tarjeta${A.due === 1 ? '' : 's'}</span></p>
       <p style="margin-top:8px;font-weight:600;font-size:14px">Vocabulario y errores que vuelven justo antes de que los olvides.</p>
-      <a class="btn btn-dark btn-sm" style="margin-top:16px" href="#repasar">Repasar</a>
-    </article>
-  </div></section>`;
+      <a class="btn btn-dark btn-sm" style="margin-top:16px" href="#repasar">Repasar</a></article>`;
+  const days = Math.min(w.days, w.goal_days);
+  return `<article class="tile mint c-3">
+      <p class="label" style="color:var(--mint-ink)">${A.teacher ? 'Reto de ' + esc(firstName(A.teacher.full_name)) : 'Reto de la semana'}</p>
+      <p class="big num" style="margin-top:12px">${days}<span style="font-size:18px;color:var(--mint-ink)"> / ${w.goal_days} días</span></p>
+      <p style="margin-top:8px;font-weight:600;font-size:14px">${w.claimed ? `Reto cumplido · +${w.bonus} XP ganados` : `Practica ${w.goal_days} días distintos esta semana · +${w.bonus} XP`}</p>
+      <div class="dots">${Array.from({ length: w.goal_days }, (_, i) => `<i class="${i < days ? 'on' : ''}"></i>`).join('')}</div>
+      ${w.group_size > 1 ? `<p class="group num">Grupo: ${fmt(w.group_xp)} / ${fmt(w.group_goal)} XP esta semana</p>` : `<p class="group num">${fmt(w.group_xp)} XP esta semana</p>`}
+    </article>`;
 }
 
 function viewRuta() {
@@ -415,6 +496,7 @@ async function rate(g) {
   if (data && data.goal_reached) { A.profile.streak = data.streak; A.profile.last_goal_day = todayKey(); toast(`Meta de hoy cumplida · racha de ${data.streak} día${data.streak === 1 ? '' : 's'}`); }
   if (g > 0) A.xp.push({ amount: 2, created_at: new Date().toISOString() });
   flipped = false; render();
+  if (g > 0 && A.weekly && !A.weekly.claimed) maybeClaimWeekly();
 }
 
 function viewSimulacros() {
@@ -426,10 +508,16 @@ function viewSimulacros() {
   return `<section class="view" aria-labelledby="h-sim">
   ${topBar('h-sim', 'Simulacros', 'Pruebas cronometradas en las condiciones del examen, con una estimación NCLC por competencia')}
   ${choices.length > 1 ? `<div class="seg-tabs" role="group" aria-label="Examen">${choices.map(x => `<button type="button" data-exam="${x}" aria-pressed="${x === A.simExam}"><b>${x === 'tcf' ? 'C' : 'E'}</b>${x === 'tcf' ? 'TCF Canada' : 'TEF Canada'}</button>`).join('')}</div>` : ''}
-  <div class="exam-grid">${sk.map(([k, ic, c], i) => `<article class="tile ${c} exam"><div class="row"><span class="pill">${icon(ic)}${dur[i]}</span><span class="pill">Pronto</span></div>
-    <div><h3>${k}</h3><p style="font-size:14px;margin-top:6px;color:var(--ink-2)">Formato ${A.simExam === 'tcf' ? 'TCF' : 'TEF'} Canada</p></div></article>`).join('')}</div>
-  <p class="faint" style="font-size:13px">Los simulacros llegan en la próxima etapa del campus. Mientras tanto, tu profesor organiza los simulacros en clase.</p>
+  <div class="exam-grid">${sk.map(([k, ic, c], i) => `<article class="tile ${c} exam"><div class="row"><span class="pill">${icon(ic)}${dur[i]}</span></div>
+      <div style="display:flex;justify-content:center">${gauge(null)}</div>
+      <div class="row"><h3>${k}</h3><button class="round" style="box-shadow:none" aria-label="Empezar ${k}" data-toast="Los simulacros en línea llegan en la próxima etapa del campus. Mientras tanto, tu profesor los organiza en clase.">${icon('arrow')}</button></div></article>`).join('')}</div>
+  <p class="faint" style="font-size:13px">Tu estimación NCLC aparecerá después de tu primer simulacro. La marca naranja es tu meta, NCLC 7. Estimación orientativa en formato ${A.simExam === 'tcf' ? 'TCF' : 'TEF'} Canada; no sustituye el resultado oficial.</p>
   </section>`;
+}
+
+function gauge(v) {
+  const r = 49, c = 2 * Math.PI * r;
+  return `<svg class="gauge" viewBox="0 0 120 120" role="img" aria-label="${v == null ? 'Sin resultado todavía' : `NCLC ${v} de 10`}, meta NCLC 7"><circle class="t" cx="60" cy="60" r="${r}"/>${v == null ? '' : `<circle class="v" cx="60" cy="60" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - v / 10)).toFixed(1)}"/>`}<circle class="goal" cx="60" cy="60" r="${r}" stroke-dasharray="2.5 ${c.toFixed(1)}" transform="rotate(162 60 60)"/><text x="60" y="64" text-anchor="middle" class="num">${v == null ? '—' : v}</text><text x="60" y="82" text-anchor="middle" class="sub">NCLC</text></svg>`;
 }
 
 function viewLogros() {
@@ -479,9 +567,9 @@ function viewGrupo() {
     <article class="tile mint c-4 kpi"><p class="label" style="color:var(--mint-ink)">Tareas pendientes</p><p class="big num">${open}</p></article>
     <article class="tile peach c-4 kpi"><p class="label" style="color:var(--peach-ink)">Aciertos a la primera</p><p class="big num">${avgAcc == null ? '—' : avgAcc + '%'}</p></article>
     <article class="tile c-7"><div class="tile-head"><h2>Necesitan atención</h2></div>
-      ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert"><span class="ava">${esc(initials(a.s.full_name))}</span><p><b>${esc(a.s.full_name)}</b><br>${a.text}</p></div>`).join('')}</div>` : '<p class="muted">Todo el grupo está al día.</p>'}</article>
+      ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert"><span class="ava">${esc(initials(a.s.full_name))}</span><p><b>${esc(a.s.full_name)}</b><br>${a.text}</p>${units.length ? `<button class="btn btn-dark btn-sm" type="button" data-hw-student="${a.s.id}">Asignar tarea</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">Todo el grupo está al día.</p>'}</article>
     <article class="tile c-5"><div class="tile-head"><h2>Errores frecuentes</h2><span class="pill ghost">30 días</span></div>
-      ${A.staff.errors.length ? A.staff.errors.map(e => `<div class="err-row"><span>${esc(correctText({ type: e.type, ...e.payload }))}</span><span class="pill ghost num">${e.students} alumno${e.students === 1 ? '' : 's'}</span></div>`).join('') : '<p class="muted">Aún no hay errores registrados.</p>'}</article>
+      ${A.staff.errors.length ? A.staff.errors.map(e => { const c = reviewCard({ id: e.exercise_id, type: e.type, ...e.payload }); return `<div class="err-row"><span><s>${esc(c.front)}</s> → <b>${esc(c.back)}</b></span><span class="pill ghost num">${e.students} alumno${e.students === 1 ? '' : 's'}</span></div>`; }).join('') : '<p class="muted">Aún no hay errores registrados.</p>'}</article>
     <article class="tile"><div class="tile-head"><h2>Alumnos</h2></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Tareas</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
     <article class="tile c-6"><div class="tile-head"><h2>Anotar un error de la clase</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">Se convierte en una tarjeta de repaso del alumno.</p>
@@ -554,10 +642,20 @@ function bindView(id) {
 }
 
 document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-exam],[data-action],[data-preview],[data-publish],#flash');
-  if (!t) { const slot = $('#menuSlot'); if (slot && slot.innerHTML && !e.target.closest('.menu')) slot.innerHTML = ''; return; }
+  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],#flash');
+  if (!e.target.closest('.menu-wrap')) closeMenus();
+  if (!t) return;
+  if (t.matches('[data-mode]')) {
+    A.mode = t.dataset.mode; try { localStorage.setItem('campus-mode', A.mode); } catch (err) { /* ignore */ }
+    location.hash = navItems()[0].id; render(); return;
+  }
+  if (t.matches('[data-hw-student]')) {
+    const box = $(`#hwForm input[value="${t.dataset.hwStudent}"]`);
+    if (box) { box.checked = true; $('#hwForm').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); setTimeout(() => $('#hwUnit')?.focus({ preventScroll: true }), 300); }
+    return;
+  }
   if (t.matches('[data-say]')) { e.stopPropagation(); if (!speak(t.dataset.say, .9, t)) toast('Este navegador no tiene voz francesa.'); return; }
-  if (t.matches('[data-start]')) return startLesson(t.dataset.start, false);
+  if (t.matches('[data-start]')) { closeMenus(); return startLesson(t.dataset.start, false); }
   if (t.matches('[data-preview]')) return startLesson(t.dataset.preview, true);
   if (t.matches('[data-toast]')) return toast(t.dataset.toast);
   if (t.matches('[data-seg]')) { A.seg = +t.dataset.seg; render(); return; }
@@ -572,15 +670,18 @@ document.addEventListener('click', async e => {
     await refresh(); render(); return;
   }
   const a = t.dataset.action;
-  if (a === 'menu') { e.stopPropagation(); if (!$('#menuSlot')) location.hash = navItems()[0].id; toggleMenu(); return; }
+  if (a === 'menu') { e.stopPropagation(); toggleMenu(); return; }
+  if (a === 'bell') { e.stopPropagation(); toggleBell(); return; }
   if (a === 'logout') { await sb.auth.signOut(); return; }
   if (a === 'plan') { $('#menuSlot').innerHTML = ''; return openOnboarding(false); }
 });
+document.addEventListener('input', e => { if (e.target.id === 'campusSearch') runSearch(e.target.value); });
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (!$('#lesson').hidden) return lessonKeys(e, tag);
   if (!$('#ob').hidden) return;
-  if (e.key === 'Escape') { const slot = $('#menuSlot'); if (slot) slot.innerHTML = ''; }
+  if (e.key === 'Escape') closeMenus();
+  if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
     if (e.key === ' ') { e.preventDefault(); flip(); }
     if (flipped && /^[1-4]$/.test(e.key)) rate(+e.key - 1);
@@ -902,7 +1003,7 @@ async function finish() {
   countUp($('#xpCount'), data.xp);
   confetti();
   R.loaded = false;
-  refresh().then(() => { if (lessonEl.hidden) render(); });
+  refresh().then(() => { if (lessonEl.hidden) render(); return maybeClaimWeekly(); });
 }
 function countUp(el, to) {
   if (reduced || !el) { if (el) el.textContent = '+' + to; return; }

@@ -8,15 +8,20 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `index.html`, `campus.css`, `app.js` | L'application (élève + professeur), sans outil de build |
 | `config.js` | Adresse du projet Supabase et clé publique (publishable). Jamais de clé secrète ici. |
 | `db/001_init.sql` | Tables, règles d'accès (RLS), calcul des XP et des séries, contenu de l'unité 1 de l'A2 |
+| `db/002_weekly_challenge.sql` | Défi de la semaine (5 jours de pratique, +50 XP) et objectif de groupe |
 
-`scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`) et refuse de publier si `config.js` contient autre chose que la clé publique.
+`scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
+
+Les professeurs et l'admin peuvent passer en vue « Alumno » (bouton en haut) pour utiliser le campus comme un élève avec leur propre compte.
 
 ## Mise en route (une seule fois)
 
 ### 1. Créer la base
 
 Supabase → **SQL Editor** → **New query** → coller tout le contenu de `db/001_init.sql` → **Run**.
-Le message attendu est « Success. No rows returned ». Le script ne doit être exécuté qu'une fois.
+Puis une nouvelle requête avec `db/002_weekly_challenge.sql` → **Run**.
+Le message attendu est « Success. No rows returned ». Chaque script ne s'exécute qu'une fois, dans l'ordre des numéros.
+Sans le 002, le campus fonctionne et affiche la carte « Repaso » à la place du défi de la semaine.
 
 ### 2. Régler la connexion
 

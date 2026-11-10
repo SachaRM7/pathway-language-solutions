@@ -24,7 +24,8 @@
 - [x] T016 Devoirs : assignation, suivi, rendu automatique.
 - [x] T017 Vue professeur : groupe, alertes, erreurs fréquentes, erreur de cours, prochain cours, publication du contenu.
 - [ ] T018 Contenu : unités 1 à 16 de l'A2 + examen A, rédigées puis validées par Sacha.
-- [ ] T019 Lien « Campus » dans l'en-tête du site vitrine, toutes langues.
+- [x] T019 Lien d'accès dans l'en-tête du site vitrine, toutes langues (ajouté à la construction ; en-tête compacté entre 1024 et 1500 px pour qu'il tienne).
+- [x] T019b Parité avec le prototype : recherche, notifications, bascule Profesor / Alumno, défi de la semaine et objectif de groupe (`002_weekly_challenge.sql`), jauges des simulacros.
 - [ ] T020 Mise à jour de la politique de confidentialité (Ley 29733, hébergement aux États-Unis), validée par le conseil juridique de Pathway.
 - [ ] T021 Test avec 3 à 5 élèves volontaires avant ouverture à tous.
 
