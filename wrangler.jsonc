@@ -1,0 +1,24 @@
+// Cloudflare Worker for pathway-languages.com (Workers Builds, connected to this GitHub repository).
+// Build command:  npm run build:cloudflare
+// Deploy command: npx wrangler deploy
+{
+  "$schema": "https://unpkg.com/wrangler@4.160.0/config-schema.json",
+  "name": "pathway-languages",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    // URLs are served exactly as on GitHub Pages: /page.html stays /page.html; folders get their
+    // index.html from the Worker (see worker/index.js).
+    "html_handling": "none",
+    "not_found_handling": "none",
+    // The IRCC rounds file is served by the Worker (live from canada.ca, cached 4 h).
+    "run_worker_first": ["/v4/data/ircc-rounds.json"]
+  },
+  // v4/ircc-rounds.js builds its browser snapshot URL from import.meta.url at load time.
+  "define": {
+    "import.meta.url": "\"https://pathway-languages.com/v4/ircc-rounds.js\""
+  },
+  "observability": { "enabled": true }
+}

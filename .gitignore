@@ -1,2 +1,3 @@
 dist/
-*.tgz
+.wrangler/
+node_modules/

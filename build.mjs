@@ -11,7 +11,6 @@ import { buildCampus } from './scripts/build-campus.mjs';
 const root = process.cwd();
 const dist = resolve(root, 'dist');
 const client = resolve(dist, 'client');
-const server = resolve(dist, 'server');
 const canonicalHome = await readFile(resolve(root, 'index-v2.html'), 'utf8');
 const sectionSignature = markup => [...markup.matchAll(/<section class="([^"]+)"/g)].map(match => match[1]);
 const canonicalHomeSections = sectionSignature(canonicalHome);
@@ -65,7 +64,6 @@ const assets = [
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(client, { recursive: true });
-await mkdir(server, { recursive: true });
 
 for (const asset of assets) {
   const destination = asset;
@@ -135,12 +133,6 @@ for (const locale of Object.keys(LOCALES)) {
   }
 }
 
-await writeFile(resolve(server, 'index.js'), `export default {
-  async fetch(request, env) {
-    return env.ASSETS.fetch(request);
-  }
-};
-`, 'utf8');
 
 // Redesigned V4 pages replace their placeholders, then the V4 design is
 // served at the root addresses; /v4/… redirects there.

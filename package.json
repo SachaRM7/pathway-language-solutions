@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "build:cloudflare": "(node scripts/refresh-v4-ircc.mjs || echo 'IRCC snapshot not refreshed: keeping the committed snapshot') && node scripts/verify-v4-ircc.mjs && node build.mjs"
   },
   "engines": {
     "node": "^24.22.1"
