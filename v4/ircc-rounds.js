@@ -327,7 +327,40 @@ export const IRCC_SOURCES = {
   buildRoundSource
 };
 
-export { parseOfficialRounds, parseSnapshot, validIsoDate, buildRoundSource };
+/**
+ * IRCC renames categories from time to time. If a recent French or CEC round
+ * no longer matches CATEGORIES, the site would silently keep an old round as
+ * "latest". Returns the unrecognised recent draw names so callers can refuse
+ * the payload and keep the last verified snapshot instead.
+ */
+function unrecognisedRecentCategories(payload, now = Date.now()) {
+  const recentLimit = new Date(now - 120 * 86400000).toISOString().slice(0, 10);
+  const names = (payload && Array.isArray(payload.rounds) ? payload.rounds : []).filter(round => {
+    const name = String(round && round.drawName || '');
+    if (String(round && round.drawDate || '') < recentLimit) return false;
+    if (/fran(?:c|ç)ais|francophon|french/i.test(name)) return !/french[- ]language proficiency/i.test(name);
+    if (/canadian experience/i.test(name)) return !/^canadian experience class\b/i.test(name);
+    return false;
+  }).map(round => round.drawName);
+  return [...new Set(names)];
+}
+
+/** Snapshot document written by scripts/refresh-v4-ircc.mjs and served live by the Worker. */
+function buildSnapshot(parsed, fetchedAt = new Date().toISOString()) {
+  const snapshot = {
+    verifiedAt: fetchedAt.slice(0, 10),
+    fetchedAt,
+    source: ROUNDS_DATA_URL,
+    roundsPage: ROUNDS_PAGE_URL,
+    categories: {}
+  };
+  for (const [key, round] of Object.entries(parsed.categories)) {
+    snapshot.categories[key] = { drawNumber: round.drawNumber, date: round.date, score: round.score, name: round.name, source: round.source };
+  }
+  return snapshot;
+}
+
+export { parseOfficialRounds, parseSnapshot, validIsoDate, buildRoundSource, unrecognisedRecentCategories, buildSnapshot };
 
 if (typeof window !== 'undefined') {
   window.PathwayIrccRounds = {
