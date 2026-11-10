@@ -616,7 +616,11 @@ function inviteTile() {
   const admin = A.profile.role === 'admin';
   const teacherName = id => (A.staff.teachers.find(t => t.id === id) || {}).full_name || '—';
   const list = A.staff.invitations;
-  const open = list.filter(i => !i.accepted_at).length;
+  const byEmail = Object.fromEntries((A.staff.members || []).map(m => [String(m.email).toLowerCase(), m]));
+  const byName = Object.fromEntries(A.staff.overview.map(m => [m.full_name, m]));
+  const joined = i => { const m = byEmail[i.email] || byName[i.full_name]; return !!(m && m.onboarded); };
+  const memberId = i => (byEmail[i.email] || {}).id || '';
+  const open = list.filter(i => !joined(i)).length;
   return `<article class="tile c-6"><div class="tile-head"><h2>Invitar a un alumno</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">Recibe un correo para entrar al campus. Su nombre, su nivel y su profesor ya quedan configurados.</p>
       <form id="invForm" class="form" novalidate>
@@ -630,7 +634,7 @@ function inviteTile() {
       </form></article>
     <article class="tile c-6"><div class="tile-head"><h2>Invitaciones</h2><span class="pill ghost num">${open} pendiente${open === 1 ? '' : 's'}</span></div>
       ${list.length ? list.slice(0, 12).map(i => `<div class="err-row"><span><b>${esc(i.full_name)}</b><br><span class="muted" style="font-size:13px">${esc(i.email)} · ${i.role === 'teacher' ? 'Profesor' : `${i.level} · ${esc(teacherName(i.teacher_id))}`}</span></span>
-        ${i.accepted_at ? '<span class="status">Activa</span>' : `<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn btn-light btn-sm" type="button" data-resend="${esc(i.email)}">Reenviar</button><button class="btn btn-light btn-sm" type="button" data-cancel-inv="${esc(i.email)}">Cancelar</button></span>`}</div>`).join('')
+        ${joined(i) ? '<span class="status">Activa</span>' : `<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center"><span class="status warn">Enviada</span><button class="btn btn-light btn-sm" type="button" data-resend="${esc(i.email)}">Reenviar</button>${!i.accepted_at ? `<button class="btn btn-light btn-sm" type="button" data-cancel-inv="${esc(i.email)}">Cancelar</button>` : memberId(i) ? `<button class="btn btn-light btn-sm" type="button" data-cancel-member="${memberId(i)}" data-cancel-name="${esc(i.full_name)}">Cancelar</button>` : ''}</span>`}</div>`).join('')
         : '<p class="muted">Todavía no has invitado a nadie.</p>'}</article>`;
 }
 
@@ -731,6 +735,13 @@ function bindView(id) {
         A.staff.editing = null; toast('Cambios guardados.'); await refresh(); render();
       };
     }
+    $$('[data-cancel-member]').forEach(b => b.onclick = async () => {
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar'; b.classList.add('btn-coral'); return; }
+      b.disabled = true;
+      const { error } = await sb.rpc('admin_delete_member', { p_user: b.dataset.cancelMember });
+      if (error) { b.disabled = false; return fail(error, 'No se pudo cancelar la invitación.'); }
+      toast(`Invitación de ${b.dataset.cancelName} cancelada.`); await refresh(); render();
+    });
     $$('[data-cancel-inv]').forEach(b => b.onclick = async () => {
       const { error } = await sb.rpc('cancel_invitation', { p_email: b.dataset.cancelInv });
       if (error) return fail(error);
