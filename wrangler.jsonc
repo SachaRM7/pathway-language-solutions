@@ -3,7 +3,7 @@
 // Deploy command: npx wrangler deploy
 {
   "$schema": "https://unpkg.com/wrangler@4.160.0/config-schema.json",
-  "name": "pathway-languages",
+  "name": "pathway-language",
   "main": "worker/index.js",
   "compatibility_date": "2026-10-01",
   "assets": {
