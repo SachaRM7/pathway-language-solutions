@@ -34,7 +34,7 @@ const fmtDate = (d, opts, tz = tzOf()) => new Intl.DateTimeFormat('es', { timeZo
 const A = {
   session: null, profile: null, teacher: null,
   units: [], unitInfo: {}, runs: [], assignments: [], xp: [], due: 0, badges: [], myBadges: new Set(),
-  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
+  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false, members: null, editing: null, confirmDel: null }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
 const teacherMode = () => isStaff() && A.mode === 'profesor';
@@ -191,6 +191,11 @@ async function loadStaff() {
   A.staff.invitesReady = !inv.error && !tea.error;
   A.staff.invitations = inv.data || [];
   A.staff.teachers = tea.data || [];
+  // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
+  if (A.profile.role === 'admin') {
+    const mem = await sb.rpc('admin_members');
+    A.staff.members = mem.error ? null : (mem.data || []);
+  }
 }
 async function refresh() { try { await loadAll(); } catch (e) { fail(e); } }
 
@@ -568,7 +573,7 @@ function viewGrupo() {
   const now = new Date(Date.now() + 2 * 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T18:00`;
   return `<section class="view" aria-labelledby="h-grupo">
   ${topBar('h-grupo', 'Mi grupo', 'Lo que pasó entre clases, antes de la próxima')}
-  ${!ov.length ? `<div class="bento"><article class="tile empty"><h2>Todavía no tienes alumnos</h2><p class="muted">${A.staff.invitesReady ? 'Invita a tu primer alumno: aparecerá aquí con su progreso en cuanto entre al campus.' : 'Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.'}</p></article>${inviteTile()}</div>` : `
+  ${!ov.length ? `<div class="bento"><article class="tile empty"><h2>Todavía no tienes alumnos</h2><p class="muted">${A.staff.invitesReady ? 'Invita a tu primer alumno: aparecerá aquí con su progreso en cuanto entre al campus.' : 'Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.'}</p></article>${inviteTile()}${membersTile()}</div>` : `
   <div class="bento">
     <article class="tile sky c-4 kpi"><p class="label" style="color:var(--sky-ink)">Activos esta semana</p><p class="big num">${active}<span style="font-size:20px;color:var(--sky-ink)"> / ${ov.length}</span></p></article>
     <article class="tile mint c-4 kpi"><p class="label" style="color:var(--mint-ink)">Tareas pendientes</p><p class="big num">${open}</p></article>
@@ -601,6 +606,7 @@ function viewGrupo() {
         <button class="btn btn-dark" type="submit">Guardar</button>
       </form></article>
     ${inviteTile()}
+    ${membersTile()}
   </div>`}
   </section>`;
 }
@@ -626,6 +632,34 @@ function inviteTile() {
       ${list.length ? list.slice(0, 12).map(i => `<div class="err-row"><span><b>${esc(i.full_name)}</b><br><span class="muted" style="font-size:13px">${esc(i.email)} · ${i.role === 'teacher' ? 'Profesor' : `${i.level} · ${esc(teacherName(i.teacher_id))}`}</span></span>
         ${i.accepted_at ? '<span class="status">Activa</span>' : `<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn btn-light btn-sm" type="button" data-resend="${esc(i.email)}">Reenviar</button><button class="btn btn-light btn-sm" type="button" data-cancel-inv="${esc(i.email)}">Cancelar</button></span>`}</div>`).join('')
         : '<p class="muted">Todavía no has invitado a nadie.</p>'}</article>`;
+}
+
+function membersTile() {
+  const list = A.staff.members;
+  if (A.profile.role !== 'admin' || !list) return '';
+  const teachers = A.staff.teachers;
+  const row = m => {
+    const last = daysSince(m.last_activity);
+    const meta = `${esc(m.email)} · ${m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
+    if (A.staff.editing === m.id) {
+      return `<form class="member-edit form" data-member-form="${m.id}">
+        <div class="form-2"><label class="field" for="mName">Nombre<input id="mName" required maxlength="120" value="${esc(m.full_name)}"></label>
+          <label class="field" for="mRole">Tipo de cuenta<select id="mRole"><option value="student" ${m.role === 'student' ? 'selected' : ''}>Alumno</option><option value="teacher" ${m.role === 'teacher' ? 'selected' : ''}>Profesor</option></select></label></div>
+        <div class="form-2"><label class="field" for="mLevel">Nivel<select id="mLevel">${LEVELS.map(l => `<option ${l === m.level ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label class="field" for="mTeacher">Profesor<select id="mTeacher"><option value="">Sin profesor</option>${teachers.filter(t => t.id !== m.id).map(t => `<option value="${t.id}" ${t.id === m.teacher_id ? 'selected' : ''}>${esc(t.full_name)}${t.role === 'admin' ? ' (admin)' : ''}</option>`).join('')}</select></label></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar</button><button class="btn btn-light btn-sm" type="button" data-member-cancel>Cancelar</button></div>
+      </form>`;
+    }
+    const confirming = A.staff.confirmDel === m.id;
+    return `<div class="err-row"><span style="min-width:0"><b>${esc(m.full_name)}</b><br><span class="muted" style="font-size:13px">${meta}</span></span>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${confirming
+        ? `<button class="btn btn-coral btn-sm" type="button" data-member-delete="${m.id}">Eliminar definitivamente</button><button class="btn btn-light btn-sm" type="button" data-member-cancel>No</button>`
+        : `<button class="btn btn-light btn-sm" type="button" data-member-edit="${m.id}">Editar</button><button class="btn btn-light btn-sm" type="button" data-member-ask="${m.id}">Eliminar</button>`}</span></div>
+      ${confirming ? `<p class="form-error" style="margin:0 0 12px">Se borran la cuenta de ${esc(m.full_name)} y todo su progreso. No se puede deshacer.</p>` : ''}`;
+  };
+  return `<article class="tile"><div class="tile-head"><h2>Miembros</h2><span class="pill ghost num">${list.length} cuenta${list.length === 1 ? '' : 's'}</span></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Solo tú ves esta lista: cambia el nombre, el nivel, el profesor o el tipo de cuenta, o elimina una cuenta.</p>
+    ${list.length ? list.map(row).join('') : '<p class="muted">Todavía no hay alumnos ni profesores.</p>'}</article>`;
 }
 
 async function sendInvite(email) {
@@ -673,6 +707,30 @@ function bindView(id) {
       b.disabled = false;
       toast(sent.ok ? (sent.status === 'already_registered' ? 'Esta persona ya tiene cuenta: puede entrar con su correo.' : `Invitación reenviada a ${b.dataset.resend}.`) : 'El correo no salió. Revisa el envío de correos de Supabase.');
     });
+    $$('[data-member-edit]').forEach(b => b.onclick = () => { A.staff.editing = b.dataset.memberEdit; A.staff.confirmDel = null; render(); $('#mName')?.focus(); });
+    $$('[data-member-ask]').forEach(b => b.onclick = () => { A.staff.confirmDel = b.dataset.memberAsk; A.staff.editing = null; render(); });
+    $$('[data-member-cancel]').forEach(b => b.onclick = () => { A.staff.editing = null; A.staff.confirmDel = null; render(); });
+    $$('[data-member-delete]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      const m = (A.staff.members || []).find(x => x.id === b.dataset.memberDelete);
+      const { error } = await sb.rpc('admin_delete_member', { p_user: b.dataset.memberDelete });
+      A.staff.confirmDel = null;
+      if (error) { b.disabled = false; return fail(error, 'No se pudo eliminar la cuenta.'); }
+      toast(`Cuenta de ${m ? m.full_name : 'este miembro'} eliminada.`); await refresh(); render();
+    });
+    const mf = $('[data-member-form]');
+    if (mf) {
+      const syncTeacher = () => { const t = $('#mTeacher'), l = $('#mLevel'), student = $('#mRole').value === 'student'; t.disabled = !student; l.closest('.field').style.opacity = student ? '' : '.5'; };
+      $('#mRole').onchange = syncTeacher; syncTeacher();
+      mf.onsubmit = async e => {
+        e.preventDefault();
+        const name = $('#mName').value.trim();
+        if (!name) return toast('Escribe un nombre.');
+        const { error } = await sb.rpc('admin_update_member', { p_user: mf.dataset.memberForm, p_full_name: name, p_level: $('#mLevel').value, p_teacher: $('#mTeacher').value || null, p_role: $('#mRole').value });
+        if (error) return fail(error, 'No se pudieron guardar los cambios.');
+        A.staff.editing = null; toast('Cambios guardados.'); await refresh(); render();
+      };
+    }
     $$('[data-cancel-inv]').forEach(b => b.onclick = async () => {
       const { error } = await sb.rpc('cancel_invitation', { p_email: b.dataset.cancelInv });
       if (error) return fail(error);

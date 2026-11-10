@@ -11,6 +11,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/002_weekly_challenge.sql` | Défi de la semaine (5 jours de pratique, +50 XP) et objectif de groupe |
 | `db/003_invitations.sql` | Invitations préparées depuis le Campus : nom, niveau, rôle et professeur appliqués à la création du compte |
 | `../supabase/functions/invite-student/` | Edge Function qui envoie l'e-mail d'invitation (réservée aux professeurs et à l'admin) |
+| `db/004_admin_members.sql` | Carte « Miembros » réservée à l'admin : modifier nom, niveau, professeur, type de compte ; supprimer un compte et ses données |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
@@ -46,6 +47,8 @@ Une fois `003_invitations.sql` exécuté et la fonction `invite-student` déploy
 Un professeur invite uniquement pour lui-même ; l'admin choisit le professeur. Si l'adresse a déjà un compte, le profil est mis à jour immédiatement. Une invitation non acceptée peut être renvoyée ou annulée depuis la liste « Invitaciones ».
 
 Sans la fonction, l'invitation est quand même enregistrée : on peut envoyer l'e-mail depuis Supabase → **Authentication** → **Users** → **Add user** → **Send invitation**, et le profil sera configuré pareil.
+
+Pour modifier ou supprimer un compte ensuite, l'admin utilise la carte **Miembros** de Mi grupo (après `004_admin_members.sql`) : plus besoin de passer par Supabase.
 
 Le premier administrateur se crée une fois pour toutes en SQL :
 
