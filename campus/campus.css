@@ -327,11 +327,11 @@ td .who { display: flex; align-items: center; gap: 12px; font-weight: 700; }
 /* Onboarding */
 .ob { position: fixed; inset: 0; z-index: 55; background: var(--bg); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 @media (min-width: 900px) { .ob { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
-.ob-art { position: relative; overflow: hidden; height: 128px; margin: 12px max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); border-radius: 28px; background: var(--peach); transition: background .5s var(--ease); }
+.ob-art { position: relative; overflow: hidden; height: 184px; margin: 12px max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); border-radius: 28px; background: var(--peach); transition: background .5s var(--ease); }
 @media (min-width: 900px) { .ob-art { height: auto; margin: 16px 0 16px max(16px, env(safe-area-inset-left, 0px)); border-radius: 36px; } }
 .ob-logo { position: absolute; top: 18px; left: 20px; display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -.04em; }
 @media (min-width: 900px) { .ob-logo { top: 32px; left: 36px; } }
-.ob-word { position: absolute; left: 18px; bottom: -.16em; font-size: 92px; font-weight: 800; letter-spacing: -.07em; line-height: 1; color: var(--coral); white-space: nowrap; animation: in .5s var(--ease) both; }
+.ob-word { position: absolute; left: 18px; bottom: .02em; font-size: min(92px, 23vw); font-weight: 800; letter-spacing: -.07em; line-height: 1; color: var(--coral); white-space: nowrap; animation: in .5s var(--ease) both; }
 @media (min-width: 900px) { .ob-word { left: 36px; font-size: clamp(110px, 10vw, 168px); } }
 .ob-sticker { position: absolute; display: none; padding: 12px 18px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow); font-weight: 700; font-size: 16px; letter-spacing: -.02em; white-space: nowrap; animation: in .6s var(--ease) both; }
 .ob-sticker small { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0; }
