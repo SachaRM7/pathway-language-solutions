@@ -9,6 +9,9 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `config.js` | Adresse du projet Supabase et clé publique (publishable). Jamais de clé secrète ici. |
 | `db/001_init.sql` | Tables, règles d'accès (RLS), calcul des XP et des séries, contenu de l'unité 1 de l'A2 |
 | `db/002_weekly_challenge.sql` | Défi de la semaine (5 jours de pratique, +50 XP) et objectif de groupe |
+| `db/003_invitations.sql` | Invitations préparées depuis le Campus : nom, niveau, rôle et professeur appliqués à la création du compte |
+| `../supabase/functions/invite-student/` | Edge Function qui envoie l'e-mail d'invitation (réservée aux professeurs et à l'admin) |
+| `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
 
@@ -38,25 +41,18 @@ Avant d'inviter des élèves, brancher un service d'envoi : Supabase → **Authe
 
 ### 4. Créer les comptes
 
-Supabase → **Authentication** → **Users** → **Add user** → **Send invitation**, avec l'adresse e-mail.
-Le profil est créé automatiquement. Ensuite, dans **SQL Editor**, régler le rôle, le nom et le professeur :
+Une fois `003_invitations.sql` exécuté et la fonction `invite-student` déployée (voir `db/SQL_A_COPIER.md`), tout se fait depuis le Campus : **Mi grupo** → **Invitar a un alumno** (correo, nombre, nivel, profesor). L'admin peut aussi inviter un professeur (« Tipo de cuenta : Profesor »). La personne reçoit un e-mail ; à son arrivée, son nom, son niveau et son professeur sont déjà configurés, et l'onboarding les reprend.
+
+Un professeur invite uniquement pour lui-même ; l'admin choisit le professeur. Si l'adresse a déjà un compte, le profil est mis à jour immédiatement. Une invitation non acceptée peut être renvoyée ou annulée depuis la liste « Invitaciones ».
+
+Sans la fonction, l'invitation est quand même enregistrée : on peut envoyer l'e-mail depuis Supabase → **Authentication** → **Users** → **Add user** → **Send invitation**, et le profil sera configuré pareil.
+
+Le premier administrateur se crée une fois pour toutes en SQL :
 
 ```sql
--- Sacha : administrateur (voit tous les élèves et le contenu)
 update public.profiles set role = 'admin', full_name = 'Sacha'
 where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
-
--- Un professeur
-update public.profiles set role = 'teacher', full_name = 'Ryan'
-where id = (select id from auth.users where email = 'ADRESSE_DE_RYAN');
-
--- Un élève : nom, niveau et professeur
-update public.profiles set full_name = 'Valentina Rojas', level = 'A2',
-  teacher_id = (select id from auth.users where email = 'ADRESSE_DE_RYAN')
-where id = (select id from auth.users where email = 'ADRESSE_DE_L_ELEVE');
 ```
-
-Un écran d'administration remplacera ces requêtes (tâche T012 de `specs/002-campus/tasks.md`).
 
 ## Publier une unité
 
