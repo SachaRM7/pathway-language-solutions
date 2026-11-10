@@ -22,6 +22,7 @@ Tu acceso al Campus Pathway
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Language" content="es">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>Tu acceso al Campus Pathway</title>
@@ -55,7 +56,7 @@ Tu acceso al Campus Pathway
             <tr><td style="height:8px;font-size:0;line-height:0;">&nbsp;</td></tr>
             <tr><td style="padding:14px 18px;background:#dcf3e4;border-radius:16px;font:400 15px/1.4 Arial,Helvetica,sans-serif;color:#1d7a49;"><strong style="color:#141414;">Racha</strong> &middot; un poco de francés cada día</td></tr>
           </table>
-          <p style="margin:0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#9b9ba3;">Si el botón no funciona, copia este enlace en tu navegador:<br><a href="{{ .ConfirmationURL }}" style="color:#5f5f66;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
+          <p style="margin:0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#9b9ba3;">¿El botón no responde? <a href="{{ .ConfirmationURL }}" style="color:#5f5f66;">Abre este enlace</a> o pide a tu profesor una nueva invitación.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -87,6 +88,7 @@ Tu enlace para entrar al Campus Pathway
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Language" content="es">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>Tu enlace para entrar al Campus Pathway</title>
@@ -120,7 +122,7 @@ Tu enlace para entrar al Campus Pathway
             </td></tr>
           </table>
           <p style="margin:0 0 16px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:#5f5f66;">El enlace y el código caducan en una hora. Si no pediste entrar, ignora este correo: nadie puede acceder sin él.</p>
-          <p style="margin:0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#9b9ba3;">Si el botón no funciona, copia este enlace en tu navegador:<br><a href="{{ .ConfirmationURL }}" style="color:#5f5f66;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
+          <p style="margin:0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#9b9ba3;">¿El botón no responde? <a href="{{ .ConfirmationURL }}" style="color:#5f5f66;">Abre este enlace</a> o usa el código de arriba.</p>
         </td></tr>
       </table>
     </td></tr>
