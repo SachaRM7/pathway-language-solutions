@@ -49,13 +49,11 @@ Tu acceso al Campus Pathway
             </td></tr>
           </table>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
-            <tr>
-              <td width="33%" valign="top" style="padding:16px 12px;background:#fff2c4;border-radius:18px;font:700 14px/1.35 Arial,Helvetica,sans-serif;color:#141414;">Lecciones<br><span style="font-weight:400;color:#866000;">del manual, en 10 minutos</span></td>
-              <td width="8" style="font-size:0;">&nbsp;</td>
-              <td width="33%" valign="top" style="padding:16px 12px;background:#ebe7ff;border-radius:18px;font:700 14px/1.35 Arial,Helvetica,sans-serif;color:#141414;">Repaso<br><span style="font-weight:400;color:#5946c8;">tus errores vuelven a tiempo</span></td>
-              <td width="8" style="font-size:0;">&nbsp;</td>
-              <td width="33%" valign="top" style="padding:16px 12px;background:#dcf3e4;border-radius:18px;font:700 14px/1.35 Arial,Helvetica,sans-serif;color:#141414;">Racha<br><span style="font-weight:400;color:#1d7a49;">un poco cada día</span></td>
-            </tr>
+            <tr><td style="padding:14px 18px;background:#fff2c4;border-radius:16px;font:400 15px/1.4 Arial,Helvetica,sans-serif;color:#866000;"><strong style="color:#141414;">Lecciones</strong> &middot; las unidades de tu manual, en 10 minutos</td></tr>
+            <tr><td style="height:8px;font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td style="padding:14px 18px;background:#ebe7ff;border-radius:16px;font:400 15px/1.4 Arial,Helvetica,sans-serif;color:#5946c8;"><strong style="color:#141414;">Repaso</strong> &middot; tus errores vuelven justo a tiempo</td></tr>
+            <tr><td style="height:8px;font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td style="padding:14px 18px;background:#dcf3e4;border-radius:16px;font:400 15px/1.4 Arial,Helvetica,sans-serif;color:#1d7a49;"><strong style="color:#141414;">Racha</strong> &middot; un poco de francés cada día</td></tr>
           </table>
           <p style="margin:0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#9b9ba3;">Si el botón no funciona, copia este enlace en tu navegador:<br><a href="{{ .ConfirmationURL }}" style="color:#5f5f66;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
         </td></tr>
@@ -73,7 +71,7 @@ Tu acceso al Campus Pathway
 </html>
 ```
 
-## 2. Magic link
+## 2. Magic link or OTP
 
 **Subject**
 
@@ -108,8 +106,8 @@ Tu enlace para entrar al Campus Pathway
           <p style="margin:0;font:800 64px/0.9 Arial,Helvetica,sans-serif;letter-spacing:-3px;color:#f05a36;">Salut</p>
         </td></tr>
         <tr><td style="padding:32px;">
-          <h1 style="margin:0 0 12px;font:800 26px/1.2 Arial,Helvetica,sans-serif;letter-spacing:-.5px;color:#141414;">Entra a tu campus</h1>
-          <p style="margin:0 0 24px;font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#5f5f66;">Toca el botón para entrar. Sin contraseña.</p>
+          <h1 style="margin:0 0 12px;font:800 26px/1.2 Arial,Helvetica,sans-serif;letter-spacing:-.5px;color:#141414;">{{ if .Data.full_name }}Hola, {{ .Data.full_name }}{{ else }}Entra a tu campus{{ end }}</h1>
+          <p style="margin:0 0 24px;font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#5f5f66;">Toca el botón para entrar a tu campus. Sin contraseña.</p>
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;">
             <tr><td style="background:#141414;border-radius:999px;">
               <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:16px 30px;font:700 16px/1 Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:999px;">Entrar al campus &rarr;</a>
@@ -118,7 +116,7 @@ Tu enlace para entrar al Campus Pathway
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
             <tr><td style="padding:20px;background:#f6f6f5;border-radius:20px;">
               <p style="margin:0 0 8px;font:400 14px/1.5 Arial,Helvetica,sans-serif;color:#5f5f66;">¿Abriste el correo en otro dispositivo? Escribe este código en el campus:</p>
-              <p style="margin:0;font:800 34px/1 'Courier New',Courier,monospace;letter-spacing:8px;color:#141414;">{{ .Token }}</p>
+              <p style="margin:0;font:800 34px/1 'Courier New',Courier,monospace;letter-spacing:6px;color:#141414;">{{ .Token }}</p>
             </td></tr>
           </table>
           <p style="margin:0 0 16px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:#5f5f66;">El enlace y el código caducan en una hora. Si no pediste entrar, ignora este correo: nadie puede acceder sin él.</p>
