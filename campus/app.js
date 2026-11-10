@@ -34,7 +34,7 @@ const fmtDate = (d, opts, tz = tzOf()) => new Intl.DateTimeFormat('es', { timeZo
 const A = {
   session: null, profile: null, teacher: null,
   units: [], unitInfo: {}, runs: [], assignments: [], xp: [], due: 0, badges: [], myBadges: new Set(),
-  staff: { overview: [], errors: [] }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
+  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
 const teacherMode = () => isStaff() && A.mode === 'profesor';
@@ -180,10 +180,17 @@ async function maybeClaimWeekly() {
   await refresh(); render();
 }
 async function loadStaff() {
-  const [ov, er] = await Promise.all([sb.rpc('teacher_overview'), sb.rpc('teacher_common_errors')]);
+  const [ov, er, inv, tea] = await Promise.all([
+    sb.rpc('teacher_overview'), sb.rpc('teacher_common_errors'),
+    sb.from('invitations').select('*').order('created_at', { ascending: false }), sb.rpc('list_teachers')
+  ]);
   if (ov.error) throw ov.error;
   A.staff.overview = ov.data || [];
   A.staff.errors = er.data || [];
+  // Invitations need campus/db/003_invitations.sql; without it the form is hidden.
+  A.staff.invitesReady = !inv.error && !tea.error;
+  A.staff.invitations = inv.data || [];
+  A.staff.teachers = tea.data || [];
 }
 async function refresh() { try { await loadAll(); } catch (e) { fail(e); } }
 
@@ -561,7 +568,7 @@ function viewGrupo() {
   const now = new Date(Date.now() + 2 * 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T18:00`;
   return `<section class="view" aria-labelledby="h-grupo">
   ${topBar('h-grupo', 'Mi grupo', 'Lo que pasó entre clases, antes de la próxima')}
-  ${!ov.length ? `<article class="tile empty"><h2>Todavía no tienes alumnos asignados</h2><p class="muted">Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.</p></article>` : `
+  ${!ov.length ? `<div class="bento"><article class="tile empty"><h2>Todavía no tienes alumnos</h2><p class="muted">${A.staff.invitesReady ? 'Invita a tu primer alumno: aparecerá aquí con su progreso en cuanto entre al campus.' : 'Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.'}</p></article>${inviteTile()}</div>` : `
   <div class="bento">
     <article class="tile sky c-4 kpi"><p class="label" style="color:var(--sky-ink)">Activos esta semana</p><p class="big num">${active}<span style="font-size:20px;color:var(--sky-ink)"> / ${ov.length}</span></p></article>
     <article class="tile mint c-4 kpi"><p class="label" style="color:var(--mint-ink)">Tareas pendientes</p><p class="big num">${open}</p></article>
@@ -593,8 +600,38 @@ function viewGrupo() {
           <label class="field" for="clLink">Enlace de la clase<input id="clLink" type="url" placeholder="https://zoom.us/j/…"></label></div>
         <button class="btn btn-dark" type="submit">Guardar</button>
       </form></article>
+    ${inviteTile()}
   </div>`}
   </section>`;
+}
+
+function inviteTile() {
+  if (!A.staff.invitesReady) return '';
+  const admin = A.profile.role === 'admin';
+  const teacherName = id => (A.staff.teachers.find(t => t.id === id) || {}).full_name || '—';
+  const list = A.staff.invitations;
+  const open = list.filter(i => !i.accepted_at).length;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Invitar a un alumno</h2></div>
+      <p class="muted" style="font-size:14px;margin:-6px 0 16px">Recibe un correo para entrar al campus. Su nombre, su nivel y su profesor ya quedan configurados.</p>
+      <form id="invForm" class="form" novalidate>
+        <div class="form-2"><label class="field" for="invEmail">Correo<input id="invEmail" type="email" inputmode="email" autocomplete="off" required placeholder="alumno@correo.com"></label>
+          <label class="field" for="invName">Nombre y apellido<input id="invName" required maxlength="120" placeholder="Valentina Rojas"></label></div>
+        <div class="form-2"><label class="field" for="invLevel">Nivel<select id="invLevel">${LEVELS.map(l => `<option ${l === 'A2' ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          ${admin ? `<label class="field" for="invTeacher">Profesor<select id="invTeacher">${A.staff.teachers.map(t => `<option value="${t.id}" ${t.id === A.profile.id ? 'selected' : ''}>${esc(t.full_name)}${t.role === 'admin' ? ' (admin)' : ''}</option>`).join('')}</select></label>`
+            : `<div class="field">Profesor<input value="${esc(A.profile.full_name)}" disabled></div>`}</div>
+        ${admin ? `<label class="field" for="invRole">Tipo de cuenta<select id="invRole"><option value="student" selected>Alumno</option><option value="teacher">Profesor</option></select></label>` : ''}
+        <button class="btn btn-dark" type="submit">${icon('plus')}Enviar la invitación</button>
+      </form></article>
+    <article class="tile c-6"><div class="tile-head"><h2>Invitaciones</h2><span class="pill ghost num">${open} pendiente${open === 1 ? '' : 's'}</span></div>
+      ${list.length ? list.slice(0, 12).map(i => `<div class="err-row"><span><b>${esc(i.full_name)}</b><br><span class="muted" style="font-size:13px">${esc(i.email)} · ${i.role === 'teacher' ? 'Profesor' : `${i.level} · ${esc(teacherName(i.teacher_id))}`}</span></span>
+        ${i.accepted_at ? '<span class="status">Activa</span>' : `<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn btn-light btn-sm" type="button" data-resend="${esc(i.email)}">Reenviar</button><button class="btn btn-light btn-sm" type="button" data-cancel-inv="${esc(i.email)}">Cancelar</button></span>`}</div>`).join('')
+        : '<p class="muted">Todavía no has invitado a nadie.</p>'}</article>`;
+}
+
+async function sendInvite(email) {
+  const { data, error } = await sb.functions.invoke('invite-student', { body: { email } });
+  if (error) return { ok: false };
+  return { ok: true, status: data && data.status };
 }
 
 function viewContenido() {
@@ -613,6 +650,34 @@ function viewContenido() {
 /* ───────────── Events ───────────── */
 function bindView(id) {
   if (id === 'grupo') {
+    const inf = $('#invForm');
+    if (inf) inf.onsubmit = async e => {
+      e.preventDefault();
+      const email = $('#invEmail').value.trim().toLowerCase(), name = $('#invName').value.trim();
+      if (!/^\S+@\S+\.\S+$/.test(email)) return toast('Escribe un correo válido.');
+      if (!name) return toast('Escribe el nombre del alumno.');
+      const btn = inf.querySelector('button[type=submit]'); btn.disabled = true;
+      const role = $('#invRole') ? $('#invRole').value : 'student';
+      const { data, error } = await sb.rpc('create_invitation', { p_email: email, p_full_name: name, p_level: $('#invLevel').value, p_teacher: $('#invTeacher') ? $('#invTeacher').value : null, p_role: role });
+      if (error) { btn.disabled = false; return fail(error, 'No se pudo preparar la invitación.'); }
+      if (data && data.existing_account) toast(`${name} ya tenía cuenta: su perfil quedó actualizado.`);
+      else {
+        const sent = await sendInvite(email);
+        toast(sent.ok ? `Invitación enviada a ${email}.` : 'Invitación guardada, pero el correo no salió. Revisa el envío de correos de Supabase o usa «Reenviar».');
+      }
+      await refresh(); render();
+    };
+    $$('[data-resend]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      const sent = await sendInvite(b.dataset.resend);
+      b.disabled = false;
+      toast(sent.ok ? (sent.status === 'already_registered' ? 'Esta persona ya tiene cuenta: puede entrar con su correo.' : `Invitación reenviada a ${b.dataset.resend}.`) : 'El correo no salió. Revisa el envío de correos de Supabase.');
+    });
+    $$('[data-cancel-inv]').forEach(b => b.onclick = async () => {
+      const { error } = await sb.rpc('cancel_invitation', { p_email: b.dataset.cancelInv });
+      if (error) return fail(error);
+      toast('Invitación cancelada.'); await refresh(); render();
+    });
     const ef = $('#errForm');
     if (ef) ef.onsubmit = async e => {
       e.preventDefault();
