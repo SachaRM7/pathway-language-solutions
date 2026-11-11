@@ -34,7 +34,8 @@ const fmtDate = (d, opts, tz = tzOf()) => new Intl.DateTimeFormat('es', { timeZo
 const A = {
   session: null, profile: null, teacher: null,
   units: [], unitInfo: {}, runs: [], assignments: [], xp: [], due: 0, badges: [], myBadges: new Set(),
-  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false, members: null, editing: null, confirmDel: null }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
+  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false, members: null, editing: null, confirmDel: null },
+  ed: { unit: null, items: [], open: null, confirm: null, busy: false }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
 const teacherMode = () => isStaff() && A.mode === 'profesor';
@@ -673,6 +674,7 @@ async function sendInvite(email) {
 }
 
 function viewContenido() {
+  if (A.ed.unit) return viewEditor();
   const levels = [...new Set(A.units.map(u => u.level))];
   return `<section class="view" aria-labelledby="h-cont">
   ${topBar('h-cont', 'Contenido', 'Prueba cada unidad y publícala cuando esté validada. Los alumnos solo ven las unidades publicadas.')}
@@ -680,13 +682,157 @@ function viewContenido() {
     ${A.units.filter(u => u.level === l).map(u => { const inf = A.unitInfo[u.id] || { count: 0, validated: 0 }; const live = inf.count && inf.validated === inf.count;
       return `<div class="unit-row"><span class="no">${pad2(u.number)}</span><div class="meta"><b>${esc(u.title)}</b><span>${inf.count} ejercicio${inf.count === 1 ? '' : 's'}${u.manual_time ? ' · manual: ' + esc(u.manual_time) : ''}</span></div>
         <span class="state-chip ${live ? 'live' : 'draft'}">${live ? 'Publicada' : 'Borrador'}</span>
+        <button class="btn btn-light btn-sm" data-edit-unit="${u.id}">Editar</button>
         ${inf.count ? `<button class="btn btn-light btn-sm" data-preview="${u.id}">Probar</button><button class="btn ${live ? 'btn-light' : 'btn-dark'} btn-sm" data-publish="${u.id}" data-status="${live ? 'draft' : 'validated'}">${live ? 'Volver a borrador' : 'Publicar'}</button>` : ''}</div>`; }).join('')}
   </article>`).join('') || '<article class="tile"><p class="muted">Todavía no hay unidades.</p></article>'}
+  <article class="tile"><div class="tile-head"><h2>Nueva unidad</h2></div>
+    <form id="newUnitForm" class="form" novalidate>
+      <div class="form-2"><label class="field" for="nuLevel">Nivel<select id="nuLevel">${LEVELS.map(l => `<option ${l === 'A2' ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="field" for="nuNumber">Número (1 a 64)<input id="nuNumber" type="number" inputmode="numeric" min="1" max="64" required></label></div>
+      <label class="field" for="nuTitle">Título<input id="nuTitle" maxlength="160" required placeholder="Le présent des verbes en -ir"></label>
+      <button class="btn btn-dark" type="submit">${icon('plus')}Crear la unidad</button>
+    </form></article>
   </section>`;
 }
 
+/* ───────────── Content editor ───────────── */
+const EX_TYPES = {
+  choice: { label: 'Opción múltiple', kind: 'Conjugación', icon: 'pen' },
+  type: { label: 'Escribir la respuesta', kind: 'Conjugación', icon: 'pen' },
+  listen: { label: 'Comprensión oral', kind: 'Comprensión oral', icon: 'speaker' },
+  order: { label: 'Ordenar la frase', kind: 'Construcción', icon: 'pen' },
+  match: { label: 'Unir parejas', kind: 'Vocabulario', icon: 'puzzle' },
+  dictation: { label: 'Dictado', kind: 'Dictado', icon: 'speaker' },
+  spot: { label: 'Detectar el error', kind: 'Detecta el error', icon: 'search' }
+};
+// Explanations are stored as HTML with <b>; the editor shows **bold** instead.
+const toStars = h => String(h || '').replace(/<b>(.*?)<\/b>/gi, '**$1**').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const fromStars = t => esc(String(t || '').trim()).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+const lines = t => String(t || '').split('\n').map(x => x.trim()).filter(Boolean);
+const exSummary = x => { const p = x.payload || {}; return p.fr || p.question || p.es || (p.before ? `${p.before} ___ ${p.after || ''}` : '') || (p.words || []).join(' ') || (p.pairs || []).map(q => q.join(' = ')).join(' · ') || p.title || ''; };
+
+async function loadEditor(unitId) {
+  const { data, error } = await sb.from('exercises').select('id,position,type,kind,payload,status').eq('unit_id', unitId).order('position');
+  if (error) return fail(error);
+  A.ed.unit = unitId; A.ed.items = data; A.ed.confirm = null; A.ed.busy = false;
+  if (currentView() === 'contenido') render();
+}
+
+function exForm(type, x) {
+  const p = (x && x.payload) || {};
+  const opts = p.options || ['', '', '', ''];
+  const f = (id, label, value, ph = '', attrs = '') => `<label class="field" for="${id}">${label}<input id="${id}" value="${esc(value || '')}" placeholder="${esc(ph)}" ${attrs}></label>`;
+  const ta = (id, label, value, ph = '', rows = 3) => `<label class="field" for="${id}">${label}<textarea id="${id}" class="ed-area" rows="${rows}" placeholder="${esc(ph)}">${esc(value || '')}</textarea></label>`;
+  const optionsBlock = `<div class="field">Opciones · marca la correcta<div class="ed-options">${opts.map((o, i) => `<label class="ed-opt"><input type="radio" name="edAnswer" value="${i}" ${(p.answer || 0) === i ? 'checked' : ''} aria-label="Respuesta correcta ${i + 1}"><input class="ed-opt-text" data-opt-i="${i}" value="${esc(o)}" placeholder="Opción ${i + 1}"></label>`).join('')}</div><span class="ed-hint">Deja vacías las opciones que no necesites (mínimo 2).</span></div>`;
+  let body = '';
+  if (type === 'choice') body = f('edFr', 'Frase en francés (opcional) · usa ___ para el hueco', p.fr, 'Nous ___ français au travail.') + f('edEs', 'Traducción (opcional)', p.es, 'Hablamos francés en el trabajo.') + optionsBlock;
+  else if (type === 'type') body = `<div class="form-2">${f('edBefore', 'Antes del hueco', p.before, 'Tu')}${f('edAfter', 'Después del hueco', p.after, 'dans un bureau.')}</div>` + f('edHint', 'Pista (opcional)', p.hint, 'travailler') + ta('edAnswers', 'Respuestas aceptadas · una por línea', (p.answers || []).join('\n'), 'travailles', 2);
+  else if (type === 'listen') body = ta('edAudio', 'Texto que se escucha (en francés)', p.audio, 'Bonjour ! Je m’appelle Camille…') + f('edQuestion', 'Pregunta', p.question, '¿Qué hace Camille a mediodía?') + optionsBlock;
+  else if (type === 'order') body = f('edEs', 'Frase en español', p.es, 'Por la noche, veo una película.') + ta('edAnswer', 'Frase correcta · un bloque por línea, en orden', (p.answer || []).join('\n'), 'Le soir,\nje\nregarde\nun\nfilm.', 5) + ta('edExtra', 'Bloques trampa (opcional) · uno por línea', (p.tiles || []).filter(t => !(p.answer || []).includes(t)).join('\n'), 'regardes', 2);
+  else if (type === 'match') body = ta('edPairs', 'Parejas · una por línea, separadas por =', (p.pairs || []).map(q => q.join(' = ')).join('\n'), 'nous = aimons\nvous = aimez', 5);
+  else if (type === 'dictation') body = f('edAudio', 'Frase que se escucha (en francés)', p.audio, 'J’écoute de la musique.') + f('edEs', 'Traducción (se muestra si no hay voz)', p.es, 'Escucho música.');
+  else if (type === 'spot') body = f('edSentence', 'Frase con el error', (p.words || []).join(' '), 'Ils mangez avec leurs collègues.') + `<div class="form-2">${f('edWrong', 'Palabra incorrecta', (p.words || [])[p.wrong] || '', 'mangez')}${f('edFix', 'Corrección', p.fix, 'mangent')}</div>`;
+  return `<form class="form ed-form" id="exForm" data-type="${type}" data-id="${x ? x.id : ''}" novalidate>
+    <div class="ed-form-head"><span class="ex-kind">${icon(EX_TYPES[type].icon)}${EX_TYPES[type].label}</span></div>
+    <div class="form-2">${f('edKind', 'Etiqueta', x ? x.kind : EX_TYPES[type].kind, 'Conjugación')}${f('edTitle', 'Consigna', p.title, 'Completa la frase')}</div>
+    ${body}
+    ${ta('edExplain', 'Explicación tras responder · **texto** en negrita', toStars(p.explain), 'Con **nous**, los verbos en -er terminan en **-ons**.', 2)}
+    <p class="form-error" id="exErr" hidden></p>
+    <div class="ed-actions"><button class="btn btn-dark btn-sm" type="submit">Guardar</button><button class="btn btn-light btn-sm" type="button" data-ed-close>Cancelar</button></div>
+  </form>`;
+}
+
+function readExForm(form) {
+  const type = form.dataset.type, v = id => (form.querySelector('#' + id) || {}).value || '';
+  const p = { title: v('edTitle').trim(), explain: fromStars(v('edExplain')) };
+  const err = m => { throw new Error(m); };
+  if (!p.title) err('Escribe la consigna.');
+  if (type === 'choice' || type === 'listen') {
+    const raw = [...form.querySelectorAll('[data-opt-i]')].map(i => i.value.trim());
+    const picked = +(form.querySelector('input[name=edAnswer]:checked') || { value: 0 }).value;
+    if (!raw[picked]) err('La opción marcada como correcta está vacía.');
+    const kept = raw.map((o, i) => ({ o, i })).filter(z => z.o);
+    if (kept.length < 2) err('Escribe al menos dos opciones.');
+    p.options = kept.map(z => z.o); p.answer = kept.findIndex(z => z.i === picked);
+    p.two = p.options.every(o => o.length <= 28);
+  }
+  if (type === 'choice') { if (v('edFr').trim()) p.fr = v('edFr').trim(); if (v('edEs').trim()) p.es = v('edEs').trim(); if (p.fr && !p.fr.includes('___') && !p.es) { /* plain sentence is fine */ } }
+  if (type === 'listen') { p.audio = v('edAudio').trim(); p.question = v('edQuestion').trim(); if (!p.audio) err('Escribe el texto que se escucha.'); if (!p.question) err('Escribe la pregunta.'); }
+  if (type === 'type') { p.before = v('edBefore').trim(); p.after = v('edAfter').trim(); if (v('edHint').trim()) p.hint = v('edHint').trim(); p.answers = lines(v('edAnswers')); if (!p.answers.length) err('Escribe al menos una respuesta aceptada.'); if (!p.before && !p.after) err('Escribe la frase alrededor del hueco.'); }
+  if (type === 'order') { p.es = v('edEs').trim(); p.answer = lines(v('edAnswer')); if (p.answer.length < 2) err('La frase necesita al menos dos bloques.'); const extra = lines(v('edExtra')); const all = [...p.answer, ...extra]; for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; } p.tiles = all; }
+  if (type === 'match') { p.pairs = lines(v('edPairs')).map(l => l.split('=').map(z => z.trim())); if (p.pairs.some(q => q.length !== 2 || !q[0] || !q[1])) err('Cada línea debe tener la forma «izquierda = derecha».'); if (p.pairs.length < 2 || p.pairs.length > 8) err('Entre 2 y 8 parejas.'); }
+  if (type === 'dictation') { p.audio = v('edAudio').trim(); if (!p.audio) err('Escribe la frase del dictado.'); p.answers = [p.audio]; if (v('edEs').trim()) p.es = v('edEs').trim(); }
+  if (type === 'spot') { p.words = v('edSentence').trim().split(/\s+/).filter(Boolean); const w = v('edWrong').trim(); p.fix = v('edFix').trim(); p.wrong = p.words.indexOf(w); if (p.words.length < 2) err('Escribe la frase completa.'); if (p.wrong < 0) err('La palabra incorrecta debe aparecer tal cual en la frase.'); if (!p.fix) err('Escribe la corrección.'); }
+  return { type, kind: v('edKind').trim() || EX_TYPES[type].kind, payload: p };
+}
+
+function viewEditor() {
+  const u = unitById(A.ed.unit);
+  if (!u) { A.ed.unit = null; return viewContenido(); }
+  const items = A.ed.items, open = A.ed.open;
+  const drafts = items.filter(x => x.status !== 'validated').length;
+  const row = (x, i) => {
+    if (open === x.id) return `<div class="ed-row is-open">${exForm(x.type, x)}</div>`;
+    const confirming = A.ed.confirm === x.id;
+    return `<div class="ed-row"><span class="no">${i + 1}</span><div class="meta"><b>${esc(EX_TYPES[x.type] ? EX_TYPES[x.type].label : x.type)} · ${esc(x.kind)}</b><span>${esc(exSummary(x))}</span>${x.status !== 'validated' ? '<span class="state-chip draft" style="margin-top:6px">Borrador</span>' : ''}</div>
+      <span class="ed-tools">${confirming
+        ? `<button class="btn btn-coral btn-sm" type="button" data-ed-delete="${x.id}">Eliminar</button><button class="btn btn-light btn-sm" type="button" data-ed-close>No</button>`
+        : `<button class="round sm" type="button" data-ed-move="${x.id}" data-dir="-1" aria-label="Subir" ${i === 0 ? 'disabled' : ''}><span style="display:inline-flex;transform:rotate(-90deg)">${icon('arrow')}</span></button><button class="round sm" type="button" data-ed-move="${x.id}" data-dir="1" aria-label="Bajar" ${i === items.length - 1 ? 'disabled' : ''}><span style="display:inline-flex;transform:rotate(90deg)">${icon('arrow')}</span></button><button class="btn btn-light btn-sm" type="button" data-ed-open="${x.id}">Editar</button><button class="btn btn-light btn-sm" type="button" data-ed-ask="${x.id}">Eliminar</button>`}</span></div>`;
+  };
+  return `<section class="view" aria-labelledby="h-ed">
+  <header class="top"><div><button class="ob-link" type="button" data-ed-back style="margin-bottom:8px">← Volver al contenido</button><h1 id="h-ed">Unidad ${u.number} · ${u.level}</h1><p>${items.length} ejercicio${items.length === 1 ? '' : 's'}${drafts ? ` · ${drafts} en borrador: los alumnos no los ven hasta «Publicar»` : ''}</p></div>
+    <div class="top-tools">${items.length ? `<button class="btn btn-light btn-sm" data-preview="${u.id}">Probar</button><button class="btn btn-dark btn-sm" data-publish="${u.id}" data-status="validated">Publicar</button>` : ''}</div></header>
+  <article class="tile"><form id="unitForm" class="form" novalidate>
+    <div class="form-2"><label class="field" for="uTitle">Título de la unidad<input id="uTitle" maxlength="160" value="${esc(u.title)}"></label>
+      <label class="field" for="uTime">Duración en el manual (opcional)<input id="uTime" maxlength="40" value="${esc(u.manual_time || '')}" placeholder="1 h – 1 h 30"></label></div>
+    <div><button class="btn btn-dark btn-sm" type="submit">Guardar la unidad</button></div>
+  </form></article>
+  <article class="tile"><div class="tile-head"><h2>Ejercicios</h2></div>
+    ${items.length ? items.map(row).join('') : '<p class="muted" style="margin-bottom:12px">Todavía no hay ejercicios. Añade el primero.</p>'}
+    ${String(open).startsWith('new:') ? `<div class="ed-row is-open">${exForm(open.slice(4), null)}</div>` : ''}
+    <div class="ed-add"><p class="label">Añadir un ejercicio</p><div class="chips">${Object.entries(EX_TYPES).map(([k, t]) => `<button class="btn btn-light btn-sm" type="button" data-ed-new="${k}">${icon(t.icon)}${t.label}</button>`).join('')}</div></div>
+  </article></section>`;
+}
+
 /* ───────────── Events ───────────── */
+function bindEditor() {
+  const nu = $('#newUnitForm');
+  if (nu) nu.onsubmit = async e => {
+    e.preventDefault();
+    const n = +$('#nuNumber').value, title = $('#nuTitle').value.trim();
+    if (!(n >= 1 && n <= 64)) return toast('El número va de 1 a 64.');
+    if (!title) return toast('Escribe el título.');
+    const { data, error } = await sb.rpc('save_unit', { p_id: null, p_level: $('#nuLevel').value, p_number: n, p_title: title, p_manual_time: null });
+    if (error) return fail(error, /exists/.test(error.message || '') ? 'Esa unidad ya existe.' : 'No se pudo crear la unidad.');
+    await refresh(); toast('Unidad creada.'); A.ed.open = null; await loadEditor(data);
+  };
+  const uf = $('#unitForm');
+  if (uf) uf.onsubmit = async e => {
+    e.preventDefault();
+    const { error } = await sb.rpc('save_unit', { p_id: A.ed.unit, p_level: null, p_number: null, p_title: $('#uTitle').value, p_manual_time: $('#uTime').value });
+    if (error) return fail(error, 'No se pudo guardar la unidad.');
+    await refresh(); toast('Unidad guardada.'); render();
+  };
+  const xf = $('#exForm');
+  if (xf) {
+    xf.onsubmit = async e => {
+      e.preventDefault();
+      if (A.ed.busy) return;
+      let ex; const box = $('#exErr');
+      try { ex = readExForm(xf); } catch (er) { box.textContent = er.message; box.hidden = false; return; }
+      A.ed.busy = true;
+      const { error } = await sb.rpc('save_exercise', { p_id: xf.dataset.id || null, p_unit: A.ed.unit, p_type: ex.type, p_kind: ex.kind, p_payload: ex.payload });
+      A.ed.busy = false;
+      if (error) { box.textContent = 'No se pudo guardar. Revisa los campos.'; box.hidden = false; return; }
+      toast(xf.dataset.id ? 'Ejercicio guardado.' : 'Ejercicio añadido en borrador.');
+      A.ed.open = null; await refresh(); await loadEditor(A.ed.unit);
+    };
+    setTimeout(() => xf.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }), 30);
+  }
+}
+
 function bindView(id) {
+  if (id === 'contenido') bindEditor();
   if (id === 'grupo') {
     const inf = $('#invForm');
     if (inf) inf.onsubmit = async e => {
@@ -776,7 +922,7 @@ function bindView(id) {
 }
 
 document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],#flash');
+  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],[data-edit-unit],[data-ed-back],[data-ed-open],[data-ed-new],[data-ed-close],[data-ed-ask],[data-ed-delete],[data-ed-move],#flash');
   if (!e.target.closest('.menu-wrap')) closeMenus();
   if (!t) return;
   if (t.matches('[data-mode]')) {
@@ -791,6 +937,25 @@ document.addEventListener('click', async e => {
   if (t.matches('[data-say]')) { e.stopPropagation(); if (!speak(t.dataset.say, .9, t)) toast('Este navegador no tiene voz francesa.'); return; }
   if (t.matches('[data-start]')) { closeMenus(); return startLesson(t.dataset.start, false); }
   if (t.matches('[data-preview]')) return startLesson(t.dataset.preview, true);
+  if (t.matches('[data-edit-unit]')) { A.ed.open = null; window.scrollTo({ top: 0 }); return loadEditor(t.dataset.editUnit); }
+  if (t.matches('[data-ed-back]')) { A.ed.unit = null; A.ed.open = null; render(); window.scrollTo({ top: 0 }); return; }
+  if (t.matches('[data-ed-open]')) { A.ed.open = t.dataset.edOpen; A.ed.confirm = null; return render(); }
+  if (t.matches('[data-ed-new]')) { A.ed.open = 'new:' + t.dataset.edNew; A.ed.confirm = null; return render(); }
+  if (t.matches('[data-ed-close]')) { A.ed.open = null; A.ed.confirm = null; return render(); }
+  if (t.matches('[data-ed-ask]')) { A.ed.confirm = t.dataset.edAsk; A.ed.open = null; return render(); }
+  if (t.matches('[data-ed-delete]')) {
+    t.disabled = true;
+    const { error } = await sb.rpc('delete_exercise', { p_id: t.dataset.edDelete });
+    if (error) { t.disabled = false; return fail(error); }
+    toast('Ejercicio eliminado.'); await refresh(); return loadEditor(A.ed.unit);
+  }
+  if (t.matches('[data-ed-move]')) {
+    if (A.ed.busy) return; A.ed.busy = true;
+    const { error } = await sb.rpc('move_exercise', { p_id: t.dataset.edMove, p_dir: +t.dataset.dir });
+    A.ed.busy = false;
+    if (error) return fail(error);
+    return loadEditor(A.ed.unit);
+  }
   if (t.matches('[data-toast]')) return toast(t.dataset.toast);
   if (t.matches('[data-seg]')) { A.seg = +t.dataset.seg; render(); return; }
   if (t.matches('[data-exam]')) { A.simExam = t.dataset.exam; render(); return; }
@@ -801,7 +966,7 @@ document.addEventListener('click', async e => {
     const { error } = await sb.rpc('set_unit_status', { p_unit: t.dataset.publish, p_status: t.dataset.status });
     if (error) { t.disabled = false; return fail(error); }
     toast(t.dataset.status === 'validated' ? 'Unidad publicada: los alumnos ya pueden hacerla.' : 'Unidad devuelta a borrador.');
-    await refresh(); render(); return;
+    await refresh(); if (A.ed.unit) return loadEditor(A.ed.unit); render(); return;
   }
   const a = t.dataset.action;
   if (a === 'menu') { e.stopPropagation(); toggleMenu(); return; }
