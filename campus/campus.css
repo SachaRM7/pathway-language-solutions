@@ -571,3 +571,39 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 
 .u.locked { background: var(--soft); color: var(--ink-3); }
 .u.locked .icon, .u.cur .icon { width: 18px; height: 18px; }
+
+/* Tutorial (tour.js): blurred screen, framed zone, explanation card. */
+.tt-root { position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0; transition: opacity .25s var(--ease); }
+.tt-root.is-on { opacity: 1; pointer-events: auto; }
+.tt-shade { position: fixed; inset: 0; background: rgb(20 20 20 / 42%); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); transition: clip-path .4s var(--ease); }
+.tt-ring { position: fixed; display: none; border-radius: 18px; border: 3px solid var(--coral); box-shadow: 0 0 0 6px rgb(240 90 54 / 22%); pointer-events: none; transition: left .35s var(--ease), top .35s var(--ease), width .35s var(--ease), height .35s var(--ease); }
+.tt-ring.is-in { animation: tt-blink 1.6s ease-in-out 3; }
+@keyframes tt-blink { 0%, 100% { box-shadow: 0 0 0 4px rgb(240 90 54 / 35%); } 50% { box-shadow: 0 0 0 16px rgb(240 90 54 / 0%); } }
+
+.tt-card { position: fixed; z-index: 2; padding: 22px 22px 18px; border-radius: 24px; background: var(--panel); color: var(--ink); box-shadow: 0 30px 60px -24px rgb(0 0 0 / 50%); font-family: var(--font); transition: left .35s var(--ease), top .35s var(--ease); }
+.tt-card.is-in { animation: tt-in .3s var(--ease); }
+@keyframes tt-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.tt-card.is-center { left: 50% !important; top: 50% !important; width: min(420px, calc(100vw - 32px)); transform: translate(-50%, -50%); text-align: center; padding: 30px 28px 24px; animation: none; }
+.tt-badge { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 18px; display: grid; place-items: center; background: var(--coral); color: #fff; font-size: 28px; font-weight: 800; }
+.tt-count { margin-bottom: 6px; color: var(--ink-3); font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+.tt-card h2 { font-size: 21px; line-height: 1.2; letter-spacing: -.02em; }
+.tt-card.is-center h2 { font-size: 25px; }
+.tt-text { margin-top: 8px; color: var(--ink-2); font-size: 15.5px; line-height: 1.5; }
+.tt-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.tt-card.is-center .tt-actions { justify-content: center; flex-direction: column-reverse; }
+.tt-btn { height: 44px; padding: 0 18px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.tt-btn.dark { background: var(--ink); color: #fff; }
+.tt-card.is-center .tt-btn.dark { width: 100%; background: var(--coral); }
+.tt-btn.light { background: var(--soft); color: var(--ink); }
+.tt-link { border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.tt-close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink-2); font-size: 13px; cursor: pointer; }
+
+/* "?" button in the top bar */
+.round.tt-help { font-family: var(--font); font-size: 18px; font-weight: 800; color: var(--ink); }
+
+/* Phones: the card is a bottom sheet. */
+@media (max-width: 720px) {
+  .tt-card:not(.is-center) { left: 12px !important; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); top: auto !important; width: auto !important; }
+  .tt-card.is-top:not(.is-center) { top: calc(12px + env(safe-area-inset-top, 0px)) !important; bottom: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .tt-ring.is-in, .tt-card.is-in { animation: none; } .tt-shade, .tt-ring, .tt-card { transition: none; } }

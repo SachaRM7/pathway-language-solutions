@@ -6,6 +6,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | Fichier | Rôle |
 |---|---|
 | `index.html`, `campus.css`, `app.js` | L'application (élève + professeur), sans outil de build |
+| `tour.js` | Tutoriel de l'élève : écran flouté, zone encadrée, explication en espagnol. Il s'ouvre seul à la première visite et se rejoue avec le bouton « ? » en haut de l'écran (souvenir gardé sur l'appareil) |
 | `config.js` | Adresse du projet Supabase et clé publique (publishable). Jamais de clé secrète ici. |
 | `db/001_init.sql` | Tables, règles d'accès (RLS), calcul des XP et des séries, contenu de l'unité 1 de l'A2 |
 | `db/002_weekly_challenge.sql` | Défi de la semaine (5 jours de pratique, +50 XP) et objectif de groupe |
