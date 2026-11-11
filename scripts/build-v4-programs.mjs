@@ -38,7 +38,6 @@ const UI = {
     opening: 'Abriendo el manual…', hint: 'Desliza o toca el borde para pasar la página', backCover: 'Volver a la portada',
     readAll: 'Ver lo que incluye', original: 'Contenido original del manual', zoomed: 'Página ampliada', close: 'Cerrar ✕', closeZoom: 'Cerrar la página ampliada',
     chapters: { 'table-matieres': 'Tabla de contenidos', sommaire: 'Índice detallado', 'unite-1': 'Unidad 1', 'examen-a': 'Balance del segmento A', autoevaluation: 'Autoevaluación' },
-    examA2: 'Examen del segmento A',
     page: 'página', pages: 'páginas', manualWord: 'manual',
     inc: {
       eyebrow: 'Incluido en este programa', lead: 'Todo lo que recibes al empezar el nivel. Aquí puedes ver una página de ejemplo de cada documento.', soon: 'Próximamente',
@@ -71,7 +70,6 @@ const UI = {
     opening: 'Ouverture du manuel…', hint: 'Faites glisser ou touchez le bord pour tourner la page', backCover: 'Revenir à la couverture',
     readAll: 'Voir ce qui est inclus', original: 'Contenu original du manuel', zoomed: 'Page agrandie', close: 'Fermer ✕', closeZoom: 'Fermer la page agrandie',
     chapters: { 'table-matieres': 'Table des matières', sommaire: 'Sommaire détaillé', 'unite-1': 'Unité 1', 'examen-a': 'Bilan du segment A', autoevaluation: 'Auto-évaluation' },
-    examA2: 'Examen du segment A',
     page: 'page', pages: 'pages', manualWord: 'manuel',
     inc: {
       eyebrow: 'Inclus dans ce programme', lead: 'Tout ce que vous recevez en commençant le niveau. Voici une page d’exemple de chaque document.', soon: 'Bientôt',
@@ -104,7 +102,6 @@ const UI = {
     opening: 'Opening the textbook…', hint: 'Swipe or tap the edge to turn the page', backCover: 'Back to the cover',
     readAll: 'See what is included', original: 'Original textbook content', zoomed: 'Enlarged page', close: 'Close ✕', closeZoom: 'Close the enlarged page',
     chapters: { 'table-matieres': 'Table of contents', sommaire: 'Detailed index', 'unite-1': 'Unit 1', 'examen-a': 'Segment A assessment', autoevaluation: 'Self-assessment' },
-    examA2: 'Segment A exam',
     page: 'page', pages: 'pages', manualWord: 'textbook',
     inc: {
       eyebrow: 'Included in this program', lead: 'Everything you receive when you start the level. Here is a sample page of each document.', soon: 'Coming soon',
@@ -137,7 +134,6 @@ const UI = {
     opening: 'Lehrbuch wird geöffnet…', hint: 'Wischen oder den Rand antippen, um umzublättern', backCover: 'Zurück zum Umschlag',
     readAll: 'Was enthalten ist', original: 'Originalinhalt des Lehrbuchs', zoomed: 'Vergrößerte Seite', close: 'Schließen ✕', closeZoom: 'Vergrößerte Seite schließen',
     chapters: { 'table-matieres': 'Inhaltsverzeichnis', sommaire: 'Ausführliche Übersicht', 'unite-1': 'Einheit 1', 'examen-a': 'Bilanz von Segment A', autoevaluation: 'Selbsteinschätzung' },
-    examA2: 'Prüfung von Segment A',
     page: 'Seite', pages: 'Seiten', manualWord: 'Lehrbuch',
     inc: {
       eyebrow: 'In diesem Programm enthalten', lead: 'Alles, was Sie zu Beginn des Niveaus erhalten. Hier sehen Sie von jedem Dokument eine Beispielseite.', soon: 'Demnächst',
@@ -230,9 +226,9 @@ function readerManifest(source) {
 // Inventory checked against the Drive documents (manuals, exam booklets).
 const INCLUDED = {
   a1: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', campus: 'campus' },
-  a2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-4', comprehension: 'reader/unite-1-5', vocabulary: 'reader/unite-1-6', diagnostic: 'samples/diagnostic', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', campus: 'campus' },
-  b1: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: null, tcf: 'samples/tcf', campus: 'campus' },
-  b2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-7', vocabulary: 'reader/unite-1-8', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: null, tcf: 'samples/tcf', campus: 'campus' }
+  a2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', campus: 'campus' },
+  b1: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', tcf: 'samples/tcf', campus: 'campus' },
+  b2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-7', vocabulary: 'reader/unite-1-8', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', tcf: 'samples/tcf', campus: 'campus' }
 };
 // Not available yet: the Campus opens to students once all levels are ready.
 const COMING_SOON = new Set(['campus']);
@@ -267,7 +263,7 @@ export function renderProgramPage({ lang, level, data, pages, homeMarkup }) {
   const test = (homeMarkup.match(/class="button button-primary nav-cta" href="([^"]+)"/) || [])[1] || `${home}test-placement.html`;
   const starts = {};
   pages.forEach((page, index) => { if (!(page.key in starts)) starts[page.key] = index; });
-  const chapterNames = { ...t.chapters, ...(level === 'a2' ? { 'examen-a': t.examA2 } : {}) };
+  const chapterNames = t.chapters;
   const options = Object.keys(starts).map(key => `<option value="${starts[key]}">${esc(chapterNames[key] || key)}</option>`).join('');
   const i18n = {
     page: t.page, manual: t.manualWord, cta: `${t.evaluate} →`, ctaHref: test, fullscreen: t.fullscreen, exit: t.exit,
@@ -316,7 +312,7 @@ export function renderProgramPage({ lang, level, data, pages, homeMarkup }) {
         </div>
         <aside class="pgm-card" aria-label="${esc(`${t.program} ${L}`)}">
           <span class="pgm-card-level">${L}</span>
-          <dl><div><dt>${t.facts[0]}</dt><dd>64</dd></div><div><dt>${t.facts[1]}</dt><dd>4</dd></div><div><dt>${level === 'a2' ? t.facts[3] : t.facts[2]}</dt><dd>4</dd></div></dl>
+          <dl><div><dt>${t.facts[0]}</dt><dd>64</dd></div><div><dt>${t.facts[1]}</dt><dd>4</dd></div><div><dt>${t.facts[2]}</dt><dd>4</dd></div></dl>
           <nav class="pgm-levels" aria-label="${esc(t.levelsLabel)}">${levels}</nav>
         </aside>
       </div>

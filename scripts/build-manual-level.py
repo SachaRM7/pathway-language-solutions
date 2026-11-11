@@ -1,9 +1,10 @@
-"""Build the public manual page of one Pathway level (A1, B1, B2) from its PDF.
+"""Build the public manual page of one Pathway level (A1, A2, B1, B2) from its PDF.
 
 Usage: python3 scripts/build-manual-level.py a1 path/to/Manuel-A1-APPRENANT.pdf
 
-The A2 page keeps its own pipeline (scripts/compose-manual-a2.py) because its
-source is a scanned PDF. These manuals are born-digital: whole pages are
+Since November 2026 the A2 also comes from its born-digital student manual
+(the older scanned pipeline, scripts/compose-manual-a2.py, is no longer used).
+These manuals are born-digital: whole pages are
 published as-is, except the few pages that mix two sections, which are cropped
 at the boundary found in the page text. The source PDF is never modified and is
 not stored in the repository (see scripts/manual-levels-source.md).
@@ -62,6 +63,28 @@ LEVELS = {
         'cover_line': ('Del primer bonjour', 'a presentarte con soltura.'),
         'unit_text': 'Aprende a saludar y a despedirte en registro formal e informal, y a adaptar el saludo al momento del día. La unidad termina con un arranque sobre el alfabeto y el deletreo.',
         'description': 'Explora el manual A1 Pathway: 64 unidades, índice detallado, unidad 1 completa y el balance del segmento A. Consulta y descarga los extractos originales.',
+    },
+    'a2': {
+        'title': 'A2',
+        'cover': (1, 0, None),
+        # The A2 cover card sits inside a white framed page: crop the card itself.
+        'cover_card': (61, 45, 535, 512),
+        'sections': [
+            ('table-matieres', 'Tabla de contenidos', [(2, 0, None)]),
+            ('sommaire', 'Índice detallado', [(3, 0, None), (4, 0, None)]),
+            ('unite-1', 'Unidad 1', [(n, 0, None) for n in range(6, 13)]),
+            ('examen-a', 'Bilan del segmento A', [(n, 0, None) for n in range(97, 101)]),
+        ],
+        'segments_page': 2,
+        'sommaire_pages': [3, 4],
+        'unit_page': 6,
+        'exam_page': 97,
+        'rule_page': 100,
+        'hero': ('Tu próximo paso.', 'En francés.'),
+        'hero_text': 'Explora el manual A2: descubre el recorrido, trabaja una unidad completa y conoce cómo se evalúa tu progreso.',
+        'cover_line': ('De la rutina', 'a tus propias ideas.'),
+        'unit_text': 'Aprende a conjugar los verbos en -er, hablar de tu rutina y utilizar los pronombres sujeto. La unidad empieza con un diagnóstico de entrada de 15 minutos.',
+        'description': 'Explora el manual A2 Pathway: 64 unidades, índice detallado, unidad 1 completa y el balance del segmento A. Consulta y descarga los extractos originales.',
     },
     'b1': {
         'title': 'B1',
@@ -134,16 +157,22 @@ def build_assets(level, cfg, source):
     # Cover: the cover card, scaled onto a full page of its own background.
     n, top, bottom = cfg['cover']
     page = source[n - 1]
-    clip = fitz.Rect(0, bound(page, top, 0), W, bound(page, bottom, H))
-    pix = page.get_pixmap(matrix=fitz.Matrix(SCALE, SCALE), clip=clip)
-    card = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
     full = (round(W * SCALE), round(H * SCALE))
-    # Keep only the cover card: trim the white page margin and the rounded
-    # corners, then centre it full-bleed on its own background colour.
-    mask = Image.eval(card.convert('L'), lambda v: 255 if v < 235 else 0)
-    x0, y0, x1, y1 = mask.getbbox() or (0, 0, *card.size)
-    inset = 14 * SCALE
-    card = card.crop((x0 + inset, y0 + inset, x1 - inset, y1 - inset))
+    if 'cover_card' in cfg:
+        # Exact card rectangle (points), inset to stay inside its rounded corners.
+        x0, y0, x1, y1 = cfg['cover_card']
+        pix = page.get_pixmap(matrix=fitz.Matrix(SCALE, SCALE), clip=fitz.Rect(x0 + 8, y0 + 8, x1 - 8, y1 - 8))
+        card = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
+    else:
+        clip = fitz.Rect(0, bound(page, top, 0), W, bound(page, bottom, H))
+        pix = page.get_pixmap(matrix=fitz.Matrix(SCALE, SCALE), clip=clip)
+        card = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
+        # Keep only the cover card: trim the white page margin and the rounded
+        # corners, then centre it full-bleed on its own background colour.
+        mask = Image.eval(card.convert('L'), lambda v: 255 if v < 235 else 0)
+        x0, y0, x1, y1 = mask.getbbox() or (0, 0, *card.size)
+        inset = 14 * SCALE
+        card = card.crop((x0 + inset, y0 + inset, x1 - inset, y1 - inset))
     bg = card.getpixel((4, 4))
     card = card.resize((full[0], round(card.height * full[0] / card.width)))
     canvas = Image.new('RGB', full, bg)
