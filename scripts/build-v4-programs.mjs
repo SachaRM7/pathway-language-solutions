@@ -235,40 +235,24 @@ const COMING_SOON = new Set(['campus']);
 const INCLUDED_ICONS = { manual: 'i-book', exercises: 'i-pen', comprehension: 'i-headphones', vocabulary: 'i-cards', diagnostic: 'i-target', assessments: 'i-clipboard', complementary: 'i-check', tcf: 'i-maple', campus: 'i-laptop' };
 export const CAMPUS_SAMPLE = '/v4/assets/campus-apercu.webp';
 
-// Desktop: the cards flow diagonally through a 2 × 2 window, in a zigzag: one
-// step from the top right corner to the bottom left one, the next from the top
-// left corner to the bottom right one. The plane is a 3 × 9 grid tiled from one
-// 3 × 3 block (short lists are padded by repeating cards); after six steps it
-// has moved down by six cells, a whole number of blocks, so the loop is
-// seamless. Only the first block is exposed to assistive technology.
-const FLOW_COLS = 3;
-const FLOW_ROWS = 9;
-const FLOW_BLOCK = 3;
-
+// Desktop: v4/programa-docs.js moves copies of these cards through a 2 × 2
+// window in a zigzag (styles in v4/programa.css, "has-flow").
 function included(t, level) {
   const L = level.toUpperCase();
   const entries = Object.entries(INCLUDED[level]);
-  const card = ([key, sample], hidden = false) => {
+  const card = ([key, sample]) => {
     const [name, text] = t.inc.items[key];
     const src = sample === 'campus' ? CAMPUS_SAMPLE : sample && `/assets/manual-${level}/${sample}.webp`;
     const soon = COMING_SOON.has(key) ? `<span class="inc-soon">${t.inc.soon}</span>` : '';
-    const button = src ? `<button type="button" class="inc-sample" data-sample="${src}" data-title="${esc(`${name} · Pathway ${L}`)}"${hidden ? ' tabindex="-1"' : ''}><svg class="icon" aria-hidden="true"><use href="#i-zoom"/></svg>${t.inc.sample}</button>` : '';
-    return `<li class="inc-item"${hidden ? ' aria-hidden="true"' : ''}><span class="inc-icon"><svg class="icon" aria-hidden="true"><use href="#${INCLUDED_ICONS[key]}"/></svg></span><div>${soon}<h3>${esc(name)}</h3><p>${esc(text)}</p>${button}</div></li>`;
+    const button = src ? `<button type="button" class="inc-sample" data-sample="${src}" data-title="${esc(`${name} · Pathway ${L}`)}"><svg class="icon" aria-hidden="true"><use href="#i-zoom"/></svg>${t.inc.sample}</button>` : '';
+    return `<li class="inc-item"><span class="inc-icon"><svg class="icon" aria-hidden="true"><use href="#${INCLUDED_ICONS[key]}"/></svg></span><div>${soon}<h3>${esc(name)}</h3><p>${esc(text)}</p>${button}</div></li>`;
   };
   const cards = entries.map(entry => card(entry)).join('');
-  const cells = [];
-  for (let row = 0; row < FLOW_ROWS; row++) {
-    for (let col = 0; col < FLOW_COLS; col++) {
-      const index = (row % FLOW_BLOCK) * FLOW_BLOCK + (col % FLOW_BLOCK);
-      const original = row < FLOW_BLOCK && col < FLOW_BLOCK && index < entries.length;
-      cells.push(card(entries[index % entries.length], !original));
-    }
-  }
   return `<section id="incluido" class="pgm-included" aria-labelledby="included-title">
       <div class="container inc-layout">
         <div class="inc-head"><p class="eyebrow">${t.inc.eyebrow}</p><h2 id="included-title" lang="fr">Manuel de français, <span>niveau ${L}</span></h2><p>${esc(t.inc.lead)}</p></div>
         <ul class="inc-grid">${cards}</ul>
-        <div class="inc-flow"><ul class="inc-plane">${cells.join('')}</ul></div>
+        <div class="inc-flow"></div>
         <a class="inc-next" href="#manual">${t.inc.next} <span aria-hidden="true">↓</span></a>
       </div>
     </section>
