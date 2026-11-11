@@ -1,5 +1,6 @@
 /* V4 program pages: the shared manual reader (/manual-a2.css) restyled with
-   the V4 palette and type, plus the page intro, walkthrough and closing CTA. */
+   the V4 palette and type, plus the page intro, the documents included in the
+   program and the closing CTA. */
 
 .v4-program {
   /* Variables the shared reader stylesheet expects. */
@@ -54,40 +55,32 @@
 .v4-program .reader-bottom a { color: var(--ink); font-weight: 600; }
 .v4-program #page-zoom header { font-family: 'DM Sans', Arial, sans-serif; }
 
-/* Walkthrough */
-.v4-program .manual-layout { padding-block: clamp(56px, 7vw, 104px) 24px; grid-template-columns: 220px minmax(0, 1fr); }
-.v4-program .manual-nav { top: calc(var(--header-height) + 24px); }
-.v4-program .manual-nav > span { color: var(--muted); font-weight: 600; letter-spacing: .2em; }
-.v4-program .manual-nav a { font-size: 15px; border-bottom-color: var(--line); }
-.v4-program .manual-nav a b { color: var(--action); font-weight: 600; }
-.v4-program .manual-nav .manual-download { margin-top: 20px; border: 0; font-weight: 600; }
-.v4-program .manual-section { border-bottom-color: var(--line); scroll-margin-top: calc(var(--header-height) + 16px); }
-.v4-program .manual-section .eyebrow { margin-bottom: 16px; }
-.v4-program .manual-section h2 { font-family: Outfit, Arial, sans-serif; font-weight: 600; font-size: clamp(32px, 3.4vw, 46px); }
-.v4-program .manual-section > p { font-size: 17px; color: var(--muted); }
-.v4-program .segment { border-top-color: var(--line); }
-.v4-program .segment-letter { background: var(--sage-wash); color: var(--ink); font-family: Outfit, Arial, sans-serif; font-weight: 600; }
-.v4-program .segment small { font-size: 13px; font-weight: 600; }
-.v4-program .segment h3 { font-size: 21px; }
-.v4-program .segment p { font-size: 15px; }
-.v4-program .manual-reader { background: var(--paper); border-color: var(--line); border-radius: 14px; }
-.v4-program .manual-reader summary { background: var(--sage-wash); font-size: 15px; }
-.v4-program .manual-reader summary:hover { background: color-mix(in srgb, var(--sage) 40%, var(--paper)); }
-.v4-program .manual-reader summary > span:last-child { font-size: 13px; }
-.v4-program .manual-sheet figcaption { font-size: 12px; }
-.v4-program .manual-download { font-size: 14px; color: var(--ink); }
-.v4-program .unit-stages { font-size: 16px; }
-.v4-program .exam-parts span { border-top-color: var(--line); font-size: 15px; }
-.v4-program .exam-parts b { font-size: 13px; font-weight: 600; }
-.v4-program .teacher-script { border-top-color: var(--line); font-size: 15px; }
-.v4-program .teacher-script blockquote { background: var(--sage-wash); border-left-color: var(--terracotta); }
-.v4-program .manual-section .manual-note { font-size: 14px; color: var(--muted); }
-.v4-program .manual-assessment { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
-.v4-program .assessment-row { border-top-color: var(--line); }
-.v4-program .assessment-row legend { font-size: 16px; }
-.v4-program .assessment-row label { background: var(--cream); font-size: 14px; border-radius: 10px; }
-.v4-program .assessment-row label:has(input:checked) { background: var(--paper); border-color: var(--ink); color: var(--ink); }
-.v4-program .manual-reset { font-size: 14px; }
+/* Included in this program */
+.pgm-included { padding-block: clamp(48px, 6vw, 88px); scroll-margin-top: var(--header-height); }
+.inc-head { max-width: 46rem; margin-bottom: clamp(28px, 4vw, 44px); }
+.inc-head .eyebrow { margin-bottom: 16px; }
+.inc-head h2 { margin-bottom: 14px; font-size: clamp(30px, 3.4vw, 44px); }
+.inc-head h2 span { color: var(--action); white-space: nowrap; }
+.inc-head p:not(.eyebrow) { color: var(--muted); font-size: 17px; line-height: 1.55; }
+.inc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.inc-item { display: flex; gap: 16px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.inc-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--sage-wash); color: var(--ink); }
+.inc-icon .icon { width: 22px; height: 22px; }
+.inc-soon { margin-bottom: 8px; padding: 3px 10px; border-radius: 99px; background: var(--sage-wash); color: var(--ink); font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+.inc-item h3 { margin: 2px 0 6px; font-size: 18px; line-height: 1.25; letter-spacing: -.01em; }
+.inc-item > div { display: flex; flex-direction: column; align-items: flex-start; }
+.inc-item p { margin: 0 0 12px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.inc-sample { display: inline-flex; align-items: center; gap: 6px; margin-top: auto; padding: 0 0 2px; border: 0; border-bottom: 1.5px solid var(--line); background: none; color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 180ms var(--ease), color 180ms var(--ease); }
+.inc-sample:hover { color: var(--action); border-color: var(--action); }
+.inc-sample .icon { width: 16px; height: 16px; }
+.inc-next { display: inline-flex; gap: 8px; margin-top: clamp(28px, 3vw, 40px); color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--muted); }
+.inc-next:hover { color: var(--action); border-color: var(--action); }
+
+.doc-sample { width: min(760px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; border-radius: 16px; background: var(--paper); box-shadow: 0 32px 64px -24px rgb(18 43 38 / 45%); }
+.doc-sample::backdrop { background: rgb(18 43 38 / 70%); }
+.doc-sample header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--paper); font-weight: 600; }
+.doc-sample header button { flex: none; white-space: nowrap; border: 0; background: none; color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.doc-sample img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 
 /* Closing CTA */
 .pgm-cta { padding-block: clamp(32px, 5vw, 64px) clamp(64px, 8vw, 112px); }
@@ -100,9 +93,8 @@
   .pgm-intro-grid { grid-template-columns: 1fr; }
   .pgm-card { max-width: 560px; }
 }
-@media (max-width: 900px) {
-  .v4-program .manual-layout { grid-template-columns: 1fr; gap: 0; }
-  .v4-program .manual-nav { position: static; margin-bottom: 32px; }
+@media (max-width: 1000px) {
+  .inc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
   .pgm-lead { font-size: 17px; }
@@ -111,4 +103,6 @@
   .v4-program .reader-shell { padding: 20px 16px; }
   .v4-program .reader-heading > a { font-size: 0; }
   .pgm-cta-inner { flex-direction: column; align-items: flex-start; }
+  .inc-grid { grid-template-columns: 1fr; gap: 12px; }
+  .inc-item { padding: 18px; }
 }
