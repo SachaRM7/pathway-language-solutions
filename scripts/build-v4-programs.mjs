@@ -41,7 +41,7 @@ const UI = {
     examA2: 'Examen del segmento A',
     page: 'página', pages: 'páginas', manualWord: 'manual',
     inc: {
-      eyebrow: 'Incluido en este programa', lead: 'Todo lo que recibes al empezar el nivel. Los documentos completos están en tu Campus; aquí puedes ver una página de ejemplo de cada uno.',
+      eyebrow: 'Incluido en este programa', lead: 'Todo lo que recibes al empezar el nivel. Aquí puedes ver una página de ejemplo de cada documento.', soon: 'Próximamente',
       sample: 'Ver un ejemplo', next: 'Hojea el extracto del manual a continuación', close: 'Cerrar ✕',
       items: {
         manual: ['Manual del alumno', '64 unidades en 4 segmentos. Cada unidad sigue la misma progresión: situación, explicación, práctica, producción y comprensión.'],
@@ -74,7 +74,7 @@ const UI = {
     examA2: 'Examen du segment A',
     page: 'page', pages: 'pages', manualWord: 'manuel',
     inc: {
-      eyebrow: 'Inclus dans ce programme', lead: 'Tout ce que vous recevez en commençant le niveau. Les documents complets sont dans votre Campus ; voici une page d’exemple de chacun.',
+      eyebrow: 'Inclus dans ce programme', lead: 'Tout ce que vous recevez en commençant le niveau. Voici une page d’exemple de chaque document.', soon: 'Bientôt',
       sample: 'Voir un exemple', next: 'Feuilletez l’extrait du manuel ci-dessous', close: 'Fermer ✕',
       items: {
         manual: ['Manuel de l’élève', '64 unités en 4 segments. Chaque unité suit la même progression : mise en situation, explication, pratique, production et compréhension.'],
@@ -107,7 +107,7 @@ const UI = {
     examA2: 'Segment A exam',
     page: 'page', pages: 'pages', manualWord: 'textbook',
     inc: {
-      eyebrow: 'Included in this program', lead: 'Everything you receive when you start the level. The full documents are in your Campus; here is a sample page of each.',
+      eyebrow: 'Included in this program', lead: 'Everything you receive when you start the level. Here is a sample page of each document.', soon: 'Coming soon',
       sample: 'See a sample', next: 'Browse the textbook excerpt below', close: 'Close ✕',
       items: {
         manual: ['Student textbook', '64 units in 4 segments. Every unit follows the same progression: situation, explanation, practice, production and comprehension.'],
@@ -140,7 +140,7 @@ const UI = {
     examA2: 'Prüfung von Segment A',
     page: 'Seite', pages: 'Seiten', manualWord: 'Lehrbuch',
     inc: {
-      eyebrow: 'In diesem Programm enthalten', lead: 'Alles, was Sie zu Beginn des Niveaus erhalten. Die vollständigen Unterlagen finden Sie im Campus; hier sehen Sie von jeder eine Beispielseite.',
+      eyebrow: 'In diesem Programm enthalten', lead: 'Alles, was Sie zu Beginn des Niveaus erhalten. Hier sehen Sie von jedem Dokument eine Beispielseite.', soon: 'Demnächst',
       sample: 'Beispiel ansehen', next: 'Blättern Sie unten im Auszug aus dem Lehrbuch', close: 'Schließen ✕',
       items: {
         manual: ['Lehrbuch für Lernende', '64 Einheiten in 4 Segmenten. Jede Einheit folgt demselben Aufbau: Situation, Erklärung, Übung, Produktion und Verstehen.'],
@@ -224,15 +224,18 @@ function readerManifest(source) {
 }
 
 // What a student receives with each level, in display order. The value is the
-// reader page shown as a sample (assets/manual-<level>/reader/<value>.webp),
-// 'campus' for the Campus screenshot, or null when no sample page exists yet.
+// page shown as a sample (assets/manual-<level>/<value>.webp: a reader page,
+// or one page of an exam booklet in samples/), 'campus' for the Campus
+// screenshot, or null when no sample page exists yet.
 // Inventory checked against the Drive documents (manuals, exam booklets).
 const INCLUDED = {
-  a1: { manual: 'table-matieres-1', exercises: 'unite-1-3', comprehension: 'unite-1-6', vocabulary: 'unite-1-7', assessments: 'examen-a-1', complementary: null, campus: 'campus' },
-  a2: { manual: 'table-matieres-1', exercises: 'unite-1-4', comprehension: 'unite-1-5', vocabulary: 'unite-1-6', diagnostic: null, assessments: 'examen-a-1', complementary: null, campus: 'campus' },
-  b1: { manual: 'table-matieres-1', exercises: 'unite-1-3', comprehension: 'unite-1-6', vocabulary: 'unite-1-7', diagnostic: 'unite-1-1', assessments: 'examen-a-1', complementary: null, tcf: null, campus: 'campus' },
-  b2: { manual: 'table-matieres-1', exercises: 'unite-1-3', comprehension: 'unite-1-7', vocabulary: 'unite-1-8', diagnostic: 'unite-1-1', assessments: 'examen-a-1', complementary: null, tcf: null, campus: 'campus' }
+  a1: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', campus: 'campus' },
+  a2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-4', comprehension: 'reader/unite-1-5', vocabulary: 'reader/unite-1-6', diagnostic: 'samples/diagnostic', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', campus: 'campus' },
+  b1: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: null, tcf: 'samples/tcf', campus: 'campus' },
+  b2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-7', vocabulary: 'reader/unite-1-8', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: null, tcf: 'samples/tcf', campus: 'campus' }
 };
+// Not available yet: the Campus opens to students once all levels are ready.
+const COMING_SOON = new Set(['campus']);
 const INCLUDED_ICONS = { manual: 'i-book', exercises: 'i-pen', comprehension: 'i-headphones', vocabulary: 'i-cards', diagnostic: 'i-target', assessments: 'i-clipboard', complementary: 'i-check', tcf: 'i-maple', campus: 'i-laptop' };
 export const CAMPUS_SAMPLE = '/v4/assets/campus-apercu.webp';
 
@@ -240,9 +243,10 @@ function included(t, level) {
   const L = level.toUpperCase();
   const cards = Object.entries(INCLUDED[level]).map(([key, sample]) => {
     const [name, text] = t.inc.items[key];
-    const src = sample === 'campus' ? CAMPUS_SAMPLE : sample && `/assets/manual-${level}/reader/${sample}.webp`;
+    const src = sample === 'campus' ? CAMPUS_SAMPLE : sample && `/assets/manual-${level}/${sample}.webp`;
+    const soon = COMING_SOON.has(key) ? `<span class="inc-soon">${t.inc.soon}</span>` : '';
     const button = src ? `<button type="button" class="inc-sample" data-sample="${src}" data-title="${esc(`${name} · Pathway ${L}`)}"><svg class="icon" aria-hidden="true"><use href="#i-zoom"/></svg>${t.inc.sample}</button>` : '';
-    return `<li class="inc-item"><span class="inc-icon"><svg class="icon" aria-hidden="true"><use href="#${INCLUDED_ICONS[key]}"/></svg></span><div><h3>${esc(name)}</h3><p>${esc(text)}</p>${button}</div></li>`;
+    return `<li class="inc-item"><span class="inc-icon"><svg class="icon" aria-hidden="true"><use href="#${INCLUDED_ICONS[key]}"/></svg></span><div>${soon}<h3>${esc(name)}</h3><p>${esc(text)}</p>${button}</div></li>`;
   }).join('');
   return `<section id="incluido" class="pgm-included" aria-labelledby="included-title">
       <div class="container">

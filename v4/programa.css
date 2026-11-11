@@ -66,6 +66,7 @@
 .inc-item { display: flex; gap: 16px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
 .inc-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--sage-wash); color: var(--ink); }
 .inc-icon .icon { width: 22px; height: 22px; }
+.inc-soon { margin-bottom: 8px; padding: 3px 10px; border-radius: 99px; background: var(--sage-wash); color: var(--ink); font-size: 12px; font-weight: 600; letter-spacing: .02em; }
 .inc-item h3 { margin: 2px 0 6px; font-size: 18px; line-height: 1.25; letter-spacing: -.01em; }
 .inc-item > div { display: flex; flex-direction: column; align-items: flex-start; }
 .inc-item p { margin: 0 0 12px; color: var(--muted); font-size: 15px; line-height: 1.5; }
