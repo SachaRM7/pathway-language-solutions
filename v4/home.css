@@ -322,12 +322,7 @@ main { padding-top: var(--header-height); }
 .continuity-main .card-number { margin-bottom: 10px; }
 .continuity-main h3 { font-size: 27px; }
 .continuity-main p { margin-top: 16px; }
-.lesson-placeholder { position: relative; isolation: isolate; min-height: 224px; height: 100%; overflow: hidden; border-radius: 14px; background: var(--cream); }
-.placeholder-sun { position: absolute; left: 47%; top: 22%; width: 80px; height: 80px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 8%, var(--cream)); }
-.placeholder-hill { position: absolute; width: 112%; height: 145px; bottom: -55px; background: #9ca993; border-radius: 50% 45% 0 0; transform: rotate(-23deg); }
-.hill-back { right: -39%; bottom: -9px; background: color-mix(in srgb, var(--muted) 29%, var(--sage)); }
-.hill-front { left: -30%; transform: rotate(22deg); background: color-mix(in srgb, var(--muted) 43%, var(--sage)); }
-.placeholder-label { position: absolute; right: 12px; bottom: 12px; padding: 2px 8px; background: var(--paper); border-radius: 4px; color: var(--muted); font-size: 10px; }
+.lesson-photo { display: block; width: 100%; height: 100%; min-height: 224px; aspect-ratio: 16 / 9; object-fit: cover; object-position: center; border-radius: 14px; }
 .continuity-notebook { background: var(--action); color: var(--paper); }
 .continuity-notebook p, .continuity-notebook .card-number { color: var(--paper); }
 .continuity-feedback { background: color-mix(in srgb, var(--sage) 68%, var(--cream)); }
@@ -504,7 +499,7 @@ main { padding-top: var(--header-height); }
   .continuity-main { padding-right: 8px; }
   .continuity-main h3 { font-size: 24px; }
   .continuity-card p { font-size: 15px; }
-  .lesson-placeholder { min-height: 255px; }
+  .lesson-photo { min-height: 255px; }
   .footer-directory { flex-wrap: wrap; gap: 24px; }
   .footer-directory > .brand { flex-basis: 100%; }
   .footer-directory nav { flex: 1; }
@@ -632,7 +627,7 @@ main { padding-top: var(--header-height); }
   .continuity-main > div:first-child { padding: 0 16px 24px; }
   .continuity-main h3 { font-size: 25px; }
   .continuity-main p { font-size: 15px; }
-  .lesson-placeholder { min-height: 180px; }
+  .lesson-photo { min-height: 180px; }
   .continuity-card:not(.continuity-main) { padding: 20px 18px; }
   .continuity-card:not(.continuity-main) h3 { font-size: 22px; }
   .continuity-card:not(.continuity-main) p { font-size: 14px; }
