@@ -6,7 +6,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | Fichier | Rôle |
 |---|---|
 | `index.html`, `campus.css`, `app.js` | L'application (élève + professeur), sans outil de build |
-| `tour.js` | Tutoriel de l'élève : écran flouté, zone encadrée, explication en espagnol. Il s'ouvre seul à la première visite et se rejoue avec le bouton « ? » en haut de l'écran (souvenir gardé sur l'appareil) |
+| `tour.js` | Tutoriels de l'élève et du professeur : écran flouté, zone encadrée, explication en espagnol. Chacun s'ouvre seul la première fois et se rejoue avec le bouton « ? » en haut de l'écran (souvenir gardé dans le compte, voir `db/007_tutorial.sql`) |
 | `config.js` | Adresse du projet Supabase et clé publique (publishable). Jamais de clé secrète ici. |
 | `db/001_init.sql` | Tables, règles d'accès (RLS), calcul des XP et des séries, contenu de l'unité 1 de l'A2 |
 | `db/002_weekly_challenge.sql` | Défi de la semaine (5 jours de pratique, +50 XP) et objectif de groupe |
@@ -16,6 +16,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `../supabase/templates/` | E-mails « Invite user » et « Magic link » en espagnol, à la charte du Campus (`EMAILS_A_COPIER.md`) ; logo servi par `campus/email/logo.png` |
 | `db/005_content_editor.sql` | Éditeur de contenu dans « Contenido » (professeurs et admins) : unités et exercices des 7 types |
 | `db/006_progression.sql` | Progression : unité suivante ouverte à partir de 75 % de bonnes réponses, nouvel essai 24 h après un échec, reprise d'une unité commencée |
+| `db/007_tutorial.sql` | Tutoriels : le compte garde quels tutoriels (élève, professeur) ont été vus |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
