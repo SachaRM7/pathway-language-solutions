@@ -1,9 +1,9 @@
-// Campus tutorial for students: the screen is blurred except the zone being
-// explained, which is framed and pulses; a card explains it in Spanish. It opens
-// by itself on the first visit (once the home screen is shown) and can be
-// replayed at any time with the "?" button of the top bar.
+// Campus tutorials, one for students and one for teachers: the screen is blurred
+// except the zone being explained, which is framed and pulses; a card explains it
+// in Spanish. Each opens by itself the first time its screen is shown (the account
+// remembers it, see window.CampusApp in app.js) and can be replayed with the "?"
+// button of the top bar.
 (() => {
-  const KEY = 'campus-tour-v1';
   const $ = s => document.querySelector(s);
   const visible = el => el && el.getClientRects().length && el.getBoundingClientRect().width > 0;
   const pick = (...sels) => sels.map(s => [...document.querySelectorAll(s)]).flat().find(visible) || null;
@@ -12,7 +12,7 @@
   const phone = () => innerWidth <= 720;
 
   // view: screen to show first; target: zone to frame; pad: margin around it.
-  const ALL_STEPS = [
+  const STUDENT = [
     { center: true, title: '¡Te damos la bienvenida a tu Campus!', text: 'En un minuto te mostramos dónde está cada cosa. Puedes volver a ver este recorrido cuando quieras con el botón «?» de la parte de arriba.', next: 'Empezar', skip: 'Ahora no' },
     { view: 'inicio', target: () => pick('#main .hero'), title: 'Tu lección del día', text: 'Aquí empieza tu práctica: la siguiente unidad de tu manual, con ejercicios de 20 a 30 minutos. Pulsa «Empezar la lección».' },
     { view: 'inicio', target: () => pick('#main .tile.butter'), title: 'Tu racha', text: 'Los días seguidos en los que cumples tu meta. Practica un poco cada día para mantenerla.' },
@@ -34,8 +34,30 @@
     { view: 'inicio', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Las tareas que te deja tu profesor y tus recordatorios. ¿Dónde está la tarea? Aquí.', pad: 6 },
     { view: 'inicio', target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido. ¡Ahora te toca a ti!', next: 'Terminar', pad: 6, last: true }
   ];
+  STUDENT.home = 'inicio';
 
-  let steps = ALL_STEPS, root, ring, card, shade, step = -1, target = null;
+  const TEACHER = [
+    { center: true, title: 'Tu espacio de profesor', text: 'En un minuto te mostramos cómo seguir a tus alumnos entre clases y preparar el contenido. Puedes volver a ver este recorrido con el botón «?» de la parte de arriba.', next: 'Empezar', skip: 'Ahora no' },
+    { view: 'grupo', target: () => { const k = [...document.querySelectorAll('#main .tile.kpi')].filter(visible); return k.length ? k : null; }, title: 'Tu grupo de un vistazo', text: 'Alumnos activos esta semana, tareas pendientes y porcentaje de aciertos a la primera.' },
+    { view: 'grupo', target: () => tileWithTitle('Necesitan atención'), title: 'Necesitan atención', text: 'Los alumnos que no practican desde hace días o que fallan mucho. Escríbeles antes de la clase.' },
+    { view: 'grupo', target: () => tileWithTitle('Errores frecuentes'), title: 'Errores frecuentes', text: 'Los errores más repetidos de tu grupo en los ejercicios: un buen punto de partida para la clase.' },
+    { view: 'grupo', target: () => tileWithTitle('Alumnos'), title: 'Tus alumnos', text: 'Nivel, racha, última actividad y tareas de cada alumno.' },
+    { view: 'grupo', target: () => tileWithTitle('Anotar un error de la clase'), title: 'Anotar un error de la clase', text: 'Un error que oyes en clase se convierte en una tarjeta en la zona «Repasar» del alumno.' },
+    { view: 'grupo', target: () => tileWithTitle('Asignar una tarea'), title: 'Asignar una tarea', text: 'Elige una unidad y una fecha: el alumno la ve en su inicio y en sus avisos.' },
+    { view: 'grupo', target: () => tileWithTitle('Programar la próxima clase'), title: 'Programar la próxima clase', text: 'Fecha, hora y enlace: aparecen en el inicio del alumno, con el botón para entrar.' },
+    { view: 'grupo', target: () => tileWithTitle('Invitar a un alumno'), title: 'Invitar a un alumno', text: 'Por correo: su nombre, su nivel y su profesor quedan configurados antes de que entre.' },
+    { view: 'grupo', target: () => tileWithTitle('Invitaciones'), title: 'Invitaciones', text: 'Las invitaciones enviadas: puedes reenviarlas o cancelarlas.' },
+    { view: 'grupo', target: () => tileWithTitle('Miembros'), title: 'Miembros', text: 'Solo administración: cambiar el nombre, el nivel, el profesor o el tipo de cuenta, o borrar una cuenta.' },
+    { view: 'grupo', target: () => navLink('contenido'), title: 'Contenido', text: 'Las unidades y sus ejercicios. Entremos.', pad: 6 },
+    { view: 'contenido', target: () => pick('#main .unit-row'), title: 'Tus unidades', text: 'Cada unidad con su estado: «Editar» los ejercicios, «Probar» como un alumno (no se guarda nada) y «Publicar» para que tus alumnos la vean.' },
+    { view: 'contenido', target: () => tileWithTitle('Nueva unidad'), title: 'Nueva unidad', text: 'Crea una unidad y añade ejercicios de los 7 tipos.' },
+    { view: 'contenido', target: () => pick('#main .switch'), title: 'Vista Alumno', text: 'Pasa a la vista Alumno para usar el Campus como tus alumnos, con tu propia cuenta.', pad: 6 },
+    { view: 'contenido', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los alumnos inactivos y los que todavía no completaron la bienvenida.', pad: 6 },
+    { view: 'contenido', target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
+  ];
+  TEACHER.home = 'grupo';
+
+  let steps = STUDENT, tour = 'student', root, ring, card, shade, step = -1, target = null;
   const R = 18;
   // The blurred shade covers the screen except a rounded window on the zone
   // (even-odd path); the path keeps the same structure, so it animates between steps.
@@ -72,6 +94,11 @@
     });
   }
 
+  // A step can frame several elements (an array): their bounding box.
+  const box = t => {
+    const rs = (Array.isArray(t) ? t : [t]).map(el => el.getBoundingClientRect());
+    return { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
+  };
   function place() {
     if (!root || step < 0) return;
     const s = steps[step], W = innerWidth, H = innerHeight;
@@ -85,7 +112,7 @@
     }
     card.classList.remove('is-center');
     const pad = s.pad ?? 10;
-    const r = target.getBoundingClientRect();
+    const r = box(target);
     const x = Math.max(0, r.left - pad), y = Math.max(0, r.top - pad), x2 = Math.min(W, r.right + pad), y2 = Math.min(H, r.bottom + pad);
     shade.style.clipPath = hole(W, H, x, y, x2, y2);
     ring.style.cssText = `display:block;left:${x}px;top:${y}px;width:${x2 - x}px;height:${y2 - y}px`;
@@ -115,8 +142,8 @@
     // A zone that is not on screen: skip the step in the direction of travel.
     if (!s.center && !target && !s.last) return show(k + (k >= from ? 1 : -1));
     if (target) {
-      const r = target.getBoundingClientRect();
-      if (r.top < 70 || r.bottom > innerHeight - (phone() ? 230 : 20)) { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); await wait(450); }
+      const r = box(target), first = Array.isArray(target) ? target[0] : target;
+      if (r.top < 70 || r.bottom > innerHeight - (phone() ? 230 : 20)) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); await wait(450); }
     }
     const total = steps.length - 1;
     card.innerHTML = `${s.center ? '<div class="tt-badge" aria-hidden="true">?</div>' : `<p class="tt-count">${k} / ${total}</p>`}
@@ -133,13 +160,16 @@
   function finish() {
     root.classList.remove('is-on');
     step = -1;
-    try { localStorage.setItem(KEY, '1'); } catch (e) { /* private mode: the tour may show again */ }
-    if (location.hash.slice(1) !== 'inicio') location.hash = 'inicio';
+    window.CampusApp?.markSeen(tour);
+    if (location.hash.slice(1) !== steps.home) location.hash = steps.home;
   }
 
   function start() {
     if (!$('#lesson')?.hidden) return; // never over a lesson
-    steps = phone() ? ALL_STEPS.filter(s => !s.desktopOnly) : ALL_STEPS;
+    tour = window.CampusApp?.mode() === 'teacher' ? 'teacher' : 'student';
+    const all = tour === 'teacher' ? TEACHER : STUDENT;
+    steps = phone() ? all.filter(s => !s.desktopOnly) : all;
+    steps.home = all.home;
     show(0);
   }
 
@@ -149,8 +179,13 @@
     e.preventDefault(); e.stopPropagation();
     start();
   }, true);
-  // First visit: start once the student's home is on screen.
-  let seen = false;
-  try { seen = !!localStorage.getItem(KEY); } catch (e) { /* ignore */ }
-  if (!seen) waitFor(() => pick('#main .hero'), 60000).then(el => { if (el && step < 0) setTimeout(start, 700); });
+  // First time a mode's home screen is shown: open its tour once.
+  let pending = 0;
+  document.addEventListener('campus:render', e => {
+    const app = window.CampusApp;
+    if (!app || step >= 0 || pending) return;
+    const mode = app.mode(), home = mode === 'teacher' ? TEACHER.home : STUDENT.home;
+    if (e.detail.view !== home || app.seen(mode)) return;
+    pending = setTimeout(() => { pending = 0; if (step < 0 && app.mode() === mode && !app.seen(mode)) start(); }, 700);
+  });
 })();

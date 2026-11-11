@@ -279,7 +279,7 @@ function topBar(id, title, sub) {
     <div class="top-tools">
       ${teacherMode() ? '' : `<div class="menu-wrap"><label class="search" for="campusSearch">${icon('search')}<input id="campusSearch" type="search" autocomplete="off" placeholder="Buscar una unidad, un verbo…" value="${esc(A.search)}"></label><div id="searchSlot"></div></div>`}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Vista"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode()}">Profesor</button></div>` : ''}
-      ${teacherMode() ? '' : '<button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>'}
+      <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
       <div class="menu-wrap"><button type="button" class="round ava-btn" data-action="menu" aria-label="Mi cuenta" aria-haspopup="true"><span class="ava">${esc(initials(p.full_name))}</span></button><div id="menuSlot"></div></div>
     </div></header>`;
@@ -336,7 +336,22 @@ function render() {
   renderNav(id);
   $('#main').innerHTML = VIEWS[id]();
   bindView(id);
+  document.dispatchEvent(new CustomEvent('campus:render', { detail: { view: id } }));
 }
+// Used by tour.js: which tour applies, and whether this account has already seen it
+// (profiles.tours, db/007_tutorial.sql; the device keeps a copy if the column is missing).
+window.CampusApp = {
+  mode: () => teacherMode() ? 'teacher' : 'student',
+  seen: name => {
+    let local = false; try { local = !!localStorage.getItem('campus-tour-' + name); } catch (e) { /* ignore */ }
+    return local || !!(A.profile && A.profile.tours && A.profile.tours[name]);
+  },
+  markSeen: name => {
+    try { localStorage.setItem('campus-tour-' + name, '1'); } catch (e) { /* ignore */ }
+    if (A.profile) A.profile.tours = { ...(A.profile.tours || {}), [name]: new Date().toISOString() };
+    sb.rpc('mark_tour_seen', { p_tour: name }).then(r => { if (r && r.error) console.warn('mark_tour_seen:', r.error.message); });
+  }
+};
 function showApp() {
   $('#login').hidden = true; $('#ob').hidden = true; $('#app').hidden = false;
   document.body.classList.remove('no-scroll');
