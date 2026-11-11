@@ -39,7 +39,10 @@ export const ICONS = Object.freeze({
   'i-clock': '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
   'i-target': '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12h.01"/>',
   'i-alert': '<path d="M10.3 4.9a2 2 0 0 1 3.4 0l7 12.1a2 2 0 0 1-1.7 3H5a2 2 0 0 1-1.7-3Z"/><path d="M12 10v3.5"/><path d="M12 16.5h.01"/>',
-  'i-maple': '<path d="M12 3.5 14 8l3-1.5-.8 4.8 3.8-2.3-1 4.2 1.8 1.3L15 18l.6 1.8L12 19l-3.6.8L9 18l-5.8-3.5L5 13.2l-1-4.2 3.8 2.3L7 6.5 10 8Z"/><path d="M12 19v2.5"/>',
+  'i-pen': '<path d="M15.5 4.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="m13.5 6.5 3 3"/>',
+  'i-headphones': '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="4" y="14" width="4" height="6" rx="2"/><rect x="16" y="14" width="4" height="6" rx="2"/>',
+  'i-cards': '<rect x="3.5" y="7" width="12" height="13" rx="2.5"/><path d="M8 4h10a2.5 2.5 0 0 1 2.5 2.5V16"/>',
+  'i-maple':'<path d="M12 3.5 14 8l3-1.5-.8 4.8 3.8-2.3-1 4.2 1.8 1.3L15 18l.6 1.8L12 19l-3.6.8L9 18l-5.8-3.5L5 13.2l-1-4.2 3.8 2.3L7 6.5 10 8Z"/><path d="M12 19v2.5"/>',
   // Contact
   'i-mail': '<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m4.5 7.5 7.5 6 7.5-6"/>',
   'i-whatsapp': '<path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9.2 8.6c-.4 2.9 2.6 6 5.6 5.6l.7-1.5-1.8-.9-.9.8a4.6 4.6 0 0 1-2-2l.8-.9-.9-1.8Z"/>',
