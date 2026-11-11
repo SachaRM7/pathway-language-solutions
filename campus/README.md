@@ -14,6 +14,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/004_admin_members.sql` | Carte « Miembros » réservée à l'admin : modifier nom, niveau, professeur, type de compte ; supprimer un compte et ses données |
 | `../supabase/templates/` | E-mails « Invite user » et « Magic link » en espagnol, à la charte du Campus (`EMAILS_A_COPIER.md`) ; logo servi par `campus/email/logo.png` |
 | `db/005_content_editor.sql` | Éditeur de contenu dans « Contenido » (professeurs et admins) : unités et exercices des 7 types |
+| `db/006_progression.sql` | Progression : unité suivante ouverte à partir de 75 % de bonnes réponses, nouvel essai 24 h après un échec, reprise d'une unité commencée |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.

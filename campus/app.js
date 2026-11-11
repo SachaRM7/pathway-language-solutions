@@ -164,6 +164,7 @@ async function loadAll() {
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
   await loadWeekly();
+  await loadResumable();
   if (isStaff()) await loadStaff();
 }
 async function loadWeekly() {
@@ -211,9 +212,26 @@ function liveStreak() {
   return 0;
 }
 const doneToday = () => A.profile.last_goal_day === todayKey();
-const doneUnits = () => new Set(A.runs.map(r => r.unit_id));
+const PASS_RATE = 0.75;
+const RETRY_MS = 24 * 3600e3;
+const runPassed = r => r.first_try_correct >= PASS_RATE * r.total;
+// Units passed with at least 75 % on the first try.
+const doneUnits = () => new Set(A.runs.filter(runPassed).map(r => r.unit_id));
 const playable = u => isStaff() ? (A.unitInfo[u.id]?.count || 0) > 0 : (A.unitInfo[u.id]?.validated || 0) > 0;
 const unitById = id => A.units.find(u => u.id === id);
+function unitState(u) {
+  const runs = A.runs.filter(r => r.unit_id === u.id);
+  const passed = runs.some(runPassed);
+  const last = runs[runs.length - 1];
+  let retryAt = null;
+  if (!passed && last && !runPassed(last)) { const t = new Date(last.finished_at).getTime() + RETRY_MS; if (t > Date.now()) retryAt = t; }
+  if (isStaff()) return { unlocked: true, passed, retryAt: null, prev: null };
+  const prev = A.units.filter(x => x.level === u.level && x.number < u.number && playable(x)).sort((a, b) => b.number - a.number)[0] || null;
+  const assigned = A.assignments.some(a => a.unit_id === u.id);
+  const unlocked = !prev || A.runs.some(r => r.unit_id === prev.id && runPassed(r)) || assigned;
+  return { unlocked, passed, retryAt, prev };
+}
+const retryLabel = t => { const d = new Date(t); return `${fmtDate(d, { weekday: 'long' })} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}`; };
 function nextUnit() {
   const done = doneUnits();
   return A.units.filter(u => u.level === A.profile.level).find(u => !done.has(u.id) && playable(u)) || null;
@@ -357,7 +375,10 @@ function heroTile() {
   const tag = hw ? `${icon('pen')}Tarea${A.teacher ? ' de ' + esc(firstName(A.teacher.full_name)) : ''}${due ? ' · para el ' + due : ''}` : `${icon('route')}Siguiente unidad`;
   return `<article class="tile peach hero c-8">
     <div><span class="pill">${tag}</span><h2>${esc(unit.title)}</h2><p>Unidad ${unit.number} · ${unit.level} · ${n} ejercicio${n === 1 ? '' : 's'} · ${Math.max(5, n + 2)} min</p></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1"><button class="btn btn-dark" data-start="${unit.id}">Empezar la lección<span class="arrow">${icon('arrow')}</span></button></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1">${(() => { const st = unitState(unit);
+      if (st.retryAt) return `<span class="pill dark" style="height:40px;padding:0 16px">${icon('timer')}Nuevo intento: ${esc(retryLabel(st.retryAt))}</span><a class="btn btn-light btn-sm" href="#repasar">Repasar mientras tanto</a>`;
+      if (!st.unlocked) return `<span class="pill dark" style="height:40px;padding:0 16px">${icon('lock')}Supera antes la unidad ${st.prev ? st.prev.number : ''}</span>`;
+      return `<button class="btn btn-dark" data-start="${unit.id}">${L_RESUME.has(unit.id) ? 'Continuar la lección' : 'Empezar la lección'}<span class="arrow">${icon('arrow')}</span></button>`; })()}</div>
     ${art.stickers.map((s, i) => `<span class="sticker s${i + 1}">${s}</span>`).join('')}
     <span class="hero-art" aria-hidden="true">${esc(art.big)}</span></article>`;
 }
@@ -436,11 +457,15 @@ function viewRuta() {
   const cells = [];
   for (let n = from; n < from + 16; n++) {
     const u = A.units.find(x => x.level === p.level && x.number === n);
-    let cls = 'soon', label = `Unidad ${n}, pronto`, inner = pad2(n);
-    if (u && done.has(u.id)) { cls = 'done'; inner = icon('check'); label = `Unidad ${n}, hecha`; }
-    else if (u && nu && u.id === nu.id) { cls = 'cur'; label = `Unidad ${n}, siguiente`; }
-    else if (u && playable(u)) { cls = ''; label = `Unidad ${n}`; }
-    cells.push(`<button class="u ${cls}" ${u && playable(u) ? `data-start="${u.id}"` : `data-toast="La unidad ${n} todavía no está disponible."`} aria-label="${label}">${inner}</button>`);
+    let cls = 'soon', label = `Unidad ${n}, pronto`, inner = pad2(n), action = `data-toast="La unidad ${n} todavía no está disponible."`;
+    if (u && playable(u)) {
+      const st = unitState(u);
+      if (st.passed) { cls = 'done'; inner = icon('check'); label = `Unidad ${n}, superada`; action = `data-start="${u.id}"`; }
+      else if (st.retryAt) { cls = 'cur'; inner = icon('timer'); label = `Unidad ${n}, nuevo intento ${retryLabel(st.retryAt)}`; action = `data-toast="Necesitas 75 % para pasar. Nuevo intento: ${esc(retryLabel(st.retryAt))}."`; }
+      else if (st.unlocked) { cls = 'cur'; label = `Unidad ${n}, disponible`; action = `data-start="${u.id}"`; }
+      else { cls = 'locked'; inner = icon('lock'); label = `Unidad ${n}, bloqueada`; action = `data-toast="Supera antes la unidad ${st.prev ? st.prev.number : n - 1} con al menos 75 %."`; }
+    }
+    cells.push(`<button class="u ${cls}" ${action} aria-label="${label}">${inner}</button>`);
   }
   cells.push(`<button class="u exam" data-toast="El examen ${s.letter} se desbloquea al terminar las 16 unidades del segmento." aria-label="Examen ${s.letter}">${icon('trophy')}</button>`);
   const featured = nu && nu.segment === s.letter ? nu : null;
@@ -450,7 +475,8 @@ function viewRuta() {
   <div class="seg-tabs" role="group" aria-label="Segmento">${segs.map((x, i) => `<button type="button" data-seg="${i}" aria-pressed="${i === A.seg}"><b>${x.letter}</b>${esc(x.name)}</button>`).join('')}</div>
   ${featured ? `<article class="tile peach unit-hero">
       <div><span class="pill">Unidad actual</span><h2>${esc(featured.title)}</h2>
-        <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-dark" data-start="${featured.id}">Empezar<span class="arrow">${icon('arrow')}</span></button></div></div>
+        <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">${unitState(featured).retryAt ? `<span class="pill dark" style="height:40px;padding:0 16px">${icon('timer')}Nuevo intento: ${esc(retryLabel(unitState(featured).retryAt))}</span>` : `<button class="btn btn-dark" data-start="${featured.id}">${L_RESUME.has(featured.id) ? 'Continuar' : 'Empezar'}<span class="arrow">${icon('arrow')}</span></button>`}</div>
+        <p style="margin-top:14px;font-size:14px;font-weight:600">Supérala con al menos 75 % para abrir la siguiente unidad.</p></div>
       <div class="unit-meta"><p class="unit-no">${pad2(featured.number)}</p><div><span>En el campus</span>${fInfo?.[isStaff() ? 'count' : 'validated'] || 0} ejercicios</div>${featured.manual_time ? `<div><span>En el manual</span>${esc(featured.manual_time)}</div>` : ''}</div>
     </article>` : ''}
   <article class="tile">
@@ -1095,8 +1121,25 @@ document.addEventListener('keydown', e => {
 /* ───────────── Lesson player ───────────── */
 let L = null;
 const lessonEl = $('#lesson'), body = $('#lessonBody'), foot = $('#lessonFoot'), footIn = $('#footIn');
+const L_RESUME = new Set();
+async function loadResumable() {
+  if (isStaff() && teacherMode()) return;
+  const { data } = await sb.from('lesson_progress').select('unit_id').eq('user_id', A.session.user.id);
+  L_RESUME.clear(); (data || []).forEach(r => L_RESUME.add(r.unit_id));
+}
+function saveProgress() {
+  if (!L || L.preview || L.finished) return;
+  const state = { queue: L.queue.map(x => ({ id: x.id, retry: !!x.retry })), pos: L.pos, combo: L.combo, xp: L.xp, res: [...L.res.values()], elapsed: Date.now() - L.start };
+  L_RESUME.add(L.unit.id);
+  sb.rpc('save_lesson_progress', { p_unit: L.unit.id, p_state: state }).then(r => { if (r && r.error) console.error(r.error); });
+}
 async function startLesson(unitId, preview) {
   const unit = unitById(unitId); if (!unit) return;
+  if (!preview) {
+    const st = unitState(unit);
+    if (st.retryAt) return toast(`Necesitas 75 % para pasar esta unidad. Nuevo intento: ${retryLabel(st.retryAt)}.`);
+    if (!st.unlocked) return toast(`Supera antes la unidad ${st.prev ? st.prev.number : ''} con al menos 75 %.`);
+  }
   let q = sb.from('exercises').select('id,type,kind,payload,position,status').eq('unit_id', unitId).order('position');
   if (!preview) q = q.eq('status', 'validated');
   const { data, error } = await q;
@@ -1104,6 +1147,17 @@ async function startLesson(unitId, preview) {
   if (!data.length) return toast('Esta unidad todavía no tiene ejercicios.');
   const items = data.map(x => ({ ...x.payload, id: x.id, type: x.type, kind: x.kind, retry: false }));
   L = { unit, preview, items, queue: items.slice(), pos: 0, combo: 0, xp: 0, res: new Map(), start: Date.now(), answer: null, checked: false };
+  if (!preview) {
+    const { data: saved } = await sb.from('lesson_progress').select('state').eq('user_id', A.session.user.id).eq('unit_id', unitId).limit(1);
+    const st = saved && saved[0] && saved[0].state;
+    const byId = Object.fromEntries(items.map(x => [x.id, x]));
+    if (st && Array.isArray(st.queue) && st.queue.every(q => byId[q.id]) && st.pos > 0 && st.pos < st.queue.length) {
+      L.queue = st.queue.map(q => ({ ...byId[q.id], retry: q.retry }));
+      L.pos = st.pos; L.combo = st.combo || 0; L.xp = st.xp || 0; L.start = Date.now() - (st.elapsed || 0);
+      L.res = new Map((st.res || []).map(r => [r.exercise_id, r]));
+      setTimeout(() => toast(`Retomamos donde lo dejaste: ejercicio ${L.pos + 1} de ${L.queue.length}.`), 300);
+    }
+  }
   lessonEl.hidden = false; document.body.classList.add('no-scroll');
   $('.preview-flag')?.remove();
   if (preview) document.body.insertAdjacentHTML('beforeend', '<span class="preview-flag">Vista previa · no se guarda nada</span>');
@@ -1116,7 +1170,7 @@ function closeLesson() {
 $('#lessonClose').addEventListener('click', () => {
   if (!L || L.finished || L.preview) return closeLesson();
   const box = document.createElement('div'); box.className = 'confirm';
-  box.innerHTML = `<div class="tile"><h3 style="font-size:22px">¿Salir de la lección?</h3><p class="muted">Perderás el progreso de esta sesión.</p><div class="acts"><button class="btn btn-light btn-sm" id="stay">Seguir</button><button class="btn btn-dark btn-sm" id="leave">Salir</button></div></div>`;
+  box.innerHTML = `<div class="tile"><h3 style="font-size:22px">¿Salir de la lección?</h3><p class="muted">${L.preview ? 'Es una vista previa: no se guarda nada.' : 'Tu avance queda guardado: podrás continuar donde lo dejaste.'}</p><div class="acts"><button class="btn btn-light btn-sm" id="stay">Seguir</button><button class="btn btn-dark btn-sm" id="leave">Salir</button></div></div>`;
   lessonEl.appendChild(box); $('#stay', box).focus();
   $('#stay', box).onclick = () => box.remove(); $('#leave', box).onclick = () => { box.remove(); closeLesson(); };
 });
@@ -1263,7 +1317,7 @@ function floatXp(n) {
   el.style.left = (r.left + r.width / 2 - 30) + 'px'; el.style.top = (r.top - 14) + 'px';
   document.body.appendChild(el); setTimeout(() => el.remove(), 1100);
 }
-function next() { if (!L) return; L.pos++; if (L.pos >= L.queue.length) return finish(); renderEx(); }
+function next() { if (!L) return; L.pos++; if (L.pos >= L.queue.length) return finish(); saveProgress(); renderEx(); }
 
 async function finish() {
   L.finished = true; $('#lessonProgress').firstElementChild.style.width = '100%'; $('#combo').innerHTML = '';
@@ -1274,7 +1328,7 @@ async function finish() {
   const item = (c, ic, title, sub) => `<div class="end-item"><span class="medal" style="background:var(--${c});color:var(--${c}-ink)">${icon(ic)}</span><div><b>${title}</b><span class="muted">${sub}</span></div></div>`;
   const header = (xp, extra) => `<div class="end">
     <span class="ex-kind">${icon('sparkle')}Unidad ${L.unit.number} terminada</span>
-    <h2>${acc === 100 ? '¡Lección perfecta!' : acc >= 75 ? '¡Muy buen trabajo!' : 'Lección completada'}</h2>
+    <h2>${acc === 100 ? '¡Lección perfecta!' : acc >= 75 ? '¡Unidad superada!' : 'Aún no superada'}</h2>
     <div class="end-stats">
       <div style="background:var(--butter);color:var(--butter-ink)"><small>XP ganados</small><b class="num" id="xpCount">+${xp}</b></div>
       <div style="background:var(--mint);color:var(--mint-ink)"><small>Aciertos</small><b class="num">${acc}%</b></div>
@@ -1288,9 +1342,19 @@ async function finish() {
   setFoot('saving');
   const errors = L.items.filter(ex => !(L.res.get(ex.id) || {}).first_try && ex.type !== 'match').map(reviewCard);
   const { data, error } = await sb.rpc('finish_lesson', { p_unit: L.unit.id, p_results: results, p_errors: errors, p_duration: secs });
-  if (error) { console.error(error); body.innerHTML = ''; setFoot('retry'); return; }
+  if (error) {
+    console.error(error); body.innerHTML = ''; setFoot('retry');
+    if (/cooldown|locked/.test(error.message || '')) toast('Esta unidad está bloqueada por ahora: tu intento no se guardó.');
+    return;
+  }
+  sb.rpc('clear_lesson_progress', { p_unit: L.unit.id }).then(r => { if (r && r.error) console.error(r.error); }); L_RESUME.delete(L.unit.id);
+  const passed = data.first_try >= PASS_RATE * data.total;
+  const pct = Math.round(data.first_try / data.total * 100);
+  const nextU = A.units.filter(x => x.level === L.unit.level && x.number > L.unit.number && playable(x)).sort((a, b) => a.number - b.number)[0];
   const badgeById = Object.fromEntries(A.badges.map(b => [b.id, b]));
   const extra = [
+    passed ? item('mint', 'check', `Unidad superada · ${pct} %`, nextU ? `La unidad ${nextU.number} ya está abierta.` : 'Has abierto el camino a la siguiente unidad en cuanto se publique.')
+      : item('peach', 'timer', `${pct} % · necesitas 75 % para pasar`, `Podrás volver a intentarlo el ${retryLabel(Date.now() + RETRY_MS)}. Mientras tanto, repasa tus errores en «Repasar».`),
     data.goal_reached ? item('peach', 'flame', `Racha: ${data.streak_before} → ${data.streak} día${data.streak === 1 ? '' : 's'}`, 'Meta de hoy cumplida. Vuelve mañana.')
       : item('peach', 'flame', `${data.today_xp} / ${A.profile.daily_goal} XP hoy`, data.today_xp >= A.profile.daily_goal ? 'Meta de hoy ya cumplida.' : `Te faltan ${A.profile.daily_goal - data.today_xp} XP para tu meta de hoy.`),
     ...(data.badges || []).map(id => { const b = badgeById[id]; return b ? item(b.color, b.icon, `Insignia: ${esc(b.name)}`, esc(b.description)) : ''; }),
@@ -1300,7 +1364,7 @@ async function finish() {
   body.innerHTML = header(data.xp, extra);
   setFoot('end');
   countUp($('#xpCount'), data.xp);
-  confetti();
+  if (passed) confetti();
   R.loaded = false;
   refresh().then(() => { if (lessonEl.hidden) render(); return maybeClaimWeekly(); });
 }

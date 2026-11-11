@@ -563,3 +563,6 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .ed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ed-add { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
 .ed-add .chips .btn .icon { width: 16px; height: 16px; }
+
+.u.locked { background: var(--soft); color: var(--ink-3); }
+.u.locked .icon, .u.cur .icon { width: 18px; height: 18px; }
