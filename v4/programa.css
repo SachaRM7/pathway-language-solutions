@@ -70,6 +70,10 @@
 .inc-item h3 { margin: 2px 0 6px; font-size: 18px; line-height: 1.25; letter-spacing: -.01em; }
 .inc-item > div { display: flex; flex-direction: column; align-items: flex-start; }
 .inc-item p { margin: 0 0 12px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.inc-item { transition: transform 220ms var(--ease), box-shadow 220ms var(--ease); }
+@media (hover: hover) {
+  .inc-item:hover { transform: translateY(-4px); box-shadow: 0 16px 30px -20px rgb(18 43 38 / 45%); }
+}
 .inc-sample { display: inline-flex; align-items: center; gap: 6px; margin-top: auto; padding: 0 0 2px; border: 0; border-bottom: 1.5px solid var(--line); background: none; color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 180ms var(--ease), color 180ms var(--ease); }
 .inc-sample:hover { color: var(--action); border-color: var(--action); }
 .inc-sample .icon { width: 16px; height: 16px; }
@@ -88,8 +92,9 @@
   .inc-flow { --card: 236px; --gap: 16px; --edge: 28px; --cell: calc(var(--card) + var(--gap)); grid-area: flow; display: block; box-sizing: content-box; width: calc(var(--card) * 2 + var(--gap)); height: calc(var(--card) * 2 + var(--gap)); padding: var(--edge); margin: calc(var(--edge) * -1); overflow: hidden;
     -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent), linear-gradient(to bottom, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent);
     -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent), linear-gradient(to bottom, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent); mask-composite: intersect; }
-  .inc-plane { display: grid; grid-template-columns: repeat(6, var(--card)); grid-auto-rows: var(--card); gap: var(--gap); margin: 0; padding: 0; list-style: none; animation: inc-flow 13.5s ease-in-out infinite; will-change: transform; }
-  .inc-flow:hover .inc-plane, .inc-flow:focus-within .inc-plane { animation-play-state: paused; }
+  .inc-plane { display: grid; grid-template-columns: repeat(6, var(--card)); grid-auto-rows: var(--card); gap: var(--gap); margin: 0; padding: 0; list-style: none; animation: inc-flow 8.4s ease-in-out infinite; will-change: transform; }
+  /* The flow stops while the pointer rests on a card (or a card has focus). */
+  .inc-flow:has(.inc-item:hover) .inc-plane, .inc-flow:focus-within .inc-plane { animation-play-state: paused; }
   .inc-plane .inc-item { position: relative; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; }
   .inc-plane .inc-item > div { flex: 1; }
   .inc-plane .inc-item h3 { font-size: 17px; }
