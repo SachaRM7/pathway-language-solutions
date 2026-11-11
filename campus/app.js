@@ -10,6 +10,8 @@ const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const icon = (n, c = '') => `<svg class="icon ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+// French typography in the lesson player: keep « ? ! : ; » » on the same line as the word before.
+const nbsp = h => h.replace(/ ([?!:;»])(?=[\s<]|$)/g, '\u00a0$1').replace(/« /g, '«\u00a0');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmt = n => Number(n || 0).toLocaleString('es-ES', { useGrouping: 'always' });
@@ -1159,7 +1161,7 @@ async function startLesson(unitId, preview) {
     }
   }
   lessonEl.hidden = false; document.body.classList.add('no-scroll');
-  $('.preview-flag')?.remove();
+  $('.preview-flag')?.remove(); lessonEl.classList.toggle('preview', !!preview);
   if (preview) document.body.insertAdjacentHTML('beforeend', '<span class="preview-flag">Vista previa · no se guarda nada</span>');
   renderEx();
 }
@@ -1199,8 +1201,8 @@ function setFoot(mode, d = {}) {
     $('#retryBtn').onclick = finish;
   } else {
     const g = mode === 'good';
-    footIn.innerHTML = `<div class="fb" role="status"><span class="fb-ico">${icon(g ? 'check' : 'x')}</span><div><h3>${esc(d.title)}</h3>${!g && d.correct ? `<p class="correct">${esc(d.correct)}</p>` : ''}${d.explain ? `<p>${d.explain}</p>` : ''}</div></div>
-      <button class="btn ${g ? 'btn-good' : 'btn-coral'}" id="nextBtn" type="button">Continuar</button>`;
+    footIn.innerHTML = nbsp(`<div class="fb" role="status"><span class="fb-ico">${icon(g ? 'check' : 'x')}</span><div><h3>${esc(d.title)}</h3>${!g && d.correct ? `<p class="correct">${esc(d.correct)}</p>` : ''}${d.explain ? `<p>${d.explain}</p>` : ''}</div></div>
+      <button class="btn ${g ? 'btn-good' : 'btn-coral'}" id="nextBtn" type="button">Continuar</button>`);
     $('#nextBtn').onclick = next; $('#nextBtn').focus();
   }
 }
@@ -1214,7 +1216,7 @@ function renderEx() {
   const kind = `<span class="ex-kind">${icon(ic)}${ex.retry ? 'Segunda oportunidad · ' : ''}${esc(ex.kind)}</span>`;
   const audio = `<div class="audio-card"><button class="play" type="button" id="playN" aria-label="Escuchar">${icon('speaker')}</button>${wave()}<button class="play slow" type="button" id="playS" aria-label="Más despacio">${icon('turtle')}</button></div>`;
   let h = '';
-  if (ex.type === 'choice') h = `${kind}<h2>${esc(ex.title)}</h2>${ex.fr ? `<div><p class="fr">${esc(ex.fr).replace('___', '<span class="blank"></span>')}</p>${ex.es ? `<p class="es" style="margin-top:8px">${esc(ex.es)}</p>` : ''}</div>` : ''}${optsHtml(ex)}`;
+  if (ex.type === 'choice') h = `${kind}<h2>${esc(ex.title)}</h2>${ex.fr ? `<div><p class="fr">${esc(ex.fr).replace('___', '<span class="blank"></span>')}</p>${ex.es ? `<p class="es" style="margin-top:8px">${esc(ex.es)}</p>` : ''}</div>` : ex.es ? `<p class="es" style="font-size:18px;font-weight:600">${esc(ex.es)}</p>` : ''}${optsHtml(ex)}`;
   else if (ex.type === 'listen') h = `${kind}<h2>${esc(ex.title)}</h2>${audio}${canSpeak ? '' : `<p class="transcript">${esc(ex.audio)}</p>`}<p class="fr" style="font-size:24px">${esc(ex.question)}</p>${optsHtml(ex)}`;
   else if (ex.type === 'type') h = `${kind}<h2>${esc(ex.title)}</h2><div class="type-line fr"><span>${esc(ex.before)}</span><input class="inline-input" id="typeIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Tu respuesta"><span>${esc(ex.after)}</span></div>${ex.hint ? `<p class="es">Verbo: <b>${esc(ex.hint)}</b></p>` : ''}`;
   else if (ex.type === 'dictation') h = `${kind}<h2>${esc(ex.title)}</h2>${audio}${canSpeak ? '' : `<p class="transcript">Sin voz francesa en este navegador: escribe en francés «${esc(ex.es)}».</p>`}
@@ -1223,7 +1225,7 @@ function renderEx() {
   else if (ex.type === 'order') h = `${kind}<h2>${esc(ex.title)}</h2>${ex.es ? `<p class="es" style="font-size:18px;font-weight:600">«${esc(ex.es)}»</p>` : ''}<div class="line" id="line" aria-label="Tu frase"></div><div class="tiles">${ex.tiles.map((t, i) => `<button class="tile-w" type="button" data-tile="${i}">${esc(t)}</button>`).join('')}</div>`;
   else if (ex.type === 'match') { const r = shuffle(ex.pairs.map((p, i) => ({ t: p[1], i }))); h = `${kind}<h2>${esc(ex.title)}</h2><div class="match"><div class="match-col">${ex.pairs.map((p, i) => `<button class="opt" type="button" data-l="${i}">${esc(p[0])}</button>`).join('')}</div><div class="match-col">${r.map(x => `<button class="opt" type="button" data-r="${x.i}">${esc(x.t)}</button>`).join('')}</div></div>`; }
   else if (ex.type === 'spot') h = `${kind}<h2>${esc(ex.title)}</h2><div class="words">${ex.words.map((w, i) => `<button class="word" type="button" data-w="${i}" aria-pressed="false">${esc(w)}</button>`).join('')}</div>`;
-  body.innerHTML = `<div class="ex">${h}</div>`; body.scrollTop = 0;
+  body.innerHTML = `<div class="ex">${nbsp(h)}</div>`; body.scrollTop = 0;
   setFoot(ex.type === 'match' ? 'none' : 'check');
   bind(ex);
 }
@@ -1292,7 +1294,7 @@ function check(skipped = false, miss = 0) {
   L.checked = true;
   if (ex.type === 'choice' || ex.type === 'listen') {
     $$('[data-opt]', body).forEach(b => { const i = +b.dataset.opt; b.disabled = true; if (i === ex.answer) b.classList.add('right'); else if (i === L.answer) b.classList.add('wrong'); });
-    if (ex.type === 'listen') body.querySelector('.ex').insertAdjacentHTML('beforeend', `<p class="transcript">${esc(ex.audio)}</p>`);
+    if (ex.type === 'listen') body.querySelector('.ex').insertAdjacentHTML('beforeend', nbsp(`<p class="transcript">${esc(ex.audio)}</p>`));
   }
   if (ex.type === 'spot') { const w = $$('[data-w]', body)[ex.wrong]; w.classList.add('right'); w.textContent = ex.fix; $$('[data-w]', body).forEach(b => b.disabled = true); }
   const ti = $('#typeIn', body); if (ti) ti.disabled = true;
