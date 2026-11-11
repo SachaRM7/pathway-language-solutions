@@ -151,7 +151,7 @@ const UI = {
         assessments: ['4 Segmentbewertungen', 'Eine pro Segment, mit 100 Punkten, in allen 4 Kompetenzen.'],
         complementary: ['2 Sprach- und Wortschatzprüfungen', 'Grammatik und Wortschatz, Einheiten 1\u2060–\u206032 und 33\u2060–\u206064.'],
         tcf: ['TCF-Canada-Probeprüfung', 'Alle 4 Prüfungsteile im Format des TCF Canada.'],
-        campus: ['Zugang zum Pathway-Campus', 'Interaktive Übungen, Wiederholung und Begleitung durch Ihre Lehrkraft.']
+        campus: ['Pathway-Campus', 'Interaktive Übungen, Wiederholung und Feedback der Lehrkraft.']
       }
     },
     ctaTitle: 'Finden Sie Ihren Ausgangspunkt.', ctaEyebrow: 'Bereit loszulegen?', ctaText: 'Eine Lehrkraft bestätigt bei der Ersteinstufung Ihr Niveau und die Schwerpunkte Ihres Weges.'
