@@ -235,11 +235,14 @@ const COMING_SOON = new Set(['campus']);
 const INCLUDED_ICONS = { manual: 'i-book', exercises: 'i-pen', comprehension: 'i-headphones', vocabulary: 'i-cards', diagnostic: 'i-target', assessments: 'i-clipboard', complementary: 'i-check', tcf: 'i-maple', campus: 'i-laptop' };
 export const CAMPUS_SAMPLE = '/v4/assets/campus-apercu.webp';
 
-// Desktop: the cards flow diagonally through a 2 × 2 window, from the top right
-// corner to the bottom left one. The plane is a 6 × 6 grid tiled from one 3 × 3
-// block (short lists are padded by repeating cards), so moving it by three cells
-// loops seamlessly. Only the first block is exposed to assistive technology.
-const FLOW_SIDE = 6;
+// Desktop: the cards flow diagonally through a 2 × 2 window, in a zigzag: one
+// step from the top right corner to the bottom left one, the next from the top
+// left corner to the bottom right one. The plane is a 3 × 9 grid tiled from one
+// 3 × 3 block (short lists are padded by repeating cards); after six steps it
+// has moved down by six cells, a whole number of blocks, so the loop is
+// seamless. Only the first block is exposed to assistive technology.
+const FLOW_COLS = 3;
+const FLOW_ROWS = 9;
 const FLOW_BLOCK = 3;
 
 function included(t, level) {
@@ -254,8 +257,8 @@ function included(t, level) {
   };
   const cards = entries.map(entry => card(entry)).join('');
   const cells = [];
-  for (let row = 0; row < FLOW_SIDE; row++) {
-    for (let col = 0; col < FLOW_SIDE; col++) {
+  for (let row = 0; row < FLOW_ROWS; row++) {
+    for (let col = 0; col < FLOW_COLS; col++) {
       const index = (row % FLOW_BLOCK) * FLOW_BLOCK + (col % FLOW_BLOCK);
       const original = row < FLOW_BLOCK && col < FLOW_BLOCK && index < entries.length;
       cells.push(card(entries[index % entries.length], !original));

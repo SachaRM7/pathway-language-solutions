@@ -80,8 +80,9 @@
 .inc-next { display: inline-flex; gap: 8px; margin-top: clamp(28px, 3vw, 40px); color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--muted); }
 .inc-next:hover { color: var(--action); border-color: var(--action); }
 
-/* Desktop: a 2 × 2 window where the cards flow diagonally, from the top
-   right corner to the bottom left one, with a pause on each position. */
+/* Desktop: a 2 × 2 window where the cards flow diagonally in a zigzag (top
+   right to bottom left, then top left to bottom right), with a pause on each
+   position. */
 .inc-flow { display: none; }
 @media (min-width: 1001px) and (prefers-reduced-motion: no-preference) {
   .inc-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'head flow' 'next flow'; column-gap: clamp(48px, 6vw, 96px); align-items: center; }
@@ -92,7 +93,7 @@
   .inc-flow { --card: 236px; --gap: 16px; --edge: 28px; --cell: calc(var(--card) + var(--gap)); grid-area: flow; display: block; box-sizing: content-box; width: calc(var(--card) * 2 + var(--gap)); height: calc(var(--card) * 2 + var(--gap)); padding: var(--edge); margin: calc(var(--edge) * -1); overflow: hidden;
     -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent), linear-gradient(to bottom, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent);
     -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent), linear-gradient(to bottom, transparent, #000 var(--edge), #000 calc(100% - var(--edge)), transparent); mask-composite: intersect; }
-  .inc-plane { display: grid; grid-template-columns: repeat(6, var(--card)); grid-auto-rows: var(--card); gap: var(--gap); margin: 0; padding: 0; list-style: none; animation: inc-flow 8.4s ease-in-out infinite; will-change: transform; }
+  .inc-plane { display: grid; grid-template-columns: repeat(3, var(--card)); grid-auto-rows: var(--card); gap: var(--gap); margin: 0; padding: 0; list-style: none; animation: inc-flow 16.8s ease-in-out infinite; will-change: transform; }
   /* The flow stops while the pointer rests on a card (or a card has focus). */
   .inc-flow:has(.inc-item:hover) .inc-plane, .inc-flow:focus-within .inc-plane { animation-play-state: paused; }
   .inc-plane .inc-item { position: relative; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; }
@@ -102,10 +103,13 @@
   .inc-plane .inc-soon { position: absolute; top: 28px; right: 20px; margin: 0; }
 }
 @keyframes inc-flow {
-  0%, 24% { transform: translate(0, calc(var(--cell) * -3)); }
-  33.3%, 57% { transform: translate(calc(var(--cell) * -1), calc(var(--cell) * -2)); }
-  66.6%, 90% { transform: translate(calc(var(--cell) * -2), calc(var(--cell) * -1)); }
-  100% { transform: translate(calc(var(--cell) * -3), 0); }
+  0%, 12% { transform: translate(0, calc(var(--cell) * -6)); }
+  16.667%, 28.667% { transform: translate(calc(var(--cell) * -1), calc(var(--cell) * -5)); }
+  33.333%, 45.333% { transform: translate(0, calc(var(--cell) * -4)); }
+  50%, 62% { transform: translate(calc(var(--cell) * -1), calc(var(--cell) * -3)); }
+  66.667%, 78.667% { transform: translate(0, calc(var(--cell) * -2)); }
+  83.333%, 95.333% { transform: translate(calc(var(--cell) * -1), calc(var(--cell) * -1)); }
+  100% { transform: translate(0, 0); }
 }
 
 .doc-sample { width: min(760px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; border-radius: 16px; background: var(--paper); box-shadow: 0 32px 64px -24px rgb(18 43 38 / 45%); }
