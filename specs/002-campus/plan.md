@@ -3,7 +3,7 @@
 ## Architecture
 
 ```
-pathway-languages.com  (GitHub Pages, inchangé)
+pathway-languages.com  (Worker Cloudflare)
 ├── /, /fr/, /programas/…   site vitrine actuel
 └── /campus/                application du campus (fichiers statiques, même dépôt, même workflow)
                                 │
@@ -25,7 +25,7 @@ pathway-languages.com  (GitHub Pages, inchangé)
 
 | Poste | Démarrage | En production |
 |---|---|---|
-| GitHub Pages | 0 | 0 |
+| Cloudflare Workers | 0 | 0 |
 | Supabase | Offre gratuite (projet mis en pause après une semaine sans activité, pas de sauvegarde quotidienne) | Offre Pro, environ 25 USD/mois : sauvegardes quotidiennes, pas de pause |
 | E-mails (connexion, rappels) | Offre gratuite d'un service SMTP (Resend, Brevo…) | Idem tant que le volume reste faible |
 | IA de correction (phase 3) | — | Paiement à l'usage ; quelques dollars par mois au volume actuel, à mesurer avant d'activer |

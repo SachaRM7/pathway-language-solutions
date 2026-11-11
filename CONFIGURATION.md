@@ -1,10 +1,10 @@
 # Configuration avant le domaine officiel
 
-Le site public fonctionne sur GitHub Pages sans configuration supplémentaire. Les éléments ci-dessous ne peuvent pas être inventés et doivent être fournis par Pathway.
+Le site public est hébergé sur Cloudflare Workers (voir §9). Les éléments ci-dessous ne peuvent pas être inventés et doivent être fournis par Pathway.
 
 ## 1. Domaine officiel
 
-Acheter ou confirmer le domaine, puis le connecter à GitHub Pages. Après connexion, remplacer `https://sacharm7.github.io/pathway-language-solutions/` dans les balises canonical, Open Graph, `robots.txt`, `sitemap.xml` et les données structurées.
+Fait : `pathway-languages.com` est servi par le Worker Cloudflare (DNS chez Cloudflare), et les balises canonical, Open Graph, `robots.txt`, `sitemap.xml` et les données structurées pointent vers ce domaine.
 
 ## 2. Réception automatique des formulaires
 
@@ -65,9 +65,9 @@ Depuis novembre 2026, le site est servi par un Worker Cloudflare (`pathway-langu
 
 - Configuration : `wrangler.jsonc`. Code du Worker : `worker/index.js`.
 - Commande de build : `npm run build:cloudflare` (rafraîchit la copie IRCC, la vérifie, puis construit le site). Commande de déploiement : `npx wrangler deploy`.
-- Les adresses se comportent comme sur GitHub Pages : `/page.html` reste tel quel, `/dossier` redirige vers `/dossier/`, `www.` redirige vers l'adresse sans `www`.
+- Les adresses gardent leur forme historique : `/page.html` reste tel quel, `/dossier` redirige vers `/dossier/`, `www.` redirige vers l'adresse sans `www`.
 - `/v4/data/ircc-rounds.json` est servi par le Worker : lu en direct sur canada.ca, mis en cache 4 heures, et remplacé par la copie du build si IRCC est indisponible ou change ses noms de catégories (l'erreur apparaît dans les journaux du Worker, onglet Observability).
 - Tester en local : `npm run build:cloudflare && npx wrangler dev`.
 
-Le workflow GitHub Pages (`.github/workflows/deploy-pages.yml`) reste dans le dépôt tant que la bascule DNS n'est pas terminée. Une fois `pathway-languages.com` servi par Cloudflare, on pourra le supprimer et dépublier le site GitHub Pages.
+GitHub Pages n'est plus utilisé : le workflow et le fichier `CNAME` ont été retirés. Le dépôt peut être privé, Workers Builds y accède par l'application GitHub de Cloudflare.
 

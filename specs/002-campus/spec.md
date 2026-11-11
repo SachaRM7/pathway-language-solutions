@@ -17,7 +17,7 @@
 | Services tiers | Accord pour Supabase (comptes, base de données, fichiers) et pour une IA de correction en option. |
 | Examens | Les élèves passent en général le TEF Canada et le TCF Canada. Le choix se fait à l'onboarding (TEF, TCF, les deux, ou à définir) et règle le format des simulacres. |
 | Supabase | Projet « Pathway » sur l'offre gratuite, région Canada (Central). La région ne se change pas après création ; elle convient aux élèves d'Amérique latine. Pathway est une entreprise péruvienne : la loi péruvienne de protection des données (Ley 29733) s'applique. Exposition automatique des nouvelles tables désactivée, RLS automatique activée : les droits sont accordés table par table dans le schéma. |
-| Architecture | Le site vitrine reste sur GitHub Pages (`pathway-languages.com`). Le campus est servi par le même dépôt et le même déploiement, sous `/campus/`. Seule nouveauté : un projet Supabase. |
+| Architecture | Le site vitrine est servi par un Worker Cloudflare (`pathway-languages.com`, initialement GitHub Pages). Le campus est servi par le même dépôt et le même déploiement, sous `/campus/`. Seule nouveauté : un projet Supabase. |
 
 ## Principes
 
