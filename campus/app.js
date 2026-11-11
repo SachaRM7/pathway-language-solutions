@@ -279,6 +279,7 @@ function topBar(id, title, sub) {
     <div class="top-tools">
       ${teacherMode() ? '' : `<div class="menu-wrap"><label class="search" for="campusSearch">${icon('search')}<input id="campusSearch" type="search" autocomplete="off" placeholder="Buscar una unidad, un verbo…" value="${esc(A.search)}"></label><div id="searchSlot"></div></div>`}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Vista"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode()}">Profesor</button></div>` : ''}
+      ${teacherMode() ? '' : '<button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>'}
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
       <div class="menu-wrap"><button type="button" class="round ava-btn" data-action="menu" aria-label="Mi cuenta" aria-haspopup="true"><span class="ava">${esc(initials(p.full_name))}</span></button><div id="menuSlot"></div></div>
     </div></header>`;
