@@ -44,15 +44,15 @@ const UI = {
       eyebrow: 'Incluido en este programa', lead: 'Todo lo que recibes al empezar el nivel. Aquí puedes ver una página de ejemplo de cada documento.', soon: 'Próximamente',
       sample: 'Ver un ejemplo', next: 'Hojea el extracto del manual a continuación', close: 'Cerrar ✕',
       items: {
-        manual: ['Manual del alumno', '64 unidades en 4 segmentos. Cada unidad sigue la misma progresión: situación, explicación, práctica, producción y comprensión.'],
-        exercises: ['Ejercicios guiados y de consolidación', 'Cinco ejercicios por unidad para practicar la gramática y reutilizarla en tus propias frases.'],
+        manual: ['Manual del alumno', '64 unidades en 4 segmentos, con la misma progresión.'],
+        exercises: ['Ejercicios de práctica', 'Cinco ejercicios por unidad para fijar la gramática.'],
         comprehension: ['Comprensión escrita y oral', 'Un texto y una escucha con preguntas en cada unidad.'],
-        vocabulary: ['Vocabulario clave', 'Unas diez palabras para retener al final de cada unidad.'],
-        diagnostic: ['Diagnóstico de entrada', '15 minutos al empezar la unidad 1 para comprobar tus bases del nivel anterior.'],
-        assessments: ['4 evaluaciones de segmento', 'Una al final de cada segmento, sobre 100 puntos: comprensión oral y escrita, producción escrita y oral. Si hace falta, una versión B para un segundo intento.'],
-        complementary: ['2 exámenes de lengua y vocabulario', 'Gramática y vocabulario de las unidades 1 a 32, y luego de las unidades 33 a 64.'],
-        tcf: ['Simulacro de examen TCF Canadá', 'Las cuatro pruebas en el formato del examen: 39 preguntas de comprensión oral, 39 de comprensión escrita, 3 tareas escritas y 3 orales.'],
-        campus: ['Acceso al Campus Pathway', 'Tus documentos en línea, ejercicios interactivos para cada unidad, repaso de tus errores y seguimiento de tu profesor.']
+        vocabulary: ['Vocabulario clave', 'Unas diez palabras clave al final de cada unidad.'],
+        diagnostic: ['Diagnóstico de entrada', '15 minutos para comprobar tus bases al empezar.'],
+        assessments: ['4 evaluaciones de segmento', 'Una por segmento, sobre 100 puntos, en las 4 competencias.'],
+        complementary: ['2 exámenes de lengua y vocabulario', 'Gramática y vocabulario, unidades 1\u2060–\u206032 y 33\u2060–\u206064.'],
+        tcf: ['Simulacro de examen TCF Canadá', 'Las 4 pruebas en el formato del TCF Canadá.'],
+        campus: ['Acceso al Campus Pathway', 'Ejercicios interactivos, repaso y seguimiento de tu profesor.']
       }
     },
     ctaTitle: 'Encuentra tu punto de partida.', ctaEyebrow: '¿Listo para empezar?', ctaText: 'Un profesor confirma tu nivel y las prioridades del recorrido durante la evaluación inicial.'
@@ -77,15 +77,15 @@ const UI = {
       eyebrow: 'Inclus dans ce programme', lead: 'Tout ce que vous recevez en commençant le niveau. Voici une page d’exemple de chaque document.', soon: 'Bientôt',
       sample: 'Voir un exemple', next: 'Feuilletez l’extrait du manuel ci-dessous', close: 'Fermer ✕',
       items: {
-        manual: ['Manuel de l’élève', '64 unités en 4 segments. Chaque unité suit la même progression : mise en situation, explication, pratique, production et compréhension.'],
-        exercises: ['Exercices guidés et de consolidation', 'Cinq exercices par unité pour pratiquer la grammaire et la réemployer dans vos propres phrases.'],
+        manual: ['Manuel de l’élève', '64 unités en 4 segments, avec la même progression.'],
+        exercises: ['Exercices d’entraînement', 'Cinq exercices par unité pour fixer la grammaire.'],
         comprehension: ['Compréhension écrite et orale', 'Un texte et une écoute avec questions dans chaque unité.'],
-        vocabulary: ['Vocabulaire clé', 'Une dizaine de mots à retenir à la fin de chaque unité.'],
-        diagnostic: ['Diagnostic d’entrée', '15 minutes au début de l’unité 1 pour vérifier vos bases du niveau précédent.'],
-        assessments: ['4 évaluations de segment', 'Une à la fin de chaque segment, sur 100 points : compréhension orale et écrite, production écrite et orale. Si besoin, une version B pour une seconde tentative.'],
-        complementary: ['2 examens de langue et de vocabulaire', 'Grammaire et vocabulaire des unités 1 à 32, puis des unités 33 à 64.'],
-        tcf: ['Examen blanc TCF Canada', 'Les quatre épreuves au format de l’examen : 39 questions de compréhension orale, 39 de compréhension écrite, 3 tâches écrites et 3 orales.'],
-        campus: ['Accès au Campus Pathway', 'Vos documents en ligne, des exercices interactifs pour chaque unité, la révision de vos erreurs et le suivi de votre enseignant.']
+        vocabulary: ['Vocabulaire clé', 'Une dizaine de mots clés à la fin de chaque unité.'],
+        diagnostic: ['Diagnostic d’entrée', '15 minutes pour vérifier vos bases au départ.'],
+        assessments: ['4 évaluations de segment', 'Une par segment, sur 100 points, dans les 4 compétences.'],
+        complementary: ['2 examens de langue et de vocabulaire', 'Grammaire et vocabulaire, unités 1\u2060–\u206032 et 33\u2060–\u206064.'],
+        tcf: ['Examen blanc TCF Canada', 'Les 4 épreuves au format du TCF Canada.'],
+        campus: ['Accès au Campus Pathway', 'Exercices interactifs, révision et suivi de votre enseignant.']
       }
     },
     ctaTitle: 'Trouvez votre point de départ.', ctaEyebrow: 'Prêt à commencer ?', ctaText: 'Un enseignant confirme votre niveau et les priorités du parcours lors de l’évaluation initiale.'
@@ -110,15 +110,15 @@ const UI = {
       eyebrow: 'Included in this program', lead: 'Everything you receive when you start the level. Here is a sample page of each document.', soon: 'Coming soon',
       sample: 'See a sample', next: 'Browse the textbook excerpt below', close: 'Close ✕',
       items: {
-        manual: ['Student textbook', '64 units in 4 segments. Every unit follows the same progression: situation, explanation, practice, production and comprehension.'],
-        exercises: ['Guided and consolidation exercises', 'Five exercises per unit to practise the grammar and reuse it in your own sentences.'],
+        manual: ['Student textbook', '64 units in 4 segments, all with the same progression.'],
+        exercises: ['Practice exercises', 'Five exercises per unit to lock in the grammar.'],
         comprehension: ['Reading and listening', 'A text and a listening task with questions in every unit.'],
-        vocabulary: ['Key vocabulary', 'About ten words to remember at the end of each unit.'],
-        diagnostic: ['Entry diagnostic', '15 minutes at the start of unit 1 to check your foundations from the previous level.'],
-        assessments: ['4 segment assessments', 'One at the end of each segment, out of 100: listening, reading, writing and speaking. If needed, a version B for a second attempt.'],
-        complementary: ['2 language and vocabulary exams', 'Grammar and vocabulary from units 1 to 32, then from units 33 to 64.'],
-        tcf: ['TCF Canada mock exam', 'All four tests in the exam format: 39 listening questions, 39 reading questions, 3 writing tasks and 3 speaking tasks.'],
-        campus: ['Pathway Campus access', 'Your documents online, interactive exercises for every unit, review of your mistakes and follow-up from your teacher.']
+        vocabulary: ['Key vocabulary', 'About ten key words at the end of each unit.'],
+        diagnostic: ['Entry diagnostic', '15 minutes to check your foundations at the start.'],
+        assessments: ['4 segment assessments', 'One per segment, out of 100, across all 4 skills.'],
+        complementary: ['2 language and vocabulary exams', 'Grammar and vocabulary, units 1\u2060–\u206032 and 33\u2060–\u206064.'],
+        tcf: ['TCF Canada mock exam', 'All 4 tests in the TCF Canada format.'],
+        campus: ['Pathway Campus access', 'Interactive exercises, review and follow-up from your teacher.']
       }
     },
     ctaTitle: 'Find your starting point.', ctaEyebrow: 'Ready to start?', ctaText: 'A teacher confirms your level and the priorities of your path during the initial assessment.'
@@ -143,15 +143,15 @@ const UI = {
       eyebrow: 'In diesem Programm enthalten', lead: 'Alles, was Sie zu Beginn des Niveaus erhalten. Hier sehen Sie von jedem Dokument eine Beispielseite.', soon: 'Demnächst',
       sample: 'Beispiel ansehen', next: 'Blättern Sie unten im Auszug aus dem Lehrbuch', close: 'Schließen ✕',
       items: {
-        manual: ['Lehrbuch für Lernende', '64 Einheiten in 4 Segmenten. Jede Einheit folgt demselben Aufbau: Situation, Erklärung, Übung, Produktion und Verstehen.'],
-        exercises: ['Angeleitete Übungen und Festigung', 'Fünf Übungen pro Einheit, um die Grammatik zu üben und in eigenen Sätzen anzuwenden.'],
+        manual: ['Lehrbuch für Lernende', '64 Einheiten in 4 Segmenten, alle mit demselben Aufbau.'],
+        exercises: ['Übungen', 'Fünf Übungen pro Einheit, um die Grammatik zu festigen.'],
         comprehension: ['Lese- und Hörverstehen', 'Ein Text und ein Hörtext mit Fragen in jeder Einheit.'],
-        vocabulary: ['Schlüsselwortschatz', 'Rund zehn Wörter zum Merken am Ende jeder Einheit.'],
-        diagnostic: ['Eingangsdiagnose', '15 Minuten zu Beginn von Einheit 1, um Ihre Grundlagen aus dem vorherigen Niveau zu prüfen.'],
-        assessments: ['4 Segmentbewertungen', 'Eine am Ende jedes Segments, mit 100 Punkten: Hör- und Leseverstehen, schriftlicher und mündlicher Ausdruck. Bei Bedarf eine Version B für einen zweiten Versuch.'],
-        complementary: ['2 Sprach- und Wortschatzprüfungen', 'Grammatik und Wortschatz der Einheiten 1 bis 32, dann der Einheiten 33 bis 64.'],
-        tcf: ['TCF-Canada-Probeprüfung', 'Alle vier Prüfungsteile im Prüfungsformat: 39 Fragen zum Hörverstehen, 39 zum Leseverstehen, 3 schriftliche und 3 mündliche Aufgaben.'],
-        campus: ['Zugang zum Pathway-Campus', 'Ihre Unterlagen online, interaktive Übungen zu jeder Einheit, Wiederholung Ihrer Fehler und Begleitung durch Ihre Lehrkraft.']
+        vocabulary: ['Schlüsselwortschatz', 'Rund zehn Schlüsselwörter am Ende jeder Einheit.'],
+        diagnostic: ['Eingangsdiagnose', '15 Minuten, um Ihre Grundlagen zu Beginn zu prüfen.'],
+        assessments: ['4 Segmentbewertungen', 'Eine pro Segment, mit 100 Punkten, in allen 4 Kompetenzen.'],
+        complementary: ['2 Sprach- und Wortschatzprüfungen', 'Grammatik und Wortschatz, Einheiten 1\u2060–\u206032 und 33\u2060–\u206064.'],
+        tcf: ['TCF-Canada-Probeprüfung', 'Alle 4 Prüfungsteile im Format des TCF Canada.'],
+        campus: ['Zugang zum Pathway-Campus', 'Interaktive Übungen, Wiederholung und Begleitung durch Ihre Lehrkraft.']
       }
     },
     ctaTitle: 'Finden Sie Ihren Ausgangspunkt.', ctaEyebrow: 'Bereit loszulegen?', ctaText: 'Eine Lehrkraft bestätigt bei der Ersteinstufung Ihr Niveau und die Schwerpunkte Ihres Weges.'
