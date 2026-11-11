@@ -1,0 +1,17 @@
+{
+  "spots": [
+    {"key": "segments", "page": "table-matieres-3", "x": 65.1, "y": 8.5},
+    {"key": "objectives", "page": "unite-1-1", "x": 26.4, "y": 52.7},
+    {"key": "situation", "page": "unite-1-2", "x": 39.1, "y": 6.9},
+    {"key": "observation", "page": "unite-1-2", "x": 33.9, "y": 34.9},
+    {"key": "explanation", "page": "unite-1-2", "x": 33.0, "y": 49.8},
+    {"key": "guided", "page": "unite-1-3", "x": 38.0, "y": 6.9},
+    {"key": "consolidation", "page": "unite-1-4", "x": 35.7, "y": 6.9},
+    {"key": "reuse", "page": "unite-1-4", "x": 39.2, "y": 48.3},
+    {"key": "speaking", "page": "unite-1-5", "x": 59.6, "y": 6.9},
+    {"key": "reading", "page": "unite-1-6", "x": 44.4, "y": 6.9},
+    {"key": "listening", "page": "unite-1-6", "x": 43.6, "y": 36.1},
+    {"key": "vocabulary", "page": "unite-1-7", "x": 36.7, "y": 80.4},
+    {"key": "assessment", "page": "examen-a-1", "x": 79.8, "y": 11.8}
+  ]
+}
