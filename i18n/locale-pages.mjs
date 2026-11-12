@@ -517,7 +517,7 @@ const homeV2 = (locale, t) => {
     .replaceAll('href="preparacion-tef-canada.html"', 'href="ressources.html"')
     .replaceAll('href="nclc-7.html"', 'href="conditions-nclc7.html"')
     .replaceAll('href="tefaq-quebec.html"', 'href="ressources.html"')
-    .replaceAll('contacto@pathway-languages.com', 'pathway.l.s.sectoram@gmail.com');
+    .replaceAll('contact@pathway-languages.com', 'pathway.l.s.sectoram@gmail.com');
   html = html.replace(`href="../${locale}/" lang="${locale}" hreflang="${locale}"`, `href="../${locale}/" lang="${locale}" hreflang="${locale}" aria-current="page"`);
   const teacherNames = t.teachers?.map(([name, role]) => `<span class="teacher-name sr-only">${name} · ${role}</span>`) || [];
   if (teacherNames.length >= 2) {

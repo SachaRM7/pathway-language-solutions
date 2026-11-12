@@ -2,7 +2,7 @@
 // hand from the Spanish pages in v4-pages-content.mjs (NEW_LEGAL). Same facts,
 // same sections, same anchors.
 
-const contactRows = site => [['Email', '<a href="mailto:contacto@pathway-languages.com">contacto@pathway-languages.com</a>'], ['WhatsApp', '<a href="https://wa.me/51989887516" target="_blank" rel="noopener">+51 989 887 516</a>'], [site, 'pathway-languages.com']];
+const contactRows = site => [['Email', '<a href="mailto:contact@pathway-languages.com">contact@pathway-languages.com</a>'], ['WhatsApp', '<a href="https://wa.me/51989887516" target="_blank" rel="noopener">+51 989 887 516</a>'], [site, 'pathway-languages.com']];
 
 export const NEW_LEGAL_ASK = {
   es: ['¿Tienes una pregunta?', 'Escríbenos y te respondemos personalmente.', 'Contactar por email'],

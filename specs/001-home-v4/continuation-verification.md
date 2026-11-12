@@ -16,7 +16,7 @@ La V4 distante possédait des ajustements absents du checkout local (navigation 
 - Conditions et confidentialité : réutilisation des pages existantes sous `/v4/` au build, sans changement de promesse ni de formulaire racine. L'engagement rejoint les vraies conditions.
 - CRS : calculatrice officielle et page de critères IRCC, pas un calculateur de substitution.
 - IRCC : requête sur le JSON officiel à l'ouverture, dates et scores validés, date de consultation explicite, copie officielle datée identifiée en cas d'indisponibilité du direct, aucune valeur si direct et copie échouent. Références détaillées dans `ircc-sources.md`.
-- Footer : vrai logo SVG inverse, `contacto@pathway-languages.com`, `+51 989 887 516`, `https://wa.me/51989887516`.
+- Footer : vrai logo SVG inverse, `contact@pathway-languages.com`, `+51 989 887 516`, `https://wa.me/51989887516`.
 - Illustration finale : `v4/assets/phare-chemin.svg`, dessin vectoriel créé selon la planche 17 après l'autorisation explicite de générer les SVG. Le logo n'a pas été redessiné.
 
 ## Vérifications exécutées
