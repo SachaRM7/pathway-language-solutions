@@ -82,7 +82,7 @@ En vue « Profesor », un onglet par usage :
 - **Horarios** : les groupes, leurs cours et les changements d'horaire.
 - **Contenido** : les unités, un niveau et un segment à la fois, et les documents du programme.
 - **Cuentas** : inviter des élèves et des profs ; l'admin y gère aussi tous les comptes.
-- **Ajustes** (admin) : les règles d'assistance, le rappel avant les cours et les e-mails de test.
+- **Ajustes** (admin) : les règles d'assistance, le rappel avant les cours, le contrat de l'élève (`db/015_contrato.sql`) et les e-mails de test.
 
 ## Publier une unité
 
