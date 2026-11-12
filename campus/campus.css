@@ -801,3 +801,10 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .abs-alert .btn { margin-top: 8px; }
 .warn-text { color: #b42318; }
 a.pill.warn { text-decoration: none; }
+
+/* End-of-class report: a grid of unit numbers to toggle. */
+.report-form { margin: 8px 0; padding: 14px; border-radius: 16px; background: var(--soft); }
+.unit-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; margin-top: 8px; }
+.u-pick { height: 40px; border-radius: 12px; background: var(--panel); font-weight: 700; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.u-pick[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.u-pick:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
