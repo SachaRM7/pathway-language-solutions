@@ -129,53 +129,86 @@ export const PRICING = Object.freeze({
 export const VIDEO_TESTIMONIALS = Object.freeze([
   Object.freeze({
     name: 'Yazmin',
+    duration: '1:56',
     src: '/assets/videos/testimonio-25-web.mp4',
     poster: '/assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first'
   }),
   Object.freeze({
     name: 'Devon',
+    duration: '2:15',
     src: '/assets/videos/testimonio-devon-web.mp4',
     poster: '/assets/videos/testimonio-devon-poster.jpg?v=20261112'
   }),
   Object.freeze({
     name: 'Majo',
+    duration: '0:46',
     src: '/assets/videos/testimonio-majo-web.mp4',
     poster: '/assets/videos/testimonio-majo-poster.jpg?v=20260814'
   }),
   Object.freeze({
     name: 'Elena',
+    duration: '1:06',
     src: '/assets/videos/testimonio-elena-web.mp4',
     poster: '/assets/videos/testimonio-elena-poster.jpg?v=20261112'
   }),
   Object.freeze({
     name: 'Pia',
+    duration: '0:27',
     src: '/assets/videos/testimonio-22-web.mp4',
     poster: '/assets/videos/testimonio-22-poster.jpg?v=20260814-2'
   }),
   Object.freeze({
     name: 'Diego',
+    duration: '0:44',
     src: '/assets/videos/testimonio-24-web.mp4',
     poster: '/assets/videos/testimonio-24-poster.jpg?v=20260821-video-carousel'
   }),
   Object.freeze({
     name: 'Jennifer',
+    duration: '0:33',
     src: '/assets/videos/testimonio-21-web.mp4',
     poster: '/assets/videos/testimonio-21-poster.jpg?v=20260814-2'
   }),
   Object.freeze({
     name: 'Fabián',
+    duration: '0:19',
     src: '/assets/videos/testimonio-23-web.mp4',
     poster: '/assets/videos/testimonio-23-poster.jpg?v=20260814-2'
   }),
   Object.freeze({
     name: 'Melissa',
+    duration: '0:24',
     src: '/assets/videos/testimonio-meli-web.mp4',
     poster: '/assets/videos/testimonio-meli-poster.jpg?v=20260814'
   }),
   Object.freeze({
     name: 'Elisa',
+    duration: '0:37',
     src: '/assets/videos/testimonio-20-web.mp4',
     poster: '/assets/videos/testimonio-20-poster.jpg?v=20260814-2'
+  })
+]);
+
+/**
+ * Resultados oficiales compartidos por alumnos (Drive « Témoignages »).
+ * Puntuaciones copiadas de la captura del portal oficial; image: captura
+ * publicada (null mientras no se haya recibido). video: nombre en
+ * VIDEO_TESTIMONIALS cuando la misma persona grabó un testimonio.
+ * CO y CE se puntúan sobre 699; EE y EO sobre 20.
+ */
+export const EXAM_RESULTS = Object.freeze([
+  Object.freeze({
+    name: 'Yazmin',
+    exam: 'TCF Québec',
+    session: '2026-09-03',
+    video: 'Yazmin',
+    image: null,
+    skills: Object.freeze([
+      Object.freeze({ skill: 'co', score: 444, max: 699, level: 'B2' }),
+      Object.freeze({ skill: 'ce', score: 435, max: 699, level: 'B2' }),
+      Object.freeze({ skill: 'eo', score: 12, max: 20, level: 'B2' }),
+      Object.freeze({ skill: 'ee', score: 8, max: 20, level: 'B1' })
+    ])
   })
 ]);
 

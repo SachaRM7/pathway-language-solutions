@@ -5,6 +5,8 @@
 // snapshot used only when the live request fails. There is no external
 // storage and no historic value is ever presented as the current round.
 
+import { pageLang, t } from './i18n.js';
+
 const ROUNDS_DATA_URL = 'https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json';
 const ROUNDS_PAGE_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html';
 const PER_ROUND_PAGE_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/policies-operational-instructions-agreements/ministerial-instructions/express-entry-rounds/invitations.html';
@@ -212,10 +214,13 @@ async function resolveRounds(options = {}) {
   return state;
 }
 
+const roundsLocale = () => t(pageLang()).locale;
+const roundsCopy = () => t(pageLang()).rounds;
+
 function formatRoundDate(iso) {
   const date = new Date(`${String(iso).slice(0, 10)}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+  return new Intl.DateTimeFormat(roundsLocale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
     .format(date)
     .replace(/\./g, '');
 }
@@ -223,10 +228,10 @@ function formatRoundDate(iso) {
 function formatUpdated(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  const day = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+  const day = new Intl.DateTimeFormat(roundsLocale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
     .format(date)
     .replace(/\./g, '');
-  const time = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
+  const time = new Intl.DateTimeFormat(roundsLocale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
     .format(date);
   return `${day}, ${time} UTC`;
 }
@@ -246,7 +251,7 @@ function setSourceLink(link, round) {
     link.setAttribute('href', round.source);
     link.setAttribute('target', '_blank');
     link.setAttribute('rel', 'noopener noreferrer');
-    link.textContent = round.drawNumber ? `Ronda oficial #${round.drawNumber}` : 'Ronda oficial';
+    link.textContent = roundsCopy().official(round.drawNumber);
   } else {
     link.removeAttribute('href');
     link.removeAttribute('target');
@@ -268,14 +273,14 @@ function renderState(panel, state) {
   const status = resolveSlot(panel, '[data-ircc-status]');
   const updated = resolveSlot(panel, '[data-ircc-updated]');
   if (state.status === 'live') {
-    if (status) status.textContent = 'Rondas oficiales de IRCC para francés y Canadian Experience Class.';
-    if (updated) updated.textContent = `Consultado el ${formatUpdated(state.fetchedAt)}.`;
+    if (status) status.textContent = roundsCopy().live;
+    if (updated) updated.textContent = roundsCopy().checked(formatUpdated(state.fetchedAt));
   } else if (state.status === 'snapshot') {
-    if (status) status.textContent = 'Datos en vivo no disponibles. Se muestra una copia fechada de la fuente oficial, que puede no incluir las rondas más recientes.';
-    if (updated) updated.textContent = `Copia verificada el ${formatRoundDate(state.verifiedAt)}.`;
+    if (status) status.textContent = roundsCopy().snapshot;
+    if (updated) updated.textContent = roundsCopy().verified(formatRoundDate(state.verifiedAt));
   } else {
-    if (status) status.textContent = 'Rondas oficiales de IRCC no disponibles en este momento.';
-    if (updated) updated.textContent = 'Sin fecha de actualización disponible.';
+    if (status) status.textContent = roundsCopy().unavailable;
+    if (updated) updated.textContent = roundsCopy().noDate;
   }
 
   for (const link of panel.querySelectorAll('[data-ircc-rounds-page]')) link.setAttribute('href', ROUNDS_PAGE_URL);

@@ -1,6 +1,11 @@
-import { VIDEO_TESTIMONIALS, WRITTEN_TESTIMONIALS, LINKS } from './content.js';
-import { renderPricing, renderReviews } from './render.js';
+import { VIDEO_TESTIMONIALS, LINKS } from './content.js';
+import { renderPricing } from './render.js';
+import { pageLang, t } from './i18n.js';
 import './ircc-rounds.js';
+
+const lang = pageLang();
+const copy = t(lang);
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function setupPricing() {
   const cards = document.querySelector('[data-pricing-cards]');
@@ -8,10 +13,10 @@ function setupPricing() {
   const status = document.querySelector('[data-pricing-status]');
   if (!cards) return;
   function select(mode, announce = true) {
-    cards.innerHTML = renderPricing(mode);
+    cards.innerHTML = renderPricing(mode, lang);
     cards.dataset.billing = mode;
     options.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.billing === mode)));
-    if (announce) status.textContent = mode === 'cycle' ? 'Tarifas por ciclo completo en dólares canadienses. Descuento directo del 15 %.' : 'Tarifas mensuales en dólares canadienses.';
+    if (announce) status.textContent = mode === 'cycle' ? copy.pricing.statusCycle : copy.pricing.statusMonthly;
   }
   options.forEach(button => {
     button.disabled = false;
@@ -25,68 +30,126 @@ function setupPricing() {
   select('monthly', false);
 }
 
-function setupTestimonials() {
-  const video = document.querySelector('[data-testimony-video]');
-  const play = document.querySelector('[data-testimony-play]');
-  const error = document.querySelector('[data-video-error]');
-  const previous = document.querySelector('[data-video-previous]');
-  const next = document.querySelector('[data-video-next]');
-  const caption = document.querySelector('[data-video-name]');
-  const videoCount = document.querySelector('[data-video-count]');
-  let videoIndex = 0;
-  let playbackRequest = 0;
-  function selectVideo(index) {
-    playbackRequest++;
-    video.pause();
-    videoIndex = (index + VIDEO_TESTIMONIALS.length) % VIDEO_TESTIMONIALS.length;
-    const testimony = VIDEO_TESTIMONIALS[videoIndex];
-    video.src = testimony.src;
-    video.poster = testimony.poster;
-    video.setAttribute('aria-label', `Testimonio de ${testimony.name}`);
-    video.load();
-    caption.textContent = testimony.name;
-    videoCount.textContent = `Vídeo ${videoIndex + 1} de ${VIDEO_TESTIMONIALS.length}`;
-    play.setAttribute('aria-label', `Reproducir el testimonio de ${testimony.name}`);
-    play.hidden = false;
-    error.hidden = true;
-    document.querySelector('[data-video-direct]').href = testimony.src;
-  }
-  if (video) {
-    [previous, next].forEach(button => { button.disabled = false; });
-    play.hidden = false;
-    previous.addEventListener('click', () => selectVideo(videoIndex - 1));
-    next.addEventListener('click', () => selectVideo(videoIndex + 1));
-    play.addEventListener('click', async () => {
-      const request = ++playbackRequest;
-      try { await video.play(); } catch (failure) {
-        if (request !== playbackRequest || failure.name === 'AbortError') return;
-        error.hidden = false;
-        play.hidden = false;
-      }
-    });
-    video.addEventListener('play', () => { play.hidden = true; caption.hidden = true; error.hidden = true; });
-    video.addEventListener('pause', () => { play.hidden = false; caption.hidden = false; });
-    video.addEventListener('error', () => { error.hidden = false; play.hidden = true; });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); });
-  }
+// Video reel: a row of portrait cards; a card opens the story viewer, which
+// plays the testimonies one after the other (swipe or arrows to change).
+function setupReel() {
+  const track = document.querySelector('[data-reel-track]');
+  if (!track) return;
+  const step = direction => {
+    const card = track.querySelector('.reel-item');
+    const width = card ? card.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 0) : 240;
+    track.scrollBy({ left: direction * width * Math.max(1, Math.floor(track.clientWidth / width) - 1), behavior: reducedMotion() ? 'auto' : 'smooth' });
+  };
+  const previous = document.querySelector('[data-reel-previous]');
+  const next = document.querySelector('[data-reel-next]');
+  const sync = () => {
+    previous.disabled = track.scrollLeft < 4;
+    next.disabled = track.scrollLeft + track.clientWidth > track.scrollWidth - 4;
+  };
+  previous.addEventListener('click', () => step(-1));
+  next.addEventListener('click', () => step(1));
+  track.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  sync();
 
-  const pair = document.querySelector('[data-written-reviews]');
-  if (!pair) return;
-  const count = document.querySelector('[data-review-count]');
-  let reviewIndex = 0;
-  function selectReviews(delta = 0) {
-    reviewIndex = (reviewIndex + delta + WRITTEN_TESTIMONIALS.length) % WRITTEN_TESTIMONIALS.length;
-    pair.innerHTML = renderReviews(reviewIndex);
-    count.textContent = `${reviewIndex + 1}–${Math.min(reviewIndex + 2, WRITTEN_TESTIMONIALS.length)} de ${WRITTEN_TESTIMONIALS.length}`;
+  const viewer = document.querySelector('[data-story-viewer]');
+  const video = viewer.querySelector('[data-sv-video]');
+  const name = viewer.querySelector('[data-sv-name]');
+  const count = viewer.querySelector('[data-sv-count]');
+  const error = viewer.querySelector('[data-sv-error]');
+  const bars = [...viewer.querySelectorAll('.sv-progress i')];
+  let index = 0;
+  let request = 0;
+  function show(target) {
+    index = (target + VIDEO_TESTIMONIALS.length) % VIDEO_TESTIMONIALS.length;
+    const story = VIDEO_TESTIMONIALS[index];
+    const ticket = ++request;
+    video.pause();
+    video.poster = story.poster;
+    video.src = story.src;
+    video.setAttribute('aria-label', copy.stories.videoOf(story.name));
+    name.textContent = story.name;
+    count.textContent = copy.stories.counter(index + 1, VIDEO_TESTIMONIALS.length);
+    viewer.querySelector('[data-sv-direct]').href = story.src;
+    error.hidden = true;
+    bars.forEach((bar, i) => { bar.className = i < index ? 'is-done' : i === index ? 'is-now' : ''; bar.style.setProperty('--p', i < index ? 1 : 0); });
+    video.play().catch(failure => { if (ticket === request && failure.name !== 'AbortError' && failure.name !== 'NotAllowedError') error.hidden = false; });
   }
-  for (const [selector, delta] of [['[data-review-previous]', -2], ['[data-review-next]', 2]]) {
-    const button = document.querySelector(selector);
-    button.disabled = false;
-    button.addEventListener('click', () => selectReviews(delta));
+  function open(target, opener) {
+    viewer.returnFocus = opener;
+    document.documentElement.classList.add('has-story-open');
+    viewer.showModal();
+    show(target);
   }
-  document.querySelector('[data-written-total]').textContent = `${WRITTEN_TESTIMONIALS.length} recomendaciones públicas`;
-  document.querySelector('[data-reviews-source]').href = LINKS.reviewsSource;
-  selectReviews();
+  function close() {
+    request++;
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    if (viewer.open) viewer.close();
+  }
+  viewer.addEventListener('close', () => {
+    document.documentElement.classList.remove('has-story-open');
+    viewer.returnFocus?.focus?.({ preventScroll: true });
+  });
+  document.addEventListener('click', event => {
+    const opener = event.target.closest('[data-story-open]');
+    if (opener) open(Number(opener.dataset.storyOpen), opener);
+  });
+  viewer.querySelector('[data-sv-close]').addEventListener('click', close);
+  viewer.querySelector('[data-sv-previous]').addEventListener('click', () => show(index - 1));
+  viewer.querySelector('[data-sv-next]').addEventListener('click', () => show(index + 1));
+  viewer.addEventListener('click', event => { if (event.target === viewer) close(); });
+  viewer.addEventListener('cancel', event => { event.preventDefault(); close(); });
+  viewer.addEventListener('keydown', event => {
+    if (event.key === 'ArrowRight') show(index + 1);
+    if (event.key === 'ArrowLeft') show(index - 1);
+  });
+  video.addEventListener('timeupdate', () => { if (video.duration) bars[index]?.style.setProperty('--p', video.currentTime / video.duration); });
+  video.addEventListener('ended', () => (index < VIDEO_TESTIMONIALS.length - 1 ? show(index + 1) : close()));
+  video.addEventListener('error', () => { if (video.getAttribute('src')) error.hidden = false; });
+  let startX = null;
+  viewer.addEventListener('touchstart', event => { startX = event.touches[0].clientX; }, { passive: true });
+  viewer.addEventListener('touchend', event => {
+    if (startX === null) return;
+    const delta = event.changedTouches[0].clientX - startX;
+    startX = null;
+    if (Math.abs(delta) > 60) show(index + (delta < 0 ? 1 : -1));
+  }, { passive: true });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); });
+}
+
+// Screenshot of an official result, enlarged in a dialog.
+function setupResults() {
+  const viewer = document.querySelector('[data-result-viewer]');
+  if (!viewer) return;
+  const image = viewer.querySelector('[data-rv-image]');
+  document.addEventListener('click', event => {
+    const link = event.target.closest('[data-result-image]');
+    if (!link) return;
+    event.preventDefault();
+    image.src = link.href;
+    image.alt = link.dataset.resultAlt || '';
+    viewer.showModal();
+  });
+  viewer.querySelector('[data-rv-close]').addEventListener('click', () => viewer.close());
+  viewer.addEventListener('click', event => { if (event.target === viewer) viewer.close(); });
+}
+
+// Two lanes of written reviews scroll slowly in opposite directions; they stop
+// on hover or focus, with the pause button, and for reduced motion.
+function setupQuotes() {
+  const quotes = document.querySelector('[data-quotes]');
+  if (!quotes) return;
+  const toggle = quotes.querySelector('[data-quotes-toggle]');
+  const setPaused = paused => {
+    quotes.classList.toggle('is-paused', paused);
+    toggle.setAttribute('aria-pressed', String(paused));
+    toggle.setAttribute('aria-label', paused ? copy.stories.resume : copy.stories.pause);
+    toggle.querySelector('use').setAttribute('href', paused ? '#i-play' : '#i-pause');
+  };
+  toggle.addEventListener('click', () => setPaused(!quotes.classList.contains('is-paused')));
+  if (reducedMotion()) setPaused(true);
 }
 
 function setupFaq() {
@@ -111,13 +174,15 @@ function setupSocials() {
     link.href = url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.setAttribute('aria-label', network === 'instagram' ? 'Instagram de Pathway' : 'TikTok de Pathway');
+    link.setAttribute('aria-label', copy.social[network]);
     link.innerHTML = icons[network];
     container.append(link);
   }
 }
 
 setupPricing();
-setupTestimonials();
+setupReel();
+setupResults();
+setupQuotes();
 setupFaq();
 setupSocials();

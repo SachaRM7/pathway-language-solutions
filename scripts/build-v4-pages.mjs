@@ -17,6 +17,7 @@ import { dirname, join } from 'node:path';
 import { icon } from '../v4/icons.js';
 import { LANGS, esc, prefix, v4Chrome } from './build-v4-programs.mjs';
 import { ROUTES, UI, GUIDES, LEGAL_CARD, LEGAL_CTA, NEW_LEGAL } from './v4-pages-content.mjs';
+import { NEW_LEGAL_I18N, NEW_LEGAL_ASK } from './v4-legal-i18n.mjs';
 import { FLOWS, renderFlow } from './v4-flows.mjs';
 
 const SITE_ORIGIN = 'https://pathway-languages.com';
@@ -219,7 +220,7 @@ function legalPage(lang, key, source, homeMarkup) {
       lang, trail: [ui.legal, legal.h1], eyebrow: legal.eyebrow || ui.legal, h1: legal.h1, leads: [esc(legal.lead), `<small>${esc(ui.updated)}</small>`], long: true,
       aside: card({ pill, title, rows: legal.sections.map(([id, heading]) => `<a href="#${id}">${esc(heading)}</a>`), numbered: true })
     }),
-    doc(lang, legal.sections, key === 'conditions' && lang === 'es' ? 'compromiso-nclc7' : ''),
+    doc(lang, legal.sections, key === 'conditions' ? 'compromiso-nclc7' : ''),
     key === 'privacy'
       ? cta(lang, { title: ctaTitle, text: ctaText, primary: ['mailto:contacto@pathway-languages.com', mailLabel], secondary: ['https://wa.me/51989887516', ui.whatsapp] })
       : cta(lang, { title: ctaTitle, text: ctaText })
@@ -227,14 +228,14 @@ function legalPage(lang, key, source, homeMarkup) {
   return shell({ lang, key, title: legal.h1, description: legal.lead, main, homeMarkup });
 }
 
-function newLegalPage(key, homeMarkup) {
-  const lang = 'es';
+function newLegalPage(key, homeMarkup, lang = 'es') {
   const ui = UI[lang];
-  const copy = NEW_LEGAL[key];
+  const copy = lang === 'es' ? NEW_LEGAL[key] : NEW_LEGAL_I18N[lang][key];
+  const [askTitle, askText, mailLabel] = NEW_LEGAL_ASK[lang];
   const main = [
     hero({ lang, trail: [ui.legal, copy.title], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead), `<small>${esc(ui.updated)}</small>`], long: true, aside: card(copy.card) }),
     doc(lang, copy.sections),
-    cta(lang, { title: '¿Tienes una pregunta?', text: 'Escríbenos y te respondemos personalmente.', primary: ['mailto:contacto@pathway-languages.com', 'Contactar por email'] })
+    cta(lang, { title: askTitle, text: askText, primary: ['mailto:contacto@pathway-languages.com', mailLabel] })
   ].join('\n');
   return shell({ lang, key, title: copy.title, description: copy.description, main, homeMarkup });
 }
@@ -250,7 +251,7 @@ export async function buildV4Pages({ outDir, rootDir }) {
   const legacy = async (lang, name) => readFile(lang === 'es' ? join(rootDir, name) : join(outDir, lang, name), 'utf8');
 
   for (const lang of LANGS) {
-    const homeMarkup = await readFile(join(rootDir, 'v4', lang === 'es' ? '' : lang, 'index.html'), 'utf8');
+    const homeMarkup = await readFile(join(outDir, 'v4', lang === 'es' ? '' : lang, 'index.html'), 'utf8'); // built home: shared tail included
     await write(pagePath(lang, 'nclc'), guidePage(lang, 'nclc', homeMarkup));
     await write(pagePath(lang, 'tef'), guidePage(lang, 'tef', homeMarkup));
     await write(pagePath(lang, 'conditions'), legalPage(lang, 'conditions', await legacy(lang, ROUTES.conditions[lang]), homeMarkup));
@@ -258,10 +259,8 @@ export async function buildV4Pages({ outDir, rootDir }) {
     for (const flow of Object.keys(FLOWS)) {
       await write(pagePath(lang, flow), await renderFlow({ flow, lang, outDir, rootDir, homeMarkup }));
     }
-    if (lang === 'es') {
-      await write(pagePath(lang, 'cookies'), newLegalPage('cookies', homeMarkup));
-      await write(pagePath(lang, 'legal'), newLegalPage('legal', homeMarkup));
-    }
+    await write(pagePath(lang, 'cookies'), newLegalPage('cookies', homeMarkup, lang));
+    await write(pagePath(lang, 'legal'), newLegalPage('legal', homeMarkup, lang));
   }
   return written;
 }

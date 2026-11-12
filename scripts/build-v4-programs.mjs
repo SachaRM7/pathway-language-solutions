@@ -461,7 +461,7 @@ export function renderProgramPage({ lang, level, data, pages, tour, homeMarkup }
 export async function buildV4Programs({ outDir, rootDir }) {
   const written = [];
   for (const lang of LANGS) {
-    const homeMarkup = await readFile(join(rootDir, 'v4', lang === 'es' ? '' : lang, 'index.html'), 'utf8');
+    const homeMarkup = await readFile(join(outDir, 'v4', lang === 'es' ? '' : lang, 'index.html'), 'utf8'); // built home: shared tail included
     for (const level of LEVELS) {
       const data = JSON.parse(await readFile(join(rootDir, 'v4', 'data', 'manuals', `${level}.json`), 'utf8'));
       const tour = JSON.parse(await readFile(join(rootDir, 'v4', 'data', 'tours', `${level}.json`), 'utf8'));

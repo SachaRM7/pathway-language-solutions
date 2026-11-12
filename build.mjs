@@ -1,7 +1,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { LOCALES, pageNames, renderLocalePage } from './i18n/locale-pages.mjs';
-import { renderPricing, renderReviews } from './v4/render.js';
+import { homeTail, HOME_TAIL_MARKER } from './scripts/home-tail.mjs';
 import { buildV4Routes } from './scripts/build-v4-routes.mjs';
 import { buildV4Programs } from './scripts/build-v4-programs.mjs';
 import { makeV4Default } from './scripts/build-v4-default.mjs';
@@ -79,11 +79,22 @@ await cp(resolve(root, 'i18n', 'locale.css'), resolve(client, 'i18n', 'locale.cs
 await cp(resolve(root, 'programas'), resolve(client, 'programas'), { recursive: true });
 await cp(resolve(root, 'v3'), resolve(client, 'v3'), { recursive: true, filter: source => !source.endsWith('.md') });
 await cp(resolve(root, 'v4'), resolve(client, 'v4'), { recursive: true, filter: source => !source.endsWith('.md') });
-const v4HomePath = resolve(client, 'v4/index.html');
-const v4Home = (await readFile(v4HomePath, 'utf8'))
-  .replace('<!-- pricing-cards -->', renderPricing('monthly'))
-  .replace('<!-- written-reviews -->', renderReviews(0));
-await writeFile(v4HomePath, v4Home, 'utf8');
+// The four V4 homes share one template from the stories to the footer, so
+// every language has exactly the same sections, classes and behaviour.
+const homeSignature = markup => [...markup.matchAll(/<(section|footer|header|article|details|dialog|figure|ol|ul|nav)\b([^>]*)>/g)]
+  .map(([, tag, attributes]) => `${tag}.${(attributes.match(/\sclass="([^"]*)"/) || [])[1] || ''}#${(attributes.match(/\sid="([^"]*)"/) || [])[1] || ''}`).join('|');
+let spanishHomeSignature = null;
+for (const lang of ['es', 'fr', 'en', 'de']) {
+  const homePath = resolve(client, 'v4', lang === 'es' ? '' : lang, 'index.html');
+  const source = await readFile(homePath, 'utf8');
+  if (source.split(HOME_TAIL_MARKER).length !== 2) throw new Error(`v4/${lang} home must contain ${HOME_TAIL_MARKER} once.`);
+  const markup = source.replace(HOME_TAIL_MARKER, homeTail(lang));
+  if (/under-construction|unfinished-route|placeholder-page/.test(markup)) throw new Error(`v4/${lang} home still has an unfinished section.`);
+  const signature = homeSignature(markup.slice(markup.indexOf('<main')));
+  if (lang === 'es') spanishHomeSignature = signature;
+  else if (signature !== spanishHomeSignature) throw new Error(`v4/${lang} home differs in structure from the Spanish home.`);
+  await writeFile(homePath, markup, 'utf8');
+}
 await buildV4Routes({ outDir: client, rootDir: root });
 // The V4 program pages replace their placeholders with the manual reader.
 await buildV4Programs({ outDir: client, rootDir: root });
@@ -144,4 +155,4 @@ const campus = await buildCampus({ outDir: client, rootDir: root });
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
 console.log(`Campus published at /campus/ and linked from ${campus.linked} page headers.`);
-console.log(`V4 design served at the root: ${v4Default.promoted.length} pages; ${v4Default.redirects.length} unfinished V4 pages keep the current-site page.`);
+console.log(`V4 design served at the root: ${v4Default.promoted.length} pages; ${v4Default.redirects.length} unfinished V4 pages keep the current-site page${v4Default.redirects.length ? ` (${v4Default.redirects.join(", ")})` : ""}.`);
