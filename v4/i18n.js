@@ -49,6 +49,7 @@ export const I18N = {
       document: 'Ver la captura',
       documentAlt: name => `Captura de los resultados oficiales de ${name}`,
       nclc7: 'NCLC 7 o más en las cuatro competencias',
+      missing: 'No figura en la captura', noDate: 'Fecha no visible',
       reviewSource: 'Opinión resumida · Superprof',
       pause: 'Pausar el desfile de opiniones', resume: 'Reanudar el desfile de opiniones'
     },
@@ -92,6 +93,7 @@ export const I18N = {
       document: 'Voir la capture',
       documentAlt: name => `Capture des résultats officiels de ${name}`,
       nclc7: 'NCLC 7 ou plus dans les quatre compétences',
+      missing: 'Absent de la capture', noDate: 'Date non visible',
       reviewSource: 'Avis résumé et traduit de l’espagnol · Superprof',
       pause: 'Mettre en pause le défilement des avis', resume: 'Reprendre le défilement des avis'
     },
@@ -135,6 +137,7 @@ export const I18N = {
       document: 'See the screenshot',
       documentAlt: name => `Screenshot of ${name}’s official results`,
       nclc7: 'NCLC 7 or higher in all four skills',
+      missing: 'Not shown in the screenshot', noDate: 'Date not shown',
       reviewSource: 'Review summarized and translated from Spanish · Superprof',
       pause: 'Pause the scrolling reviews', resume: 'Resume the scrolling reviews'
     },
@@ -178,6 +181,7 @@ export const I18N = {
       document: 'Screenshot ansehen',
       documentAlt: name => `Screenshot der offiziellen Ergebnisse von ${name}`,
       nclc7: 'NCLC 7 oder mehr in allen vier Kompetenzen',
+      missing: 'Nicht im Screenshot', noDate: 'Datum nicht sichtbar',
       reviewSource: 'Bewertung zusammengefasst und aus dem Spanischen übersetzt · Superprof',
       pause: 'Laufende Bewertungen anhalten', resume: 'Laufende Bewertungen fortsetzen'
     },

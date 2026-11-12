@@ -352,18 +352,17 @@ const LEGAL = {
 };
 
 const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-const formatDate = (iso, locale) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`));
+const formatDate = (iso, locale) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`)).replace(/\.(?= \d)|(?<=[a-zé])\.(?= )/g, '');
+const SKILL_ORDER = ['co', 'ce', 'eo', 'ee'];
 const initials = name => name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
 
 function storyCard(video, index, s, lang) {
   const r = runtime(lang).stories;
   const result = EXAM_RESULTS.find(item => item.video === video.name);
-  const best = result ? result.skills.map(skill => skill.level).sort().at(-1) : '';
-  const examShort = result ? (result.exam === 'TCF Canada' ? 'TCF Canada' : result.exam.split(' ')[0]) : '';
   return `<li class="reel-item"><button class="reel-card" type="button" data-story-open="${index}" aria-label="${esc(r.play(video.name))}">
               <img src="${esc(video.poster)}" alt="" loading="lazy" decoding="async" width="270" height="480">
               <span class="reel-play" aria-hidden="true"><svg class="icon"><use href="#i-play"/></svg></span>
-              ${result ? `<span class="reel-badge">${esc(examShort)} · ${esc(best)}</span>` : ''}
+              ${result ? `<span class="reel-badge">${esc(result.exam)}</span>` : ''}
               <span class="reel-meta"><strong>${esc(video.name)}</strong><small>${esc(video.duration)}</small></span>
             </button></li>`;
 }
@@ -376,19 +375,22 @@ function resultCard(result, s, lang) {
   const r = runtime(lang).stories;
   const locale = runtime(lang).locale;
   const videoIndex = result.video ? VIDEO_TESTIMONIALS.findIndex(video => video.name === result.video) : -1;
-  const rows = result.skills.map(skill => {
-    const level = CEFR.indexOf(skill.level) + 1;
-    return `<li><span class="rs-skill">${esc(s.skills[skill.skill])}</span><span class="rs-score">${skill.score}<small>/${skill.max}</small></span><span class="rs-scale" aria-hidden="true">${CEFR.map((code, i) => `<i${i < level ? ' class="on"' : ''}></i>`).join('')}</span><b class="rs-level">${esc(skill.level)}</b></li>`;
+  // Always the four tests in the same order, so the cards line up; a test the
+  // screenshot does not show stays as an empty row.
+  const rows = SKILL_ORDER.map(key => {
+    const skill = result.skills.find(item => item.skill === key);
+    if (!skill) return `<li class="is-missing" title="${esc(r.missing)}"><span class="rs-skill">${esc(s.skills[key])}<span class="sr-only"> · ${esc(r.missing)}</span></span><span class="rs-score">—</span><b class="rs-level">—</b></li>`;
+    return `<li><span class="rs-skill">${esc(s.skills[key])}</span><span class="rs-score">${skill.score}<small>/${skill.max}</small></span><b class="rs-level level-${skill.level.toLowerCase()}">${esc(skill.level)}</b></li>`;
   }).join('');
-  const meta = [result.exam, result.session ? `${s.session} ${formatDate(result.session, locale)}` : ''].filter(Boolean).join(' · ');
+  const meta = result.session ? formatDate(result.session, locale) : r.noDate;
   const links = [
     videoIndex >= 0 ? `<button class="text-link" type="button" data-story-open="${videoIndex}"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>${esc(r.watch(result.name))}</button>` : '',
     result.image ? `<a class="source-link" href="${esc(result.image)}" data-result-image data-result-alt="${esc(r.documentAlt(result.name))}">${esc(r.document)}</a>` : ''
   ].join('');
   return `<article class="result-card">
-            <header><span class="rs-avatar" aria-hidden="true">${esc(initials(result.name))}</span><div><h4>${esc(result.name)}</h4><p>${esc(meta)}</p></div></header>
-            ${reachesNclc7(result) ? `<p class="rs-goal"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${esc(r.nclc7)}</p>` : ''}
+            <header><span class="rs-avatar" aria-hidden="true">${esc(initials(result.name))}</span><div><h4>${esc(result.name)}</h4><p>${esc(meta)}</p></div><span class="rs-exam">${esc(result.exam)}</span></header>
             <ul class="rs-skills" aria-label="${esc(s.levelScale)}">${rows}</ul>
+            ${reachesNclc7(result) ? `<p class="rs-goal"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${esc(r.nclc7)}</p>` : ''}
             <footer>${links}</footer>
           </article>`;
 }
