@@ -252,6 +252,8 @@ async function loadAll() {
   A.badges = badges.data;
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
+  // Their own placement test (db/019_test_nivel.sql), shown in the onboarding.
+  if (!isStaff()) { const pt = await sb.rpc('my_placement'); A.placement = pt.error ? null : (pt.data || null); }
   // Units seen in class (db/018_informe_clase.sql): with the setting on, a unit opens once seen.
   if (!isStaff()) {
     const [tu, pg] = await Promise.all([sb.from('taught_units').select('unit_id'), sb.rpc('progression_settings')]);
@@ -1070,6 +1072,7 @@ function inviteTile() {
   return `<article class="tile c-6"><div class="tile-head"><h2>Invitar a un alumno</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">Recibe un correo para entrar al campus. Su nombre, su nivel y su profesor ya quedan configurados.</p>
       <form id="invForm" class="form" novalidate>
+        <p class="muted" id="invTest" style="font-size:13px;margin:0 0 10px" hidden></p>
         <div class="form-2"><label class="field" for="invEmail">Correo<input id="invEmail" type="email" inputmode="email" autocomplete="off" required placeholder="alumno@correo.com"></label>
           <label class="field" for="invName">Nombre y apellido<input id="invName" required maxlength="120" placeholder="Valentina Rojas"></label></div>
         <div class="form-2"><label class="field" for="invLevel">Nivel<select id="invLevel">${LEVELS.map(l => `<option ${l === 'A2' ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -1788,6 +1791,24 @@ function bindView(id) {
   if (id === 'contenido') bindEditor();
   {
     const inf = $('#invForm');
+    if (inf && $('#invEmail')) {
+      let last = '';
+      const lookup = async () => {
+        const email = $('#invEmail').value.trim().toLowerCase();
+        if (email === last) return; last = email;
+        const note = $('#invTest');
+        if (!/^\S+@\S+\.\S+$/.test(email)) { note.hidden = true; return; }
+        const { data, error } = await sb.rpc('placement_for_email', { p_email: email });
+        if (error || $('#invEmail').value.trim().toLowerCase() !== email) return;
+        if (data && data.level) {
+          $('#invLevel').value = data.level;
+          note.innerHTML = `${icon('check')} Test de nivel del ${esc(fmtDate(new Date(data.created_at), { day: 'numeric', month: 'short', year: 'numeric' }))}: <b>${esc(data.level)}</b>${data.overall != null ? ` (${data.overall}/100)` : ''}. Nivel completado.`;
+        } else note.textContent = 'Este correo no hizo el test de nivel del sitio: elige el nivel a mano.';
+        note.hidden = false;
+      };
+      $('#invEmail').addEventListener('input', () => { clearTimeout(inf._t); inf._t = setTimeout(lookup, 450); });
+      $('#invEmail').addEventListener('blur', lookup);
+    }
     if (inf) inf.onsubmit = async e => {
       e.preventDefault();
       const email = $('#invEmail').value.trim().toLowerCase(), name = $('#invName').value.trim();
@@ -1958,7 +1979,7 @@ const OB = [
   { id: 'examen', c: 'sky', word: 'TCF · TEF', st: [['TCF Canada', 'recomendado'], ['TEF Canada', '4 pruebas']], key: 'exam', title: '¿Qué examen vas a presentar?', sub: 'IRCC acepta el TCF Canada y el TEF Canada; el TEFAQ sirve para los programas de Quebec. Tus simulacros seguirán el formato que elijas, y puedes cambiarlo después.',
     opts: [{ v: 'tcf', t: 'TCF Canada', d: 'El que recomendamos · simulacros con el formato del TCF', ic: 'timer', rec: true }, { v: 'tef', t: 'TEF Canada', d: 'Simulacros con el formato del TEF', ic: 'timer' }, { v: 'ambos', t: 'Los dos', d: 'Simulacros de los dos formatos', ic: 'cards' }, { v: 'tefaq', t: 'TEFAQ', d: 'Para Quebec · simulacros con el formato del TEF', ic: 'target' }, { v: 'nose', t: 'Aún no lo sé', d: 'Lo decides con tu profesor', ic: 'users' }] },
   { id: 'fecha', c: 'butter', word: String(new Date().getFullYear() + 1), st: [['Fecha objetivo', 'aproximada']], key: 'target_month', title: '¿Cuándo quieres presentarlo?', sub: 'Una fecha aproximada basta para organizar tu ritmo.' },
-  { id: 'nivel', c: 'mint', word: 'A2', st: [['Nivel de partida', 'según tu test']], key: 'level', title: 'Tu nivel de partida', sub: 'El que indicó tu test de nivel o tu profesor. Corrígelo si hace falta.' },
+  { id: 'nivel', c: 'mint', word: 'A2', st: [['Nivel de partida', 'según tu test']], key: 'level', title: 'Tu nivel de partida' },
   { id: 'ritmo', c: 'peach', word: '15 min', st: [['Meta diaria', 'tu racha']], key: 'daily_goal', title: '¿Cuánto tiempo al día?', sub: 'Tu meta diaria. Cumplirla mantiene tu racha.',
     opts: [{ v: 30, t: '10 min al día', d: 'Tranquilo · 30 XP', ic: 'timer' }, { v: 50, t: '15 min al día', d: 'Regular · 50 XP', ic: 'timer', rec: true }, { v: 80, t: '25 min al día', d: 'Intenso · 80 XP', ic: 'flame' }] },
   { id: 'plan', c: 'lilac', word: 'NCLC 7', st: [['Tu plan', 'listo']] }
@@ -2005,8 +2026,10 @@ function renderOb() {
     h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="months">${monthList().map(m => `<button type="button" class="month" data-ob="target_month" data-v="${m.v}" aria-pressed="${ob.p.target_month === m.v}">${MONTHS[m.m]}<small>${m.y}</small></button>`).join('')}
       <button type="button" class="month wide" data-ob="target_month" data-v="nose" aria-pressed="${ob.p.target_month === 'nose'}">Aún no tengo fecha</button></div>`;
   } else if (step.id === 'nivel') {
-    h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="lvl-pick">${LEVELS.map(l => `<button type="button" data-ob="level" data-v="${l}" aria-pressed="${ob.p.level === l}">${l}<small>${{ A1: 'Principiante', A2: 'Elemental', B1: 'Intermedio', B2: 'Avanzado' }[l]}</small></button>`).join('')}</div>
-      <a class="ob-link" href="https://pathway-languages.com/test-placement.html" target="_blank" rel="noopener">Hacer el test de nivel</a>`;
+    const pt = A.placement;
+    const why = pt ? `Según tu test de nivel del ${fmtDate(new Date(pt.created_at), { day: 'numeric', month: 'long' })}${pt.overall != null ? ` (${pt.overall}/100)` : ''}.` : (A.teacher ? `Según la evaluación de ${esc(firstName(A.teacher.full_name))}.` : 'Según tu evaluación inicial.');
+    h = `<h1>${step.title}</h1><p class="sub">${why} Empiezas aquí: tus unidades y tu manual son los de este nivel.</p><div class="lvl-pick locked">${LEVELS.map(l => `<button type="button" aria-pressed="${ob.p.level === l}" ${ob.p.level === l ? 'aria-current="true"' : 'disabled'}>${l}<small>${{ A1: 'Principiante', A2: 'Elemental', B1: 'Intermedio', B2: 'Avanzado' }[l]}</small></button>`).join('')}</div>
+      <p class="ob-link" style="text-decoration:none">¿Crees que no es tu nivel? Coméntalo con tu profesor en tu primera clase.</p>`;
   } else if (step.id === 'plan') {
     const q = ob.p;
     h = `<h1>Tu plan está listo</h1><p class="sub">${A.teacher ? esc(firstName(A.teacher.full_name)) + ' lo verá antes de tu próxima clase. ' : ''}Puedes cambiarlo cuando quieras desde «Mi cuenta».</p>
