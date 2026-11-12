@@ -2315,7 +2315,7 @@ export function renderReminder(d: Due): { subject: string; html: string } {
     + small('El enlace de la clase se abre en el campus antes de empezar. Si no puedes asistir, avisa a tu profesor.');
   return {
     subject: `Tu clase empieza en ${when} · ${hour}`,
-    html: layout({ lang: 'es', title: 'Tu clase empieza pronto', preview: `Tu clase empieza a las ${hour} (tu hora local). Entra por el campus.`, tag: 'CAMPUS PATHWAY', hero: 'En vivo', body })
+    html: layout({ lang: 'es', title: 'Tu clase empieza pronto', preview: `Tu clase empieza a las ${hour} (tu hora local). Entra por el campus.`, tag: 'CAMPUS PATHWAY', hero: '¡A clase!', body })
   };
 }
 
