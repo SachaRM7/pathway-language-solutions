@@ -1522,3 +1522,225 @@ Deno.serve(async req => {
   return json(200, { ok: true });
 });
 ```
+
+## 010 · Sorties d'écran pendant une unité
+
+À exécuter après le 009. Le Campus compte les fois où l'élève quitte l'onglet pendant qu'une question est ouverte ; le total est gardé avec la leçon terminée et le professeur le voit dans « Necesitan atención ». Sans ce script, l'élève est quand même prévenu, mais le total n'est pas enregistré.
+
+```sql
+-- Campus Pathway · 010 · sorties d'écran pendant une unité (décision de la réunion avec Ryan)
+-- À exécuter après 009 (SQL Editor → New query → Run).
+-- Le Campus compte les fois où l'élève quitte l'onglet pendant qu'une question est affichée.
+-- L'élève est prévenu avant de commencer et à chaque retour ; le total est gardé avec la leçon
+-- terminée, et son professeur le voit dans « Necesitan atención ». Quitter une unité pour la
+-- reprendre plus tard reste permis.
+
+begin;
+
+alter table public.lesson_runs add column if not exists focus_lost int not null default 0;
+
+-- Élève : enregistre le nombre de sorties sur sa dernière leçon terminée de cette unité.
+create function public.record_focus_lost(p_unit text, p_count int) returns void
+language sql security definer set search_path = public as $$
+  update lesson_runs set focus_lost = least(greatest(p_count, 0), 999)
+   where id = (select id from lesson_runs where user_id = auth.uid() and unit_id = p_unit order by finished_at desc limit 1)
+$$;
+
+-- Professeur : leçons des 14 derniers jours où l'élève a quitté l'onglet pendant une question.
+create function public.teacher_focus_alerts() returns table (student_id uuid, unit_id text, focus_lost int, finished_at timestamptz, first_try_correct int, total int)
+language sql stable security definer set search_path = public as $$
+  select r.user_id, r.unit_id, r.focus_lost, r.finished_at, r.first_try_correct, r.total
+  from lesson_runs r
+  where r.focus_lost > 0 and r.finished_at > now() - interval '14 days' and public.teaches(r.user_id)
+  order by r.finished_at desc
+  limit 50
+$$;
+
+revoke execute on function public.record_focus_lost(text, int), public.teacher_focus_alerts() from public, anon;
+grant execute on function public.record_focus_lost(text, int), public.teacher_focus_alerts() to authenticated;
+
+commit;
+```
+
+## 011 · Rapport du lundi (e-mail aux admins)
+
+1. Déployer d'abord la fonction ci-dessous : Supabase → **Edge Functions** → **Deploy a new function** → **Via Editor**, nom `weekly-report`, coller le code, **Deploy**, puis désactiver **Verify JWT** dans ses réglages. Secret utilisé : `RESEND_API_KEY` (déjà ajouté).
+2. Puis exécuter ce SQL (après le 010). Il crée le rapport et le programme chaque lundi à 8 h 07, heure de Lima. Les destinataires sont les comptes admin du Campus.
+
+```sql
+-- Campus Pathway · 011 · rapport du lundi (e-mail aux admins)
+-- À exécuter après 010 et après avoir déployé la fonction « weekly-report » (SQL Editor → Run).
+-- Chaque lundi à 8 h (heure de Lima), la fonction envoie aux admins le bilan de la semaine
+-- précédente : par groupe, cours prévus, tenus sur Zoom, enregistrés, retards du professeur,
+-- annulés ou déplacés ; changements en attente ; élèves sans activité ; sorties d'onglet ;
+-- réunions Zoom sans groupe. Un seul envoi par semaine, même si la fonction est appelée deux fois.
+
+begin;
+
+create table if not exists public.weekly_reports (
+  week_start date primary key,
+  sent_at timestamptz not null default now(),
+  recipients int not null default 0
+);
+alter table public.weekly_reports enable row level security;
+
+-- Données du rapport pour la semaine [p_from, p_from + 7 jours) ; p_from null = semaine précédente. Réservé à la clé service.
+create function public.weekly_report_data(p_from timestamptz) returns jsonb
+language sql stable security definer set search_path = public as $$
+  -- Par défaut : la semaine précédente, du lundi au dimanche, à l'heure de Lima.
+  with w0 as (select coalesce(p_from, (date_trunc('week', now() at time zone 'America/Lima') - interval '7 days') at time zone 'America/Lima') as a),
+  w as (select a, a + interval '7 days' as b from w0)
+  select jsonb_build_object(
+    'from', (select a from w), 'to', (select b from w), 'week', (select (a at time zone 'America/Lima')::date from w),
+    'groups', coalesce((select jsonb_agg(x order by x->>'name') from (
+      select jsonb_build_object(
+        'name', g.name, 'teacher', (select full_name from profiles t where t.id = g.teacher_id), 'level', g.level,
+        'has_zoom', g.zoom_meeting_id is not null,
+        'planned', count(*) filter (where l.status <> 'cancelled'),
+        'held', count(*) filter (where l.status <> 'cancelled' and l.started_at is not null),
+        'recorded', count(*) filter (where l.recorded),
+        'late', count(*) filter (where l.late_min > 5),
+        'moved', count(*) filter (where l.status = 'moved'),
+        'cancelled', count(*) filter (where l.status = 'cancelled'),
+        'missing', coalesce(jsonb_agg(l.at order by l.at) filter (where l.status <> 'cancelled' and l.started_at is null), '[]'::jsonb)
+      ) x
+      from class_groups g cross join w
+      left join lateral public._group_log(g.id, w.a, w.b) l on true
+      group by g.id) s), '[]'::jsonb),
+    'pending_changes', (select count(*) from schedule_changes where status = 'pending'),
+    'inactive', coalesce((select jsonb_agg(jsonb_build_object('name', p.full_name, 'teacher', (select full_name from profiles t where t.id = p.teacher_id)) order by p.full_name)
+      from profiles p, w where p.role = 'student' and p.onboarded_at is not null
+        and not exists (select 1 from xp_events x where x.user_id = p.id and x.created_at >= w.a and x.created_at < w.b)), '[]'::jsonb),
+    'units_done', (select count(*) from lesson_runs r, w where r.finished_at >= w.a and r.finished_at < w.b),
+    'focus', coalesce((select jsonb_agg(jsonb_build_object('name', p.full_name, 'unit', r.unit_id, 'times', r.focus_lost))
+      from lesson_runs r join profiles p on p.id = r.user_id, w where r.focus_lost > 0 and r.finished_at >= w.a and r.finished_at < w.b), '[]'::jsonb),
+    'no_group', (select count(*) from profiles where role = 'student' and group_id is null),
+    'unmatched', (select count(*) from zoom_meetings, w where group_id is null and started_at >= w.a and started_at < w.b)
+  )
+$$;
+
+-- Adresses des admins (destinataires). Réservé à la clé service.
+create function public.report_recipients() returns setof text
+language sql stable security definer set search_path = public, auth as $$
+  select u.email from profiles p join auth.users u on u.id = p.id where p.role = 'admin' and u.email is not null
+$$;
+
+-- Réserve l'envoi d'une semaine : renvoie false si elle a déjà été envoyée.
+create function public.claim_weekly_report(p_week date, p_recipients int) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into weekly_reports (week_start, recipients) values (p_week, p_recipients);
+  return true;
+exception when unique_violation then
+  return false;
+end $$;
+
+revoke execute on function public.weekly_report_data(timestamptz), public.report_recipients(), public.claim_weekly_report(date, int) from public, anon, authenticated;
+grant execute on function public.weekly_report_data(timestamptz), public.report_recipients(), public.claim_weekly_report(date, int) to service_role;
+
+commit;
+
+-- Planification : chaque lundi à 13 h 07 UTC (8 h 07 à Lima). À exécuter une fois.
+create extension if not exists pg_cron;
+create extension if not exists pg_net with schema extensions;
+select cron.unschedule('pathway-weekly-report') where exists (select 1 from cron.job where jobname = 'pathway-weekly-report');
+select cron.schedule('pathway-weekly-report', '7 13 * * 1', $job$
+  select net.http_post(
+    url := 'https://ynflykxalfynxoupkxmy.supabase.co/functions/v1/weekly-report',
+    headers := '{"Content-Type": "application/json"}'::jsonb,
+    body := '{}'::jsonb)
+$job$);
+```
+
+### Fonction « weekly-report »
+
+```ts
+// Supabase Edge Function « weekly-report » : envoie chaque lundi aux admins le bilan de la
+// semaine précédente (campus/db/011_informe.sql, appelée par pg_cron).
+//
+// Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor,
+// nom « weekly-report », coller ce fichier, Deploy, puis désactiver « Verify JWT » dans ses
+// réglages (pg_cron l'appelle sans compte). Elle n'envoie qu'un rapport par semaine, même
+// appelée plusieurs fois. Secret : RESEND_API_KEY (déjà ajouté pour Resend). SUPABASE_URL et
+// SUPABASE_SERVICE_ROLE_KEY sont fournis par Supabase.
+import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
+
+const FROM = 'Pathway Campus <campus@pathway-languages.com>';
+const CAMPUS = 'https://pathway-languages.com/campus/#horarios';
+const TZ = 'America/Lima';
+const json = (status: number, body: Record<string, unknown>) =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const day = (iso: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('fr-FR', { timeZone: TZ, ...opts }).format(new Date(iso));
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+type Group = { name: string; teacher: string | null; level: string; has_zoom: boolean; planned: number; held: number; recorded: number; late: number; moved: number; cancelled: number; missing: string[] };
+type Report = { from: string; to: string; week: string; groups: Group[]; pending_changes: number; inactive: { name: string; teacher: string | null }[]; units_done: number; focus: { name: string; unit: string; times: number }[]; no_group: number; unmatched: number };
+
+export function renderReport(r: Report): { subject: string; html: string } {
+  const last = new Date(Date.parse(r.to) - 1000).toISOString();
+  const period = `du ${day(r.from, { day: 'numeric', month: 'long' })} au ${day(last, { day: 'numeric', month: 'long' })}`;
+  const total = r.groups.reduce((a, g) => ({ planned: a.planned + g.planned, held: a.held + g.held, recorded: a.recorded + g.recorded, late: a.late + g.late }), { planned: 0, held: 0, recorded: 0, late: 0 });
+  const cell = 'padding:8px 10px;border-bottom:1px solid #e6e1d8;font-size:14px;';
+  const warn = (ok: boolean, text: string) => ok ? esc(text) : `<b style="color:#a34e3b">${esc(text)}</b>`;
+  const rows = r.groups.map(g => `<tr>
+      <td style="${cell}"><b>${esc(g.name)}</b><br><span style="color:#50625c;font-size:12px">${esc(g.teacher || 'Sans professeur')} · ${esc(g.level)}${g.has_zoom ? '' : ' · sans lien Zoom'}</span></td>
+      <td style="${cell}text-align:center">${g.planned}</td>
+      <td style="${cell}text-align:center">${warn(g.held === g.planned, String(g.held))}</td>
+      <td style="${cell}text-align:center">${warn(g.recorded === g.held, String(g.recorded))}</td>
+      <td style="${cell}text-align:center">${warn(g.late === 0, String(g.late))}</td>
+      <td style="${cell}text-align:center">${g.moved + g.cancelled ? `${g.moved} / ${g.cancelled}` : '—'}</td></tr>
+    ${g.missing.length ? `<tr><td colspan="6" style="${cell}color:#a34e3b;font-size:12px">Sans trace Zoom : ${g.missing.map(m => esc(day(m, { weekday: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }))).join(', ')}</td></tr>` : ''}`).join('');
+  const alerts = [
+    r.pending_changes ? `${plural(r.pending_changes, 'changement d’horaire attend', 'changements d’horaire attendent')} votre validation.` : '',
+    r.no_group ? `${plural(r.no_group, 'élève n’a', 'élèves n’ont')} pas de groupe, donc pas d’horaire.` : '',
+    r.unmatched ? `${plural(r.unmatched, 'réunion Zoom ne correspond', 'réunions Zoom ne correspondent')} à aucun groupe.` : ''
+  ].filter(Boolean);
+  const html = `<!doctype html><html lang="fr"><body style="margin:0;background:#f5efe4;font-family:Arial,Helvetica,sans-serif;color:#122b26">
+  <div style="max-width:680px;margin:0 auto;padding:28px 20px">
+    <p style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#50625c;margin:0">Pathway Campus · rapport du lundi</p>
+    <h1 style="font-size:24px;margin:8px 0 4px">Semaine ${esc(period)}</h1>
+    <p style="margin:0 0 20px;color:#50625c">${plural(total.planned, 'cours prévu', 'cours prévus')} · ${total.held} tenus sur Zoom · ${total.recorded} enregistrés · ${plural(total.late, 'retard', 'retards')} du professeur · ${plural(r.units_done, 'unité terminée', 'unités terminées')} sur le Campus</p>
+    ${alerts.length ? `<div style="background:#fff3ec;border-radius:10px;padding:12px 16px;margin-bottom:18px">${alerts.map(a => `<p style="margin:4px 0;font-size:14px">• ${esc(a)}</p>`).join('')}</div>` : ''}
+    <table style="width:100%;border-collapse:collapse;background:#fffaf2;border-radius:12px;overflow:hidden">
+      <tr style="background:#122b26;color:#f5efe4;font-size:12px"><th style="padding:8px 10px;text-align:left">Groupe</th><th style="padding:8px">Prévus</th><th style="padding:8px">Sur Zoom</th><th style="padding:8px">Enregistrés</th><th style="padding:8px">Retards</th><th style="padding:8px">Déplacés / annulés</th></tr>
+      ${rows || `<tr><td colspan="6" style="${cell}">Aucun groupe pour l’instant.</td></tr>`}
+    </table>
+    <h2 style="font-size:17px;margin:24px 0 8px">Élèves sans aucune activité sur le Campus cette semaine</h2>
+    <p style="margin:0;font-size:14px">${r.inactive.length ? r.inactive.map(s => `${esc(s.name)}${s.teacher ? ` <span style="color:#50625c">(${esc(s.teacher)})</span>` : ''}`).join(', ') : 'Aucun : tout le monde a travaillé.'}</p>
+    ${r.focus.length ? `<h2 style="font-size:17px;margin:24px 0 8px">Sorties d’onglet pendant une unité</h2><p style="margin:0;font-size:14px">${r.focus.map(f => `${esc(f.name)} : ${plural(f.times, 'fois', 'fois')}`).join(', ')}</p>` : ''}
+    <p style="margin:28px 0 0"><a href="${CAMPUS}" style="background:#122b26;color:#f5efe4;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:bold">Ouvrir « Horarios » dans le Campus</a></p>
+    <p style="margin:24px 0 0;font-size:12px;color:#50625c">« Sur Zoom » : cours dont Zoom a signalé le début entre 1 h avant et 1 h 30 après l’heure prévue. « Retards » : cours commencés plus de 5 minutes après l’heure prévue.</p>
+  </div></body></html>`;
+  return { subject: `Pathway · semaine ${period} : ${total.held}/${total.planned} cours tenus, ${total.recorded} enregistrés`, html };
+}
+
+Deno.serve(async req => {
+  if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
+  const key = Deno.env.get('RESEND_API_KEY');
+  if (!key) return json(500, { error: 'missing_resend_key' });
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+  const { data: report, error } = await supabase.rpc('weekly_report_data', { p_from: null });
+  if (error || !report) return json(500, { error: 'report_failed' });
+  const { data: emails } = await supabase.rpc('report_recipients');
+  const to = (emails || []).filter(Boolean);
+  if (!to.length) return json(200, { skipped: 'no_admin_email' });
+
+  // One report per week, whoever calls the function and however many times.
+  const { data: claimed } = await supabase.rpc('claim_weekly_report', { p_week: report.week, p_recipients: to.length });
+  if (claimed !== true) return json(200, { skipped: 'already_sent', week: report.week });
+
+  const { subject, html } = renderReport(report);
+  const sent = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to, subject, html })
+  });
+  if (!sent.ok) {
+    await supabase.from('weekly_reports').delete().eq('week_start', report.week); // lets the next call retry
+    return json(502, { error: 'send_failed', status: sent.status });
+  }
+  return json(200, { ok: true, week: report.week, recipients: to.length });
+});
+```

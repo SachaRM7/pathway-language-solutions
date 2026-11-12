@@ -214,7 +214,8 @@ async function loadStaff() {
   A.staff.invitations = inv.data || [];
   A.staff.teachers = tea.data || [];
   // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
-  const [grp, chg, log] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log')]);
+  const [grp, chg, log, foc] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log'), sb.rpc('teacher_focus_alerts')]);
+  A.staff.focus = foc.error ? [] : (foc.data || []); // needs db/010_integridad.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
   A.staff.log = log.error ? null : (log.data || { groups: {}, unmatched: [] }); // needs db/009_zoom.sql
   A.staff.changes = chg.error ? [] : (chg.data || []);
@@ -638,6 +639,10 @@ function viewGrupo() {
     if (!s.onboarded) alerts.push({ s, kind: 'warn', text: 'Todavía no completó la bienvenida del campus.' });
     else if (ds == null || ds >= 4) alerts.push({ s, kind: 'bad', text: ds == null ? 'Aún no practicó en el campus.' : `${ds} días sin practicar.` });
     if (s.week_accuracy != null && s.week_accuracy < 60) alerts.push({ s, kind: 'warn', text: `${s.week_accuracy} % de aciertos esta semana.` });
+  }
+  for (const f of A.staff.focus || []) {
+    const s = ov.find(x => x.id === f.student_id), u = unitById(f.unit_id);
+    if (s) alerts.push({ s, kind: 'warn', text: `Salió ${f.focus_lost} ${f.focus_lost === 1 ? 'vez' : 'veces'} de la pestaña durante la unidad ${u ? u.number : ''} (${Math.round(100 * f.first_try_correct / Math.max(1, f.total))} %, ${fmtDate(new Date(f.finished_at), { weekday: 'long', day: 'numeric' })}).` });
   }
   const units = A.units.filter(u => (A.unitInfo[u.id]?.validated || 0) > 0);
   const studentOpts = ov.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('');
@@ -1388,7 +1393,7 @@ async function loadResumable() {
 }
 function saveProgress() {
   if (!L || L.preview || L.finished) return;
-  const state = { queue: L.queue.map(x => ({ id: x.id, retry: !!x.retry })), pos: L.pos, combo: L.combo, xp: L.xp, res: [...L.res.values()], elapsed: Date.now() - L.start };
+  const state = { queue: L.queue.map(x => ({ id: x.id, retry: !!x.retry })), pos: L.pos, combo: L.combo, xp: L.xp, res: [...L.res.values()], elapsed: Date.now() - L.start, focusLost: L.focusLost || 0 };
   L_RESUME.add(L.unit.id);
   sb.rpc('save_lesson_progress', { p_unit: L.unit.id, p_state: state }).then(r => { if (r && r.error) console.error(r.error); });
 }
@@ -1412,7 +1417,7 @@ async function startLesson(unitId, preview) {
     const byId = Object.fromEntries(items.map(x => [x.id, x]));
     if (st && Array.isArray(st.queue) && st.queue.every(q => byId[q.id]) && st.pos > 0 && st.pos < st.queue.length) {
       L.queue = st.queue.map(q => ({ ...byId[q.id], retry: q.retry }));
-      L.pos = st.pos; L.combo = st.combo || 0; L.xp = st.xp || 0; L.start = Date.now() - (st.elapsed || 0);
+      L.pos = st.pos; L.combo = st.combo || 0; L.xp = st.xp || 0; L.start = Date.now() - (st.elapsed || 0); L.focusLost = st.focusLost || 0;
       L.res = new Map((st.res || []).map(r => [r.exercise_id, r]));
       setTimeout(() => toast(`Retomamos donde lo dejaste: ejercicio ${L.pos + 1} de ${L.queue.length}.`), 300);
     }
@@ -1421,6 +1426,41 @@ async function startLesson(unitId, preview) {
   $('.preview-flag')?.remove(); lessonEl.classList.toggle('preview', !!preview);
   if (preview) document.body.insertAdjacentHTML('beforeend', '<span class="preview-flag">Vista previa · no se guarda nada</span>');
   renderEx();
+  if (!preview) integrityNotice();
+}
+
+/* Integrity (db/010_integridad.sql): leaving the tab while a question is open is counted,
+   shown to the student and kept with the finished lesson for the teacher. Leaving the unit
+   to come back later stays allowed (the exit button saves the progress). */
+const graded = () => L && !L.preview && !L.finished && !lessonEl.hidden;
+function integrityNotice() {
+  let seen = false; try { seen = localStorage.getItem('campus-integrity') === '1'; } catch (e) { /* ignore */ }
+  if (seen) return;
+  const box = document.createElement('div'); box.className = 'confirm';
+  box.innerHTML = `<div class="tile"><h3 style="font-size:22px">Antes de empezar</h3><p class="muted">Esta unidad cuenta para abrir la siguiente. Responde sin salir de esta pestaña: si cambias de pestaña o de aplicación mientras una pregunta está abierta, queda registrado y tu profesor lo verá.</p><p class="muted" style="margin-top:8px">Puedes salir de la unidad con la ✕ cuando quieras: tu avance se guarda.</p><div class="acts"><button class="btn btn-dark btn-sm" id="intOk">Entendido</button></div></div>`;
+  lessonEl.appendChild(box); $('#intOk', box).focus();
+  $('#intOk', box).onclick = () => { box.remove(); try { localStorage.setItem('campus-integrity', '1'); } catch (e) { /* ignore */ } };
+}
+function goneAway() {
+  if (!graded() || L.checked || L.awayAt) return;
+  L.awayAt = Date.now(); lessonEl.classList.add('is-away');
+}
+function cameBack() {
+  if (!L || !L.awayAt) return;
+  const away = Date.now() - L.awayAt; L.awayAt = null; lessonEl.classList.remove('is-away');
+  if (!graded() || away < 2000) return;
+  L.focusLost = (L.focusLost || 0) + 1; saveProgress();
+  $('.confirm.integrity', lessonEl)?.remove();
+  const box = document.createElement('div'); box.className = 'confirm integrity';
+  box.innerHTML = `<div class="tile"><h3 style="font-size:22px">Saliste de la lección</h3><p class="muted">Cambiaste de pestaña o de aplicación con una pregunta abierta. Queda registrado: ${L.focusLost} ${L.focusLost === 1 ? 'vez' : 'veces'} en esta unidad. Tu profesor lo verá con tu resultado.</p><div class="acts"><button class="btn btn-dark btn-sm" id="intBack">Seguir con la lección</button></div></div>`;
+  lessonEl.appendChild(box); $('#intBack', box).focus(); $('#intBack', box).onclick = () => box.remove();
+}
+document.addEventListener('visibilitychange', () => (document.hidden ? goneAway() : cameBack()));
+window.addEventListener('blur', goneAway);
+window.addEventListener('focus', cameBack);
+// Basic protection of the content: no copy, cut or context menu inside a lesson (answers can still be typed).
+for (const type of ['copy', 'cut', 'contextmenu']) {
+  lessonEl.addEventListener(type, e => { if (L && !L.preview && !e.target.closest('input, textarea')) e.preventDefault(); });
 }
 function closeLesson() {
   try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
@@ -1607,6 +1647,7 @@ async function finish() {
     return;
   }
   sb.rpc('clear_lesson_progress', { p_unit: L.unit.id }).then(r => { if (r && r.error) console.error(r.error); }); L_RESUME.delete(L.unit.id);
+  if (L.focusLost) sb.rpc('record_focus_lost', { p_unit: L.unit.id, p_count: L.focusLost }).then(r => { if (r && r.error) console.error(r.error); });
   const passed = data.first_try >= PASS_RATE * data.total;
   const pct = Math.round(data.first_try / data.total * 100);
   const nextU = A.units.filter(x => x.level === L.unit.level && x.number > L.unit.number && playable(x)).sort((a, b) => a.number - b.number)[0];
@@ -1618,6 +1659,7 @@ async function finish() {
       : item('peach', 'flame', `${data.today_xp} / ${A.profile.daily_goal} XP hoy`, data.today_xp >= A.profile.daily_goal ? 'Meta de hoy ya cumplida.' : `Te faltan ${A.profile.daily_goal - data.today_xp} XP para tu meta de hoy.`),
     ...(data.badges || []).map(id => { const b = badgeById[id]; return b ? item(b.color, b.icon, `Insignia: ${esc(b.name)}`, esc(b.description)) : ''; }),
     data.cards ? item('lilac', 'cards', `${data.cards} tarjeta${data.cards > 1 ? 's' : ''} nueva${data.cards > 1 ? 's' : ''} en tu repaso`, 'Vocabulario de la unidad y tus errores.') : '',
+    L.focusLost ? item('peach', 'lock', `Saliste ${L.focusLost} ${L.focusLost === 1 ? 'vez' : 'veces'} de la pestaña`, 'Durante preguntas abiertas. Tu profesor lo verá con tu resultado.') : '',
     data.homework_done ? item('mint', 'check', 'Tarea entregada', A.teacher ? `${esc(firstName(A.teacher.full_name))} verá tu resultado antes de la clase.` : 'Tu profesor verá tu resultado.') : ''
   ].join('');
   body.innerHTML = header(data.xp, extra);

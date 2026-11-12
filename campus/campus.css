@@ -609,3 +609,9 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
   .tt-card.is-top:not(.is-center) { top: calc(12px + env(safe-area-inset-top, 0px)) !important; bottom: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .tt-ring.is-in, .tt-card.is-in { animation: none; } .tt-shade, .tt-ring, .tt-card { transition: none; } }
+
+/* Integrity in graded lessons (app.js): content blurred while the student is away, no selection, no printing. */
+.lesson:not(.preview) #lessonBody { -webkit-user-select: none; user-select: none; }
+.lesson:not(.preview) #lessonBody input, .lesson:not(.preview) #lessonBody textarea { -webkit-user-select: text; user-select: text; }
+.lesson.is-away #lessonBody { filter: blur(16px); }
+@media print { #lesson, #main { display: none !important; } }
