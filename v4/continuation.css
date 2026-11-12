@@ -423,3 +423,6 @@ html.has-story-open { overflow: hidden; }
   .faq-chevron, .v4-round { transition: none; }
 }
 
+/* Horizontal scrollers contain their absolutely positioned children (screen-reader labels):
+   without it they escape the scroller and widen the whole page on phones. */
+.reel-track, .results-grid, .quote-lane { position: relative; }
