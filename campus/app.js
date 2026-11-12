@@ -275,6 +275,8 @@ async function loadSchedule() {
   A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
   const att = await sb.rpc('my_attendance');
   A.attendance = att.error ? null : (att.data || []); // needs db/013_asistencia.sql
+  const ma = isStaff() ? { error: true } : await sb.rpc('my_absences');
+  A.myAbs = ma.error ? null : (ma.data || null); // needs db/017_reglas_clases.sql
   const val = await sb.from('level_validations').select('*').eq('student_id', A.session.user.id);
   A.levelVal = val.error ? null : (val.data || []); // needs db/012_fin_nivel.sql
   A.docs = docs.error ? null : (docs.data || []);
@@ -329,6 +331,8 @@ async function loadStaff() {
   A.staff.log = log.error ? null : (log.data || { groups: {}, unmatched: [] }); // needs db/009_zoom.sql
   A.staff.changes = chg.error ? [] : (chg.data || []);
   if (A.profile.role === 'admin') {
+    const pl = await sb.from('profiles').select('id,plan,plan_start').eq('role', 'student');
+    A.staff.plans = pl.error ? null : Object.fromEntries((pl.data || []).map(x => [x.id, x])); // needs db/017_reglas_clases.sql
     const mem = await sb.rpc('admin_members');
     A.staff.members = mem.error ? null : (mem.data || []);
   }
@@ -809,7 +813,16 @@ function todoItems() {
     const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
     if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
   }
-  for (const s of A.staff.absences || []) if (s.total >= s.max) out.push({ ic: 'users', text: `${s.name} llegó a ${s.total} ausencias: decide si termina su curso`, href: '#alumnos' });
+  const abs = A.staff.absences || [];
+  const toReview = abs.reduce((n, s) => n + s.record.filter(r => !r.reason && r.request && r.request.status === 'pending').length + (s.requests || []).filter(q => q.status === 'pending').length, 0);
+  if (toReview) out.push({ ic: 'pen', text: `${toReview} justificativo${toReview > 1 ? 's' : ''} por revisar`, href: '#alumnos' });
+  const toMake = abs.reduce((n, s) => n + s.record.filter(r => r.reason && !r.makeup).length, 0);
+  if (toMake) out.push({ ic: 'calendar', text: `${toMake} clase${toMake > 1 ? 's' : ''} por recuperar`, href: '#alumnos' });
+  for (const s of abs) if (s.month && s.month.failed) out.push({ ic: 'users', text: `${s.name}: mes no validado`, href: '#alumnos' });
+  if (isAdmin() && A.staff.plans) {
+    const n = Object.values(A.staff.plans).filter(p => !p.plan).length;
+    if (n) out.push({ ic: 'user-plus', text: `${n} alumno${n > 1 ? 's' : ''} sin fórmula (mensual o ciclo)`, href: '#cuentas' });
+  }
   if (contractOn() && A.staff.contracts) {
     const n = A.staff.overview.filter(s => contractState(s.id) !== 'ok').length;
     if (n) out.push({ ic: 'pen', text: `${n} alumno${n > 1 ? 's' : ''} sin el contrato firmado`, href: '#alumnos' });
@@ -868,26 +881,57 @@ function absencesTile() {
   if (!list || !list.length) return '';
   const motives = ((A.contract && A.contract.contract && A.contract.contract.motives) || []).filter(Boolean);
   const keyOf = (s, r) => `${s.student_id}|${r.group_id}|${r.scheduled_at}`;
+  const day = d => fmtDate(new Date(d), { day: 'numeric', month: 'short' }).replace('.', '');
+  const reqBtns = q => `<button class="btn btn-dark btn-sm" type="button" data-req="${q.id}" data-ok="1">Aceptar</button><button class="btn btn-light btn-sm" type="button" data-req="${q.id}" data-ok="0">Rechazar</button>`;
   const row = (s, r) => {
-    const k = keyOf(s, r), kind = r.status === 'late' ? '<span class="status warn">Tarde</span>' : '<span class="status bad">Ausente</span>';
-    const when = `<b>${esc(cap(sessionLabel(r.at)))}</b><br><span class="muted" style="font-size:13px">${r.clicked_at ? `Entró a las ${fmtDate(new Date(r.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entró por el campus'}${r.reason ? ` · justificada: ${esc(r.reason)}` : ''}</span>`;
+    const k = keyOf(s, r), q = r.request, deadline = Date.parse(r.at) + 72 * 3600e3;
+    const sub = [r.clicked_at ? `Entró a las ${fmtDate(new Date(r.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entró por el campus'];
+    if (r.reason) sub.push(`justificada: ${esc(r.reason)}`);
+    else if (q && q.status === 'pending') sub.push(`${q.kind === 'aviso' ? 'avisó' : 'justificativo'}: ${esc(q.reason)}${q.note ? ` («${esc(q.note)}»)` : ''}`);
+    else if (Date.now() < deadline) sub.push(`puede justificarla hasta el ${esc(shortWhen(deadline))}`);
+    if (r.makeup) sub.push(`recuperación el ${esc(shortWhen(r.makeup.at))}`);
+    const when = `<b>${esc(cap(sessionLabel(r.at)))}</b><br><span class="muted" style="font-size:13px">${sub.join(' · ')}</span>`;
     if (A.staff.excusing === k) return `<form class="form excuse-form" data-excuse-form="${esc(k)}">
         <p style="font-size:14px">${when}</p>
         <label class="field" for="exReason">Motivo<select id="exReason">${motives.map(m => `<option>${esc(m)}</option>`).join('')}<option value="__otro">Otro motivo…</option></select></label>
         <label class="field" for="exNote">Nota (comprobante, detalle)<input id="exNote" maxlength="300" placeholder="Certificado médico recibido el…"></label>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Justificar</button><button class="btn btn-light btn-sm" type="button" data-excuse-cancel>Cancelar</button></div></form>`;
-    return `<div class="err-row${r.reason ? ' excused' : ''}"><span>${when}</span><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${r.reason ? '<span class="status">Justificada</span>' : kind}
-      ${r.reason ? `<button class="btn btn-light btn-sm" type="button" data-unexcuse="${esc(k)}">Quitar</button>` : `<button class="btn btn-light btn-sm" type="button" data-excuse="${esc(k)}">Justificar</button>`}</span></div>`;
+    if (A.staff.makeupFor === k) {
+      const d = new Date(Date.now() + 2 * 864e5), v = r.makeup ? new Date(r.makeup.at) : d, local = `${v.getFullYear()}-${pad2(v.getMonth() + 1)}-${pad2(v.getDate())}T${r.makeup ? pad2(v.getHours()) + ':' + pad2(v.getMinutes()) : '19:00'}`;
+      return `<form class="form excuse-form" data-makeup-form="${esc(k)}">
+        <p style="font-size:14px">${when}</p>
+        <div class="form-2"><label class="field" for="mkAt">Recuperación (tu hora local)<input id="mkAt" type="datetime-local" required value="${local}"></label>
+          <label class="field" for="mkDur">Duración (min)<input id="mkDur" type="number" min="15" max="240" step="15" value="${(r.makeup && r.makeup.duration_min) || r.duration_min || 60}"></label></div>
+        <p class="muted" style="font-size:13px">La clase aparece en el horario del alumno, con su recordatorio, y cuenta para la asistencia.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Programar</button><button class="btn btn-light btn-sm" type="button" data-makeup-cancel>Cancelar</button></div></form>`;
+    }
+    let tag, acts = '';
+    if (r.reason) {
+      tag = r.makeup ? '<span class="status">Por recuperar · programada</span>' : '<span class="status warn">Por recuperar</span>';
+      acts = `<button class="btn ${r.makeup ? 'btn-light' : 'btn-dark'} btn-sm" type="button" data-makeup="${esc(k)}">${r.makeup ? 'Cambiar' : 'Programar la recuperación'}</button>${r.makeup ? `<button class="btn btn-light btn-sm" type="button" data-makeup-del="${esc(k)}">Quitar</button>` : ''}<button class="btn btn-light btn-sm" type="button" data-unexcuse="${esc(k)}" title="La ausencia vuelve a contar">Quitar la justificación</button>`;
+    } else if (q && q.status === 'pending') {
+      tag = '<span class="status warn">Por revisar</span>';
+      acts = `${q.file_path ? `<button class="btn btn-light btn-sm" type="button" data-proof="${esc(q.file_path)}">Ver el comprobante</button>` : ''}${reqBtns(q)}`;
+    } else {
+      tag = r.status === 'late' ? '<span class="status warn">Tarde</span>' : `<span class="status bad">${Date.now() < deadline ? 'Ausente' : 'Hora perdida'}</span>`;
+      acts = `${q && q.status === 'rejected' ? '<span class="muted" style="font-size:12px">rechazado</span>' : ''}<button class="btn btn-light btn-sm" type="button" data-excuse="${esc(k)}">Justificar</button>`;
+    }
+    return `<div class="err-row${r.reason ? ' excused' : ''}"><span>${when}</span><span class="row-act">${tag}${acts}</span></div>`;
   };
   const block = s => {
-    const danger = s.total >= s.max, near = s.total === s.max - 1;
-    const sent = (s.warnings || []).map(w => `aviso ${w.n} el ${fmtDate(new Date(w.sent_at), { day: 'numeric', month: 'short' })}`).join(', ');
-    return `<div class="abs-student"><div class="abs-head"><b>${esc(s.name)}</b><span class="pill ${danger ? 'bad' : near ? 'warn' : 'ghost'} num">${s.total} / ${s.max} ausencias</span></div>
-      <p class="muted" style="font-size:13px;margin:2px 0 8px">${s.absences} ausencia${s.absences === 1 ? '' : 's'} y ${s.lates} retraso${s.lates === 1 ? '' : 's'} sin justificar (${s.lates_per_absence} retrasos = 1 ausencia) desde el ${fmtDate(new Date(s.period_start), { day: 'numeric', month: 'long' })}${sent ? ` · ${sent}` : ''}${danger ? ' · <b style="color:var(--bad, #c2410c)">límite alcanzado: decide si termina su curso</b>' : ''}</p>
+    const plan = s.plan === 'mensual' ? `<span class="pill ghost">Mensual · desde el ${esc(day(s.plan_start))}</span>` : s.plan === 'ciclo' ? '<span class="pill ghost">Ciclo</span>' : `<a class="pill warn" href="#cuentas">Sin fórmula</a>`;
+    const m = s.month;
+    const month = !m ? '' : m.failed
+      ? `<p class="abs-alert">Mes no validado (del ${esc(day(m.failed_from))} al ${esc(day(Date.parse(m.failed_to) - 1000))}): ${m.max} ausencias sin justificar. No pasa de nivel; para seguir, paga de nuevo el mes y rehace sus horas.${isAdmin() ? ` <button class="btn btn-dark btn-sm" type="button" data-month-reset="${s.student_id}">Mes pagado de nuevo</button>` : ''}</p>`
+      : `<p class="muted" style="font-size:13px;margin:2px 0 4px"><b class="${m.total >= m.max - 1 && m.total ? 'warn-text' : ''}">${m.total} / ${m.max}</b> ausencias sin justificar en sus 4 semanas (del ${esc(day(m.from))} al ${esc(day(Date.parse(m.to) - 1000))}).</p>`;
+    const upcoming = (s.requests || []).filter(q => Date.parse(q.scheduled_at) > Date.now() - 864e5).map(q => `<div class="err-row"><span><b>${esc(cap(sessionLabel(q.scheduled_at)))}</b><br><span class="muted" style="font-size:13px">Avisó que no vendrá: ${esc(q.reason)}${q.note ? ` («${esc(q.note)}»)` : ''}</span></span><span class="row-act">${q.status === 'approved' ? '<span class="status">Avisó a tiempo · por recuperar</span>' : q.status === 'rejected' ? '<span class="status bad">Rechazado</span>' : `<span class="status warn">Aviso tardío</span>${reqBtns(q)}`}</span></div>`).join('');
+    return `<div class="abs-student"><div class="abs-head"><b>${esc(s.name)}</b>${plan}</div>
+      ${month}${s.lost_minutes ? `<p class="muted" style="font-size:13px;margin:0 0 4px">Horas perdidas: <b>${hoursText(s.lost_minutes)}</b> (no se recuperan).</p>` : ''}
+      ${upcoming}
       ${s.record.length ? s.record.map(r => row(s, r)).join('') : '<p class="muted" style="font-size:14px">Ninguna ausencia ni retraso.</p>'}</div>`;
   };
-  return `<article class="tile"><div class="tile-head"><h2>Ausencias</h2><span class="pill ghost">Cuentan para la exclusión</span></div>
-    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada ausencia injustificada envía un aviso al alumno. Justifica una ausencia si el alumno te envió un comprobante: deja de contar. El conteo vuelve a cero cuando pasa de nivel.</p>
+  return `<article class="tile"><div class="tile-head"><h2>Ausencias</h2></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">El alumno avisa desde el campus (48 h antes: se justifica sola) o envía su comprobante en las 72 h siguientes: acéptalo o recházalo aquí. Una ausencia justificada se recupera: programa la clase. Sin justificar, la hora se pierde.</p>
     ${list.map(block).join('')}</article>`;
 }
 
@@ -939,11 +983,11 @@ function viewAjustes() {
   <div class="bento staff">${rulesTile()}${contractTile()}
     <article class="tile c-6"><div class="tile-head"><h2>Correos automáticos</h2></div>
       <div class="err-row"><span><b>Informe del lunes</b><br><span class="muted" style="font-size:13px">Cada lunes a las 8:00 (hora de Lima), en francés, a las cuentas de administración: clases dadas, grabaciones, retrasos, cambios y alumnos sin actividad.</span></span></div>
-      <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia injustificada: cuántas le quedan antes de la exclusión y, en el último aviso, los motivos de ausencia justificada. Se activa con la asistencia y el contrato.</span></span></div>
+      <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia sin justificar: puede justificarla en 72 h, si no la hora se pierde; en la fórmula mensual, dónde está respecto a las ausencias que invalidan el mes. Se activa con la asistencia y el contrato.</span></span></div>
       <div class="err-row"><span><b>Recordatorio de clase</b><br><span class="muted" style="font-size:13px">A cada alumno, antes de cada clase, en su hora local. Se activa en «Reglas de asistencia».</span></span></div>
       <div class="err-row"><span><b>Acceso al campus</b><br><span class="muted" style="font-size:13px">El código de 6 cifras para entrar, enviado por Supabase.</span></span></div>
       <button class="btn btn-light" style="margin-top:14px" type="button" data-mail-test>Enviarme los correos de prueba</button>
-      <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes, un recordatorio de clase y un último aviso de ausencia de ejemplo.</p></article>
+      <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes, un recordatorio de clase y un aviso de ausencia de ejemplo.</p></article>
   </div></section>`;
 }
 
@@ -996,13 +1040,16 @@ function membersTile() {
   const teachers = A.staff.teachers;
   const row = m => {
     const last = daysSince(m.last_activity);
-    const meta = `${esc(m.email)} · ${m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
+    const pl = A.staff.plans && A.staff.plans[m.id];
+    const meta = `${esc(m.email)} · ${m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}${pl ? ` · ${pl.plan === 'mensual' ? `mensual desde el ${esc(fmtDate(new Date(pl.plan_start + 'T12:00:00Z'), { day: 'numeric', month: 'short' }, 'UTC'))}` : pl.plan === 'ciclo' ? 'ciclo' : 'sin fórmula'}` : ''}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
     if (A.staff.editing === m.id) {
       return `<form class="member-edit form" data-member-form="${m.id}">
         <div class="form-2"><label class="field" for="mName">Nombre<input id="mName" required maxlength="120" value="${esc(m.full_name)}"></label>
           <label class="field" for="mRole">Tipo de cuenta<select id="mRole"><option value="student" ${m.role === 'student' ? 'selected' : ''}>Alumno</option><option value="teacher" ${m.role === 'teacher' ? 'selected' : ''}>Profesor</option></select></label></div>
         <div class="form-2"><label class="field" for="mLevel">Nivel<select id="mLevel">${LEVELS.map(l => `<option ${l === m.level ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
           <label class="field" for="mTeacher">Profesor<select id="mTeacher"><option value="">Sin profesor</option>${teachers.filter(t => t.id !== m.id).map(t => `<option value="${t.id}" ${t.id === m.teacher_id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label></div>
+        ${m.role === 'student' && A.staff.plans ? (() => { const pl = A.staff.plans[m.id] || {}; return `<div class="form-2"><label class="field" for="mPlan">Fórmula<select id="mPlan"><option value="">Sin definir</option><option value="mensual" ${pl.plan === 'mensual' ? 'selected' : ''}>Mensual (4 semanas)</option><option value="ciclo" ${pl.plan === 'ciclo' ? 'selected' : ''}>Ciclo completo</option></select></label>
+          <label class="field" for="mPlanStart">Inicio<input id="mPlanStart" type="date" value="${esc(pl.plan_start || '')}"></label></div>`; })() : ''}
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar</button><button class="btn btn-light btn-sm" type="button" data-member-cancel>Cancelar</button></div>
       </form>`;
     }
@@ -1025,7 +1072,7 @@ const tzName = tz => (TIMEZONES.find(t => t[0] === tz) || [tz, tz])[1];
 const sessionLabel = at => { const d = new Date(at); return `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '')} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}`; };
 const slotsText = g => g.slots.length ? g.slots.map(s => `${WEEKDAYS[s.weekday].slice(0, 3)} ${s.start_time}`).join(' · ') + ` · ${g.slots[0].duration_min} min (hora de ${tzName(g.timezone)})` : 'Sin horario';
 const sessionRow = x => {
-  const st = x.status === 'cancelled' ? '<span class="status bad">Cancelada</span>' : x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : '';
+  const st = x.status === 'cancelled' ? '<span class="status bad">Cancelada</span>' : x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : x.status === 'makeup' ? '<span class="status">Recuperación</span>' : '';
   return `<div class="err-row"><span>${x.status === 'cancelled' ? `<s>${esc(cap(sessionLabel(x.scheduled_at)))}</s>` : `<b>${esc(cap(sessionLabel(x.at)))}</b>`}${x.status === 'moved' ? `<br><span class="muted" style="font-size:13px">Antes: ${esc(sessionLabel(x.scheduled_at))}</span>` : ''}</span>${st}</div>`;
 };
 
@@ -1036,7 +1083,7 @@ function viewCurso() {
   ${topBar('h-curso', 'Mi curso', `Nivel ${esc(A.profile.level)} · tus clases y los documentos de tu programa`)}
   <div class="bento">
     <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2>${s ? `<span class="pill ghost">${esc(s.group.name)}</span>` : ''}</div>
-      ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(sessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
+      ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(studentSessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
         <p class="muted" style="font-size:13px;margin-top:12px">Horario fijo de tu grupo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
         ${next ? `<button class="btn btn-dark" style="margin-top:14px" type="button" data-join>${icon('video')}Entrar a la clase</button>${attendanceOn() ? `<p class="muted" style="font-size:13px;margin-top:10px">El enlace se abre ${esc(minutesText(s.attendance.open_min))} antes de la clase. Entra siempre por aquí: tu asistencia se registra con tu clic, y después de ${s.attendance.absent_after_min} minutos de clase cuenta como ausencia.</p>` : ''}` : ''}`
         : '<p class="muted">Pathway te asignará pronto a un grupo con su horario.</p>'}</article>
@@ -1133,11 +1180,61 @@ const ATT = { present: ['Presente', ''], late: ['Tarde', 'warn'], absent: ['Ause
 function attendanceTile() {
   if (!attendanceOn() || !A.attendance) return '';
   const n = k => A.attendance.filter(a => a.status === k && !a.excused).length, nEx = A.attendance.filter(a => a.excused && a.status !== 'present').length;
-  const ab = A.contract && A.contract.absences;
   return `<article class="tile c-6"><div class="tile-head"><h2>Tu asistencia</h2><span class="pill ghost">60 días</span></div>
-    ${ab ? `<p class="abs-mine ${ab.total >= ab.max - 1 ? 'near' : ''}"><b class="num">${ab.total} / ${ab.max}</b><span>ausencias injustificadas en este nivel${ab.lates ? ` (incluye ${ab.lates} retraso${ab.lates === 1 ? '' : 's'}: ${ab.lates_per_absence} = 1 ausencia)` : ''}. Al llegar a ${ab.max}, tu curso termina.</span></p>` : ''}
+    ${myAbsenceSummary()}
     <div class="chips"><span class="pill ghost num">${n('present')} presente${n('present') === 1 ? '' : 's'}</span>${n('late') ? `<span class="pill ghost num">${n('late')} tarde</span>` : ''}<span class="pill ghost num">${n('absent')} ausencia${n('absent') === 1 ? '' : 's'}</span>${nEx ? `<span class="pill ghost num">${nEx} justificada${nEx === 1 ? '' : 's'}</span>` : ''}</div>
-    ${A.attendance.slice(0, 8).map(a => `<div class="err-row"><span><b>${esc(cap(sessionLabel(a.at)))}</b><br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}${a.excused && a.status !== 'present' ? ` · ${esc(a.excused)}` : ''}</span></span>${a.excused && a.status !== 'present' ? '<span class="status">Justificada</span>' : `<span class="status ${ATT[a.status][1]}">${ATT[a.status][0]}</span>`}</div>`).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
+    ${A.attendance.slice(0, 10).map(attendanceRow).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
+}
+
+/* ───────────── Ausencias: avisar 48 h antes, justificar 72 h después (db/017_reglas_clases.sql) ───────────── */
+const sameAt = (a, b) => Date.parse(a) === Date.parse(b);
+const myMotives = () => ((A.myAbs && A.myAbs.motives) || (A.contract && A.contract.contract && A.contract.contract.motives) || []).filter(Boolean);
+const myRequest = at => ((A.myAbs && A.myAbs.requests) || []).find(r => sameAt(r.scheduled_at, at));
+const hoursText = min => min % 60 === 0 ? `${min / 60} h` : `${Math.floor(min / 60) ? Math.floor(min / 60) + ' h ' : ''}${min % 60} min`;
+const shortWhen = at => fmtDate(new Date(at), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(/\./g, '');
+function motiveFields(p, motives) {
+  return `<label class="field" for="${p}Reason">Motivo<select id="${p}Reason">${motives.map(m => `<option>${esc(m)}</option>`).join('')}<option value="__otro">Otro motivo…</option></select></label>
+    <label class="field" for="${p}Note">Detalle<input id="${p}Note" maxlength="300" placeholder="Lo que tu profesor debe saber"></label>`;
+}
+// Upcoming class, for the student: « No podré asistir » (justified by itself 48 h ahead).
+function studentSessionRow(x) {
+  const row = sessionRow(x);
+  if (!A.myAbs || x.status === 'cancelled' || new Date(x.at) <= Date.now()) return row;
+  const r = myRequest(x.scheduled_at);
+  const tag = r ? (r.status === 'approved' ? '<span class="status">Avisaste · se reprograma</span>' : r.status === 'pending' ? '<span class="status warn">Aviso enviado · tu profesor decide</span>' : '<span class="status bad">Aviso rechazado</span>') : '';
+  const early = new Date(x.at) - Date.now() >= 48 * 3600e3;
+  if (A.notifyFor && sameAt(A.notifyFor, x.scheduled_at)) return row + `<form class="form excuse-form" data-notify-form="${esc(x.scheduled_at)}">
+      ${motiveFields('nt', myMotives())}
+      <p class="muted" style="font-size:13px">${early ? 'Avisas con más de 48 h: tu hora se reprogramará, sin comprobante.' : 'Faltan menos de 48 h: tu profesor decidirá. Si es por un motivo válido, después podrás enviar el comprobante.'}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Avisar a mi profesor</button><button class="btn btn-light btn-sm" type="button" data-notify-cancel>Cancelar</button></div></form>`;
+  return row.replace(/<\/div>$/, '') + `<span class="row-act">${tag || `<button class="btn btn-light btn-sm" type="button" data-notify="${esc(x.scheduled_at)}">No podré asistir</button>`}</span></div>`;
+}
+function myAbsenceSummary() {
+  const m = A.myAbs; if (!m) return '';
+  const out = [];
+  const mo = m.plan === 'mensual' && m.month;
+  if (mo && mo.failed) out.push(`<p class="abs-mine near"><b>Mes no validado</b><span>${mo.max} ausencias sin justificar en 4 semanas: no pasas al nivel siguiente. Para seguir, paga de nuevo el mes y rehaz sus horas.</span></p>`);
+  else if (mo) out.push(`<p class="abs-mine ${mo.total >= mo.max - 1 && mo.total ? 'near' : ''}"><b class="num">${mo.total} / ${mo.max}</b><span>ausencias sin justificar en tus 4 semanas (del ${fmtDate(new Date(mo.from), { day: 'numeric', month: 'short' })} al ${fmtDate(new Date(Date.parse(mo.to) - 1000), { day: 'numeric', month: 'short' })}). A la ${mo.max}.ª, tu mes no se valida.</span></p>`);
+  if (m.lost_minutes) out.push(`<p class="abs-mine"><b class="num">${hoursText(m.lost_minutes)}</b><span>perdidas por ausencias sin justificar. No se recuperan.</span></p>`);
+  if (m.to_makeup) out.push(`<p class="muted" style="font-size:13px;margin:-6px 0 12px">${m.to_makeup === 1 ? 'Tienes 1 clase por recuperar' : `Tienes ${m.to_makeup} clases por recuperar`}: tu profesor te propondrá una fecha.</p>`);
+  return out.join('');
+}
+function attendanceRow(a) {
+  const when = `<b>${esc(cap(sessionLabel(a.at)))}</b>${a.makeup ? ' <span class="muted">· recuperación</span>' : ''}<br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}${a.excused && a.status !== 'present' ? ` · ${esc(a.excused)}` : ''}</span>`;
+  if (a.status === 'present') return `<div class="err-row"><span>${when}</span><span class="status">Presente</span></div>`;
+  if (a.excused) return `<div class="err-row"><span>${when}</span><span class="status">Justificada</span></div>`;
+  const r = A.myAbs && myRequest(a.scheduled_at), deadline = Date.parse(a.at) + 72 * 3600e3, open = A.myAbs && Date.now() < deadline;
+  if (A.justifyFor && sameAt(A.justifyFor, a.scheduled_at)) return `<form class="form excuse-form" data-justify-form="${esc(a.scheduled_at)}">
+      <p style="font-size:14px">${when}</p>
+      ${motiveFields('js', myMotives())}
+      <label class="field" for="jsFile">Comprobante (PDF o foto)<input id="jsFile" type="file" accept="application/pdf,image/*" required></label>
+      <p class="muted" style="font-size:13px">Tu profesor lo revisa. Si lo acepta, tu hora se reprograma.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Enviar el justificativo</button><button class="btn btn-light btn-sm" type="button" data-justify-cancel>Cancelar</button></div></form>`;
+  let tag;
+  if (r && r.status === 'pending') tag = '<span class="status warn">Comprobante enviado</span>';
+  else if (open) tag = `${r && r.status === 'rejected' ? '<span class="status bad">Rechazado</span>' : `<span class="status ${a.status === 'late' ? 'warn' : 'bad'}">${a.status === 'late' ? 'Tarde' : 'Ausente'}</span>`}<button class="btn btn-light btn-sm" type="button" data-justify="${esc(a.scheduled_at)}" title="Hasta el ${esc(shortWhen(deadline))}">Justificar</button>`;
+  else tag = a.status === 'late' ? '<span class="status warn">Tarde</span>' : `<span class="status bad">${A.myAbs ? 'Hora perdida' : 'Ausente'}</span>`;
+  return `<div class="err-row"><span>${when}${open && !r ? `<br><span class="muted" style="font-size:12px">Puedes justificarla hasta el ${esc(shortWhen(deadline))}</span>` : ''}</span><span class="row-act">${tag}</span></div>`;
 }
 function groupAttendance(g) {
   const cfg = A.staff.settings && A.staff.settings.attendance;
@@ -1218,6 +1315,79 @@ async function openDoc(path) {
 }
 
 function bindSchedule(id) {
+  // Student: tell ahead, justify after.
+  $$('[data-notify]').forEach(b => b.onclick = () => { A.notifyFor = b.dataset.notify; render(); $('#ntReason')?.focus(); });
+  $$('[data-notify-cancel]').forEach(b => b.onclick = () => { A.notifyFor = null; render(); });
+  $$('[data-justify]').forEach(b => b.onclick = () => { A.justifyFor = b.dataset.justify; render(); $('#jsReason')?.focus(); });
+  $$('[data-justify-cancel]').forEach(b => b.onclick = () => { A.justifyFor = null; render(); });
+  const reasonOf = (p) => { const sel = $(`#${p}Reason`), note = $(`#${p}Note`); const other = sel.value === '__otro'; return { reason: other ? note.value.trim() : sel.value, note: other ? '' : note.value.trim() }; };
+  const ntf = $('[data-notify-form]');
+  if (ntf) ntf.onsubmit = async e => {
+    e.preventDefault();
+    const { reason, note } = reasonOf('nt');
+    if (reason.length < 2) return toast('Escribe el motivo en «Detalle».');
+    const btn = ntf.querySelector('button[type=submit]'); btn.disabled = true;
+    const { data, error } = await sb.rpc('notify_absence', { p_scheduled: ntf.dataset.notifyForm, p_reason: reason, p_note: note });
+    if (error) { btn.disabled = false; return fail(error, 'No se pudo enviar el aviso.'); }
+    A.notifyFor = null; toast(data === 'approved' ? 'Aviso enviado: tu clase se reprogramará.' : 'Aviso enviado: tu profesor decidirá.'); await refresh(); render();
+  };
+  const jsf = $('[data-justify-form]');
+  if (jsf) jsf.onsubmit = async e => {
+    e.preventDefault();
+    const { reason, note } = reasonOf('js');
+    if (reason.length < 2) return toast('Escribe el motivo en «Detalle».');
+    const file = $('#jsFile').files[0];
+    if (!file) return toast('Adjunta el comprobante.');
+    if (file.size > 8 * 1024 * 1024) return toast('El archivo pesa más de 8 MB.');
+    const btn = jsf.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Enviando…';
+    const path = `${A.session.user.id}/${Date.now()}-${file.name.normalize('NFD').replace(/[^\w.-]+/g, '_').slice(-60)}`;
+    const up = await sb.storage.from('justificantes').upload(path, file, { contentType: file.type || 'application/octet-stream' });
+    if (up.error) { btn.disabled = false; btn.textContent = 'Enviar el justificativo'; return fail(up.error, 'No se pudo subir el comprobante.'); }
+    const { error } = await sb.rpc('justify_absence', { p_scheduled: jsf.dataset.justifyForm, p_reason: reason, p_note: note, p_file: path });
+    if (error) { btn.disabled = false; btn.textContent = 'Enviar el justificativo'; return fail(error, /deadline/.test(error.message || '') ? 'Pasaron las 72 h: ya no se puede justificar.' : 'No se pudo enviar el justificativo.'); }
+    A.justifyFor = null; toast('Justificativo enviado: tu profesor lo revisará.'); await refresh(); render();
+  };
+  // Staff: decide, see the proof, make up the class, reset a month.
+  $$('[data-req]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const ok = b.dataset.ok === '1';
+    const { error } = await sb.rpc('decide_absence_request', { p_id: b.dataset.req, p_ok: ok });
+    if (error) { b.disabled = false; return fail(error); }
+    toast(ok ? 'Aceptado: la clase queda por recuperar.' : 'Rechazado: la hora se pierde.'); await refresh(); render();
+  });
+  $$('[data-proof]').forEach(b => b.onclick = async () => {
+    const win = window.open('', '_blank');
+    const { data, error } = await sb.storage.from('justificantes').createSignedUrl(b.dataset.proof, 600);
+    if (error || !data) { if (win) win.close(); return fail(error, 'No se pudo abrir el comprobante.'); }
+    if (win) win.location = data.signedUrl; else location.href = data.signedUrl;
+  });
+  $$('[data-makeup]').forEach(b => b.onclick = () => { A.staff.makeupFor = b.dataset.makeup; render(); $('#mkAt')?.focus(); });
+  $$('[data-makeup-cancel]').forEach(b => b.onclick = () => { A.staff.makeupFor = null; render(); });
+  $$('[data-makeup-del]').forEach(b => b.onclick = async () => {
+    const [student, group, at] = b.dataset.makeupDel.split('|');
+    b.disabled = true;
+    const { error } = await sb.rpc('cancel_makeup', { p_student: student, p_group: group, p_replaces: at });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('Recuperación quitada.'); await refresh(); render();
+  });
+  const mkf = $('[data-makeup-form]');
+  if (mkf) mkf.onsubmit = async e => {
+    e.preventDefault();
+    const [student, group, at] = mkf.dataset.makeupForm.split('|');
+    const when = new Date($('#mkAt').value);
+    if (isNaN(when)) return toast('Elige la fecha y la hora.');
+    const { error } = await sb.rpc('schedule_makeup', { p_student: student, p_group: group, p_replaces: at, p_at: when.toISOString(), p_duration: parseInt($('#mkDur').value, 10) || 60 });
+    if (error) return fail(error, 'No se pudo programar la recuperación.');
+    A.staff.makeupFor = null; toast('Recuperación programada: el alumno la ve en su horario.'); await refresh(); render();
+  };
+  $$('[data-month-reset]').forEach(b => b.onclick = async () => {
+    if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar: sus 4 semanas empiezan hoy'; return; }
+    b.disabled = true;
+    const now = new Date(), today = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+    const { error } = await sb.rpc('set_student_plan', { p_user: b.dataset.monthReset, p_plan: 'mensual', p_start: today });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('Mes pagado de nuevo: sus 4 semanas empiezan hoy.'); await refresh(); render();
+  });
   $$('[data-excuse]').forEach(b => b.onclick = () => { A.staff.excusing = b.dataset.excuse; render(); $('#exReason')?.focus(); });
   $$('[data-excuse-cancel]').forEach(b => b.onclick = () => { A.staff.excusing = null; render(); });
   $$('[data-unexcuse]').forEach(b => b.onclick = async () => {
@@ -1583,6 +1753,10 @@ function bindView(id) {
         if (!name) return toast('Escribe un nombre.');
         const { error } = await sb.rpc('admin_update_member', { p_user: mf.dataset.memberForm, p_full_name: name, p_level: $('#mLevel').value, p_teacher: $('#mTeacher').value || null, p_role: $('#mRole').value });
         if (error) return fail(error, 'No se pudieron guardar los cambios.');
+        if ($('#mPlan') && $('#mRole').value === 'student') {
+          const r = await sb.rpc('set_student_plan', { p_user: mf.dataset.memberForm, p_plan: $('#mPlan').value || null, p_start: $('#mPlanStart').value || null });
+          if (r.error) return fail(r.error, 'No se pudo guardar la fórmula.');
+        }
         A.staff.editing = null; toast('Cambios guardados.'); await refresh(); render();
       };
     }
@@ -1819,13 +1993,14 @@ function contractClauses() {
   const motives = (Array.isArray(c.motives) ? c.motives : []).map(m => String(m).trim()).filter(Boolean);
   const lateWhen = late ? `más de ${late} minutos después del inicio` : 'después de la hora de inicio';
   return [
-    { title: 'Tu curso', text: 'Pathway Language Solutions («Pathway») te acompaña en tu curso de francés: clases en vivo con tu profesor, en el horario fijo de tu grupo, y práctica en el campus entre clases. Este compromiso fija las reglas de asistencia y de participación que aceptas al empezar.' },
+    { title: 'Tu curso', text: 'Pathway Language Solutions («Pathway») te acompaña en tu curso de francés: clases particulares en vivo con tu profesor, en tu horario fijo, y práctica en el campus entre clases. Este compromiso fija las reglas de asistencia que aceptas al empezar.' },
     { key: true, title: 'Puntualidad y asistencia', text: `Entras a cada clase con el botón «Entrar a la clase» del campus, que se abre ${open} antes del inicio. Cuenta la hora de tu primer clic: si entras ${lateWhen}, es un retraso; si entras más de ${absent} minutos después del inicio, o si no entras, es una ausencia.` },
-    { key: true, title: 'Retrasos', text: lates === 1 ? 'Cada retraso cuenta como una ausencia.' : `Cada ${lates} retrasos cuentan como una ausencia.` },
-    { title: 'Ausencias justificadas', text: motives.length ? `Solo estos motivos justifican una ausencia, con un comprobante enviado a tu profesor: ${motives.join('; ')}. Una ausencia justificada no cuenta.` : 'Una ausencia justificada por tu profesor, con un comprobante, no cuenta.' },
-    { key: true, title: 'Exclusión sin reembolso', text: `Después de cada ausencia injustificada recibes un aviso por correo. ${max === 1 ? 'A la primera ausencia injustificada' : `Al llegar a ${max} ausencias injustificadas`} en un mismo nivel, Pathway da por terminado tu curso. Las clases ya pagadas no se reembolsan, ni total ni parcialmente.` },
-    { key: true, title: 'Ciclo completo', text: 'Si te inscribiste por un ciclo completo, pagaste una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo. Por eso no es reembolsable, tampoco si tu curso termina por ausencias o retrasos.' },
-    { title: 'Clases movidas o canceladas', text: 'Una clase que Pathway mueve o cancela nunca cuenta como ausencia. Si necesitas cambiar una clase, pídeselo a tu profesor con anticipación: el cambio se aplica solo cuando Pathway lo aprueba.' },
+    { title: 'Retrasos', text: lates === 1 ? 'Cada retraso cuenta como una ausencia sin justificar.' : `Cada ${lates} retrasos cuentan como una ausencia sin justificar.` },
+    { key: true, title: 'Avisar o justificar una ausencia', text: `Si sabes que no podrás venir, avisa desde el campus al menos 48 horas antes: tu hora se reprograma. Si no pudiste avisar, justifica tu ausencia desde el campus en las 72 horas siguientes al inicio de la clase, con un comprobante.${motives.length ? ` Los únicos motivos válidos son: ${motives.join('; ')}.` : ''} Una ausencia justificada se recupera en otra clase.` },
+    { key: true, title: 'Ausencias sin justificar', text: 'Una ausencia que no se avisa ni se justifica a tiempo es una hora perdida: no se recupera ni se reembolsa. Después de cada una, recibes un correo.' },
+    { key: true, title: 'Fórmula mensual', text: `Un mes son 4 semanas desde tu fecha de inicio. ${max === 1 ? 'Con una ausencia sin justificar' : `Con ${max} ausencias sin justificar en las mismas 4 semanas`}, tu mes no se valida: no pasas al nivel siguiente y, para seguir, pagas de nuevo el mes y rehaces todas sus horas, aunque hayas tenido buena nota.` },
+    { key: true, title: 'Ciclo completo', text: 'Si te inscribiste por un ciclo completo, pagaste una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo. No es reembolsable: las horas perdidas no se recuperan, y no hay reembolso si al final del ciclo no alcanzas el nivel.' },
+    { title: 'Clases movidas o canceladas', text: 'Una clase que Pathway mueve o cancela nunca cuenta como ausencia.' },
     { title: 'Trabajo personal', text: 'Los ejercicios y los exámenes del campus son personales: no compartes tu cuenta ni tus respuestas. El campus registra si sales de la pestaña durante una unidad, y tu profesor lo ve.' },
     { title: 'Grabaciones y documentos', text: 'Las clases grabadas y los documentos del programa son para tu uso personal: no se comparten ni se publican.' },
     { title: 'Firma electrónica', text: 'Firmas este compromiso de forma electrónica. Pathway guarda el texto firmado, tu firma, la fecha y los datos técnicos de la conexión. Puedes volver a leerlo cuando quieras en «Mi curso».' }
@@ -2010,7 +2185,7 @@ function contractTile() {
   return `<article class="tile c-6"><div class="tile-head"><h2>Contrato del alumno</h2><span class="pill ghost">${c.enabled ? 'Activo' : 'Desactivado'}</span></div>
     <form id="ctForm" class="form">
       <label class="check-row" for="ctOn"><input id="ctOn" type="checkbox" ${c.enabled ? 'checked' : ''}>Pedir la firma al terminar la bienvenida (los alumnos ya inscritos firman en su próxima conexión)</label>
-      <div class="form-2"><label class="field" for="ctMax">Ausencias antes de la exclusión<input id="ctMax" type="number" min="1" max="20" value="${c.max_absences ?? 3}"></label>
+      <div class="form-2"><label class="field" for="ctMax">Ausencias sin justificar que invalidan el mes<input id="ctMax" type="number" min="1" max="20" value="${c.max_absences ?? 3}"></label>
         <label class="field" for="ctLates">Retrasos que valen una ausencia<input id="ctLates" type="number" min="1" max="20" value="${c.lates_per_absence ?? 3}"></label></div>
       ${'motives' in c ? `<label class="field" for="ctMotives">Motivos de ausencia justificada (uno por línea)<textarea id="ctMotives" rows="4" maxlength="1200">${esc((c.motives || []).join('\n'))}</textarea></label>` : ''}
       <p class="muted" style="font-size:13px">El contrato también cita las reglas de asistencia (apertura del enlace, retraso, ausencia). Si cambias una regla, cada alumno firma la nueva versión en su próxima conexión.</p>
