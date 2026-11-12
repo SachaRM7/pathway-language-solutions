@@ -317,6 +317,8 @@ td .who { display: flex; align-items: center; gap: 12px; font-weight: 700; }
 .field input:focus, .field select:focus, .field input:focus-visible, .field select:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--ink); }
 .form { display: grid; gap: 12px; }
 .form-2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.form-2 > * { min-width: 0; }
+.field input, .field select { min-width: 0; max-width: 100%; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips label { position: relative; cursor: pointer; }
 .chips input { position: absolute; opacity: 0; inset: 0; }
