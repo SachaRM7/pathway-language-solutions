@@ -24,6 +24,8 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/011_informe.sql` | Rapport du lundi envoyé aux admins (cours prévus, tenus sur Zoom, enregistrés, retards, changements en attente, élèves inactifs, sorties d'onglet), programmé avec pg_cron |
 | `../supabase/functions/weekly-report/` | Edge Function qui compose et envoie ce rapport avec Resend, une fois par semaine au plus |
 | `db/012_fin_nivel.sql` | Fin de niveau : examen validé par le professeur, puis examen final du Campus ; passage automatique au niveau suivant |
+| `db/013_asistencia.sql` | Présences par le bouton « Entrar a la clase » (lien ouvert N min avant, absent après N min, palier « tarde » optionnel) et rappel e-mail avant chaque cours ; règles réglées par l'admin dans « Horarios » |
+| `../supabase/functions/class-reminders/` | Edge Function qui envoie les rappels avec Resend (appelée toutes les 5 min par pg_cron) |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
