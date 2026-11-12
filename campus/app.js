@@ -177,6 +177,8 @@ async function loadSchedule() {
   const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position'), sb.rpc('my_recordings')]);
   A.schedule = sch.error ? null : (sch.data || null);
   A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
+  const att = await sb.rpc('my_attendance');
+  A.attendance = att.error ? null : (att.data || []); // needs db/013_asistencia.sql
   const val = await sb.from('level_validations').select('*').eq('student_id', A.session.user.id);
   A.levelVal = val.error ? null : (val.data || []); // needs db/012_fin_nivel.sql
   A.docs = docs.error ? null : (docs.data || []);
@@ -218,6 +220,9 @@ async function loadStaff() {
   // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
   const [grp, chg, log, foc] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log'), sb.rpc('teacher_focus_alerts')]);
   A.staff.focus = foc.error ? [] : (foc.data || []); // needs db/010_integridad.sql
+  const [cfg, sat] = await Promise.all([sb.rpc('get_campus_settings'), sb.rpc('staff_attendance')]);
+  A.staff.settings = cfg.error ? null : (cfg.data || null); // needs db/013_asistencia.sql
+  A.staff.attendance = sat.error ? {} : (sat.data || {});
   const lv = await sb.rpc('staff_level_status');
   A.staff.levels = lv.error ? null : (lv.data || []); // needs db/012_fin_nivel.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
@@ -506,7 +511,7 @@ function viewInicio() {
       <div class="tile-head"><h2>Próxima clase</h2><span class="pill ghost">${icon('video')}En vivo</span></div>
       ${nc ? `<div class="class-row"><div class="date-block"><small>${esc(fmtDate(nc, { month: 'short' }).replace('.', '').toUpperCase())}</small><b>${fmtDate(nc, { day: 'numeric' })}</b></div><div><h3>${esc(cap(fmtDate(nc, { weekday: 'long' })))} · ${fmtDate(nc, { hour: '2-digit', minute: '2-digit' })}</h3><p class="muted" style="font-size:14px;margin-top:4px">${nextSession() && nextSession().status === 'moved' ? `Cambiada · antes: ${esc(sessionLabel(nextSession().scheduled_at))}` : 'Tu hora local'}</p></div></div>`
         : `<p class="muted" style="font-size:14px">Tu profesor aún no programó la próxima clase.</p>`}
-      <div class="teacher"><span class="ava sm">${esc(initials(A.teacher?.full_name || 'P'))}</span><b>${esc(A.teacher?.full_name || 'Tu profesor')}</b>${nc && p.class_link ? `<a class="btn btn-dark btn-sm" style="margin-left:auto" href="${esc(p.class_link)}" target="_blank" rel="noopener">Unirse</a>` : ''}</div>
+      <div class="teacher"><span class="ava sm">${esc(initials(A.teacher?.full_name || 'P'))}</span><b>${esc(A.teacher?.full_name || 'Tu profesor')}</b>${nc && A.schedule ? `<button class="btn btn-dark btn-sm" style="margin-left:auto" type="button" data-join>Unirse</button>` : nc && p.class_link ? `<a class="btn btn-dark btn-sm" style="margin-left:auto" href="${esc(p.class_link)}" target="_blank" rel="noopener">Unirse</a>` : ''}</div>
     </article>
     ${challengeTile()}
   </div></section>`;
@@ -814,11 +819,12 @@ function viewCurso() {
     <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2>${s ? `<span class="pill ghost">${esc(s.group.name)}</span>` : ''}</div>
       ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(sessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
         <p class="muted" style="font-size:13px;margin-top:12px">Horario fijo de tu grupo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
-        ${next && s.group.zoom_link ? `<a class="btn btn-dark" style="margin-top:14px" href="${esc(s.group.zoom_link)}" target="_blank" rel="noopener">${icon('video')}Entrar a la clase</a>` : ''}`
+        ${next ? `<button class="btn btn-dark" style="margin-top:14px" type="button" data-join>${icon('video')}Entrar a la clase</button>${attendanceOn() ? `<p class="muted" style="font-size:13px;margin-top:10px">El enlace se abre ${esc(minutesText(s.attendance.open_min))} antes de la clase. Entra siempre por aquí: tu asistencia se registra con tu clic, y después de ${s.attendance.absent_after_min} minutos de clase cuenta como ausencia.</p>` : ''}` : ''}`
         : '<p class="muted">Pathway te asignará pronto a un grupo con su horario.</p>'}</article>
     <article class="tile c-6"><div class="tile-head"><h2>Tu programa</h2><span class="pill ghost">${esc(A.profile.level)}</span></div>
       ${docs.length ? docs.map(d => `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b></span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button></div>`).join('')
         : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
+    ${attendanceTile()}
     ${A.recordings ? `<article class="tile c-6"><div class="tile-head"><h2>Tus clases grabadas</h2><span class="pill ghost num">${A.recordings.length}</span></div>
       ${A.recordings.length ? A.recordings.slice(0, 12).map(r => `<div class="err-row"><span>${icon('video')} <b>${esc(cap(sessionLabel(r.at)))}</b>${r.minutes ? `<br><span class="muted" style="font-size:13px">${r.minutes} min</span>` : ''}</span><a class="btn btn-light btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener">Ver</a></div>`).join('')
         : '<p class="muted">Cada clase aparece aquí, grabada, poco después de terminar.</p>'}</article>` : ''}
@@ -840,6 +846,7 @@ function viewHorarios() {
       <p style="font-weight:600">${esc(slotsText(g))}</p>
       <p class="muted" style="font-size:14px;margin-top:6px">${esc(g.teacher || 'Sin profesor')} · ${g.members.length ? g.members.map(m => esc(m.full_name)).join(', ') : 'sin alumnos'}</p>
       <div class="chips" style="margin-top:12px"><span class="pill ghost num">${g.month.planned} clases este mes</span>${A.staff.log ? '' : `<span class="pill ghost num">${g.month.done} pasadas</span>`}${g.month.moved ? `<span class="pill ghost num">${g.month.moved} movida${g.month.moved > 1 ? 's' : ''}</span>` : ''}${g.month.cancelled ? `<span class="pill ghost num">${g.month.cancelled} cancelada${g.month.cancelled > 1 ? 's' : ''}</span>` : ''}</div>
+      ${groupAttendance(g)}
       ${logBlock(g)}
       <div style="margin-top:10px">${g.upcoming.filter(x => new Date(x.at) > Date.now()).slice(0, 3).map(sessionRow).join('') || '<p class="muted">Sin clases próximas.</p>'}</div>
       ${g.zoom_link ? '' : '<p class="form-error" style="margin-top:8px">Falta el enlace de Zoom.</p>'}
@@ -851,6 +858,7 @@ function viewHorarios() {
   <div class="bento">
     ${changes.length || admin ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
       ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('') || '<p class="muted">Ningún cambio por validar.</p>'}</article>` : ''}
+    ${rulesTile()}
     ${unmatchedTile()}
     ${noGroup.length ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}</article>` : ''}
@@ -894,6 +902,57 @@ function unmatchedTile() {
     ${list.map(m => `<div class="err-row"><span><b>${esc(m.topic || 'Reunión ' + m.meeting_id)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(m.started_at)))} · ${esc(m.host_email || '—')} · n.º ${esc(m.meeting_id)}</span></span>${m.recorded ? '<span class="status">Grabada</span>' : ''}</div>`).join('')}</article>`;
 }
 
+// Attendance and reminders (db/013_asistencia.sql). Rules are edited by the admin in Horarios.
+const attendanceOn = () => !!(A.schedule && A.schedule.attendance && A.schedule.attendance.enabled);
+const minutesText = m => (m % 60 === 0 ? `${m / 60} h` : `${m} min`);
+const ATT = { present: ['Presente', ''], late: ['Tarde', 'warn'], absent: ['Ausente', 'bad'] };
+function attendanceTile() {
+  if (!attendanceOn() || !A.attendance) return '';
+  const n = k => A.attendance.filter(a => a.status === k).length;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Tu asistencia</h2><span class="pill ghost">60 días</span></div>
+    <div class="chips"><span class="pill ghost num">${n('present')} presente${n('present') === 1 ? '' : 's'}</span>${n('late') ? `<span class="pill ghost num">${n('late')} tarde</span>` : ''}<span class="pill ghost num">${n('absent')} ausencia${n('absent') === 1 ? '' : 's'}</span></div>
+    ${A.attendance.slice(0, 8).map(a => `<div class="err-row"><span><b>${esc(cap(sessionLabel(a.at)))}</b><br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}</span></span><span class="status ${ATT[a.status][1]}">${ATT[a.status][0]}</span></div>`).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
+}
+function groupAttendance(g) {
+  const cfg = A.staff.settings && A.staff.settings.attendance;
+  if (!cfg || !cfg.enabled) return '';
+  const rows = (A.staff.attendance || {})[g.id] || [];
+  if (!rows.length) return '<p class="label" style="margin-top:14px">Asistencia del mes</p><p class="muted" style="font-size:14px">Aún no hay clases desde la activación.</p>';
+  return `<p class="label" style="margin-top:14px">Asistencia del mes</p>${rows.map(r => `<div class="err-row"><span><b>${esc(r.name)}</b><br><span class="muted" style="font-size:13px">${r.present} presente${r.present === 1 ? '' : 's'}${r.late ? ` · ${r.late} tarde` : ''} · ${r.absent} ausencia${r.absent === 1 ? '' : 's'}</span></span>${r.absent >= 3 ? `<span class="status bad">${r.absent} ausencias</span>` : r.last ? `<span class="status ${ATT[r.last.status][1]}">Última: ${ATT[r.last.status][0].toLowerCase()}</span>` : ''}</div>`).join('')}`;
+}
+function rulesTile() {
+  const st = A.staff.settings;
+  if (!st || A.profile.role !== 'admin') return '';
+  const a = st.attendance || {}, r = st.reminder || {};
+  return `<article class="tile c-6"><div class="tile-head"><h2>Reglas de asistencia</h2><span class="pill ghost">${a.enabled ? 'Activas' : 'Desactivadas'}</span></div>
+    <form id="rulesForm" class="form">
+      <label class="check-row" for="raOn"><input id="raOn" type="checkbox" ${a.enabled ? 'checked' : ''}>Registrar la asistencia por el botón del campus (el enlace de Zoom deja de mostrarse a los alumnos)</label>
+      <div class="form-2"><label class="field" for="raOpen">El enlace se abre (min antes)<input id="raOpen" type="number" min="0" max="240" step="5" value="${a.open_min ?? 60}"></label>
+        <label class="field" for="raAbsent">Ausente después de (min)<input id="raAbsent" type="number" min="1" max="120" value="${a.absent_after_min ?? 10}"></label></div>
+      <label class="field" for="raLate">«Tarde» después de (min, vacío = sin tarde)<input id="raLate" type="number" min="1" max="120" value="${a.late_after_min ?? ''}"></label>
+      <label class="check-row" for="rrOn"><input id="rrOn" type="checkbox" ${r.enabled ? 'checked' : ''}>Enviar un correo de recordatorio a cada alumno</label>
+      <label class="field" for="rrBefore">Recordatorio (min antes de la clase)<input id="rrBefore" type="number" min="15" max="1440" step="5" value="${r.before_min ?? 60}"></label>
+      <p class="muted" style="font-size:13px">La asistencia solo cuenta desde su activación. El recordatorio va por correo, en español, con el botón para entrar por el campus.</p>
+      <button class="btn btn-dark" type="submit">Guardar las reglas</button>
+    </form></article>`;
+}
+async function joinClass() {
+  const win = window.open('', '_blank');
+  const { data, error } = await sb.rpc('join_class');
+  if (error || !data) {
+    const link = A.schedule && A.schedule.group.zoom_link;
+    if (link) { if (win) win.location = link; else location.href = link; return; }
+    if (win) win.close(); return fail(error, 'No se pudo abrir la clase.');
+  }
+  if (!data.open) {
+    if (win) win.close();
+    return toast(data.reason === 'closed' && data.opens_at ? `El enlace se abre el ${sessionLabel(data.opens_at)}.` : data.reason === 'no_link' ? 'Tu grupo todavía no tiene enlace de clase.' : 'Todavía no tienes grupo.');
+  }
+  if (win) win.location = data.link; else location.href = data.link;
+  if (data.status === 'absent') toast('Entraste después del límite: esta clase cuenta como ausencia.');
+  else if (data.status === 'late') toast('Entraste tarde: queda registrado.');
+}
+
 function groupForm(g) {
   const students = (A.staff.members || []).filter(m => m.role === 'student');
   const members = new Set(g ? g.members.map(m => m.id) : []);
@@ -934,6 +993,7 @@ async function openDoc(path) {
 
 function bindSchedule(id) {
   $$('[data-doc]').forEach(b => b.onclick = () => openDoc(b.dataset.doc));
+  $$('[data-join]').forEach(b => b.onclick = () => joinClass());
   if (id === 'contenido') {
     $$('[data-doc-delete]').forEach(b => b.onclick = async () => {
       b.disabled = true;
@@ -986,6 +1046,17 @@ function bindSchedule(id) {
     if (error) { b.disabled = false; return fail(error); }
     toast(b.dataset.ok === '1' ? 'Cambio aprobado: los alumnos ya lo ven.' : 'Cambio rechazado.'); await refresh(); render();
   });
+  const rf = $('#rulesForm');
+  if (rf) rf.onsubmit = async e => {
+    e.preventDefault();
+    const num = (id, d) => { const v = $(id).value.trim(); return v === '' ? d : Math.max(0, Math.round(+v)); };
+    const att = { enabled: $('#raOn').checked, open_min: num('#raOpen', 60), absent_after_min: num('#raAbsent', 10), late_after_min: num('#raLate', null) };
+    if (att.late_after_min != null && att.late_after_min >= att.absent_after_min) return toast('«Tarde» debe ser menor que «Ausente».');
+    const a = await sb.rpc('set_campus_setting', { p_key: 'attendance', p_value: att });
+    const r = await sb.rpc('set_campus_setting', { p_key: 'reminder', p_value: { enabled: $('#rrOn').checked, before_min: num('#rrBefore', 60) } });
+    if (a.error || r.error) return fail(a.error || r.error);
+    toast('Reglas guardadas.'); await refresh(); render();
+  };
   const gf = $('#groupForm');
   if (gf) gf.onsubmit = async e => {
     e.preventDefault();

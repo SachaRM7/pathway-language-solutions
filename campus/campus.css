@@ -615,3 +615,7 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .lesson:not(.preview) #lessonBody input, .lesson:not(.preview) #lessonBody textarea { -webkit-user-select: text; user-select: text; }
 .lesson.is-away #lessonBody { filter: blur(16px); }
 @media print { #lesson, #main { display: none !important; } }
+
+/* Checkbox with its sentence on the same line (attendance rules). */
+.check-row { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 600; line-height: 1.4; cursor: pointer; }
+.check-row input { flex: none; width: 18px; height: 18px; margin-top: 1px; accent-color: var(--ink); }
