@@ -21,6 +21,8 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/009_zoom.sql` | Suivi Zoom : heure réelle de chaque cours, enregistrements rangés automatiquement (« Tus clases grabadas » pour l'élève, « Últimas clases » pour l'équipe), réunions Zoom sans groupe |
 | `../supabase/functions/zoom-webhook/` | Edge Function qui reçoit les avis du compte Zoom Pathway (signature Zoom vérifiée) |
 | `db/010_integridad.sql` | Sorties d'onglet pendant une question d'unité : comptées, montrées à l'élève et au professeur. Copie, clic droit et impression bloqués dans une leçon ; contenu flouté quand l'élève s'absente |
+| `db/011_informe.sql` | Rapport du lundi envoyé aux admins (cours prévus, tenus sur Zoom, enregistrés, retards, changements en attente, élèves inactifs, sorties d'onglet), programmé avec pg_cron |
+| `../supabase/functions/weekly-report/` | Edge Function qui compose et envoie ce rapport avec Resend, une fois par semaine au plus |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
