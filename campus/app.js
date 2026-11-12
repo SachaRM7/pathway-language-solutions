@@ -84,6 +84,7 @@ async function boot() {
   try { await loadAll(); } catch (e) { fail(e, 'No pudimos cargar tu campus. Revisa tu conexión.'); }
   $('#login').hidden = true;
   if (A.profile.role === 'student' && !A.profile.onboarded_at) return openOnboarding(true);
+  if (contractRequired()) return openContract({ mode: 'sign' });
   showApp();
 }
 sb.auth.onAuthStateChange((event, session) => {
@@ -254,6 +255,7 @@ async function loadAll() {
   await loadSchedule();
   await loadWeekly();
   await loadResumable();
+  await loadContract();
   if (isStaff()) await loadStaff();
 }
 // The account follows the device's time zone (classes, reminders and streaks are shown in it):
@@ -317,6 +319,8 @@ async function loadStaff() {
   const [cfg, sat] = await Promise.all([sb.rpc('get_campus_settings'), sb.rpc('staff_attendance')]);
   A.staff.settings = cfg.error ? null : (cfg.data || null); // needs db/013_asistencia.sql
   A.staff.attendance = sat.error ? {} : (sat.data || {});
+  const cts = await sb.rpc('staff_contracts');
+  A.staff.contracts = cts.error ? null : (cts.data || {}); // needs db/015_contrato.sql
   const lv = await sb.rpc('staff_level_status');
   A.staff.levels = lv.error ? null : (lv.data || []); // needs db/012_fin_nivel.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
@@ -395,7 +399,7 @@ const SNAV = [
   { id: 'repasar', label: 'Repasar', icon: 'cards', count: () => A.due },
   { id: 'simulacros', label: 'Simulacros', icon: 'timer' },
   { id: 'logros', label: 'Logros', icon: 'trophy' },
-  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) }
+  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) || (A.contract && A.contract.signed) }
 ];
 // Staff space: one tab per job, like the student side (Inicio first, settings last).
 const isAdmin = () => !!(A.profile && A.profile.role === 'admin');
@@ -803,6 +807,10 @@ function todoItems() {
     const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
     if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
   }
+  if (contractOn() && A.staff.contracts) {
+    const n = A.staff.overview.filter(s => contractState(s.id) !== 'ok').length;
+    if (n) out.push({ ic: 'pen', text: `${n} alumno${n > 1 ? 's' : ''} sin el contrato firmado`, href: '#alumnos' });
+  }
   const drafts = A.units.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated < inf.count; }).length;
   if (admin && drafts) out.push({ ic: 'book', text: `${drafts} unidad${drafts > 1 ? 'es' : ''} en borrador`, href: '#contenido' });
   return out;
@@ -836,15 +844,16 @@ function viewPanel() {
 
 function viewAlumnos() {
   const ov = A.staff.overview;
+  const showCt = A.staff.contracts != null && (contractOn() || Object.keys(A.staff.contracts).length > 0);
   const rows = ov.map(s => {
     const ds = daysSince(s.last_activity);
     const st = !s.onboarded ? '<span class="status warn">Sin empezar</span>' : ds == null || ds >= 4 ? '<span class="status bad">Inactivo</span>' : s.week_accuracy != null && s.week_accuracy < 60 ? '<span class="status warn">Dificultad</span>' : '<span class="status">Al día</span>';
-    return `<tr><td><span class="who"><span class="ava sm">${esc(initials(s.full_name))}</span>${esc(s.full_name)}</span></td><td>${s.level}</td><td class="num">${s.streak ? `${s.streak} día${s.streak === 1 ? '' : 's'}` : '<span class="faint">—</span>'}</td><td>${ds == null ? '<span class="faint">Nunca</span>' : ds === 0 ? 'Hoy' : ds === 1 ? 'Ayer' : `Hace ${ds} días`}</td><td class="num">${s.week_accuracy == null ? '<span class="faint">—</span>' : s.week_accuracy + ' %'}</td><td class="num">${s.homework_done} / ${s.homework_done + s.homework_open}</td><td>${st}</td></tr>`;
+    return `<tr><td><span class="who"><span class="ava sm">${esc(initials(s.full_name))}</span>${esc(s.full_name)}</span></td><td>${s.level}</td><td class="num">${s.streak ? `${s.streak} día${s.streak === 1 ? '' : 's'}` : '<span class="faint">—</span>'}</td><td>${ds == null ? '<span class="faint">Nunca</span>' : ds === 0 ? 'Hoy' : ds === 1 ? 'Ayer' : `Hace ${ds} días`}</td><td class="num">${s.week_accuracy == null ? '<span class="faint">—</span>' : s.week_accuracy + ' %'}</td><td class="num">${s.homework_done} / ${s.homework_done + s.homework_open}</td>${showCt ? `<td>${contractCell(s)}</td>` : ''}<td>${st}</td></tr>`;
   }).join('');
   return `<section class="view" aria-labelledby="h-alumnos">
   ${topBar('h-alumnos', 'Alumnos', `${ov.length} alumno${ov.length === 1 ? '' : 's'} · su avance y el paso de nivel`)}
   <div class="bento staff">
-    ${ov.length ? `<article class="tile"><div class="tile-head"><h2>Avance</h2><span class="pill ghost">Esta semana</span></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Aciertos</th><th>Tareas</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
+    ${ov.length ? `<article class="tile"><div class="tile-head"><h2>Avance</h2><span class="pill ghost">Esta semana</span></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Aciertos</th><th>Tareas</th>${showCt ? '<th>Contrato</th>' : ''}<th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
     ${levelTile()}` : noStudentsTile()}
   </div></section>`;
 }
@@ -894,7 +903,7 @@ function viewCuentas() {
 function viewAjustes() {
   return `<section class="view" aria-labelledby="h-ajustes">
   ${topBar('h-ajustes', 'Ajustes', 'Asistencia, recordatorios y correos automáticos')}
-  <div class="bento staff">${rulesTile()}
+  <div class="bento staff">${rulesTile()}${contractTile()}
     <article class="tile c-6"><div class="tile-head"><h2>Correos automáticos</h2></div>
       <div class="err-row"><span><b>Informe del lunes</b><br><span class="muted" style="font-size:13px">Cada lunes a las 8:00 (hora de Lima), en francés, a las cuentas de administración: clases dadas, grabaciones, retrasos, cambios y alumnos sin actividad.</span></span></div>
       <div class="err-row"><span><b>Recordatorio de clase</b><br><span class="muted" style="font-size:13px">A cada alumno, antes de cada clase, en su hora local. Se activa en «Reglas de asistencia».</span></span></div>
@@ -1001,6 +1010,9 @@ function viewCurso() {
       ${docs.length ? docs.map(d => `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b></span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button></div>`).join('')
         : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
     ${attendanceTile()}
+    ${A.contract && A.contract.signed ? `<article class="tile c-6"><div class="tile-head"><h2>Tu compromiso</h2><span class="pill ghost">${contractSignedNow() ? 'Firmado' : 'Versión anterior'}</span></div>
+      <p class="muted" style="font-size:14px">Las reglas de asistencia de tu curso, firmadas el ${esc(longDate(A.contract.signed.signed_at))}.</p>
+      <button class="btn btn-light" style="margin-top:14px" type="button" data-ct-mine>${icon('pen')}Ver mi compromiso</button></article>` : ''}
     ${A.recordings ? `<article class="tile c-6"><div class="tile-head"><h2>Tus clases grabadas</h2><span class="pill ghost num">${A.recordings.length}</span></div>
       ${A.recordings.length ? A.recordings.slice(0, 12).map(r => `<div class="err-row"><span>${icon('video')} <b>${esc(cap(sessionLabel(r.at)))}</b>${r.minutes ? `<br><span class="muted" style="font-size:13px">${r.minutes} min</span>` : ''}</span><a class="btn btn-light btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener">Ver</a></div>`).join('')
         : '<p class="muted">Cada clase aparece aquí, grabada, poco después de terminar.</p>'}</article>` : ''}
@@ -1170,6 +1182,17 @@ async function openDoc(path) {
 }
 
 function bindSchedule(id) {
+  $$('[data-ct-view]').forEach(b => b.onclick = () => viewStudentContract(b.dataset.ctView));
+  $$('[data-ct-mine]').forEach(b => b.onclick = () => openContract({ mode: 'view', doc: A.contract.signed }));
+  $$('[data-ct-preview]').forEach(b => b.onclick = () => openContract({ mode: 'preview', who: { name: 'Nombre del alumno', email: 'alumno@correo.com', level: 'A2' } }));
+  const ctf = $('#ctForm');
+  if (ctf) ctf.onsubmit = async e => {
+    e.preventDefault();
+    const n = (sel, d) => Math.max(1, Math.min(20, parseInt($(sel).value, 10) || d));
+    const { error } = await sb.rpc('set_campus_setting', { p_key: 'contract', p_value: { enabled: $('#ctOn').checked, max_absences: n('#ctMax', 3), lates_per_absence: n('#ctLates', 3) } });
+    if (error) return fail(error, 'No se pudo guardar el contrato.');
+    toast('Contrato guardado.'); await refresh(); render();
+  };
   $$('[data-doc]').forEach(b => b.onclick = () => openDoc(b.dataset.doc));
   $$('[data-join]').forEach(b => b.onclick = () => joinClass());
   {
@@ -1603,7 +1626,7 @@ document.addEventListener('input', e => { if (e.target.id === 'campusSearch') ru
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (!$('#lesson').hidden) return lessonKeys(e, tag);
-  if (!$('#ob').hidden) return;
+  if (!$('#ob').hidden || !$('#contract').hidden) return;
   if (e.key === 'Escape') closeMenus();
   if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
@@ -1702,6 +1725,7 @@ async function obNext() {
   if (error) { renderOb(); return fail(error, 'No pudimos guardar tu plan. Inténtalo de nuevo.'); }
   Object.assign(A.profile, patch);
   $('#ob').hidden = true;
+  if (ob.first && contractRequired()) return openContract({ mode: 'sign', first: true });
   if (ob.first) { location.hash = 'inicio'; showApp(); confetti(); toast(`Bienvenido al campus, ${firstName(A.profile.full_name)}.`); }
   else { showApp(); toast('Plan actualizado.'); }
 }
@@ -1716,6 +1740,220 @@ document.addEventListener('keydown', e => {
   if ($('#ob').hidden) return;
   if (e.key === 'Enter' && !(e.target.closest && e.target.closest('[data-ob],a,button,input'))) { e.preventDefault(); obNext(); }
 });
+
+/* ───────────── Contrato del alumno (db/015_contrato.sql) ───────────── */
+// The student signs once the onboarding is done (or at the next login), then again whenever the
+// text changes: the rules come from « Ajustes » and the attendance rules, so a change there is a
+// new version. What is signed is the exact text below, kept with the signature as proof.
+const CT = { mode: 'sign', strokes: [], drawing: false, keys: new Set(), name: '', busy: false, first: false, done: false };
+const SIG_W = 600, SIG_H = 200;
+async function sha256(t) {
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { return null; }
+}
+const contractOn = () => !!(A.contract && A.contract.contract && A.contract.contract.enabled);
+function contractClauses() {
+  const c = (A.contract && A.contract.contract) || {}, a = (A.contract && A.contract.attendance) || {};
+  const open = minutesText(a.open_min ?? 60), absent = a.absent_after_min ?? 10, late = a.late_after_min;
+  const max = c.max_absences ?? 3, lates = c.lates_per_absence ?? 3;
+  const lateWhen = late ? `más de ${late} minutos después del inicio` : 'después de la hora de inicio';
+  return [
+    { title: 'Tu curso', text: 'Pathway Language Solutions («Pathway») te acompaña en tu curso de francés: clases en vivo con tu profesor, en el horario fijo de tu grupo, y práctica en el campus entre clases. Este compromiso fija las reglas de asistencia y de participación que aceptas al empezar.' },
+    { key: true, title: 'Puntualidad y asistencia', text: `Entras a cada clase con el botón «Entrar a la clase» del campus, que se abre ${open} antes del inicio. Cuenta la hora de tu primer clic: si entras ${lateWhen}, es un retraso; si entras más de ${absent} minutos después del inicio, o si no entras, es una ausencia.` },
+    { key: true, title: 'Retrasos', text: lates === 1 ? 'Cada retraso cuenta como una ausencia.' : `Cada ${lates} retrasos cuentan como una ausencia.` },
+    { key: true, title: 'Exclusión sin reembolso', text: `${max === 1 ? 'A la primera ausencia' : `Al llegar a ${max} ausencias`}, Pathway da por terminado tu curso. Las clases ya pagadas no se reembolsan, ni total ni parcialmente.` },
+    { title: 'Clases movidas o canceladas', text: 'Una clase que Pathway mueve o cancela nunca cuenta como ausencia. Si necesitas cambiar una clase, pídeselo a tu profesor con anticipación: el cambio se aplica solo cuando Pathway lo aprueba.' },
+    { title: 'Trabajo personal', text: 'Los ejercicios y los exámenes del campus son personales: no compartes tu cuenta ni tus respuestas. El campus registra si sales de la pestaña durante una unidad, y tu profesor lo ve.' },
+    { title: 'Grabaciones y documentos', text: 'Las clases grabadas y los documentos del programa son para tu uso personal: no se comparten ni se publican.' },
+    { title: 'Firma electrónica', text: 'Firmas este compromiso de forma electrónica. Pathway guarda el texto firmado, tu firma, la fecha y los datos técnicos de la conexión. Puedes volver a leerlo cuando quieras en «Mi curso».' }
+  ];
+}
+const CT_HEAD = 'COMPROMISO DEL ALUMNO · PATHWAY LANGUAGE SOLUTIONS';
+const contractBody = () => [CT_HEAD, ...contractClauses().map((c, i) => `${i + 1}. ${c.title}\n${c.text}`)].join('\n\n');
+const parseBody = body => String(body || '').split('\n\n').slice(1).map(p => { const [t, ...rest] = p.split('\n'); return { title: t.replace(/^\d+\.\s*/, ''), text: rest.join(' ') }; });
+// Signed for the current text?
+const contractSignedNow = () => !!(A.contract && A.contract.signed && A.contract.signed.body === contractBody());
+const contractRequired = () => !!(A.profile && A.profile.role === 'student' && contractOn() && !contractSignedNow());
+async function loadContract() {
+  const r = await sb.rpc('contract_status');
+  A.contract = r.error ? null : (r.data || null); // needs db/015_contrato.sql
+  A.contractHash = A.contract ? await sha256(contractBody()) : null;
+}
+
+const sigPath = () => CT.strokes.map(s => (s.length === 1 ? [s[0], [s[0][0] + 0.5, s[0][1]]] : s).map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('')).join('');
+const sigSvg = d => /^[MLQ0-9 .,-]+$/.test(d || '') ? `<svg class="sig" viewBox="0 0 ${SIG_W} ${SIG_H}" role="img" aria-label="Firma"><path d="${d}"/></svg>` : '';
+const inkOk = () => { const pts = CT.strokes.flat(); if (pts.length < 12) return false; const xs = pts.map(p => p[0]); return Math.max(...xs) - Math.min(...xs) > 60; };
+const longDate = d => fmtDate(new Date(d), { day: 'numeric', month: 'long', year: 'numeric' });
+const shortDate = d => fmtDate(new Date(d), { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
+function stampSvg(at) {
+  const d = new Date(at || Date.now());
+  return `<svg class="stamp" viewBox="0 0 200 200" role="img" aria-label="Sello: compromiso firmado">
+    <defs><path id="stampRing" d="M100,100 m-73,0 a73,73 0 1,1 146,0 a73,73 0 1,1 -146,0"/>
+      <filter id="stampInk" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></defs>
+    <g filter="url(#stampInk)">
+      <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" stroke-width="5"/>
+      <circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="100" cy="100" r="61" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text font-size="12.5" font-weight="700" fill="currentColor"><textPath href="#stampRing" startOffset="4" textLength="438" lengthAdjust="spacing">PATHWAY LANGUAGE SOLUTIONS • COMPROMISO •</textPath></text>
+      <text x="100" y="101" text-anchor="middle" font-size="25" font-weight="800" fill="currentColor" letter-spacing="1.5">FIRMADO</text>
+      <text x="100" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" letter-spacing="1.5">${pad2(d.getDate())} · ${pad2(d.getMonth() + 1)} · ${d.getFullYear()}</text>
+    </g></svg>`;
+}
+
+// mode: 'sign' (the student), 'preview' (staff, nothing saved), 'view' (a signed copy).
+function openContract(opts) {
+  Object.assign(CT, { mode: opts.mode, first: !!opts.first, doc: opts.doc || null, who: opts.who || { name: A.profile.full_name, email: A.session.user.email, level: A.profile.level }, strokes: [], keys: new Set(), name: '', busy: false, done: false });
+  $('#app').hidden = true; $('#tabbar').hidden = true; closeMenus();
+  const el = $('#contract');
+  el.hidden = false; document.body.classList.add('no-scroll');
+  renderContract();
+  el.scrollTop = 0;
+}
+function closeContract() { $('#contract').hidden = true; $('#contract').innerHTML = ''; document.body.classList.remove('no-scroll'); }
+function renderContract() {
+  const sign = CT.mode !== 'view', who = CT.who;
+  const clauses = sign ? contractClauses() : parseBody(CT.doc.body);
+  const keyIdx = clauses.map((c, i) => c.key ? i : -1).filter(i => i >= 0);
+  const renewing = CT.mode === 'sign' && A.contract && A.contract.signed;
+  const label = CT.mode === 'preview' ? 'Vista previa · no se guarda nada' : CT.mode === 'view' ? 'Copia firmada' : renewing ? 'Nueva versión' : 'Último paso';
+  const when = shortDate(sign ? Date.now() : CT.doc.signed_at);
+  $('#contract').innerHTML = `<div class="ct-top"><span class="ob-logo"><span class="logo-mark"><svg class="icon"><use href="#i-route"/></svg></span>Pathway</span>
+      <span class="ct-step">${label}</span>
+      ${CT.mode === 'sign' ? '' : `<button type="button" class="round ct-close" data-ct="close" aria-label="Cerrar">${icon('x')}</button>`}</div>
+    <div class="ct-stage">
+      ${CT.mode === 'sign' ? `<div class="ct-intro"><h1>${renewing ? 'Tu compromiso cambió' : 'Tu compromiso con Pathway'}</h1><p>${renewing ? 'Las reglas de tu curso se actualizaron. Léelas y firma la nueva versión para seguir.' : 'Antes de empezar, lee las reglas de tu curso. Marca las reglas clave y firma con el dedo o el ratón.'}</p></div>` : ''}
+      <div class="paper-wrap" id="ctWrap">
+        <article class="paper" id="ctPaper">
+          <header class="pp-head"><p class="pp-org">Pathway Language Solutions</p><h2 class="pp-title">Compromiso del alumno</h2>
+            <dl class="pp-meta"><div><dt>Alumno</dt><dd>${esc(who.name || '—')}</dd></div><div><dt>Nivel</dt><dd>${esc(who.level || '—')}</dd></div><div><dt>Correo</dt><dd>${esc(who.email || '—')}</dd></div></dl></header>
+          <ol class="pp-clauses">${clauses.map((c, i) => `<li class="${c.key ? 'key' : ''}"><h3><span class="pp-n">${i + 1}</span>${esc(c.title)}</h3><p>${esc(c.text)}</p>
+            ${sign && c.key ? `<label class="pp-ack" for="ctAck${i}"><input type="checkbox" id="ctAck${i}" data-ack="${i}"><span>Lo entiendo y lo acepto</span></label>` : ''}</li>`).join('')}</ol>
+          <section class="pp-sign" aria-label="Firma">
+            <div class="pp-field"><span class="pp-label">Fecha</span><span class="pp-value">${esc(when)}</span></div>
+            <div class="pp-field pp-sigbox"><span class="pp-label">Firma del alumno</span>
+              ${sign ? `<div class="pad" id="ctPadBox"><canvas id="ctPad" aria-label="Firma aquí con el dedo o el ratón"></canvas><span class="pad-x" aria-hidden="true">×</span><span class="pad-hint" id="ctHint">Firma aquí</span><button type="button" class="pad-clear" data-ct="clear">Borrar</button></div>
+                <label class="pp-name" for="ctName"><span class="pp-label">Nombre completo</span><input id="ctName" autocomplete="name" maxlength="120" placeholder="${esc(who.name || 'Tu nombre y apellido')}"></label>`
+                : `<div class="pad done">${sigSvg(CT.doc.signature)}<span class="pad-x" aria-hidden="true">×</span></div><p class="pp-signed">${esc(CT.doc.signed_name)}</p>`}
+            </div>
+            <div class="stamp-slot" id="ctStamp">${CT.mode === 'view' ? stampSvg(CT.doc.signed_at) : ''}</div>
+          </section>
+          ${CT.mode === 'view' ? `<p class="pp-proof">Firmado electrónicamente el ${esc(fmtDate(new Date(CT.doc.signed_at), { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }))}${CT.doc.ip ? ` · IP ${esc(CT.doc.ip)}` : ''}${CT.doc.user_agent ? ` · ${esc(CT.doc.user_agent)}` : ''}</p>` : ''}
+        </article>
+        <span class="fold fold-tr" aria-hidden="true"></span><span class="fold fold-bl" aria-hidden="true"></span>
+      </div>
+    </div>
+    ${sign ? `<div class="ct-foot" id="ctFoot"><p class="ct-need" id="ctNeed" aria-live="polite"></p><button type="button" class="btn btn-coral" id="ctSign" disabled>${icon('pen')}Firmar el compromiso</button></div>` : ''}`;
+  CT.keyIdx = keyIdx;
+  if (sign) { setupPad(); $('#ctName').oninput = e => { CT.name = e.target.value; updateContract(); }; $('#ctSign').onclick = signContract; updateContract(); }
+}
+function updateContract() {
+  const missing = CT.keyIdx.filter(i => !CT.keys.has(i)).length, named = CT.name.trim().length >= 3, inked = inkOk();
+  const need = [];
+  if (missing) need.push(`marcar ${missing === 1 ? '1 regla clave' : `${missing} reglas clave`}`);
+  if (!named) need.push('escribir tu nombre');
+  if (!inked) need.push('firmar');
+  const n = $('#ctNeed'); if (n) n.textContent = need.length ? `Falta ${need.join(', ')}.` : 'Todo listo.';
+  const b = $('#ctSign'); if (b && !CT.busy && !CT.done) b.disabled = need.length > 0;
+  const h = $('#ctHint'); if (h) h.hidden = CT.strokes.length > 0;
+}
+function setupPad() {
+  const cv = $('#ctPad'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const draw = () => {
+    const r = cv.getBoundingClientRect(), sx = r.width / SIG_W, sy = r.height / SIG_H;
+    ctx.clearRect(0, 0, r.width, r.height);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1d2b53'; ctx.lineWidth = 2.6;
+    for (const s of CT.strokes) {
+      ctx.beginPath(); ctx.moveTo(s[0][0] * sx, s[0][1] * sy);
+      if (s.length === 1) ctx.lineTo(s[0][0] * sx + 0.5, s[0][1] * sy);
+      for (let i = 1; i < s.length - 1; i++) { const mx = (s[i][0] + s[i + 1][0]) / 2, my = (s[i][1] + s[i + 1][1]) / 2; ctx.quadraticCurveTo(s[i][0] * sx, s[i][1] * sy, mx * sx, my * sy); }
+      if (s.length > 1) ctx.lineTo(s[s.length - 1][0] * sx, s[s.length - 1][1] * sy);
+      ctx.stroke();
+    }
+  };
+  const fit = () => { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); draw(); };
+  const pt = e => { const r = cv.getBoundingClientRect(); return [Math.max(0, Math.min(SIG_W, (e.clientX - r.left) / r.width * SIG_W)), Math.max(0, Math.min(SIG_H, (e.clientY - r.top) / r.height * SIG_H))]; };
+  cv.onpointerdown = e => { if (CT.done) return; e.preventDefault(); cv.setPointerCapture(e.pointerId); CT.drawing = true; CT.strokes.push([pt(e)]); draw(); updateContract(); };
+  cv.onpointermove = e => {
+    if (!CT.drawing) return;
+    const s = CT.strokes[CT.strokes.length - 1];
+    for (const ev of (e.getCoalescedEvents ? e.getCoalescedEvents() : [e])) s.push(pt(ev));
+    if (s.length > 1500) s.splice(1, s.length - 1500);
+    draw();
+  };
+  cv.onpointerup = cv.onpointercancel = () => { if (CT.drawing) { CT.drawing = false; updateContract(); } };
+  CT.redraw = draw;
+  fit();
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(cv);
+}
+async function signContract() {
+  if (CT.busy || CT.done) return;
+  CT.busy = true;
+  const btn = $('#ctSign'); btn.disabled = true; btn.innerHTML = 'Firmando…';
+  if (CT.mode === 'sign') {
+    const { error } = await sb.rpc('sign_contract', { p_body: contractBody(), p_name: CT.name.trim(), p_signature: sigPath() });
+    if (error) { CT.busy = false; btn.innerHTML = `${icon('pen')}Firmar el compromiso`; updateContract(); return fail(error, 'No se pudo guardar tu firma. Inténtalo de nuevo.'); }
+    await loadContract();
+  }
+  CT.busy = false; CT.done = true;
+  $('#ctPaper').classList.add('signed');
+  $$('#contract [data-ack], #ctName').forEach(x => { x.disabled = true; });
+  const slot = $('#ctStamp'); slot.innerHTML = `<span class="stamp-shadow"></span>${stampSvg()}<span class="stamp-ink"></span>`;
+  slot.classList.add('drop');
+  setTimeout(() => $('#ctWrap')?.classList.add('thud'), reduced ? 0 : 430);
+  setTimeout(() => {
+    const f = $('#ctFoot'); if (!f) return;
+    f.classList.add('done');
+    f.innerHTML = `<p class="ct-ok">${icon('check')}<span><b>${CT.mode === 'preview' ? 'Así lo verá el alumno' : 'Compromiso firmado'}</b>${CT.mode === 'preview' ? 'No se guardó nada.' : 'Puedes releerlo cuando quieras en «Mi curso».'}</span></p>
+      <button type="button" class="btn ct-enter" data-ct="enter">${CT.mode === 'preview' ? 'Volver a Ajustes' : 'Entrar al campus'}${icon('arrow')}</button>`;
+    f.querySelector('[data-ct="enter"]').focus();
+  }, reduced ? 200 : 1350);
+}
+$('#contract').addEventListener('click', e => {
+  const b = e.target.closest('[data-ct],[data-ack]'); if (!b) return;
+  if (b.matches('[data-ack]')) { const i = +b.dataset.ack; if (b.checked) CT.keys.add(i); else CT.keys.delete(i); return updateContract(); }
+  const act = b.dataset.ct;
+  if (act === 'clear') { CT.strokes = []; CT.redraw && CT.redraw(); return updateContract(); }
+  if (act === 'close') { closeContract(); return showApp(); }
+  if (act === 'enter') {
+    const first = CT.first, preview = CT.mode === 'preview';
+    closeContract();
+    if (first) { location.hash = 'inicio'; showApp(); confetti(); toast(`Bienvenido al campus, ${firstName(A.profile.full_name)}.`); }
+    else { showApp(); if (!preview) toast('Compromiso firmado.'); }
+  }
+});
+async function viewStudentContract(id) {
+  const { data, error } = await sb.rpc('staff_contract', { p_student: id });
+  if (error || !data) return fail(error, 'No se pudo abrir el contrato.');
+  const s = A.staff.overview.find(x => x.id === id) || {}, m = (A.staff.members || []).find(x => x.id === id) || {};
+  openContract({ mode: 'view', doc: data, who: { name: s.full_name || m.full_name, email: m.email || '', level: s.level || m.level } });
+}
+// Staff: where each student stands with the current text.
+function contractState(id) {
+  const c = A.staff.contracts && A.staff.contracts[id];
+  if (!c) return 'none';
+  return c.body_sha256 === A.contractHash ? 'ok' : 'old';
+}
+function contractCell(s) {
+  const st = contractState(s.id);
+  if (st === 'ok') return `<button type="button" class="status link" data-ct-view="${s.id}">Firmado</button>`;
+  if (st === 'old') return `<button type="button" class="status warn link" data-ct-view="${s.id}">Versión anterior</button>`;
+  return contractOn() ? '<span class="status warn">Pendiente</span>' : '<span class="faint">—</span>';
+}
+function contractTile() {
+  const st = A.staff.settings, c = (A.contract && A.contract.contract) || (st && st.contract);
+  if (!c || A.profile.role !== 'admin' || A.staff.contracts == null) return '';
+  const ov = A.staff.overview, signed = ov.filter(s => contractState(s.id) === 'ok').length;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Contrato del alumno</h2><span class="pill ghost">${c.enabled ? 'Activo' : 'Desactivado'}</span></div>
+    <form id="ctForm" class="form">
+      <label class="check-row" for="ctOn"><input id="ctOn" type="checkbox" ${c.enabled ? 'checked' : ''}>Pedir la firma al terminar la bienvenida (los alumnos ya inscritos firman en su próxima conexión)</label>
+      <div class="form-2"><label class="field" for="ctMax">Ausencias antes de la exclusión<input id="ctMax" type="number" min="1" max="20" value="${c.max_absences ?? 3}"></label>
+        <label class="field" for="ctLates">Retrasos que valen una ausencia<input id="ctLates" type="number" min="1" max="20" value="${c.lates_per_absence ?? 3}"></label></div>
+      <p class="muted" style="font-size:13px">El contrato también cita las reglas de asistencia (apertura del enlace, retraso, ausencia). Si cambias una regla, cada alumno firma la nueva versión en su próxima conexión.</p>
+      <p style="font-weight:600;font-size:14px">${signed} de ${ov.length} alumno${ov.length === 1 ? '' : 's'} firmaron la versión actual.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-ct-preview>Ver el contrato</button></div>
+    </form></article>`;
+}
 
 /* ───────────── Lesson player ───────────── */
 let L = null;
