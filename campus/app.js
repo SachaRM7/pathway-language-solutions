@@ -37,7 +37,7 @@ const A = {
   session: null, profile: null, teacher: null,
   units: [], unitInfo: {}, runs: [], assignments: [], xp: [], due: 0, badges: [], myBadges: new Set(),
   staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false, members: null, editing: null, confirmDel: null, groups: null, changes: [], groupEditing: null },
-  schedule: null, docs: null,
+  schedule: null, docs: null, recordings: null,
   ed: { unit: null, items: [], open: null, confirm: null, busy: false }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
@@ -174,8 +174,9 @@ async function loadAll() {
 // Group, fixed timetable and level documents (campus/db/008_horarios.sql). Without the
 // migration A.schedule and A.docs stay null and the campus works as before.
 async function loadSchedule() {
-  const [sch, docs] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position')]);
+  const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position'), sb.rpc('my_recordings')]);
   A.schedule = sch.error ? null : (sch.data || null);
+  A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
   A.docs = docs.error ? null : (docs.data || []);
   const next = nextSession();
   if (next) { A.profile.next_class_at = next.at; A.profile.class_link = A.schedule.group.zoom_link; }
@@ -213,8 +214,9 @@ async function loadStaff() {
   A.staff.invitations = inv.data || [];
   A.staff.teachers = tea.data || [];
   // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
-  const [grp, chg] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes')]);
+  const [grp, chg, log] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log')]);
   A.staff.groups = grp.error ? null : (grp.data || []);
+  A.staff.log = log.error ? null : (log.data || { groups: {}, unmatched: [] }); // needs db/009_zoom.sql
   A.staff.changes = chg.error ? [] : (chg.data || []);
   if (A.profile.role === 'admin') {
     const mem = await sb.rpc('admin_members');
@@ -765,6 +767,9 @@ function viewCurso() {
     <article class="tile c-6"><div class="tile-head"><h2>Tu programa</h2><span class="pill ghost">${esc(A.profile.level)}</span></div>
       ${docs.length ? docs.map(d => `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b></span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button></div>`).join('')
         : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
+    ${A.recordings ? `<article class="tile c-6"><div class="tile-head"><h2>Tus clases grabadas</h2><span class="pill ghost num">${A.recordings.length}</span></div>
+      ${A.recordings.length ? A.recordings.slice(0, 12).map(r => `<div class="err-row"><span>${icon('video')} <b>${esc(cap(sessionLabel(r.at)))}</b>${r.minutes ? `<br><span class="muted" style="font-size:13px">${r.minutes} min</span>` : ''}</span><a class="btn btn-light btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener">Ver</a></div>`).join('')
+        : '<p class="muted">Cada clase aparece aquí, grabada, poco después de terminar.</p>'}</article>` : ''}
   </div></section>`;
 }
 
@@ -782,7 +787,8 @@ function viewHorarios() {
   const groupTile = g => ed === g.id ? groupForm(g) : `<article class="tile c-6"><div class="tile-head"><h2>${esc(g.name)}</h2><span class="pill ghost">${esc(g.level)}</span></div>
       <p style="font-weight:600">${esc(slotsText(g))}</p>
       <p class="muted" style="font-size:14px;margin-top:6px">${esc(g.teacher || 'Sin profesor')} · ${g.members.length ? g.members.map(m => esc(m.full_name)).join(', ') : 'sin alumnos'}</p>
-      <div class="chips" style="margin-top:12px"><span class="pill ghost num">${g.month.planned} clases este mes</span><span class="pill ghost num">${g.month.done} dadas</span>${g.month.moved ? `<span class="pill ghost num">${g.month.moved} movida${g.month.moved > 1 ? 's' : ''}</span>` : ''}${g.month.cancelled ? `<span class="pill ghost num">${g.month.cancelled} cancelada${g.month.cancelled > 1 ? 's' : ''}</span>` : ''}</div>
+      <div class="chips" style="margin-top:12px"><span class="pill ghost num">${g.month.planned} clases este mes</span>${A.staff.log ? '' : `<span class="pill ghost num">${g.month.done} pasadas</span>`}${g.month.moved ? `<span class="pill ghost num">${g.month.moved} movida${g.month.moved > 1 ? 's' : ''}</span>` : ''}${g.month.cancelled ? `<span class="pill ghost num">${g.month.cancelled} cancelada${g.month.cancelled > 1 ? 's' : ''}</span>` : ''}</div>
+      ${logBlock(g)}
       <div style="margin-top:10px">${g.upcoming.filter(x => new Date(x.at) > Date.now()).slice(0, 3).map(sessionRow).join('') || '<p class="muted">Sin clases próximas.</p>'}</div>
       ${g.zoom_link ? '' : '<p class="form-error" style="margin-top:8px">Falta el enlace de Zoom.</p>'}
       ${admin ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-group-edit="${g.id}">Editar</button>` : ''}</article>`;
@@ -793,6 +799,7 @@ function viewHorarios() {
   <div class="bento">
     ${changes.length || admin ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
       ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('') || '<p class="muted">Ningún cambio por validar.</p>'}</article>` : ''}
+    ${unmatchedTile()}
     ${noGroup.length ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}</article>` : ''}
     ${askable.length ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Mover o cancelar una clase' : 'Solicitar un cambio'}</h2></div>
@@ -808,6 +815,31 @@ function viewHorarios() {
     ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Nuevo grupo</h2><p class="muted">Un grupo por horario: una clase privada es un grupo de un alumno.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Crear un grupo</button></article>`) : ''}
     ${!groups.length && !admin ? '<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">Pathway crea los grupos con su horario fijo; aparecerán aquí.</p></article>' : ''}
   </div></section>`;
+}
+
+// Zoom follow-up (db/009_zoom.sql): real start time and recording of the last classes.
+function logBlock(g) {
+  const log = A.staff.log && A.staff.log.groups[g.id];
+  if (!log) return '';
+  const month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
+  const inMonth = log.filter(x => x.status !== 'cancelled' && new Date(x.at) >= month);
+  const held = inMonth.filter(x => x.started_at).length, rec = inMonth.filter(x => x.recorded).length, late = inMonth.filter(x => x.late_min > 10).length;
+  const row = x => {
+    if (x.status === 'cancelled') return '';
+    const st = !x.started_at ? '<span class="status bad">Sin conexión Zoom</span>' : x.recorded ? '<span class="status">Grabada</span>' : '<span class="status warn">Sin grabación</span>';
+    const when = x.started_at ? `Empezó a las ${fmtDate(new Date(x.started_at), { hour: '2-digit', minute: '2-digit' })}${x.late_min > 5 ? ` · ${x.late_min} min tarde` : ''}` : 'Zoom no registró esta clase';
+    return `<div class="err-row"><span><b>${esc(cap(sessionLabel(x.at)))}</b><br><span class="muted" style="font-size:13px">${esc(when)}</span></span>${st}${x.recording_url ? ` <a class="btn btn-light btn-sm" href="${esc(x.recording_url)}" target="_blank" rel="noopener">Ver</a>` : ''}</div>`;
+  };
+  return `<div class="chips" style="margin-top:8px"><span class="pill ghost num">${held} con Zoom</span><span class="pill ghost num">${rec} grabada${rec === 1 ? '' : 's'}</span>${late ? `<span class="pill ghost num">${late} con retraso</span>` : ''}</div>
+    <p class="label" style="margin-top:14px">Últimas clases</p>${log.slice(0, 3).map(row).join('') || '<p class="muted" style="font-size:14px">Todavía no hay clases pasadas.</p>'}
+    <p class="label" style="margin-top:14px">Próximas</p>`;
+}
+function unmatchedTile() {
+  const list = A.staff.log && A.staff.log.unmatched;
+  if (!list || !list.length) return '';
+  return `<article class="tile c-6"><div class="tile-head"><h2>Reuniones Zoom sin grupo</h2><span class="pill ghost num">${list.length}</span></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 10px">Su enlace no corresponde a ningún grupo: pega el enlace de Zoom correcto en el grupo para que cuenten.</p>
+    ${list.map(m => `<div class="err-row"><span><b>${esc(m.topic || 'Reunión ' + m.meeting_id)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(m.started_at)))} · ${esc(m.host_email || '—')} · n.º ${esc(m.meeting_id)}</span></span>${m.recorded ? '<span class="status">Grabada</span>' : ''}</div>`).join('')}</article>`;
 }
 
 function groupForm(g) {

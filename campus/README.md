@@ -18,6 +18,8 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/006_progression.sql` | Progression : unité suivante ouverte à partir de 75 % de bonnes réponses, nouvel essai 24 h après un échec, reprise d'une unité commencée |
 | `db/007_tutorial.sql` | Tutoriels : le compte garde quels tutoriels (élève, professeur) ont été vus |
 | `db/008_horarios.sql` | Groupes et horaires fixes : « Prochain cours » calculé depuis l'horaire, changements demandés par le professeur et validés par l'admin, documents du programme par niveau (« Mi curso ») |
+| `db/009_zoom.sql` | Suivi Zoom : heure réelle de chaque cours, enregistrements rangés automatiquement (« Tus clases grabadas » pour l'élève, « Últimas clases » pour l'équipe), réunions Zoom sans groupe |
+| `../supabase/functions/zoom-webhook/` | Edge Function qui reçoit les avis du compte Zoom Pathway (signature Zoom vérifiée) |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
