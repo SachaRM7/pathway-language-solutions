@@ -38,24 +38,26 @@
 
   const TEACHER = [
     { center: true, title: 'Tu espacio de profesor', text: 'En un minuto te mostramos cómo seguir a tus alumnos entre clases y preparar el contenido. Puedes volver a ver este recorrido con el botón «?» de la parte de arriba.', next: 'Empezar', skip: 'Ahora no' },
-    { view: 'grupo', target: () => { const k = [...document.querySelectorAll('#main .tile.kpi')].filter(visible); return k.length ? k : null; }, title: 'Tu grupo de un vistazo', text: 'Alumnos activos esta semana, tareas pendientes y porcentaje de aciertos a la primera.' },
-    { view: 'grupo', target: () => tileWithTitle('Necesitan atención'), title: 'Necesitan atención', text: 'Los alumnos que no practican desde hace días o que fallan mucho. Escríbeles antes de la clase.' },
-    { view: 'grupo', target: () => tileWithTitle('Errores frecuentes'), title: 'Errores frecuentes', text: 'Los errores más repetidos de tu grupo en los ejercicios: un buen punto de partida para la clase.' },
-    { view: 'grupo', target: () => tileWithTitle('Alumnos'), title: 'Tus alumnos', text: 'Nivel, racha, última actividad y tareas de cada alumno.' },
-    { view: 'grupo', target: () => tileWithTitle('Anotar un error de la clase'), title: 'Anotar un error de la clase', text: 'Un error que oyes en clase se convierte en una tarjeta en la zona «Repasar» del alumno.' },
-    { view: 'grupo', target: () => tileWithTitle('Asignar una tarea'), title: 'Asignar una tarea', text: 'Elige una unidad y una fecha: el alumno la ve en su inicio y en sus avisos.' },
-    { view: 'grupo', target: () => tileWithTitle('Programar la próxima clase'), title: 'Programar la próxima clase', text: 'Fecha, hora y enlace: aparecen en el inicio del alumno, con el botón para entrar.' },
-    { view: 'grupo', target: () => tileWithTitle('Invitar a un alumno'), title: 'Invitar a un alumno', text: 'Por correo: su nombre, su nivel y su profesor quedan configurados antes de que entre.' },
-    { view: 'grupo', target: () => tileWithTitle('Invitaciones'), title: 'Invitaciones', text: 'Las invitaciones enviadas: puedes reenviarlas o cancelarlas.' },
-    { view: 'grupo', target: () => tileWithTitle('Miembros'), title: 'Miembros', text: 'Solo administración: cambiar el nombre, el nivel, el profesor o el tipo de cuenta, o borrar una cuenta.' },
-    { view: 'grupo', target: () => navLink('contenido'), title: 'Contenido', text: 'Las unidades y sus ejercicios. Entremos.', pad: 6 },
+    { view: 'panel', target: () => { const k = [...document.querySelectorAll('#main .tile.kpi')].filter(visible); return k.length ? k : null; }, title: 'Tu grupo de un vistazo', text: 'Alumnos activos esta semana, tareas pendientes y porcentaje de aciertos a la primera.' },
+    { view: 'panel', target: () => tileWithTitle('Necesitan atención'), title: 'Necesitan atención', text: 'Los alumnos que no practican desde hace días o que fallan mucho. «Asignar tarea» te lleva directo a la pestaña Tareas.' },
+    { view: 'panel', target: () => tileWithTitle('Por revisar'), title: 'Por revisar', text: 'Lo que espera una decisión: cambios de horario, alumnos sin grupo, exámenes por validar… Cada línea te lleva a la pestaña donde se resuelve.' },
+    { view: 'panel', target: () => navLink('alumnos'), title: 'Alumnos', text: 'El avance de cada alumno. Entremos.', pad: 6 },
+    { view: 'alumnos', target: () => tileWithTitle('Avance'), title: 'El avance de tus alumnos', text: 'Nivel, racha, última actividad, aciertos y tareas de cada alumno.' },
+    { view: 'alumnos', target: () => tileWithTitle('Fin de nivel'), title: 'Fin de nivel', text: 'Valida aquí el examen que el alumno hizo contigo: con el examen final del campus, pasa solo al nivel siguiente.' },
+    { view: 'alumnos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6 },
+    { view: 'tareas', target: () => tileWithTitle('Asignar una tarea'), title: 'Asignar una tarea', text: 'Elige una unidad y una fecha: el alumno la ve en su inicio y en sus avisos.' },
+    { view: 'tareas', target: () => tileWithTitle('Anotar un error de la clase'), title: 'Anotar un error de la clase', text: 'Un error que oyes en clase se convierte en una tarjeta en la zona «Repasar» del alumno.' },
+    { view: 'tareas', target: () => navLink('horarios'), title: 'Horarios', text: 'Tus grupos, sus clases fijas y los cambios de horario.', pad: 6 },
+    { view: 'tareas', target: () => navLink('contenido'), title: 'Contenido', text: 'Las unidades y sus ejercicios, nivel por nivel. Entremos.', pad: 6 },
+    { view: 'contenido', target: () => pick('#main .seg-tabs'), title: 'Un nivel a la vez', text: 'Elige el nivel: ves cuántas unidades están publicadas en cada uno.', pad: 6 },
     { view: 'contenido', target: () => pick('#main .unit-row'), title: 'Tus unidades', text: 'Cada unidad con su estado: «Editar» los ejercicios, «Probar» como un alumno (no se guarda nada) y «Publicar» para que tus alumnos la vean.' },
-    { view: 'contenido', target: () => tileWithTitle('Nueva unidad'), title: 'Nueva unidad', text: 'Crea una unidad y añade ejercicios de los 7 tipos.' },
+    { view: 'contenido', target: () => navLink('cuentas'), title: 'Cuentas', text: 'Para invitar a un alumno por correo y seguir tus invitaciones.', pad: 6 },
+    { view: 'contenido', target: () => navLink('ajustes'), title: 'Ajustes', text: 'Solo administración: las reglas de asistencia, los recordatorios y los correos automáticos.', pad: 6 },
     { view: 'contenido', target: () => pick('#main .switch'), title: 'Vista Alumno', text: 'Pasa a la vista Alumno para usar el Campus como tus alumnos, con tu propia cuenta.', pad: 6 },
     { view: 'contenido', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los alumnos inactivos y los que todavía no completaron la bienvenida.', pad: 6 },
     { view: 'contenido', target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];
-  TEACHER.home = 'grupo';
+  TEACHER.home = 'panel';
 
   let steps = STUDENT, tour = 'student', root, ring, card, shade, step = -1, target = null;
   const R = 18;
