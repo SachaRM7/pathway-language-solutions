@@ -2209,8 +2209,10 @@ $job$);
 
 ```ts
 // Supabase Edge Function « class-reminders » : prévient chaque élève par e-mail N minutes avant
-// son cours (campus/db/013_asistencia.sql). Appelée toutes les 5 minutes par pg_cron ; elle ne
-// fait rien tant que le rappel est désactivé dans « Horarios » → « Reglas de asistencia ».
+// son cours (campus/db/013_asistencia.sql), et l'avertit après chaque absence injustifiée
+// (campus/db/016_avisos.sql). Appelée toutes les 5 minutes par pg_cron ; le rappel ne part que
+// s'il est activé dans « Ajustes » → « Reglas de asistencia », et les avertissements que si les
+// présences et le contrat de l'élève y sont activés.
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor, nom
 // « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT » (pg_cron l'appelle
@@ -2245,6 +2247,8 @@ async function sendMail(key: string, to: string[], subject: string, html: string
 
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
+type Warning = { student_id: string; name: string; email: string; timezone: string | null; teacher: string | null; n: number; max: number;
+  period_start: string; last_at: string; last_kind: 'absent' | 'late'; lates: number; lates_per_absence: number; motives: string[] };
 type Due = { student_id: string; name: string; email: string; timezone: string | null; group: string; teacher: string | null; scheduled_at: string; at: string; status: string };
 
 // Same look as the Campus login email (supabase/templates/magic-link.html): Pathway logo, white
@@ -2319,6 +2323,35 @@ export function renderReminder(d: Due): { subject: string; html: string } {
   };
 }
 
+const ORDINAL = ['primera', 'segunda', 'tercera', 'cuarta', 'quinta', 'sexta', 'séptima', 'octava', 'novena', 'décima'];
+// Sent after each unjustified absence (or each series of lates worth one), until the last one.
+export function renderWarning(w: Warning): { subject: string; html: string } {
+  const tz = w.timezone || 'America/Lima';
+  const date = new Intl.DateTimeFormat('es', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(w.last_at));
+  const first = (w.name || '').split(/\s+/)[0] || '';
+  const left = Math.max(1, w.max - w.n), last = left === 1;
+  const what = w.last_kind === 'late'
+    ? `Llegaste tarde ${w.lates} ${w.lates === 1 ? 'vez' : 'veces'} (la última, el ${esc(date)}): según tu compromiso, ${w.lates_per_absence === 1 ? 'cada retraso cuenta' : `${w.lates_per_absence} retrasos cuentan`} como una ausencia.`
+    : `No asististe a tu última clase, la del ${esc(date)}.`;
+  const count = w.n > 1 ? ` Es la ${ORDINAL[w.n - 1] || `${w.n}.ª`} vez.` : '';
+  const then = last
+    ? '<b>A la próxima ausencia injustificada, quedarás fuera de Pathway.</b>'
+    : `<b>Si faltas a ${left} clases más sin justificación, quedarás fuera de Pathway.</b>`;
+  const motives = (w.motives || []).filter(Boolean);
+  const body = h1(last ? `${first ? `${esc(first)}, este` : 'Este'} es tu último aviso` : `${first ? `${esc(first)}, faltaste` : 'Faltaste'} a tu clase`)
+    + para('Atención: te comprometiste a asistir a todas nuestras clases.')
+    + panel(`<p style="margin:0;font:400 16px/1.6 ${FONT};color:#141414;">${what}${count}</p><p style="margin:10px 0 0;font:400 16px/1.6 ${FONT};color:#9a3412;">${then}</p>`, '#fff1ea')
+    + (last && motives.length ? `<p style="margin:0 0 8px;font:700 15px/1.5 ${FONT};color:#141414;">Te recordamos que los únicos motivos de ausencia justificada son:</p>
+        <ul style="margin:0 0 20px;padding-left:20px;font:400 15px/1.7 ${FONT};color:#5f5f66;">${motives.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : '')
+    + para(`Si tu ausencia tenía ${last && motives.length ? 'uno de estos motivos' : 'un motivo justificado'}, envía el comprobante a ${w.teacher ? esc(w.teacher) : 'tu profesor'}: la justificará en el campus y dejará de contar.`, 'font-size:15px;')
+    + button(CAMPUS, 'Ver mi asistencia')
+    + small('Estas reglas son las del compromiso que firmaste al empezar. Puedes releerlo en «Mi curso».');
+  return {
+    subject: last ? 'Último aviso: a la próxima ausencia, quedas fuera de Pathway' : `Aviso de ausencia · ${date}`,
+    html: layout({ lang: 'es', title: last ? 'Último aviso' : 'Aviso de ausencia', preview: last ? 'A la próxima ausencia injustificada, quedarás fuera de Pathway.' : `No asististe a tu clase del ${date}.`, tag: 'CAMPUS PATHWAY', hero: last ? 'Último aviso' : 'Aviso', body })
+  };
+}
+
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
@@ -2334,7 +2367,13 @@ Deno.serve(async req => {
     const at = new Date(Date.now() + 60 * 60000).toISOString();
     const { subject, html } = renderReminder({ student_id: '', name: caller.name, email: caller.email, timezone: caller.timezone || 'America/Lima', group: 'Grupo de prueba', teacher: 'Pathway', scheduled_at: at, at, status: 'planned' });
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
-    return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
+    const { data: ct } = await supabase.from('campus_settings').select('value').eq('key', 'contract').maybeSingle();
+    const cfg = (ct && ct.value) || {};
+    const max = Number(cfg.max_absences) || 3;
+    const warn = renderWarning({ student_id: '', name: caller.name, email: caller.email, timezone: caller.timezone || 'America/Lima', teacher: 'Pathway', n: Math.max(1, max - 1), max,
+      period_start: at, last_at: new Date(Date.now() - 864e5).toISOString(), last_kind: 'absent', lates: 0, lates_per_absence: Number(cfg.lates_per_absence) || 3, motives: cfg.motives || [] });
+    const sent2 = await sendMail(key, [caller.email], `[Prueba] ${warn.subject}`, warn.html);
+    return sent.ok && sent2.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.ok ? sent2.status : sent.status });
   }
 
   // Automatic run: only pg_cron, which sends the shared secret (db/014_cron_secreto.sql).
@@ -2343,9 +2382,22 @@ Deno.serve(async req => {
   const { data, error } = await supabase.rpc('due_reminders');
   if (error) return json(500, { error: 'query_failed' });
   const due = (data || []) as Due[];
-  if (!due.length) return json(200, { sent: 0 });
+  // Without db/016_avisos.sql the call fails: no warnings, reminders unchanged.
+  const { data: wd } = await supabase.rpc('due_absence_warnings');
+  const warnings = (wd || []) as Warning[];
+  if (!due.length && !warnings.length) return json(200, { sent: 0 });
   const key = Deno.env.get('RESEND_API_KEY');
   if (!key) return json(500, { error: 'missing_resend_key' });
+
+  let warned = 0;
+  for (const w of warnings) {
+    const { data: claimed } = await supabase.rpc('claim_absence_warning', { p_student: w.student_id, p_period: w.period_start, p_n: w.n });
+    if (claimed !== true) continue;
+    const { subject, html } = renderWarning(w);
+    const res = await sendMail(key, [w.email], subject, html);
+    if (res.ok) warned++;
+    else await supabase.from('absence_warnings').delete().eq('student_id', w.student_id).eq('period_start', w.period_start).eq('n', w.n);
+  }
 
   let sent = 0;
   for (const d of due) {
@@ -2356,7 +2408,7 @@ Deno.serve(async req => {
     if (res.ok) sent++;
     else await supabase.from('class_reminders_sent').delete().eq('student_id', d.student_id).eq('scheduled_at', d.scheduled_at);
   }
-  return json(200, { sent, due: due.length });
+  return json(200, { sent, due: due.length, warned });
 });
 ```
 
@@ -2503,6 +2555,239 @@ $$;
 
 revoke execute on function public.contract_status(), public.sign_contract(text, text, text), public.staff_contracts(), public.staff_contract(uuid) from public, anon;
 grant execute on function public.contract_status(), public.sign_contract(text, text, text), public.staff_contracts(), public.staff_contract(uuid) to authenticated;
+
+commit;
+```
+
+## 016 · Avertissements d'absence et absences justifiées
+
+À exécuter après le 015, puis **redéployer `class-reminders`** avec son dernier code (section 013, mise à jour). Les avertissements ne partent que si les présences (« Reglas de asistencia ») et le contrat (« Contrato del alumno ») sont activés dans « Ajustes ».
+
+- Après chaque absence injustifiée (ou chaque série de retards qui vaut une absence), l'élève reçoit un e-mail : combien d'absences il lui reste avant l'exclusion. Le dernier avertissement rappelle les seuls motifs d'absence justifiée.
+- Le décompte commence à la première signature du contrat et repart à zéro à chaque passage de niveau.
+- Le prof ou l'admin justifie une absence dans « Alumnos » → « Ausencias » : elle ne compte plus.
+- À la dernière absence, aucun e-mail ne part à l'élève : « Inicio » → « Por revisar » le signale et l'admin décide.
+
+```sql
+-- Campus Pathway · 016 · avertissements d'absence et absences justifiées
+-- À exécuter après 015 (SQL Editor → New query → Run), puis redéployer « class-reminders » avec
+-- son dernier code. Rien ne part tant que les présences (« Reglas de asistencia ») et le contrat
+-- (« Contrato del alumno ») ne sont pas activés dans « Ajustes ».
+--
+-- • Après chaque absence injustifiée (ou chaque série de retards qui vaut une absence), l'élève
+--   reçoit un e-mail d'avertissement : combien d'absences il lui reste avant l'exclusion, et au
+--   dernier avertissement, les seuls motifs d'absence justifiée.
+-- • Le décompte commence à la première signature du contrat, et repart à zéro à chaque passage
+--   de niveau. Une séance antérieure à l'arrivée de l'élève dans son groupe ne compte pas.
+-- • Le prof ou l'admin peut justifier une absence (« Alumnos » → « Ausencias ») : elle ne compte
+--   plus. À la dernière absence, aucun e-mail ne part : l'admin décide de l'exclusion.
+
+begin;
+
+-- 1. Depuis quand l'élève est dans son groupe.
+alter table public.profiles add column if not exists group_joined_at timestamptz;
+create or replace function public._group_joined() returns trigger
+language plpgsql as $$
+begin
+  if new.group_id is distinct from old.group_id then
+    new.group_joined_at := case when new.group_id is null then null else now() end;
+  end if;
+  return new;
+end $$;
+drop trigger if exists profiles_group_joined on public.profiles;
+create trigger profiles_group_joined before update of group_id on public.profiles
+  for each row execute function public._group_joined();
+
+-- Les présences d'un groupe ne comptent qu'à partir de l'arrivée de l'élève (remplace celle du 013).
+create or replace function public._group_attendance(p_group uuid, p_from timestamptz, p_to timestamptz)
+returns table (student_id uuid, full_name text, at timestamptz, clicked_at timestamptz, status text)
+language sql stable security definer set search_path = public as $$
+  select p.id, p.full_name, s.actual_at, j.clicked_at, public._attendance_status(s.actual_at, j.clicked_at)
+  from public._group_sessions(p_group, greatest(p_from, coalesce((public._setting('attendance')->>'since')::timestamptz, 'infinity')), p_to) s
+  join profiles p on p.group_id = p_group and p.role = 'student'
+  left join class_joins j on j.student_id = p.id and j.group_id = p_group and j.scheduled_at = s.scheduled_at
+  where s.status <> 'cancelled' and s.actual_at + make_interval(mins => coalesce((public._setting('attendance')->>'absent_after_min')::int, 10)) < now()
+    and s.actual_at >= coalesce(p.group_joined_at, '-infinity'::timestamptz)
+$$;
+
+-- 2. Les motifs d'absence justifiée, cités dans le contrat et dans le dernier avertissement.
+update public.campus_settings
+set value = jsonb_build_object('motives', jsonb_build_array(
+    'Enfermedad o accidente, con certificado médico',
+    'Fallecimiento de un familiar cercano',
+    'Cita oficial de inmigración o trámite administrativo, con comprobante')) || value
+where key = 'contract' and not value ? 'motives';
+
+-- 3. Absences justifiées par le prof ou l'admin.
+create table public.absence_excuses (
+  student_id uuid not null references public.profiles (id) on delete cascade,
+  group_id uuid not null references public.class_groups (id) on delete cascade,
+  scheduled_at timestamptz not null,
+  reason text not null,
+  note text,
+  excused_by uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default now(),
+  primary key (student_id, group_id, scheduled_at)
+);
+alter table public.absence_excuses enable row level security;
+revoke all on public.absence_excuses from anon, authenticated;
+grant select on public.absence_excuses to authenticated;
+create policy "absence_excuses: les siennes ou celles de ses élèves" on public.absence_excuses for select to authenticated
+  using (student_id = auth.uid() or public.teaches(student_id));
+
+-- 4. Début du décompte : première signature du contrat, arrivée dans le groupe, dernier passage
+--    de niveau et activation des présences, la plus récente. Null tant que rien ne compte.
+create function public._absence_period(p_student uuid) returns timestamptz
+language sql stable security definer set search_path = public as $$
+  select case when coalesce((public._setting('attendance')->>'enabled')::boolean, false)
+               and (public._setting('attendance')->>'since') is not null
+               and exists (select 1 from contract_signatures c where c.student_id = p.id)
+    then greatest((public._setting('attendance')->>'since')::timestamptz,
+                  (select min(signed_at) from contract_signatures c where c.student_id = p.id),
+                  coalesce(p.group_joined_at, '-infinity'::timestamptz),
+                  coalesce((select max(promoted_at) from level_validations v where v.student_id = p.id), '-infinity'::timestamptz)) end
+  from profiles p where p.id = p_student and p.group_id is not null
+$$;
+
+-- Les séances terminées de la période où l'élève n'était pas à l'heure (retard ou absence).
+create function public._absence_record(p_student uuid)
+returns table (group_id uuid, scheduled_at timestamptz, at timestamptz, clicked_at timestamptz, status text, reason text)
+language plpgsql stable security definer set search_path = public as $$
+declare t timestamptz := public._absence_period(p_student); g uuid;
+begin
+  if t is null or not isfinite(t) then return; end if;
+  select p.group_id into g from profiles p where p.id = p_student;
+  return query
+    select g, s.scheduled_at, s.actual_at, j.clicked_at, x.st, e.reason
+    from public._group_sessions(g, t, now()) s
+    left join class_joins j on j.student_id = p_student and j.group_id = g and j.scheduled_at = s.scheduled_at
+    left join absence_excuses e on e.student_id = p_student and e.group_id = g and e.scheduled_at = s.scheduled_at
+    cross join lateral (select public._attendance_status(s.actual_at, j.clicked_at) st) x
+    where s.status <> 'cancelled' and s.actual_at + make_interval(mins => s.duration_min) < now() and x.st <> 'present'
+    order by s.actual_at;
+end $$;
+
+-- Le compte : absences injustifiées + une absence par série de N retards injustifiés.
+create function public._absence_totals(p_student uuid) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare c jsonb := public._setting('contract'); per int; mx int; a int; l int; last_at timestamptz; last_kind text;
+begin
+  per := greatest(1, coalesce((c->>'lates_per_absence')::int, 3));
+  mx := greatest(1, coalesce((c->>'max_absences')::int, 3));
+  select count(*) filter (where r.status = 'absent' and r.reason is null),
+         count(*) filter (where r.status = 'late' and r.reason is null)
+    into a, l from public._absence_record(p_student) r;
+  select r.at, r.status into last_at, last_kind from public._absence_record(p_student) r where r.reason is null order by r.at desc limit 1;
+  return jsonb_build_object('absences', a, 'lates', l, 'lates_per_absence', per, 'max', mx,
+    'total', a + l / per, 'period_start', public._absence_period(p_student), 'last_at', last_at, 'last_kind', last_kind);
+end $$;
+
+-- 5. Avertissements envoyés (un par palier et par période).
+create table public.absence_warnings (
+  student_id uuid not null references public.profiles (id) on delete cascade,
+  period_start timestamptz not null,
+  n int not null,
+  sent_at timestamptz not null default now(),
+  primary key (student_id, period_start, n)
+);
+alter table public.absence_warnings enable row level security;
+revoke all on public.absence_warnings from anon, authenticated;
+grant select on public.absence_warnings to authenticated;
+create policy "absence_warnings: les siens ou ceux de ses élèves" on public.absence_warnings for select to authenticated
+  using (student_id = auth.uid() or public.teaches(student_id));
+
+-- Pour la fonction class-reminders (clé service) : les avertissements à envoyer maintenant.
+create function public.due_absence_warnings() returns jsonb
+language plpgsql stable security definer set search_path = public, auth as $$
+declare out jsonb := '[]'::jsonb; r record; t jsonb;
+begin
+  if not coalesce((public._setting('contract')->>'enabled')::boolean, false)
+     or not coalesce((public._setting('attendance')->>'enabled')::boolean, false) then return out; end if;
+  for r in select p.id, p.full_name, p.timezone, u.email, g.name as group_name,
+                  (select full_name from profiles x where x.id = g.teacher_id) as teacher
+           from profiles p join class_groups g on g.id = p.group_id join auth.users u on u.id = p.id
+           where p.role = 'student' and u.email is not null loop
+    t := public._absence_totals(r.id);
+    if (t->>'total')::int >= 1 and (t->>'total')::int < (t->>'max')::int
+       and not exists (select 1 from absence_warnings w where w.student_id = r.id and w.period_start = (t->>'period_start')::timestamptz and w.n = (t->>'total')::int) then
+      out := out || jsonb_build_array(t || jsonb_build_object('student_id', r.id, 'name', r.full_name, 'email', r.email, 'timezone', r.timezone,
+        'group', r.group_name, 'teacher', r.teacher, 'n', (t->>'total')::int, 'motives', coalesce(public._setting('contract')->'motives', '[]'::jsonb)));
+    end if;
+  end loop;
+  return out;
+end $$;
+create function public.claim_absence_warning(p_student uuid, p_period timestamptz, p_n int) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into absence_warnings (student_id, period_start, n) values (p_student, p_period, p_n);
+  return true;
+exception when unique_violation then
+  return false;
+end $$;
+
+-- 6. Équipe : le décompte de chaque élève, ses absences et ses retards de la période.
+create function public.staff_absences() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_staff() then raise exception 'staff only'; end if;
+  return coalesce((select jsonb_agg(public._absence_totals(p.id) || jsonb_build_object('student_id', p.id, 'name', p.full_name,
+      'record', coalesce((select jsonb_agg(jsonb_build_object('group_id', r.group_id, 'scheduled_at', r.scheduled_at, 'at', r.at,
+          'clicked_at', r.clicked_at, 'status', r.status, 'reason', r.reason) order by r.at desc) from public._absence_record(p.id) r), '[]'::jsonb),
+      'warnings', coalesce((select jsonb_agg(jsonb_build_object('n', w.n, 'sent_at', w.sent_at) order by w.n) from absence_warnings w
+          where w.student_id = p.id and w.period_start = public._absence_period(p.id)), '[]'::jsonb)) order by p.full_name)
+    from profiles p where p.role = 'student' and p.group_id is not null and public.teaches(p.id)
+      and public._absence_period(p.id) is not null), '[]'::jsonb);
+end $$;
+create function public.excuse_absence(p_student uuid, p_group uuid, p_scheduled timestamptz, p_reason text, p_note text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.teaches(p_student) then raise exception 'not your student'; end if;
+  if length(trim(coalesce(p_reason, ''))) < 2 then raise exception 'reason required'; end if;
+  insert into absence_excuses (student_id, group_id, scheduled_at, reason, note, excused_by)
+  values (p_student, p_group, p_scheduled, left(trim(p_reason), 200), nullif(left(trim(coalesce(p_note, '')), 500), ''), auth.uid())
+  on conflict (student_id, group_id, scheduled_at) do update set reason = excluded.reason, note = excluded.note, excused_by = excluded.excused_by, created_at = now();
+end $$;
+create function public.unexcuse_absence(p_student uuid, p_group uuid, p_scheduled timestamptz) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.teaches(p_student) then raise exception 'not your student'; end if;
+  delete from absence_excuses where student_id = p_student and group_id = p_group and scheduled_at = p_scheduled;
+end $$;
+
+-- L'élève voit aussi quelles absences ont été justifiées (remplace celle du 013).
+create or replace function public.my_attendance() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object('at', s.actual_at, 'clicked_at', j.clicked_at, 'status', x.st, 'excused', e.reason) order by s.actual_at desc), '[]'::jsonb)
+  from profiles me
+  cross join lateral public._group_sessions(me.group_id,
+    greatest(now() - interval '60 days', coalesce((public._setting('attendance')->>'since')::timestamptz, 'infinity'), coalesce(me.group_joined_at, '-infinity'::timestamptz)), now()) s
+  left join class_joins j on j.student_id = me.id and j.group_id = me.group_id and j.scheduled_at = s.scheduled_at
+  left join absence_excuses e on e.student_id = me.id and e.group_id = me.group_id and e.scheduled_at = s.scheduled_at
+  cross join lateral (select public._attendance_status(s.actual_at, j.clicked_at) st) x
+  where me.id = auth.uid() and me.group_id is not null and s.status <> 'cancelled'
+    and s.actual_at + make_interval(mins => coalesce((public._setting('attendance')->>'absent_after_min')::int, 10)) < now()
+$$;
+
+-- 7. L'élève voit son propre décompte (remplace celle du 015).
+create or replace function public.contract_status() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'contract', public._setting('contract'),
+    'attendance', (select jsonb_build_object('open_min', a->'open_min', 'absent_after_min', a->'absent_after_min', 'late_after_min', a->'late_after_min')
+                   from (select public._setting('attendance') a) x),
+    'signed', (select jsonb_build_object('body', body, 'signed_name', signed_name, 'signature', signature, 'signed_at', signed_at)
+               from contract_signatures where student_id = auth.uid() order by signed_at desc limit 1),
+    'absences', case when public._absence_period(auth.uid()) is not null then public._absence_totals(auth.uid()) end)
+  where auth.uid() is not null
+$$;
+
+revoke execute on function public._group_joined(), public._absence_period(uuid), public._absence_record(uuid), public._absence_totals(uuid),
+  public.due_absence_warnings(), public.claim_absence_warning(uuid, timestamptz, int) from public, anon, authenticated;
+grant execute on function public.due_absence_warnings(), public.claim_absence_warning(uuid, timestamptz, int) to service_role;
+revoke execute on function public.staff_absences(), public.excuse_absence(uuid, uuid, timestamptz, text, text),
+  public.unexcuse_absence(uuid, uuid, timestamptz) from public, anon;
+grant execute on function public.staff_absences(), public.excuse_absence(uuid, uuid, timestamptz, text, text),
+  public.unexcuse_absence(uuid, uuid, timestamptz) to authenticated;
 
 commit;
 ```

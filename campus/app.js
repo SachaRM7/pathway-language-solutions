@@ -319,6 +319,8 @@ async function loadStaff() {
   const [cfg, sat] = await Promise.all([sb.rpc('get_campus_settings'), sb.rpc('staff_attendance')]);
   A.staff.settings = cfg.error ? null : (cfg.data || null); // needs db/013_asistencia.sql
   A.staff.attendance = sat.error ? {} : (sat.data || {});
+  const abs = await sb.rpc('staff_absences');
+  A.staff.absences = abs.error ? null : (abs.data || []); // needs db/016_avisos.sql
   const cts = await sb.rpc('staff_contracts');
   A.staff.contracts = cts.error ? null : (cts.data || {}); // needs db/015_contrato.sql
   const lv = await sb.rpc('staff_level_status');
@@ -807,6 +809,7 @@ function todoItems() {
     const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
     if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
   }
+  for (const s of A.staff.absences || []) if (s.total >= s.max) out.push({ ic: 'users', text: `${s.name} llegó a ${s.total} ausencias: decide si termina su curso`, href: '#alumnos' });
   if (contractOn() && A.staff.contracts) {
     const n = A.staff.overview.filter(s => contractState(s.id) !== 'ok').length;
     if (n) out.push({ ic: 'pen', text: `${n} alumno${n > 1 ? 's' : ''} sin el contrato firmado`, href: '#alumnos' });
@@ -854,8 +857,38 @@ function viewAlumnos() {
   ${topBar('h-alumnos', 'Alumnos', `${ov.length} alumno${ov.length === 1 ? '' : 's'} · su avance y el paso de nivel`)}
   <div class="bento staff">
     ${ov.length ? `<article class="tile"><div class="tile-head"><h2>Avance</h2><span class="pill ghost">Esta semana</span></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Aciertos</th><th>Tareas</th>${showCt ? '<th>Contrato</th>' : ''}<th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
+    ${absencesTile()}
     ${levelTile()}` : noStudentsTile()}
   </div></section>`;
+}
+
+// Absences that count toward the exclusion (db/016_avisos.sql); the teacher can justify one.
+function absencesTile() {
+  const list = A.staff.absences;
+  if (!list || !list.length) return '';
+  const motives = ((A.contract && A.contract.contract && A.contract.contract.motives) || []).filter(Boolean);
+  const keyOf = (s, r) => `${s.student_id}|${r.group_id}|${r.scheduled_at}`;
+  const row = (s, r) => {
+    const k = keyOf(s, r), kind = r.status === 'late' ? '<span class="status warn">Tarde</span>' : '<span class="status bad">Ausente</span>';
+    const when = `<b>${esc(cap(sessionLabel(r.at)))}</b><br><span class="muted" style="font-size:13px">${r.clicked_at ? `Entró a las ${fmtDate(new Date(r.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entró por el campus'}${r.reason ? ` · justificada: ${esc(r.reason)}` : ''}</span>`;
+    if (A.staff.excusing === k) return `<form class="form excuse-form" data-excuse-form="${esc(k)}">
+        <p style="font-size:14px">${when}</p>
+        <label class="field" for="exReason">Motivo<select id="exReason">${motives.map(m => `<option>${esc(m)}</option>`).join('')}<option value="__otro">Otro motivo…</option></select></label>
+        <label class="field" for="exNote">Nota (comprobante, detalle)<input id="exNote" maxlength="300" placeholder="Certificado médico recibido el…"></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Justificar</button><button class="btn btn-light btn-sm" type="button" data-excuse-cancel>Cancelar</button></div></form>`;
+    return `<div class="err-row${r.reason ? ' excused' : ''}"><span>${when}</span><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${r.reason ? '<span class="status">Justificada</span>' : kind}
+      ${r.reason ? `<button class="btn btn-light btn-sm" type="button" data-unexcuse="${esc(k)}">Quitar</button>` : `<button class="btn btn-light btn-sm" type="button" data-excuse="${esc(k)}">Justificar</button>`}</span></div>`;
+  };
+  const block = s => {
+    const danger = s.total >= s.max, near = s.total === s.max - 1;
+    const sent = (s.warnings || []).map(w => `aviso ${w.n} el ${fmtDate(new Date(w.sent_at), { day: 'numeric', month: 'short' })}`).join(', ');
+    return `<div class="abs-student"><div class="abs-head"><b>${esc(s.name)}</b><span class="pill ${danger ? 'bad' : near ? 'warn' : 'ghost'} num">${s.total} / ${s.max} ausencias</span></div>
+      <p class="muted" style="font-size:13px;margin:2px 0 8px">${s.absences} ausencia${s.absences === 1 ? '' : 's'} y ${s.lates} retraso${s.lates === 1 ? '' : 's'} sin justificar (${s.lates_per_absence} retrasos = 1 ausencia) desde el ${fmtDate(new Date(s.period_start), { day: 'numeric', month: 'long' })}${sent ? ` · ${sent}` : ''}${danger ? ' · <b style="color:var(--bad, #c2410c)">límite alcanzado: decide si termina su curso</b>' : ''}</p>
+      ${s.record.length ? s.record.map(r => row(s, r)).join('') : '<p class="muted" style="font-size:14px">Ninguna ausencia ni retraso.</p>'}</div>`;
+  };
+  return `<article class="tile"><div class="tile-head"><h2>Ausencias</h2><span class="pill ghost">Cuentan para la exclusión</span></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada ausencia injustificada envía un aviso al alumno. Justifica una ausencia si el alumno te envió un comprobante: deja de contar. El conteo vuelve a cero cuando pasa de nivel.</p>
+    ${list.map(block).join('')}</article>`;
 }
 
 function viewTareas() {
@@ -906,10 +939,11 @@ function viewAjustes() {
   <div class="bento staff">${rulesTile()}${contractTile()}
     <article class="tile c-6"><div class="tile-head"><h2>Correos automáticos</h2></div>
       <div class="err-row"><span><b>Informe del lunes</b><br><span class="muted" style="font-size:13px">Cada lunes a las 8:00 (hora de Lima), en francés, a las cuentas de administración: clases dadas, grabaciones, retrasos, cambios y alumnos sin actividad.</span></span></div>
+      <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia injustificada: cuántas le quedan antes de la exclusión y, en el último aviso, los motivos de ausencia justificada. Se activa con la asistencia y el contrato.</span></span></div>
       <div class="err-row"><span><b>Recordatorio de clase</b><br><span class="muted" style="font-size:13px">A cada alumno, antes de cada clase, en su hora local. Se activa en «Reglas de asistencia».</span></span></div>
       <div class="err-row"><span><b>Acceso al campus</b><br><span class="muted" style="font-size:13px">El código de 6 cifras para entrar, enviado por Supabase.</span></span></div>
       <button class="btn btn-light" style="margin-top:14px" type="button" data-mail-test>Enviarme los correos de prueba</button>
-      <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes y un recordatorio de clase de ejemplo.</p></article>
+      <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes, un recordatorio de clase y un último aviso de ausencia de ejemplo.</p></article>
   </div></section>`;
 }
 
@@ -1098,10 +1132,12 @@ const minutesText = m => (m % 60 === 0 ? `${m / 60} h` : `${m} min`);
 const ATT = { present: ['Presente', ''], late: ['Tarde', 'warn'], absent: ['Ausente', 'bad'] };
 function attendanceTile() {
   if (!attendanceOn() || !A.attendance) return '';
-  const n = k => A.attendance.filter(a => a.status === k).length;
+  const n = k => A.attendance.filter(a => a.status === k && !a.excused).length, nEx = A.attendance.filter(a => a.excused && a.status !== 'present').length;
+  const ab = A.contract && A.contract.absences;
   return `<article class="tile c-6"><div class="tile-head"><h2>Tu asistencia</h2><span class="pill ghost">60 días</span></div>
-    <div class="chips"><span class="pill ghost num">${n('present')} presente${n('present') === 1 ? '' : 's'}</span>${n('late') ? `<span class="pill ghost num">${n('late')} tarde</span>` : ''}<span class="pill ghost num">${n('absent')} ausencia${n('absent') === 1 ? '' : 's'}</span></div>
-    ${A.attendance.slice(0, 8).map(a => `<div class="err-row"><span><b>${esc(cap(sessionLabel(a.at)))}</b><br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}</span></span><span class="status ${ATT[a.status][1]}">${ATT[a.status][0]}</span></div>`).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
+    ${ab ? `<p class="abs-mine ${ab.total >= ab.max - 1 ? 'near' : ''}"><b class="num">${ab.total} / ${ab.max}</b><span>ausencias injustificadas en este nivel${ab.lates ? ` (incluye ${ab.lates} retraso${ab.lates === 1 ? '' : 's'}: ${ab.lates_per_absence} = 1 ausencia)` : ''}. Al llegar a ${ab.max}, tu curso termina.</span></p>` : ''}
+    <div class="chips"><span class="pill ghost num">${n('present')} presente${n('present') === 1 ? '' : 's'}</span>${n('late') ? `<span class="pill ghost num">${n('late')} tarde</span>` : ''}<span class="pill ghost num">${n('absent')} ausencia${n('absent') === 1 ? '' : 's'}</span>${nEx ? `<span class="pill ghost num">${nEx} justificada${nEx === 1 ? '' : 's'}</span>` : ''}</div>
+    ${A.attendance.slice(0, 8).map(a => `<div class="err-row"><span><b>${esc(cap(sessionLabel(a.at)))}</b><br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}${a.excused && a.status !== 'present' ? ` · ${esc(a.excused)}` : ''}</span></span>${a.excused && a.status !== 'present' ? '<span class="status">Justificada</span>' : `<span class="status ${ATT[a.status][1]}">${ATT[a.status][0]}</span>`}</div>`).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
 }
 function groupAttendance(g) {
   const cfg = A.staff.settings && A.staff.settings.attendance;
@@ -1182,6 +1218,30 @@ async function openDoc(path) {
 }
 
 function bindSchedule(id) {
+  $$('[data-excuse]').forEach(b => b.onclick = () => { A.staff.excusing = b.dataset.excuse; render(); $('#exReason')?.focus(); });
+  $$('[data-excuse-cancel]').forEach(b => b.onclick = () => { A.staff.excusing = null; render(); });
+  $$('[data-unexcuse]').forEach(b => b.onclick = async () => {
+    const [student, group, at] = b.dataset.unexcuse.split('|');
+    b.disabled = true;
+    const { error } = await sb.rpc('unexcuse_absence', { p_student: student, p_group: group, p_scheduled: at });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('La ausencia vuelve a contar.'); await refresh(); render();
+  });
+  const exf = $('[data-excuse-form]');
+  if (exf) {
+    const sel = $('#exReason'), note = $('#exNote');
+    sel.onchange = () => { note.placeholder = sel.value === '__otro' ? 'Escribe el motivo' : 'Certificado médico recibido el…'; note.required = sel.value === '__otro'; };
+    exf.onsubmit = async e => {
+      e.preventDefault();
+      const [student, group, at] = exf.dataset.excuseForm.split('|');
+      const other = sel.value === '__otro', reason = other ? note.value.trim() : sel.value;
+      if (reason.length < 2) return toast('Escribe el motivo.');
+      const btn = exf.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Guardando…';
+      const { error } = await sb.rpc('excuse_absence', { p_student: student, p_group: group, p_scheduled: at, p_reason: reason, p_note: other ? '' : note.value.trim() });
+      if (error) { btn.disabled = false; btn.textContent = 'Justificar'; return fail(error, 'No se pudo justificar la ausencia.'); }
+      A.staff.excusing = null; toast('Ausencia justificada: ya no cuenta.'); await refresh(); render();
+    };
+  }
   $$('[data-ct-view]').forEach(b => b.onclick = () => viewStudentContract(b.dataset.ctView));
   $$('[data-ct-mine]').forEach(b => b.onclick = () => openContract({ mode: 'view', doc: A.contract.signed }));
   $$('[data-ct-preview]').forEach(b => b.onclick = () => openContract({ mode: 'preview', who: { name: 'Nombre del alumno', email: 'alumno@correo.com', level: 'A2' } }));
@@ -1189,7 +1249,7 @@ function bindSchedule(id) {
   if (ctf) ctf.onsubmit = async e => {
     e.preventDefault();
     const n = (sel, d) => Math.max(1, Math.min(20, parseInt($(sel).value, 10) || d));
-    const { error } = await sb.rpc('set_campus_setting', { p_key: 'contract', p_value: { enabled: $('#ctOn').checked, max_absences: n('#ctMax', 3), lates_per_absence: n('#ctLates', 3) } });
+    const { error } = await sb.rpc('set_campus_setting', { p_key: 'contract', p_value: { enabled: $('#ctOn').checked, max_absences: n('#ctMax', 3), lates_per_absence: n('#ctLates', 3), ...($('#ctMotives') ? { motives: $('#ctMotives').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 12) } : {}) } });
     if (error) return fail(error, 'No se pudo guardar el contrato.');
     toast('Contrato guardado.'); await refresh(); render();
   };
@@ -1756,12 +1816,14 @@ function contractClauses() {
   const c = (A.contract && A.contract.contract) || {}, a = (A.contract && A.contract.attendance) || {};
   const open = minutesText(a.open_min ?? 60), absent = a.absent_after_min ?? 10, late = a.late_after_min;
   const max = c.max_absences ?? 3, lates = c.lates_per_absence ?? 3;
+  const motives = (Array.isArray(c.motives) ? c.motives : []).map(m => String(m).trim()).filter(Boolean);
   const lateWhen = late ? `más de ${late} minutos después del inicio` : 'después de la hora de inicio';
   return [
     { title: 'Tu curso', text: 'Pathway Language Solutions («Pathway») te acompaña en tu curso de francés: clases en vivo con tu profesor, en el horario fijo de tu grupo, y práctica en el campus entre clases. Este compromiso fija las reglas de asistencia y de participación que aceptas al empezar.' },
     { key: true, title: 'Puntualidad y asistencia', text: `Entras a cada clase con el botón «Entrar a la clase» del campus, que se abre ${open} antes del inicio. Cuenta la hora de tu primer clic: si entras ${lateWhen}, es un retraso; si entras más de ${absent} minutos después del inicio, o si no entras, es una ausencia.` },
     { key: true, title: 'Retrasos', text: lates === 1 ? 'Cada retraso cuenta como una ausencia.' : `Cada ${lates} retrasos cuentan como una ausencia.` },
-    { key: true, title: 'Exclusión sin reembolso', text: `${max === 1 ? 'A la primera ausencia' : `Al llegar a ${max} ausencias`}, Pathway da por terminado tu curso. Las clases ya pagadas no se reembolsan, ni total ni parcialmente.` },
+    { title: 'Ausencias justificadas', text: motives.length ? `Solo estos motivos justifican una ausencia, con un comprobante enviado a tu profesor: ${motives.join('; ')}. Una ausencia justificada no cuenta.` : 'Una ausencia justificada por tu profesor, con un comprobante, no cuenta.' },
+    { key: true, title: 'Exclusión sin reembolso', text: `Después de cada ausencia injustificada recibes un aviso por correo. ${max === 1 ? 'A la primera ausencia injustificada' : `Al llegar a ${max} ausencias injustificadas`} en un mismo nivel, Pathway da por terminado tu curso. Las clases ya pagadas no se reembolsan, ni total ni parcialmente.` },
     { key: true, title: 'Ciclo completo', text: 'Si te inscribiste por un ciclo completo, pagaste una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo. Por eso no es reembolsable, tampoco si tu curso termina por ausencias o retrasos.' },
     { title: 'Clases movidas o canceladas', text: 'Una clase que Pathway mueve o cancela nunca cuenta como ausencia. Si necesitas cambiar una clase, pídeselo a tu profesor con anticipación: el cambio se aplica solo cuando Pathway lo aprueba.' },
     { title: 'Trabajo personal', text: 'Los ejercicios y los exámenes del campus son personales: no compartes tu cuenta ni tus respuestas. El campus registra si sales de la pestaña durante una unidad, y tu profesor lo ve.' },
@@ -1950,6 +2012,7 @@ function contractTile() {
       <label class="check-row" for="ctOn"><input id="ctOn" type="checkbox" ${c.enabled ? 'checked' : ''}>Pedir la firma al terminar la bienvenida (los alumnos ya inscritos firman en su próxima conexión)</label>
       <div class="form-2"><label class="field" for="ctMax">Ausencias antes de la exclusión<input id="ctMax" type="number" min="1" max="20" value="${c.max_absences ?? 3}"></label>
         <label class="field" for="ctLates">Retrasos que valen una ausencia<input id="ctLates" type="number" min="1" max="20" value="${c.lates_per_absence ?? 3}"></label></div>
+      ${'motives' in c ? `<label class="field" for="ctMotives">Motivos de ausencia justificada (uno por línea)<textarea id="ctMotives" rows="4" maxlength="1200">${esc((c.motives || []).join('\n'))}</textarea></label>` : ''}
       <p class="muted" style="font-size:13px">El contrato también cita las reglas de asistencia (apertura del enlace, retraso, ausencia). Si cambias una regla, cada alumno firma la nueva versión en su próxima conexión.</p>
       <p style="font-weight:600;font-size:14px">${signed} de ${ov.length} alumno${ov.length === 1 ? '' : 's'} firmaron la versión actual.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-ct-preview>Ver el contrato</button></div>

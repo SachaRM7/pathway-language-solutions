@@ -77,7 +77,7 @@ where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
 En vue « Profesor », un onglet par usage :
 
 - **Inicio** : les chiffres de la semaine, les élèves à relancer et « Por revisar » (ce qui attend une décision, avec un lien vers l'onglet concerné).
-- **Alumnos** : l'avance de chaque élève et la validation de fin de niveau.
+- **Alumnos** : l'avance de chaque élève, ses absences (à justifier, `db/016_avisos.sql`) et la validation de fin de niveau.
 - **Tareas** : assigner une unité et noter une erreur entendue en cours.
 - **Horarios** : les groupes, leurs cours et les changements d'horaire.
 - **Contenido** : les unités, un niveau et un segment à la fois, et les documents du programme.
