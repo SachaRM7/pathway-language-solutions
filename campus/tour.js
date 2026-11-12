@@ -24,7 +24,7 @@
     { view: 'inicio', target: () => navLink('ruta'), title: 'Mi ruta', text: 'Tu avance unidad por unidad. Entremos.', pad: 6 },
     { view: 'ruta', target: () => (!phone() && pick('#main .units')?.closest('.tile')) || pick('#main .units'), title: 'Tu avance', text: 'Todas las unidades de tu nivel: las superadas (✓), la que sigue y las que se abren después. ¿En qué voy? Aquí.' },
     { view: 'ruta', target: () => navLink('repasar'), title: 'Repasar', text: 'Tu zona de repaso. Entremos.', pad: 6 },
-    { view: 'repasar', target: () => pick('#main .flash-wrap', '#main .view'), title: 'Tus repasos', text: 'Las palabras nuevas, los verbos y tus errores vuelven aquí, en tarjetas, hasta que los domines. Toca la tarjeta para ver la respuesta.' },
+    { view: 'repasar', target: () => pick('#main .flash-wrap', '#main .face'), title: 'Tus repasos', text: 'Las palabras nuevas, los verbos y tus errores vuelven aquí, en tarjetas, hasta que los domines. Toca la tarjeta para ver la respuesta.' },
     { view: 'repasar', target: () => navLink('simulacros'), title: 'Simulacros', text: 'Exámenes de práctica como el TEF y el TCF. Entremos.', pad: 6 },
     { view: 'simulacros', target: () => pick('#main .exam-grid', '#main .view'), title: 'Tus simulacros', text: 'Cada prueba se hace como el día del examen, con el tiempo limitado. Al final ves tu nivel NCLC estimado.' },
     { view: 'simulacros', target: () => navLink('logros'), title: 'Logros', text: 'Tu nivel y tus insignias. Entremos.', pad: 6 },
@@ -85,6 +85,13 @@
       if (b.dataset.tt === 'skip') finish();
     });
     addEventListener('resize', place);
+    // Redraws of the screen under the tour (a list that finishes loading…).
+    let queued = false;
+    new MutationObserver(() => {
+      if (queued || step < 0) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; place(); });
+    }).observe(document.getElementById('main'), { childList: true, subtree: true });
     addEventListener('scroll', place, true);
     document.addEventListener('keydown', e => {
       if (!root.classList.contains('is-on')) return;
@@ -99,9 +106,12 @@
     const rs = (Array.isArray(t) ? t : [t]).map(el => el.getBoundingClientRect());
     return { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
   };
+  const attached = t => t && (Array.isArray(t) ? t.every(el => el.isConnected) : t.isConnected);
   function place() {
     if (!root || step < 0) return;
     const s = steps[step], W = innerWidth, H = innerHeight;
+    // The screen may have been redrawn (data loaded): frame the new element.
+    if (!s.center && target && !attached(target)) target = s.target() || target;
     if (s.center || !target) {
       shade.style.clipPath = hole(W, H, W / 2 - R, H / 2 - R, W / 2 + R, H / 2 + R); // closed down behind the card
       ring.style.display = 'none';

@@ -592,8 +592,8 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .tt-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .tt-card.is-center .tt-actions { justify-content: center; flex-direction: column-reverse; }
 .tt-btn { height: 44px; padding: 0 18px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
-.tt-btn.dark { background: var(--ink); color: #fff; }
-.tt-card.is-center .tt-btn.dark { width: 100%; background: var(--coral); }
+.tt-btn.dark { background: var(--ink); color: var(--on-ink); }
+.tt-card.is-center .tt-btn.dark { width: 100%; background: var(--coral); color: #fff; }
 .tt-btn.light { background: var(--soft); color: var(--ink); }
 .tt-link { border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .tt-close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink-2); font-size: 13px; cursor: pointer; }
