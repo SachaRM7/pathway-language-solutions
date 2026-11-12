@@ -3,7 +3,7 @@
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor,
 // nom « weekly-report », coller ce fichier, Deploy, puis désactiver « Verify JWT » dans ses
-// réglages (pg_cron l'appelle sans compte). Elle n'envoie qu'un rapport par semaine, même
+// réglages (pg_cron l'appelle sans compte, avec le secret partagé du SQL 014). Elle n'envoie qu'un rapport par semaine, même
 // appelée plusieurs fois. Secret : RESEND_API_KEY (déjà ajouté pour Resend). SUPABASE_URL et
 // SUPABASE_SERVICE_ROLE_KEY sont fournis par Supabase.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
@@ -97,6 +97,10 @@ Deno.serve(async req => {
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
     return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
   }
+
+  // Automatic run: only pg_cron, which sends the shared secret (db/014_cron_secreto.sql).
+  const { data: allowed } = await supabase.rpc('check_cron_secret', { p_secret: req.headers.get('x-cron-secret') ?? '' });
+  if (allowed !== true) return json(401, { error: 'unauthorized' });
 
   const { data: report, error } = await supabase.rpc('weekly_report_data', { p_from: null });
   if (error || !report) return json(500, { error: 'report_failed' });

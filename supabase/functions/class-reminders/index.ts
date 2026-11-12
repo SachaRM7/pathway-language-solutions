@@ -3,7 +3,8 @@
 // fait rien tant que le rappel est désactivé dans « Horarios » → « Reglas de asistencia ».
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor, nom
-// « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT ».
+// « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT » (pg_cron l'appelle
+// avec le secret partagé du SQL 014 ; tout autre appel automatique est refusé).
 // Secret : RESEND_API_KEY (déjà ajouté). Chaque rappel ne part qu'une fois.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 
@@ -74,6 +75,10 @@ Deno.serve(async req => {
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
     return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
   }
+
+  // Automatic run: only pg_cron, which sends the shared secret (db/014_cron_secreto.sql).
+  const { data: allowed } = await supabase.rpc('check_cron_secret', { p_secret: req.headers.get('x-cron-secret') ?? '' });
+  if (allowed !== true) return json(401, { error: 'unauthorized' });
   const { data, error } = await supabase.rpc('due_reminders');
   if (error) return json(500, { error: 'query_failed' });
   const due = (data || []) as Due[];
