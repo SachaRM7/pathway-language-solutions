@@ -252,6 +252,12 @@ async function loadAll() {
   A.badges = badges.data;
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
+  // Units seen in class (db/018_informe_clase.sql): with the setting on, a unit opens once seen.
+  if (!isStaff()) {
+    const [tu, pg] = await Promise.all([sb.from('taught_units').select('unit_id'), sb.rpc('progression_settings')]);
+    A.taught = tu.error ? null : new Set((tu.data || []).map(x => x.unit_id));
+    A.gate = !pg.error && !!(pg.data && pg.data.taught_gate) && !!A.taught;
+  }
   await loadSchedule();
   await loadWeekly();
   await loadResumable();
@@ -323,6 +329,8 @@ async function loadStaff() {
   A.staff.attendance = sat.error ? {} : (sat.data || {});
   const abs = await sb.rpc('staff_absences');
   A.staff.absences = abs.error ? null : (abs.data || []); // needs db/016_avisos.sql
+  const rep = await sb.rpc('staff_session_reports');
+  A.staff.reports = rep.error ? null : (rep.data || []); // needs db/018_informe_clase.sql
   const cts = await sb.rpc('staff_contracts');
   A.staff.contracts = cts.error ? null : (cts.data || {}); // needs db/015_contrato.sql
   const lv = await sb.rpc('staff_level_status');
@@ -367,8 +375,9 @@ function unitState(u) {
   if (u.is_final) { const lv = finalStatus(u.level); return { unlocked: lv.unitsDone && lv.teacher, passed, retryAt, prev: null, final: lv }; }
   const prev = A.units.filter(x => x.level === u.level && x.number < u.number && playable(x) && !x.is_final).sort((a, b) => b.number - a.number)[0] || null;
   const assigned = A.assignments.some(a => a.unit_id === u.id);
-  const unlocked = !prev || A.runs.some(r => r.unit_id === prev.id && runPassed(r)) || assigned;
-  return { unlocked, passed, retryAt, prev };
+  const taught = !A.gate || passed || assigned || A.taught.has(u.id);
+  const unlocked = taught && (!prev || A.runs.some(r => r.unit_id === prev.id && runPassed(r)) || assigned);
+  return { unlocked, passed, retryAt, prev, taught };
 }
 // End of level (db/012_fin_nivel.sql): teacher's exam, then the Campus final exam.
 function finalStatus(level) {
@@ -548,7 +557,7 @@ function toggleMenu() {
 }
 
 /* ───────────── Student views ───────────── */
-const EXAMS = { tef: 'TEF Canada', tcf: 'TCF Canada', ambos: 'TEF y TCF Canada', nose: 'Examen por definir' };
+const EXAMS = { tef: 'TEF Canada', tcf: 'TCF Canada', ambos: 'TEF y TCF Canada', tefaq: 'TEFAQ (Quebec)', nose: 'Examen por definir' };
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const MONTHS_L = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const fechaLabel = v => { if (!v || v === 'nose') return 'Por definir'; const [y, m] = v.split('-'); return `${MONTHS_L[+m - 1]} de ${y}`; };
@@ -659,6 +668,7 @@ function viewRuta() {
       if (st.passed) { cls = 'done'; inner = icon('check'); label = `Unidad ${n}, superada`; action = `data-start="${u.id}"`; }
       else if (st.retryAt) { cls = 'cur'; inner = icon('timer'); label = `Unidad ${n}, nuevo intento ${retryLabel(st.retryAt)}`; action = `data-toast="Necesitas 75 % para pasar. Nuevo intento: ${esc(retryLabel(st.retryAt))}."`; }
       else if (st.unlocked) { cls = 'cur'; label = `Unidad ${n}, disponible`; action = `data-start="${u.id}"`; }
+      else if (!st.taught) { cls = 'locked'; inner = icon('lock'); label = `Unidad ${n}, se abre cuando la veas en clase`; action = `data-toast="La unidad ${n} se abre cuando la veas en clase con tu profesor."`; }
       else { cls = 'locked'; inner = icon('lock'); label = `Unidad ${n}, bloqueada`; action = `data-toast="Supera antes la unidad ${st.prev ? st.prev.number : n - 1} con al menos 75 %."`; }
     }
     cells.push(`<button class="u ${cls}" ${action} aria-label="${label}">${inner}</button>`);
@@ -737,7 +747,7 @@ async function rate(g) {
 
 function viewSimulacros() {
   const e = A.profile.exam;
-  const choices = e === 'tef' ? ['tef'] : e === 'tcf' ? ['tcf'] : ['tef', 'tcf'];
+  const choices = e === 'tef' || e === 'tefaq' ? ['tef'] : e === 'tcf' ? ['tcf'] : ['tcf', 'tef'];
   if (!choices.includes(A.simExam)) A.simExam = choices[0];
   const dur = A.simExam === 'tcf' ? ['35 min', '60 min', '60 min', '12 min'] : ['40 min', '60 min', '60 min', '15 min'];
   const sk = [['Compréhension orale', 'speaker', 'sky'], ['Compréhension écrite', 'book', 'lilac'], ['Expression écrite', 'pen', 'peach'], ['Expression orale', 'mic', 'butter']];
@@ -813,6 +823,8 @@ function todoItems() {
     const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
     if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
   }
+  const noReport = (A.staff.reports || []).filter(x => !x.report).length;
+  if (noReport) out.push({ ic: 'pen', text: `${noReport} clase${noReport > 1 ? 's' : ''} sin informe`, href: '#panel' });
   const abs = A.staff.absences || [];
   const toReview = abs.reduce((n, s) => n + s.record.filter(r => !r.reason && r.request && r.request.status === 'pending').length + (s.requests || []).filter(q => q.status === 'pending').length, 0);
   if (toReview) out.push({ ic: 'pen', text: `${toReview} justificativo${toReview > 1 ? 's' : ''} por revisar`, href: '#alumnos' });
@@ -844,6 +856,7 @@ function viewPanel() {
   return `<section class="view" aria-labelledby="h-panel">
   ${topBar('h-panel', 'Inicio', 'Lo que pasó entre clases, antes de la próxima')}
   <div class="bento staff">
+    ${reportTile()}
     ${ov.length ? `<article class="tile sky c-4 kpi"><p class="label" style="color:var(--sky-ink)">Activos esta semana</p><p class="big num">${active}<span style="font-size:20px;color:var(--sky-ink)"> / ${ov.length}</span></p></article>
     <article class="tile mint c-4 kpi"><p class="label" style="color:var(--mint-ink)">Tareas pendientes</p><p class="big num">${open}</p></article>
     <article class="tile peach c-4 kpi"><p class="label" style="color:var(--peach-ink)">Aciertos a la primera</p><p class="big num">${avgAcc == null ? '—' : avgAcc + '%'}</p></article>
@@ -856,6 +869,32 @@ function viewPanel() {
     ${ov.length ? `<article class="tile c-6"><div class="tile-head"><h2>Errores frecuentes</h2><span class="pill ghost">30 días</span></div>
       ${A.staff.errors.length ? A.staff.errors.map(e => { const c = reviewCard({ id: e.exercise_id, type: e.type, ...e.payload }); return `<div class="err-row"><span><s>${esc(c.front)}</s> → <b>${esc(c.back)}</b></span><span class="pill ghost num">${e.students} alumno${e.students === 1 ? '' : 's'}</span></div>`; }).join('') : '<p class="muted">Aún no hay errores registrados.</p>'}</article>` : ''}
   </div></section>`;
+}
+
+// End-of-class report (db/018_informe_clase.sql): the units seen today open for the student.
+function reportTile() {
+  const list = A.staff.reports;
+  if (!list || !list.length) return '';
+  const due = list.filter(x => !x.report), done = list.filter(x => x.report).slice(0, 4);
+  const k = x => `${x.group_id}|${x.scheduled_at}`;
+  const who = x => esc(x.students.map(p => p.name).join(', ') || x.group);
+  const unitsOf = ids => (ids || []).map(id => unitById(id)).filter(Boolean).sort((a, b) => a.number - b.number);
+  const form = x => {
+    const sel = new Set(A.staff.reportSel || (x.report ? x.report.unit_ids : []));
+    const units = A.units.filter(u => u.level === x.level && !u.is_final).sort((a, b) => a.number - b.number);
+    const chosen = units.filter(u => sel.has(u.id));
+    return `<form class="form report-form" data-report-form="${esc(k(x))}">
+      <p style="font-size:14px"><b>${who(x)}</b> · ${esc(cap(sessionLabel(x.at)))}</p>
+      <div class="field">Unidades vistas hoy (nivel ${esc(x.level)})<div class="unit-picks" role="group" aria-label="Unidades vistas">${units.map(u => `<button type="button" class="u-pick" data-pick="${u.id}" aria-pressed="${sel.has(u.id)}" title="${esc(u.title)}">${u.number}</button>`).join('')}</div></div>
+      <p class="muted" style="font-size:13px">${chosen.length ? chosen.map(u => `${u.number}. ${esc(u.title)}`).join(' · ') : 'Toca los números de las unidades que viste o repasaste en clase.'}</p>
+      <label class="field" for="rpNote">Nota (opcional)<input id="rpNote" maxlength="500" value="${esc((x.report && x.report.note) || '')}" placeholder="Lo que trabajaron, lo que falta…"></label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar el informe</button><button class="btn btn-light btn-sm" type="button" data-report-cancel>Cancelar</button></div></form>`;
+  };
+  const row = x => A.staff.reportFor === k(x) ? form(x) : `<div class="err-row"><span><b>${who(x)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(x.at)))}${x.report ? ` · unidades ${unitsOf(x.report.unit_ids).map(u => u.number).join(', ') || '—'}` : ''}</span></span>
+      <span class="row-act">${x.report ? '<span class="status">Informado</span>' : '<span class="status warn">Sin informe</span>'}<button class="btn ${x.report ? 'btn-light' : 'btn-dark'} btn-sm" type="button" data-report="${esc(k(x))}">${x.report ? 'Editar' : 'Informar'}</button></span></div>`;
+  return `<article class="tile"><div class="tile-head"><h2>Informe de clase</h2>${due.length ? `<span class="pill warn num">${due.length} por informar</span>` : '<span class="pill ghost">Al día</span>'}</div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Al terminar cada clase, marca las unidades que vieron: ${A.staff.settings && A.staff.settings.progression && A.staff.settings.progression.taught_gate ? 'se abren para el alumno, que debe superar sus ejercicios en orden.' : 'quedan anotadas (la apertura por informe se activa en «Ajustes»).'}</p>
+    ${due.map(row).join('')}${done.length ? `<p class="label" style="margin-top:12px">Últimos informes</p>${done.map(row).join('')}` : ''}</article>`;
 }
 
 function viewAlumnos() {
@@ -977,10 +1016,21 @@ function viewCuentas() {
   <div class="bento staff">${inviteTile()}${membersTile()}</div></section>`;
 }
 
+function progressionTile() {
+  const st = A.staff.settings;
+  if (!st || !st.progression || !isAdmin()) return '';
+  const on = !!st.progression.taught_gate;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Apertura de las unidades</h2><span class="pill ghost">${on ? 'Según el informe' : 'Libre'}</span></div>
+    <form id="pgForm" class="form">
+      <label class="check-row" for="pgGate"><input id="pgGate" type="checkbox" ${on ? 'checked' : ''}>Abrir cada unidad solo cuando el profesor la marca en su informe de clase</label>
+      <p class="muted" style="font-size:13px">El alumno debe además superar las unidades en orden (75 %). Las unidades ya superadas o dadas como tarea siguen abiertas. Sin esta opción, cada unidad se abre al superar la anterior.</p>
+      <button class="btn btn-dark" type="submit">Guardar</button>
+    </form></article>`;
+}
 function viewAjustes() {
   return `<section class="view" aria-labelledby="h-ajustes">
   ${topBar('h-ajustes', 'Ajustes', 'Asistencia, recordatorios y correos automáticos')}
-  <div class="bento staff">${rulesTile()}${contractTile()}
+  <div class="bento staff">${rulesTile()}${contractTile()}${progressionTile()}
     <article class="tile c-6"><div class="tile-head"><h2>Correos automáticos</h2></div>
       <div class="err-row"><span><b>Informe del lunes</b><br><span class="muted" style="font-size:13px">Cada lunes a las 8:00 (hora de Lima), en francés, a las cuentas de administración: clases dadas, grabaciones, retrasos, cambios y alumnos sin actividad.</span></span></div>
       <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia sin justificar: puede justificarla en 72 h, si no la hora se pierde; en la fórmula mensual, dónde está respecto a las ausencias que invalidan el mes. Se activa con la asistencia y el contrato.</span></span></div>
@@ -1315,6 +1365,34 @@ async function openDoc(path) {
 }
 
 function bindSchedule(id) {
+  $$('[data-report]').forEach(b => b.onclick = () => { A.staff.reportFor = b.dataset.report; A.staff.reportSel = null; render(); });
+  $$('[data-report-cancel]').forEach(b => b.onclick = () => { A.staff.reportFor = null; A.staff.reportSel = null; render(); });
+  $$('[data-pick]').forEach(b => b.onclick = () => {
+    const x = (A.staff.reports || []).find(r => `${r.group_id}|${r.scheduled_at}` === A.staff.reportFor);
+    const sel = new Set(A.staff.reportSel || (x && x.report ? x.report.unit_ids : []));
+    if (sel.has(b.dataset.pick)) sel.delete(b.dataset.pick); else sel.add(b.dataset.pick);
+    A.staff.reportSel = [...sel]; const note = $('#rpNote') ? $('#rpNote').value : ''; render(); if ($('#rpNote')) $('#rpNote').value = note;
+    $(`[data-pick="${b.dataset.pick}"]`)?.focus();
+  });
+  const rpf = $('[data-report-form]');
+  if (rpf) rpf.onsubmit = async e => {
+    e.preventDefault();
+    const [group, at] = rpf.dataset.reportForm.split('|');
+    const x = (A.staff.reports || []).find(r => `${r.group_id}|${r.scheduled_at}` === rpf.dataset.reportForm);
+    const units = A.staff.reportSel || (x && x.report ? x.report.unit_ids : []);
+    if (!units.length && !$('#rpNote').value.trim()) return toast('Marca al menos una unidad.');
+    const btn = rpf.querySelector('button[type=submit]'); btn.disabled = true;
+    const { error } = await sb.rpc('save_session_report', { p_group: group, p_scheduled: at, p_units: units, p_note: $('#rpNote').value.trim() });
+    if (error) { btn.disabled = false; return fail(error, 'No se pudo guardar el informe.'); }
+    A.staff.reportFor = null; A.staff.reportSel = null; toast('Informe guardado.'); await refresh(); render();
+  };
+  const pgf = $('#pgForm');
+  if (pgf) pgf.onsubmit = async e => {
+    e.preventDefault();
+    const { error } = await sb.rpc('set_campus_setting', { p_key: 'progression', p_value: { taught_gate: $('#pgGate').checked } });
+    if (error) return fail(error);
+    toast('Guardado.'); await refresh(); render();
+  };
   // Student: tell ahead, justify after.
   $$('[data-notify]').forEach(b => b.onclick = () => { A.notifyFor = b.dataset.notify; render(); $('#ntReason')?.focus(); });
   $$('[data-notify-cancel]').forEach(b => b.onclick = () => { A.notifyFor = null; render(); });
@@ -1877,8 +1955,8 @@ const OB = [
   { id: 'hola', c: 'peach', word: 'Bonjour' },
   { id: 'motivo', c: 'lilac', word: 'Pourquoi ?', st: [['Express Entry', 'NCLC 7'], ['Québec', 'PEQ, PSTQ']], key: 'motive', title: '¿Para qué aprendes francés?', sub: 'Elegimos los temas y los ejemplos según tu proyecto.',
     opts: [{ v: 'rp', t: 'Residencia permanente', d: 'Express Entry y programas provinciales', ic: 'target' }, { v: 'estudios', t: 'Estudiar en Canadá', d: 'Universidad, college o cégep', ic: 'book' }, { v: 'trabajo', t: 'Trabajar en francés', d: 'Entrevistas, correos y reuniones', ic: 'users' }, { v: 'otro', t: 'Otro proyecto', d: 'Familia, viajes o gusto personal', ic: 'sparkle' }] },
-  { id: 'examen', c: 'sky', word: 'TEF · TCF', st: [['TEF Canada', '4 pruebas'], ['TCF Canada', '4 pruebas']], key: 'exam', title: '¿Qué examen vas a presentar?', sub: 'IRCC acepta los dos. Tus simulacros seguirán el formato que elijas, y puedes cambiarlo después.',
-    opts: [{ v: 'ambos', t: 'Los dos', d: 'Lo que hace la mayoría de nuestros alumnos', ic: 'cards', rec: true }, { v: 'tef', t: 'TEF Canada', d: 'Simulacros con el formato del TEF', ic: 'timer' }, { v: 'tcf', t: 'TCF Canada', d: 'Simulacros con el formato del TCF', ic: 'timer' }, { v: 'nose', t: 'Aún no lo sé', d: 'Lo decides con tu profesor', ic: 'users' }] },
+  { id: 'examen', c: 'sky', word: 'TCF · TEF', st: [['TCF Canada', 'recomendado'], ['TEF Canada', '4 pruebas']], key: 'exam', title: '¿Qué examen vas a presentar?', sub: 'IRCC acepta el TCF Canada y el TEF Canada; el TEFAQ sirve para los programas de Quebec. Tus simulacros seguirán el formato que elijas, y puedes cambiarlo después.',
+    opts: [{ v: 'tcf', t: 'TCF Canada', d: 'El que recomendamos · simulacros con el formato del TCF', ic: 'timer', rec: true }, { v: 'tef', t: 'TEF Canada', d: 'Simulacros con el formato del TEF', ic: 'timer' }, { v: 'ambos', t: 'Los dos', d: 'Simulacros de los dos formatos', ic: 'cards' }, { v: 'tefaq', t: 'TEFAQ', d: 'Para Quebec · simulacros con el formato del TEF', ic: 'target' }, { v: 'nose', t: 'Aún no lo sé', d: 'Lo decides con tu profesor', ic: 'users' }] },
   { id: 'fecha', c: 'butter', word: String(new Date().getFullYear() + 1), st: [['Fecha objetivo', 'aproximada']], key: 'target_month', title: '¿Cuándo quieres presentarlo?', sub: 'Una fecha aproximada basta para organizar tu ritmo.' },
   { id: 'nivel', c: 'mint', word: 'A2', st: [['Nivel de partida', 'según tu test']], key: 'level', title: 'Tu nivel de partida', sub: 'El que indicó tu test de nivel o tu profesor. Corrígelo si hace falta.' },
   { id: 'ritmo', c: 'peach', word: '15 min', st: [['Meta diaria', 'tu racha']], key: 'daily_goal', title: '¿Cuánto tiempo al día?', sub: 'Tu meta diaria. Cumplirla mantiene tu racha.',
@@ -1898,6 +1976,7 @@ function obWord(step) {
   if (step.id === 'ritmo' && ob.p.daily_goal) return RITMOS[ob.p.daily_goal].replace(' al día', '');
   if (step.id === 'examen' && ob.p.exam === 'tef') return 'TEF';
   if (step.id === 'examen' && ob.p.exam === 'tcf') return 'TCF';
+  if (step.id === 'examen' && ob.p.exam === 'tefaq') return 'TEFAQ';
   return step.word;
 }
 const obReady = step => !step.key || ob.p[step.key] != null;
@@ -2214,6 +2293,7 @@ async function startLesson(unitId, preview) {
   if (!preview) {
     const st = unitState(unit);
     if (st.retryAt) return toast(`Necesitas 75 % para pasar esta unidad. Nuevo intento: ${retryLabel(st.retryAt)}.`);
+    if (!st.taught) return toast('Esta unidad se abre cuando la veas en clase con tu profesor.');
     if (!st.unlocked) return toast(`Supera antes la unidad ${st.prev ? st.prev.number : ''} con al menos 75 %.`);
   }
   let q = sb.from('exercises').select('id,type,kind,payload,position,status').eq('unit_id', unitId).order('position');
