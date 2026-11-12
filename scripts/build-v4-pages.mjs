@@ -222,7 +222,7 @@ function legalPage(lang, key, source, homeMarkup) {
     }),
     doc(lang, legal.sections, key === 'conditions' ? 'compromiso-nclc7' : ''),
     key === 'privacy'
-      ? cta(lang, { title: ctaTitle, text: ctaText, primary: ['mailto:contacto@pathway-languages.com', mailLabel], secondary: ['https://wa.me/51989887516', ui.whatsapp] })
+      ? cta(lang, { title: ctaTitle, text: ctaText, primary: ['mailto:contact@pathway-languages.com', mailLabel], secondary: ['https://wa.me/51989887516', ui.whatsapp] })
       : cta(lang, { title: ctaTitle, text: ctaText })
   ].join('\n');
   return shell({ lang, key, title: legal.h1, description: legal.lead, main, homeMarkup });
@@ -235,7 +235,7 @@ function newLegalPage(key, homeMarkup, lang = 'es') {
   const main = [
     hero({ lang, trail: [ui.legal, copy.title], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead), `<small>${esc(ui.updated)}</small>`], long: true, aside: card(copy.card) }),
     doc(lang, copy.sections),
-    cta(lang, { title: askTitle, text: askText, primary: ['mailto:contacto@pathway-languages.com', mailLabel] })
+    cta(lang, { title: askTitle, text: askText, primary: ['mailto:contact@pathway-languages.com', mailLabel] })
   ].join('\n');
   return shell({ lang, key, title: copy.title, description: copy.description, main, homeMarkup });
 }

@@ -112,7 +112,7 @@ for (const { raw, url } of links) {
   }
 }
 pass('all home internal routes and anchors exist within V4', links.length);
-assert(evaluate(`document.querySelector('a[href="mailto:contacto@pathway-languages.com"]') !== null`));
+assert(evaluate(`document.querySelector('a[href="mailto:contact@pathway-languages.com"]') !== null`));
 assert(evaluate(`[...document.querySelectorAll('a[href="https://wa.me/51989887516"]')].some(a=>a.textContent.includes('+51 989 887 516'))`));
 pass('footer exact email and WhatsApp', true);
 
