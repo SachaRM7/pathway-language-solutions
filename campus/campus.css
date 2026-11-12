@@ -838,3 +838,8 @@ a.pill.warn { text-decoration: none; }
 .unit-seg > span { font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media print { .reader { display: none !important; } }
+/* Phone: the menus hang from the whole tool row, so the wide one (notifications) starts at the
+   left gutter instead of running off the screen from the bell. */
+@media (max-width: 719px) { .top-tools { position: relative; } .top-tools .menu-wrap { position: static; } .top-tools .menu-wide { left: 0; right: auto; } }
+/* Small phones (staff with the Alumno/Profesor switch): the tool row fits on one line. */
+@media (max-width: 389px) { .top-tools { gap: 6px; } .top-tools .round { width: 40px; height: 40px; } .top-tools .round .pip { top: 9px; right: 10px; } .switch button { padding: 0 11px; } }
