@@ -144,7 +144,7 @@ async function loadAll() {
   const uid = A.session.user.id;
   const [prof, units, ex, runs, asg, xp, due, badges, mine, teacher] = await Promise.all([
     sb.from('profiles').select('*').eq('id', uid).single(),
-    sb.from('units').select('id,level,segment,number,title,manual_time,cards').order('level').order('number'),
+    sb.from('units').select('*').order('level').order('number'),
     sb.from('exercises').select('unit_id,status'),
     sb.from('lesson_runs').select('unit_id,total,first_try_correct,xp,finished_at').eq('user_id', uid).order('finished_at'),
     sb.from('assignment_students').select('completed_at, assignment:assignments(id,unit_id,due_on,note,created_at)').eq('student_id', uid),
@@ -177,6 +177,8 @@ async function loadSchedule() {
   const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position'), sb.rpc('my_recordings')]);
   A.schedule = sch.error ? null : (sch.data || null);
   A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
+  const val = await sb.from('level_validations').select('*').eq('student_id', A.session.user.id);
+  A.levelVal = val.error ? null : (val.data || []); // needs db/012_fin_nivel.sql
   A.docs = docs.error ? null : (docs.data || []);
   const next = nextSession();
   if (next) { A.profile.next_class_at = next.at; A.profile.class_link = A.schedule.group.zoom_link; }
@@ -216,6 +218,8 @@ async function loadStaff() {
   // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
   const [grp, chg, log, foc] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log'), sb.rpc('teacher_focus_alerts')]);
   A.staff.focus = foc.error ? [] : (foc.data || []); // needs db/010_integridad.sql
+  const lv = await sb.rpc('staff_level_status');
+  A.staff.levels = lv.error ? null : (lv.data || []); // needs db/012_fin_nivel.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
   A.staff.log = log.error ? null : (log.data || { groups: {}, unmatched: [] }); // needs db/009_zoom.sql
   A.staff.changes = chg.error ? [] : (chg.data || []);
@@ -251,15 +255,37 @@ function unitState(u) {
   let retryAt = null;
   if (!passed && last && !runPassed(last)) { const t = new Date(last.finished_at).getTime() + RETRY_MS; if (t > Date.now()) retryAt = t; }
   if (isStaff()) return { unlocked: true, passed, retryAt: null, prev: null };
-  const prev = A.units.filter(x => x.level === u.level && x.number < u.number && playable(x)).sort((a, b) => b.number - a.number)[0] || null;
+  if (u.is_final) { const lv = finalStatus(u.level); return { unlocked: lv.unitsDone && lv.teacher, passed, retryAt, prev: null, final: lv }; }
+  const prev = A.units.filter(x => x.level === u.level && x.number < u.number && playable(x) && !x.is_final).sort((a, b) => b.number - a.number)[0] || null;
   const assigned = A.assignments.some(a => a.unit_id === u.id);
   const unlocked = !prev || A.runs.some(r => r.unit_id === prev.id && runPassed(r)) || assigned;
   return { unlocked, passed, retryAt, prev };
 }
+// End of level (db/012_fin_nivel.sql): teacher's exam, then the Campus final exam.
+function finalStatus(level) {
+  const regular = A.units.filter(x => x.level === level && !x.is_final && playable(x));
+  const done = doneUnits();
+  const v = (A.levelVal || []).find(x => x.level === level) || {};
+  const finalUnit = A.units.find(x => x.level === level && x.is_final && playable(x)) || null;
+  return { unitsDone: regular.every(x => done.has(x.id)), passedCount: regular.filter(x => done.has(x.id)).length, total: regular.length, teacher: !!v.teacher_passed_at, finalUnit, finalPassed: !!v.final_passed_at };
+}
+function finalTile() {
+  if (A.levelVal === null || isStaff()) return '';
+  const p = A.profile, f = finalStatus(p.level);
+  const nextLevel = LEVELS[LEVELS.indexOf(p.level) + 1];
+  const step = (ok, title, text) => `<div class="err-row"><span>${ok ? icon('check') : icon('lock')} <b>${title}</b><br><span class="muted" style="font-size:13px">${text}</span></span>${ok ? '<span class="status">Hecho</span>' : ''}</div>`;
+  const st = f.finalUnit ? unitState(f.finalUnit) : null;
+  return `<article class="tile"><div class="tile-head"><h2>Examen final del nivel ${p.level}</h2>${nextLevel ? `<span class="pill ghost">Para pasar a ${nextLevel}</span>` : ''}</div>
+    ${step(f.unitsDone, 'Todas las unidades superadas', `${f.passedCount} de ${f.total} unidades con al menos 75 %.`)}
+    ${step(f.teacher, 'Examen con tu profesor', f.teacher ? 'Tu profesor validó tu examen.' : 'En espera de la validación de tu examen con tu profesor.')}
+    ${f.finalUnit ? step(f.finalPassed, 'Examen final en el campus · unos 15 min', f.finalPassed ? 'Superado.' : 'Se abre cuando los dos pasos anteriores están hechos. Necesitas 75 %.') : ''}
+    ${f.finalUnit && st && st.unlocked && !f.finalPassed ? (st.retryAt ? `<p class="muted" style="margin-top:12px">Nuevo intento: ${esc(retryLabel(st.retryAt))}.</p>` : `<button class="btn btn-dark" style="margin-top:14px" type="button" data-start="${f.finalUnit.id}">${icon('trophy')}Hacer el examen final</button>`) : ''}
+  </article>`;
+}
 const retryLabel = t => { const d = new Date(t); return `${fmtDate(d, { weekday: 'long' })} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}`; };
 function nextUnit() {
   const done = doneUnits();
-  return A.units.filter(u => u.level === A.profile.level).find(u => !done.has(u.id) && playable(u)) || null;
+  return A.units.filter(u => u.level === A.profile.level && !u.is_final).find(u => !done.has(u.id) && playable(u)) || null;
 }
 const openHomework = () => A.assignments.filter(a => !a.completed_at).sort((a, b) => (a.due_on || '9999').localeCompare(b.due_on || '9999'));
 
@@ -319,6 +345,9 @@ function notifications() {
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
     if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
+  }
+  for (const v of A.levelVal || []) {
+    if (v.promoted_at && v.promoted_to && Date.now() - new Date(v.promoted_at) < 10 * 864e5) out.push({ key: 'lvl' + v.level, ic: 'trophy', text: `¡Pasaste al nivel ${v.promoted_to}! Tus nuevas unidades ya están en «Mi ruta».`, href: '#ruta' });
   }
   for (const x of (A.schedule && A.schedule.sessions) || []) {
     if (x.status === 'planned' || new Date(x.scheduled_at) - Date.now() > 8 * 864e5) continue;
@@ -533,7 +562,8 @@ function viewRuta() {
     <div class="tile-head"><div><h2>Segmento ${s.letter} · ${esc(s.name)}</h2>${s.desc ? `<p class="muted" style="font-size:14px;margin-top:6px;max-width:70ch">${esc(s.desc)}</p>` : ''}</div></div>
     <div class="units">${cells.join('')}</div>
     <div class="legend"><span><i style="background:var(--ink)"></i>Hecha</span><span><i style="background:var(--coral)"></i>Siguiente</span><span><i style="background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)"></i>Pronto</span><span><i style="background:var(--butter)"></i>Examen ${s.letter}</span></div>
-  </article></section>`;
+  </article>
+  ${finalTile()}</section>`;
 }
 
 /* Review */
@@ -686,10 +716,27 @@ function viewGrupo() {
           <label class="field" for="clLink">Enlace de la clase<input id="clLink" type="url" placeholder="https://zoom.us/j/…"></label></div>
         <button class="btn btn-dark" type="submit">Guardar</button>
       </form></article>`}
+    ${levelTile()}
     ${inviteTile()}
     ${membersTile()}
   </div>`}
   </section>`;
+}
+
+// End of level (db/012_fin_nivel.sql): step 1 is validated here by the teacher.
+function levelTile() {
+  const list = A.staff.levels;
+  if (!list || !list.length) return '';
+  const name = id => (A.staff.overview.find(s => s.id === id) || {}).full_name || '—';
+  const rows = list.slice().sort((a, b) => (b.units_done - a.units_done) || name(a.student_id).localeCompare(name(b.student_id))).map(x => {
+    const recent = x.last_promotion && Date.now() - new Date(x.last_promotion) < 14 * 864e5;
+    const state = x.teacher_passed_at
+      ? (x.has_final ? (x.final_passed_at ? '<span class="status">Nivel superado</span>' : '<span class="status warn">Falta el examen del campus</span>') : '<span class="status">Validado</span>')
+      : `<button class="btn ${x.units_done ? 'btn-dark' : 'btn-light'} btn-sm" type="button" data-validate-level="${x.student_id}" data-name="${esc(name(x.student_id))}" data-level="${x.level}" data-done="${x.units_done ? 1 : 0}">Validar el examen ${x.level}</button>`;
+    return `<div class="err-row"><span><b>${esc(name(x.student_id))}</b> · ${x.level}<br><span class="muted" style="font-size:13px">${x.units_done ? 'Todas las unidades superadas' : 'Unidades en curso'}${x.has_final ? ' · examen final en el campus' : ''}${recent ? ` · pasó a ${esc(x.last_promotion_to || '')} hace poco` : ''}</span></span>${state}</div>`;
+  }).join('');
+  return `<article class="tile c-6"><div class="tile-head"><h2>Fin de nivel</h2></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Paso 1: valida aquí el examen que el alumno hizo contigo. Paso 2: el examen final del campus, si el nivel tiene uno publicado. Con los dos, el alumno pasa solo al nivel siguiente.</p>${rows}</article>`;
 }
 
 function inviteTile() {
@@ -910,6 +957,20 @@ function bindSchedule(id) {
       toast(`«${title}» añadido al programa ${level}.`); await refresh(); render();
     };
   }
+  $$('[data-final-create]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { data, error } = await sb.rpc('create_final_unit', { p_level: b.dataset.finalCreate, p_title: '' });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('Examen final creado: añade sus ejercicios y publícalo.'); await refresh(); render();
+  });
+  $$('[data-validate-level]').forEach(b => b.onclick = async () => {
+    if (b.dataset.done !== '1' && !confirm(`${b.dataset.name} todavía no superó todas las unidades del ${b.dataset.level}. ¿Validar de todos modos su examen con el profesor?`)) return;
+    b.disabled = true;
+    const { data, error } = await sb.rpc('validate_teacher_exam', { p_student: b.dataset.validateLevel });
+    if (error) { b.disabled = false; return fail(error); }
+    toast(data.promoted ? `${b.dataset.name} pasa al nivel siguiente.` : `Examen validado. ${b.dataset.name} podrá hacer el examen final del campus${data.needs_final ? ' cuando termine sus unidades' : ''}.`);
+    await refresh(); render();
+  });
   if (id !== 'horarios') return;
   $$('[data-group-edit]').forEach(b => b.onclick = () => { A.staff.groupEditing = b.dataset.groupEdit; render(); });
   $$('[data-group-cancel]').forEach(b => b.onclick = () => { A.staff.groupEditing = null; render(); });
@@ -968,10 +1029,11 @@ function viewContenido() {
   ${topBar('h-cont', 'Contenido', 'Prueba cada unidad y publícala cuando esté validada. Los alumnos solo ven las unidades publicadas.')}
   ${levels.map(l => `<article class="tile"><div class="tile-head"><h2>Nivel ${l}</h2></div>
     ${A.units.filter(u => u.level === l).map(u => { const inf = A.unitInfo[u.id] || { count: 0, validated: 0 }; const live = inf.count && inf.validated === inf.count;
-      return `<div class="unit-row"><span class="no">${pad2(u.number)}</span><div class="meta"><b>${esc(u.title)}</b><span>${inf.count} ejercicio${inf.count === 1 ? '' : 's'}${u.manual_time ? ' · manual: ' + esc(u.manual_time) : ''}</span></div>
+      return `<div class="unit-row"><span class="no">${u.is_final ? icon('trophy') : pad2(u.number)}</span><div class="meta"><b>${esc(u.title)}</b><span>${inf.count} ejercicio${inf.count === 1 ? '' : 's'}${u.manual_time ? ' · manual: ' + esc(u.manual_time) : ''}</span></div>
         <span class="state-chip ${live ? 'live' : 'draft'}">${live ? 'Publicada' : 'Borrador'}</span>
         <button class="btn btn-light btn-sm" data-edit-unit="${u.id}">Editar</button>
         ${inf.count ? `<button class="btn btn-light btn-sm" data-preview="${u.id}">Probar</button><button class="btn ${live ? 'btn-light' : 'btn-dark'} btn-sm" data-publish="${u.id}" data-status="${live ? 'draft' : 'validated'}">${live ? 'Volver a borrador' : 'Publicar'}</button>` : ''}</div>`; }).join('')}
+    ${'is_final' in (A.units[0] || {}) && !A.units.some(u => u.level === l && u.is_final) ? `<div class="unit-row"><span class="no">${icon('trophy')}</span><div class="meta"><b>Examen final ${l}</b><span>Unos 15 minutos en el campus, tras el examen con el profesor. Sin él, la validación del profesor basta para pasar de nivel.</span></div><button class="btn btn-dark btn-sm" type="button" data-final-create="${l}">Crear el examen final</button></div>` : ''}
   </article>`).join('') || '<article class="tile"><p class="muted">Todavía no hay unidades.</p></article>'}
   <article class="tile"><div class="tile-head"><h2>Nueva unidad</h2></div>
     <form id="newUnitForm" class="form" novalidate>
