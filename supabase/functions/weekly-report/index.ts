@@ -12,7 +12,28 @@ const FROM = 'Pathway Campus <campus@pathway-languages.com>';
 const CAMPUS = 'https://pathway-languages.com/campus/#horarios';
 const TZ = 'America/Lima';
 const json = (status: number, body: Record<string, unknown>) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
+// Test from the Campus (admin only): the caller's own session decides, and the email goes to them.
+const SITE = 'https://pathway-languages.com';
+const cors = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
+async function adminCaller(req: Request): Promise<{ email: string; name: string } | null> {
+  const authorization = req.headers.get('Authorization') ?? '';
+  if (!authorization.startsWith('Bearer ')) return null;
+  const asCaller = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authorization } } });
+  const { data: user } = await asCaller.auth.getUser();
+  const { data: role } = await asCaller.rpc('my_role');
+  if (!user?.user?.email || role !== 'admin') return null;
+  const { data: me } = await asCaller.from('profiles').select('full_name').eq('id', user.user.id).single();
+  return { email: user.user.email, name: me?.full_name || '' };
+}
+async function sendMail(key: string, to: string[], subject: string, html: string) {
+  return fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to, subject, html })
+  });
+}
+
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const day = (iso: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('fr-FR', { timeZone: TZ, ...opts }).format(new Date(iso));
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -59,10 +80,23 @@ export function renderReport(r: Report): { subject: string; html: string } {
 }
 
 Deno.serve(async req => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
   const key = Deno.env.get('RESEND_API_KEY');
   if (!key) return json(500, { error: 'missing_resend_key' });
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const body = await req.json().catch(() => ({}));
+
+  // Test copy: the current report, sent only to the admin who asked, without using up the week.
+  if (body && body.test) {
+    const caller = await adminCaller(req);
+    if (!caller) return json(403, { error: 'admin_only' });
+    const { data: report, error } = await supabase.rpc('weekly_report_data', { p_from: null });
+    if (error || !report) return json(500, { error: 'report_failed' });
+    const { subject, html } = renderReport(report);
+    const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
+    return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
+  }
 
   const { data: report, error } = await supabase.rpc('weekly_report_data', { p_from: null });
   if (error || !report) return json(500, { error: 'report_failed' });
@@ -75,11 +109,7 @@ Deno.serve(async req => {
   if (claimed !== true) return json(200, { skipped: 'already_sent', week: report.week });
 
   const { subject, html } = renderReport(report);
-  const sent = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: FROM, to, subject, html })
-  });
+  const sent = await sendMail(key, to, subject, html);
   if (!sent.ok) {
     await supabase.from('weekly_reports').delete().eq('week_start', report.week); // lets the next call retry
     return json(502, { error: 'send_failed', status: sent.status });

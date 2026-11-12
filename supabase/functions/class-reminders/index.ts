@@ -10,7 +10,28 @@ import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 const FROM = 'Pathway Campus <campus@pathway-languages.com>';
 const CAMPUS = 'https://pathway-languages.com/campus/#curso';
 const json = (status: number, body: Record<string, unknown>) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
+// Test from the Campus (admin only): the caller's own session decides, and the email goes to them.
+const SITE = 'https://pathway-languages.com';
+const cors = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
+async function adminCaller(req: Request): Promise<{ email: string; name: string } | null> {
+  const authorization = req.headers.get('Authorization') ?? '';
+  if (!authorization.startsWith('Bearer ')) return null;
+  const asCaller = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authorization } } });
+  const { data: user } = await asCaller.auth.getUser();
+  const { data: role } = await asCaller.rpc('my_role');
+  if (!user?.user?.email || role !== 'admin') return null;
+  const { data: me } = await asCaller.from('profiles').select('full_name').eq('id', user.user.id).single();
+  return { email: user.user.email, name: me?.full_name || '' };
+}
+async function sendMail(key: string, to: string[], subject: string, html: string) {
+  return fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to, subject, html })
+  });
+}
+
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 type Due = { student_id: string; name: string; email: string; timezone: string | null; group: string; teacher: string | null; scheduled_at: string; at: string; status: string };
@@ -37,8 +58,22 @@ export function renderReminder(d: Due): { subject: string; html: string } {
 }
 
 Deno.serve(async req => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const body = await req.json().catch(() => ({}));
+
+  // Test copy: an example reminder (class in one hour), sent only to the admin who asked.
+  if (body && body.test) {
+    const caller = await adminCaller(req);
+    if (!caller) return json(403, { error: 'admin_only' });
+    const key = Deno.env.get('RESEND_API_KEY');
+    if (!key) return json(500, { error: 'missing_resend_key' });
+    const at = new Date(Date.now() + 60 * 60000).toISOString();
+    const { subject, html } = renderReminder({ student_id: '', name: caller.name, email: caller.email, timezone: 'America/Lima', group: 'Grupo de prueba', teacher: 'Pathway', scheduled_at: at, at, status: 'planned' });
+    const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
+    return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
+  }
   const { data, error } = await supabase.rpc('due_reminders');
   if (error) return json(500, { error: 'query_failed' });
   const due = (data || []) as Due[];
@@ -51,11 +86,7 @@ Deno.serve(async req => {
     const { data: claimed } = await supabase.rpc('claim_reminder', { p_student: d.student_id, p_scheduled: d.scheduled_at });
     if (claimed !== true) continue;
     const { subject, html } = renderReminder(d);
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM, to: [d.email], subject, html })
-    });
+    const res = await sendMail(key, [d.email], subject, html);
     if (res.ok) sent++;
     else await supabase.from('class_reminders_sent').delete().eq('student_id', d.student_id).eq('scheduled_at', d.scheduled_at);
   }
