@@ -38,7 +38,7 @@ if (process.argv.includes('--capture')) {
   process.exit(0);
 }
 
-assert.equal(VIDEO_TESTIMONIALS.length, 8);
+assert.equal(VIDEO_TESTIMONIALS.length, 10);
 assert.equal(WRITTEN_TESTIMONIALS.length, 16);
 for (const entry of VIDEO_TESTIMONIALS) {
   await access(resolve('dist/client', entry.src.slice(1)));
@@ -49,7 +49,7 @@ for (const plan of PRICING.plans) {
   assert.equal(plan.cycle.amount, Math.round(plan.cycle.originalAmount * .85 * 100) / 100);
   assert.equal(plan.cycle.saving, Math.round((plan.cycle.originalAmount - plan.cycle.amount) * 100) / 100);
 }
-pass('collections, media files and exact pricing arithmetic', { videos: 8, reviews: 16, cycles: PRICING.plans.map(plan => plan.cycle.amount) });
+pass('collections, media files and exact pricing arithmetic', { videos: 10, reviews: 16, cycles: PRICING.plans.map(plan => plan.cycle.amount) });
 
 const heights = {};
 for (const mode of ['monthly', 'cycle', 'monthly', 'cycle']) {

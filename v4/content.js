@@ -125,7 +125,7 @@ export const PRICING = Object.freeze({
   ])
 });
 
-/** Ocho testimonios en video reales (orden de pathway-v3.js). */
+/** Diez testimonios en video reales (Drive « Témoignages »). */
 export const VIDEO_TESTIMONIALS = Object.freeze([
   Object.freeze({
     name: 'Yazmin',
@@ -133,9 +133,19 @@ export const VIDEO_TESTIMONIALS = Object.freeze([
     poster: '/assets/videos/testimonio-25-poster.jpg?v=20260821-testimonial-first'
   }),
   Object.freeze({
+    name: 'Devon',
+    src: '/assets/videos/testimonio-devon-web.mp4',
+    poster: '/assets/videos/testimonio-devon-poster.jpg?v=20261112'
+  }),
+  Object.freeze({
     name: 'Majo',
     src: '/assets/videos/testimonio-majo-web.mp4',
     poster: '/assets/videos/testimonio-majo-poster.jpg?v=20260814'
+  }),
+  Object.freeze({
+    name: 'Elena',
+    src: '/assets/videos/testimonio-elena-web.mp4',
+    poster: '/assets/videos/testimonio-elena-poster.jpg?v=20261112'
   }),
   Object.freeze({
     name: 'Pia',
