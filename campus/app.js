@@ -240,6 +240,7 @@ async function loadAll() {
   ]);
   for (const r of [prof, units, ex, runs, asg, xp, badges, mine]) if (r.error) throw r.error;
   A.profile = prof.data;
+  syncTimezone();
   A.units = units.data;
   A.unitInfo = {};
   for (const e of ex.data) { const u = A.unitInfo[e.unit_id] ||= { count: 0, validated: 0 }; u.count++; if (e.status === 'validated') u.validated++; }
@@ -254,6 +255,15 @@ async function loadAll() {
   await loadWeekly();
   await loadResumable();
   if (isStaff()) await loadStaff();
+}
+// The account follows the device's time zone (classes, reminders and streaks are shown in it):
+// fixed at onboarding, and updated whenever the Campus opens on a device in another zone.
+function syncTimezone() {
+  let tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return; }
+  if (!tz || tz === A.profile.timezone) return;
+  A.profile.timezone = tz;
+  sb.from('profiles').update({ timezone: tz }).eq('id', A.session.user.id).then(r => { if (r && r.error) console.error(r.error); });
 }
 // Group, fixed timetable and level documents (campus/db/008_horarios.sql). Without the
 // migration A.schedule and A.docs stay null and the campus works as before.
