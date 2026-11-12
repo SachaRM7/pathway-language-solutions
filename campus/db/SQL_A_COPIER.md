@@ -1660,7 +1660,7 @@ $job$);
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor,
 // nom « weekly-report », coller ce fichier, Deploy, puis désactiver « Verify JWT » dans ses
-// réglages (pg_cron l'appelle sans compte). Elle n'envoie qu'un rapport par semaine, même
+// réglages (pg_cron l'appelle sans compte, avec le secret partagé du SQL 014). Elle n'envoie qu'un rapport par semaine, même
 // appelée plusieurs fois. Secret : RESEND_API_KEY (déjà ajouté pour Resend). SUPABASE_URL et
 // SUPABASE_SERVICE_ROLE_KEY sont fournis par Supabase.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
@@ -1754,6 +1754,10 @@ Deno.serve(async req => {
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
     return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
   }
+
+  // Automatic run: only pg_cron, which sends the shared secret (db/014_cron_secreto.sql).
+  const { data: allowed } = await supabase.rpc('check_cron_secret', { p_secret: req.headers.get('x-cron-secret') ?? '' });
+  if (allowed !== true) return json(401, { error: 'unauthorized' });
 
   const { data: report, error } = await supabase.rpc('weekly_report_data', { p_from: null });
   if (error || !report) return json(500, { error: 'report_failed' });
@@ -2165,7 +2169,8 @@ $job$);
 // fait rien tant que le rappel est désactivé dans « Horarios » → « Reglas de asistencia ».
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor, nom
-// « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT ».
+// « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT » (pg_cron l'appelle
+// avec le secret partagé du SQL 014 ; tout autre appel automatique est refusé).
 // Secret : RESEND_API_KEY (déjà ajouté). Chaque rappel ne part qu'une fois.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 
@@ -2236,6 +2241,10 @@ Deno.serve(async req => {
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
     return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
   }
+
+  // Automatic run: only pg_cron, which sends the shared secret (db/014_cron_secreto.sql).
+  const { data: allowed } = await supabase.rpc('check_cron_secret', { p_secret: req.headers.get('x-cron-secret') ?? '' });
+  if (allowed !== true) return json(401, { error: 'unauthorized' });
   const { data, error } = await supabase.rpc('due_reminders');
   if (error) return json(500, { error: 'query_failed' });
   const due = (data || []) as Due[];
@@ -2254,4 +2263,48 @@ Deno.serve(async req => {
   }
   return json(200, { sent, due: due.length });
 });
+```
+
+## 014 · Secret partagé pour les tâches programmées
+
+À exécuter après le 013, puis redéployer `weekly-report` et `class-reminders` avec leur dernier code (sections 011 et 013). Le secret est créé et gardé dans le coffre-fort de Supabase (Vault) : rien à recopier. Les fonctions refusent alors tout appel automatique qui ne vient pas des tâches programmées ; le bouton de test des admins dans le Campus reste permis.
+
+```sql
+-- Campus Pathway · 014 · secret partagé entre pg_cron et les fonctions programmées
+-- À exécuter après 013 (SQL Editor → New query → Run), puis redéployer « weekly-report » et
+-- « class-reminders ». Rien à recopier : le secret est créé ici, gardé dans le coffre-fort de
+-- Supabase (Vault), envoyé par les tâches programmées et vérifié par les fonctions. Sans lui,
+-- un appel extérieur aux fonctions est refusé (le test des admins depuis le Campus reste permis).
+
+-- 1. Le secret (créé une seule fois).
+select vault.create_secret(replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''), 'pathway_cron_secret',
+  'Secret partagé : tâches pg_cron → fonctions weekly-report et class-reminders')
+where not exists (select 1 from vault.secrets where name = 'pathway_cron_secret');
+
+-- 2. Vérification, pour les fonctions (clé service uniquement).
+create or replace function public.check_cron_secret(p_secret text) returns boolean
+language sql stable security definer set search_path = public, vault as $$
+  select coalesce(p_secret, '') <> '' and exists (
+    select 1 from vault.decrypted_secrets where name = 'pathway_cron_secret' and decrypted_secret = p_secret)
+$$;
+revoke execute on function public.check_cron_secret(text) from public, anon, authenticated;
+grant execute on function public.check_cron_secret(text) to service_role;
+
+-- 3. Les deux tâches programmées envoient le secret.
+select cron.unschedule('pathway-weekly-report') where exists (select 1 from cron.job where jobname = 'pathway-weekly-report');
+select cron.schedule('pathway-weekly-report', '7 13 * * 1', $job$
+  select net.http_post(
+    url := 'https://ynflykxalfynxoupkxmy.supabase.co/functions/v1/weekly-report',
+    headers := jsonb_build_object('Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'pathway_cron_secret')),
+    body := '{}'::jsonb)
+$job$);
+select cron.unschedule('pathway-class-reminders') where exists (select 1 from cron.job where jobname = 'pathway-class-reminders');
+select cron.schedule('pathway-class-reminders', '*/5 * * * *', $job$
+  select net.http_post(
+    url := 'https://ynflykxalfynxoupkxmy.supabase.co/functions/v1/class-reminders',
+    headers := jsonb_build_object('Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'pathway_cron_secret')),
+    body := '{}'::jsonb)
+$job$);
 ```

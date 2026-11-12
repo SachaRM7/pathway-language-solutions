@@ -26,6 +26,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/012_fin_nivel.sql` | Fin de niveau : examen validé par le professeur, puis examen final du Campus ; passage automatique au niveau suivant |
 | `db/013_asistencia.sql` | Présences par le bouton « Entrar a la clase » (lien ouvert N min avant, absent après N min, palier « tarde » optionnel) et rappel e-mail avant chaque cours ; règles réglées par l'admin dans « Horarios » |
 | `../supabase/functions/class-reminders/` | Edge Function qui envoie les rappels avec Resend (appelée toutes les 5 min par pg_cron) |
+| `db/014_cron_secreto.sql` | Secret partagé (Vault) envoyé par pg_cron et vérifié par `weekly-report` et `class-reminders` : un appel extérieur est refusé |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
