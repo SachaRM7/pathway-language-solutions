@@ -233,3 +233,15 @@ h1, h2, h3 { font-family: var(--display); }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; }
 }
+
+/* Email step before the result (the level is saved with it for the teacher). */
+.lead-card { min-height: 0; display: grid; gap: 1rem; align-content: start; }
+.lead-card h2 { margin: .4rem 0 0; }
+.lead-copy { max-width: 60ch; margin: 0; font-size: 1.05rem; line-height: 1.55; }
+.lead-field { display: grid; gap: .5rem; max-width: 520px; margin-top: .5rem; font-weight: 700; font-size: 1rem; }
+.lead-field input { min-height: 56px; padding: 0 1rem; border: 1.5px solid var(--line); border-radius: 13px; background: var(--white); color: var(--ink); font: inherit; font-weight: 500; font-size: 1.05rem; }
+.lead-field input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px var(--sage); }
+.lead-field input[aria-invalid="true"] { border-color: var(--coral-dark); }
+.lead-error { margin: -.4rem 0 0; color: var(--coral-dark); font-weight: 700; font-size: .92rem; }
+.lead-consent { max-width: 60ch; margin: 0; font-size: .85rem; color: var(--muted, #50625c); }
+.lead-consent a { color: inherit; }

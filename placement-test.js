@@ -21,6 +21,14 @@
       previous: 'Anterior',
       next: 'Siguiente',
       showResult: 'Ver mi resultado',
+      leadKicker: 'Tu resultado está listo',
+      leadTitle: '¿A qué correo lo enviamos?',
+      leadCopy: 'Guardamos tu nivel con tu correo: tu profesor lo tendrá listo para tu primera clase, y tu campus empezará en el nivel correcto.',
+      leadLabel: 'Tu correo electrónico',
+      leadPlaceholder: 'tu.nombre@correo.com',
+      leadInvalid: 'Escribe un correo válido.',
+      leadConsent: 'Usamos tu correo solo para preparar tu curso. Más detalles en nuestra <a href="/privacidad.html">política de privacidad</a>.',
+      leadButton: 'Ver mi resultado',
       resultTitle: level => `Tu francés se sitúa alrededor de ${level}.`,
       status: { construction: 'en construcción', functional: 'funcional', independent: 'independiente', solid: 'sólido' },
       confidence: { express: 'Orientativo: confirma tu nivel en una clase en vivo.', intensive: 'Más preciso: combina cuatro niveles y pondera la dificultad.' },
@@ -40,6 +48,14 @@
       previous: 'Précédente',
       next: 'Suivante',
       showResult: 'Voir mon résultat',
+      leadKicker: 'Votre résultat est prêt',
+      leadTitle: 'À quelle adresse l’enregistrer ?',
+      leadCopy: 'Nous gardons votre niveau avec votre adresse e-mail : votre professeur l’aura sous les yeux dès votre premier cours, et votre campus commencera au bon niveau.',
+      leadLabel: 'Votre adresse e-mail',
+      leadPlaceholder: 'prenom.nom@exemple.com',
+      leadInvalid: 'Écrivez une adresse e-mail valide.',
+      leadConsent: 'Votre adresse ne sert qu’à préparer votre cours. Plus de détails dans notre <a href="/fr/politique-confidentialite.html">politique de confidentialité</a>.',
+      leadButton: 'Voir mon résultat',
       resultTitle: level => `Votre français se situe autour de ${level}.`,
       status: { construction: 'en construction', functional: 'fonctionnel', independent: 'autonome', solid: 'solide' },
       confidence: { express: 'Indication prudente : confirmez votre niveau en cours individuel.', intensive: 'Estimation plus précise : quatre niveaux et la difficulté sont pondérés.' },
@@ -59,6 +75,14 @@
       previous: 'Previous',
       next: 'Next',
       showResult: 'See my result',
+      leadKicker: 'Your result is ready',
+      leadTitle: 'Which email should we save it to?',
+      leadCopy: 'We keep your level with your email: your teacher will have it ready for your first class, and your campus will start at the right level.',
+      leadLabel: 'Your email',
+      leadPlaceholder: 'name@example.com',
+      leadInvalid: 'Enter a valid email address.',
+      leadConsent: 'We only use your email to prepare your course. More in our <a href="/en/politique-confidentialite.html">privacy policy</a>.',
+      leadButton: 'See my result',
       resultTitle: level => `Your French is estimated around ${level}.`,
       status: { construction: 'still developing', functional: 'functional', independent: 'independent', solid: 'solid' },
       confidence: { express: 'Guidance only: confirm your level in a live class.', intensive: 'More precise: four levels and difficulty weighting are included.' },
@@ -78,6 +102,14 @@
       previous: 'Zurück',
       next: 'Weiter',
       showResult: 'Ergebnis anzeigen',
+      leadKicker: 'Ihr Ergebnis ist bereit',
+      leadTitle: 'Unter welcher E-Mail-Adresse speichern wir es?',
+      leadCopy: 'Wir speichern Ihr Niveau mit Ihrer E-Mail-Adresse: Ihre Lehrkraft hat es zur ersten Stunde vorliegen, und Ihr Campus beginnt auf dem richtigen Niveau.',
+      leadLabel: 'Ihre E-Mail-Adresse',
+      leadPlaceholder: 'name@beispiel.de',
+      leadInvalid: 'Geben Sie eine gültige E-Mail-Adresse ein.',
+      leadConsent: 'Wir nutzen Ihre Adresse nur zur Vorbereitung Ihres Kurses. Mehr dazu in unserer <a href="/de/politique-confidentialite.html">Datenschutzerklärung</a>.',
+      leadButton: 'Ergebnis anzeigen',
       resultTitle: level => `Ihr Französisch liegt ungefähr auf ${level}.`,
       status: { construction: 'im Aufbau', functional: 'funktional', independent: 'selbstständig', solid: 'sicher' },
       confidence: { express: 'Orientierung: Bestätigen Sie Ihr Niveau in einem Live-Unterricht.', intensive: 'Präzisere Einschätzung: vier Niveaus und die Schwierigkeit werden gewichtet.' },
@@ -308,8 +340,58 @@
     requestAnimationFrame(animate);
   };
 
-  const calculateResult = () => {
+  // The result is saved with the email so the teacher finds the level when creating the account
+  // (campus/db/019_test_nivel.sql). A network failure never blocks the result.
+  const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+  const saveResult = (email, data) => {
+    try {
+      const skills = Object.fromEntries(SKILLS.map(name => [name, data.skillScores[name]]));
+      return fetch(`${SUPABASE.url}/rest/v1/rpc/submit_placement`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_level: data.level, p_overall: Math.round(data.overall), p_mode: mode, p_lang: ['es', 'fr', 'en', 'de'].includes(locale) ? locale : 'es', p_detail: { skills, correct: data.totalCorrect, questions: data.totalQuestions } }),
+        keepalive: true
+      }).catch(() => null);
+    } catch (error) { return Promise.resolve(null); }
+  };
+  let lead = null;
+  const askEmail = () => {
+    if (!lead) {
+      lead = document.createElement('form');
+      lead.className = 'test-card lead-card';
+      lead.noValidate = true;
+      lead.innerHTML = `<span class="eyebrow">${T.leadKicker}</span>
+        <h2>${T.leadTitle}</h2>
+        <p class="lead-copy">${T.leadCopy}</p>
+        <label class="lead-field" for="leadEmail"><span>${T.leadLabel}</span><input id="leadEmail" type="email" inputmode="email" autocomplete="email" required placeholder="${T.leadPlaceholder}"></label>
+        <p class="lead-error" role="alert" hidden>${T.leadInvalid}</p>
+        <p class="lead-consent">${T.leadConsent}</p>
+        <div class="test-actions"><button class="button button-coral" type="submit">${T.leadButton} <span aria-hidden="true">→</span></button></div>`;
+      form.after(lead);
+      lead.addEventListener('submit', event => {
+        event.preventDefault();
+        const input = lead.querySelector('#leadEmail');
+        const email = input.value.trim().toLowerCase();
+        const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+        lead.querySelector('.lead-error').hidden = ok;
+        input.setAttribute('aria-invalid', String(!ok));
+        if (!ok) { input.focus(); return; }
+        try { sessionStorage.setItem('pathwayPlacementEmail', email); } catch (error) { /* the result still shows */ }
+        lead.querySelector('button').disabled = true;
+        lead.hidden = true;
+        form.hidden = false;
+        calculateResult(email);
+      });
+    }
+    form.hidden = true;
+    lead.hidden = false;
+    lead.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+    setTimeout(() => lead.querySelector('#leadEmail').focus({ preventScroll: true }), 250);
+  };
+
+  const calculateResult = email => {
     const resultData = window.PathwayPlacementScoring.score({ questions, responses, mode });
+    if (email) saveResult(email, resultData);
     const { level: estimatedLevel, overall, totalCorrect, totalQuestions, status, skillScores, weakestSkill } = resultData;
     sessionStorage.setItem('pathwayPlacementResult', JSON.stringify(resultData));
 
@@ -365,7 +447,7 @@
       renderQuestion();
       return;
     }
-    calculateResult();
+    askEmail();
   });
 
   previous.addEventListener('click', () => {

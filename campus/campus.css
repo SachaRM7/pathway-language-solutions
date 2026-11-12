@@ -808,3 +808,7 @@ a.pill.warn { text-decoration: none; }
 .u-pick { height: 40px; border-radius: 12px; background: var(--panel); font-weight: 700; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .u-pick[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
 .u-pick:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+
+/* Onboarding: the level comes from the test, the others are shown but not chosen. */
+.lvl-pick.locked button:disabled { opacity: .38; cursor: default; }
+#invTest .icon { width: 16px; height: 16px; vertical-align: -3px; color: var(--mint-ink); }
