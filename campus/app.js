@@ -36,7 +36,8 @@ const fmtDate = (d, opts, tz = tzOf()) => new Intl.DateTimeFormat('es', { timeZo
 const A = {
   session: null, profile: null, teacher: null,
   units: [], unitInfo: {}, runs: [], assignments: [], xp: [], due: 0, badges: [], myBadges: new Set(),
-  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false, members: null, editing: null, confirmDel: null },
+  staff: { overview: [], errors: [], invitations: [], teachers: [], invitesReady: false, members: null, editing: null, confirmDel: null, groups: null, changes: [], groupEditing: null },
+  schedule: null, docs: null,
   ed: { unit: null, items: [], open: null, confirm: null, busy: false }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
@@ -165,9 +166,25 @@ async function loadAll() {
   A.badges = badges.data;
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
+  await loadSchedule();
   await loadWeekly();
   await loadResumable();
   if (isStaff()) await loadStaff();
+}
+// Group, fixed timetable and level documents (campus/db/008_horarios.sql). Without the
+// migration A.schedule and A.docs stay null and the campus works as before.
+async function loadSchedule() {
+  const [sch, docs] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position')]);
+  A.schedule = sch.error ? null : (sch.data || null);
+  A.docs = docs.error ? null : (docs.data || []);
+  const next = nextSession();
+  if (next) { A.profile.next_class_at = next.at; A.profile.class_link = A.schedule.group.zoom_link; }
+  else if (A.schedule) { A.profile.next_class_at = null; A.profile.class_link = A.schedule.group.zoom_link; }
+}
+// Next session still to come (or under way), cancelled ones skipped.
+function nextSession() {
+  const list = (A.schedule && A.schedule.sessions) || [];
+  return list.find(x => x.status !== 'cancelled' && new Date(x.at).getTime() + (x.duration_min || 60) * 6e4 > Date.now()) || null;
 }
 async function loadWeekly() {
   const { data, error } = await sb.rpc('weekly_challenge');
@@ -196,6 +213,9 @@ async function loadStaff() {
   A.staff.invitations = inv.data || [];
   A.staff.teachers = tea.data || [];
   // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
+  const [grp, chg] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes')]);
+  A.staff.groups = grp.error ? null : (grp.data || []);
+  A.staff.changes = chg.error ? [] : (chg.data || []);
   if (A.profile.role === 'admin') {
     const mem = await sb.rpc('admin_members');
     A.staff.members = mem.error ? null : (mem.data || []);
@@ -246,14 +266,16 @@ const SNAV = [
   { id: 'ruta', label: 'Mi ruta', icon: 'route' },
   { id: 'repasar', label: 'Repasar', icon: 'cards', count: () => A.due },
   { id: 'simulacros', label: 'Simulacros', icon: 'timer' },
-  { id: 'logros', label: 'Logros', icon: 'trophy' }
+  { id: 'logros', label: 'Logros', icon: 'trophy' },
+  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) }
 ];
 const TNAV = [
   { id: 'grupo', label: 'Mi grupo', icon: 'users' },
+  { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null },
   { id: 'contenido', label: 'Contenido', icon: 'book' }
 ];
-const navItems = () => teacherMode() ? TNAV : SNAV;
-const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, grupo: viewGrupo, contenido: viewContenido };
+const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
+const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, grupo: viewGrupo, horarios: viewHorarios, contenido: viewContenido };
 
 function currentView() {
   const id = location.hash.slice(1);
@@ -291,7 +313,14 @@ function notifications() {
     const fresh = A.staff.overview.filter(s => !s.onboarded).length;
     if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#grupo' });
     if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#grupo' });
+    const pending = A.staff.changes.filter(c => c.status === 'pending').length;
+    if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
+  }
+  for (const x of (A.schedule && A.schedule.sessions) || []) {
+    if (x.status === 'planned' || new Date(x.scheduled_at) - Date.now() > 8 * 864e5) continue;
+    const was = sessionLabel(x.scheduled_at);
+    out.push({ key: 'ses' + x.scheduled_at + x.status, ic: 'calendar', text: x.status === 'cancelled' ? `Clase del ${was} cancelada.` : `Tu clase del ${was} pasa al ${sessionLabel(x.at)}.`, href: '#curso' });
   }
   for (const a of openHomework()) {
     const u = unitById(a.unit_id); if (!u) continue;
@@ -443,7 +472,7 @@ function viewInicio() {
     </article>
     <article class="tile c-4">
       <div class="tile-head"><h2>Próxima clase</h2><span class="pill ghost">${icon('video')}En vivo</span></div>
-      ${nc ? `<div class="class-row"><div class="date-block"><small>${esc(fmtDate(nc, { month: 'short' }).replace('.', '').toUpperCase())}</small><b>${fmtDate(nc, { day: 'numeric' })}</b></div><div><h3>${esc(cap(fmtDate(nc, { weekday: 'long' })))} · ${fmtDate(nc, { hour: '2-digit', minute: '2-digit' })}</h3><p class="muted" style="font-size:14px;margin-top:4px">Tu hora local</p></div></div>`
+      ${nc ? `<div class="class-row"><div class="date-block"><small>${esc(fmtDate(nc, { month: 'short' }).replace('.', '').toUpperCase())}</small><b>${fmtDate(nc, { day: 'numeric' })}</b></div><div><h3>${esc(cap(fmtDate(nc, { weekday: 'long' })))} · ${fmtDate(nc, { hour: '2-digit', minute: '2-digit' })}</h3><p class="muted" style="font-size:14px;margin-top:4px">${nextSession() && nextSession().status === 'moved' ? `Cambiada · antes: ${esc(sessionLabel(nextSession().scheduled_at))}` : 'Tu hora local'}</p></div></div>`
         : `<p class="muted" style="font-size:14px">Tu profesor aún no programó la próxima clase.</p>`}
       <div class="teacher"><span class="ava sm">${esc(initials(A.teacher?.full_name || 'P'))}</span><b>${esc(A.teacher?.full_name || 'Tu profesor')}</b>${nc && p.class_link ? `<a class="btn btn-dark btn-sm" style="margin-left:auto" href="${esc(p.class_link)}" target="_blank" rel="noopener">Unirse</a>` : ''}</div>
     </article>
@@ -643,13 +672,13 @@ function viewGrupo() {
         <div class="field">Alumnos<div class="chips">${ov.map((s, i) => `<label for="hw${i}"><input type="checkbox" id="hw${i}" value="${s.id}"><span>${esc(s.full_name)}</span></label>`).join('')}</div></div>
         <button class="btn btn-dark" type="submit">Asignar</button>
       </form>` : '<p class="muted">Publica al menos una unidad en «Contenido» para poder asignarla.</p>'}</article>
-    <article class="tile c-6"><div class="tile-head"><h2>Programar la próxima clase</h2></div>
+    ${A.staff.groups !== null ? '' : `<article class="tile c-6"><div class="tile-head"><h2>Programar la próxima clase</h2></div>
       <form id="classForm" class="form">
         <label class="field" for="clStudent">Alumno<select id="clStudent" required>${studentOpts}</select></label>
         <div class="form-2"><label class="field" for="clAt">Fecha y hora (tu hora local)<input id="clAt" type="datetime-local" required value="${localDefault}"></label>
           <label class="field" for="clLink">Enlace de la clase<input id="clLink" type="url" placeholder="https://zoom.us/j/…"></label></div>
         <button class="btn btn-dark" type="submit">Guardar</button>
-      </form></article>
+      </form></article>`}
     ${inviteTile()}
     ${membersTile()}
   </div>`}
@@ -711,6 +740,184 @@ function membersTile() {
     ${list.length ? list.map(row).join('') : '<p class="muted">Todavía no hay alumnos ni profesores.</p>'}</article>`;
 }
 
+/* ───────────── Horarios fijos y programa (db/008_horarios.sql) ───────────── */
+const WEEKDAYS = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const TIMEZONES = [['America/Lima', 'Lima, Bogotá'], ['America/Mexico_City', 'Ciudad de México'], ['America/Santiago', 'Santiago'], ['America/Argentina/Buenos_Aires', 'Buenos Aires'], ['America/Caracas', 'Caracas'], ['America/Toronto', 'Montreal, Toronto'], ['America/Vancouver', 'Vancouver'], ['Europe/Paris', 'París']];
+const tzName = tz => (TIMEZONES.find(t => t[0] === tz) || [tz, tz])[1];
+const sessionLabel = at => { const d = new Date(at); return `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '')} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}`; };
+const slotsText = g => g.slots.length ? g.slots.map(s => `${WEEKDAYS[s.weekday].slice(0, 3)} ${s.start_time}`).join(' · ') + ` · ${g.slots[0].duration_min} min (hora de ${tzName(g.timezone)})` : 'Sin horario';
+const sessionRow = x => {
+  const st = x.status === 'cancelled' ? '<span class="status bad">Cancelada</span>' : x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : '';
+  return `<div class="err-row"><span>${x.status === 'cancelled' ? `<s>${esc(cap(sessionLabel(x.scheduled_at)))}</s>` : `<b>${esc(cap(sessionLabel(x.at)))}</b>`}${x.status === 'moved' ? `<br><span class="muted" style="font-size:13px">Antes: ${esc(sessionLabel(x.scheduled_at))}</span>` : ''}</span>${st}</div>`;
+};
+
+function viewCurso() {
+  const s = A.schedule, docs = A.docs || [];
+  const next = nextSession();
+  return `<section class="view" aria-labelledby="h-curso">
+  ${topBar('h-curso', 'Mi curso', `Nivel ${esc(A.profile.level)} · tus clases y los documentos de tu programa`)}
+  <div class="bento">
+    <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2>${s ? `<span class="pill ghost">${esc(s.group.name)}</span>` : ''}</div>
+      ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(sessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
+        <p class="muted" style="font-size:13px;margin-top:12px">Horario fijo de tu grupo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
+        ${next && s.group.zoom_link ? `<a class="btn btn-dark" style="margin-top:14px" href="${esc(s.group.zoom_link)}" target="_blank" rel="noopener">${icon('video')}Entrar a la clase</a>` : ''}`
+        : '<p class="muted">Pathway te asignará pronto a un grupo con su horario.</p>'}</article>
+    <article class="tile c-6"><div class="tile-head"><h2>Tu programa</h2><span class="pill ghost">${esc(A.profile.level)}</span></div>
+      ${docs.length ? docs.map(d => `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b></span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button></div>`).join('')
+        : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
+  </div></section>`;
+}
+
+function viewHorarios() {
+  const admin = A.profile.role === 'admin';
+  const groups = A.staff.groups || [];
+  const changes = A.staff.changes;
+  const pending = changes.filter(c => c.status === 'pending');
+  const ed = A.staff.groupEditing;
+  const inGroup = new Set(groups.flatMap(g => g.members.map(m => m.id)));
+  const noGroup = admin && A.staff.members ? A.staff.members.filter(m => m.role === 'student' && !inGroup.has(m.id)) : [];
+  const changeRow = c => `<div class="err-row"><span><b>${esc(c.group)}</b> · ${c.new_at ? `mover la clase del ${esc(sessionLabel(c.original_at))} al ${esc(sessionLabel(c.new_at))}` : `cancelar la clase del ${esc(sessionLabel(c.original_at))}`}<br><span class="muted" style="font-size:13px">${esc(c.requested_by || '—')}${c.reason ? ' · ' + esc(c.reason) : ''}</span></span>
+    ${c.status === 'pending' ? (admin ? `<span style="display:flex;gap:6px"><button class="btn btn-dark btn-sm" type="button" data-chg="${c.id}" data-ok="1">Aprobar</button><button class="btn btn-light btn-sm" type="button" data-chg="${c.id}" data-ok="0">Rechazar</button></span>` : '<span class="status warn">Pendiente</span>')
+      : c.status === 'approved' ? '<span class="status">Aprobado</span>' : '<span class="status bad">Rechazado</span>'}</div>`;
+  const groupTile = g => ed === g.id ? groupForm(g) : `<article class="tile c-6"><div class="tile-head"><h2>${esc(g.name)}</h2><span class="pill ghost">${esc(g.level)}</span></div>
+      <p style="font-weight:600">${esc(slotsText(g))}</p>
+      <p class="muted" style="font-size:14px;margin-top:6px">${esc(g.teacher || 'Sin profesor')} · ${g.members.length ? g.members.map(m => esc(m.full_name)).join(', ') : 'sin alumnos'}</p>
+      <div class="chips" style="margin-top:12px"><span class="pill ghost num">${g.month.planned} clases este mes</span><span class="pill ghost num">${g.month.done} dadas</span>${g.month.moved ? `<span class="pill ghost num">${g.month.moved} movida${g.month.moved > 1 ? 's' : ''}</span>` : ''}${g.month.cancelled ? `<span class="pill ghost num">${g.month.cancelled} cancelada${g.month.cancelled > 1 ? 's' : ''}</span>` : ''}</div>
+      <div style="margin-top:10px">${g.upcoming.filter(x => new Date(x.at) > Date.now()).slice(0, 3).map(sessionRow).join('') || '<p class="muted">Sin clases próximas.</p>'}</div>
+      ${g.zoom_link ? '' : '<p class="form-error" style="margin-top:8px">Falta el enlace de Zoom.</p>'}
+      ${admin ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-group-edit="${g.id}">Editar</button>` : ''}</article>`;
+  const askable = groups.map(g => [g, g.upcoming.filter(x => x.status === 'planned' && new Date(x.at) > Date.now())]).filter(([, l]) => l.length);
+  const now = new Date(Date.now() + 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T19:00`;
+  return `<section class="view" aria-labelledby="h-horarios">
+  ${topBar('h-horarios', 'Horarios', admin ? 'Grupos, horarios fijos y cambios por validar' : 'Tus grupos y sus horarios fijos')}
+  <div class="bento">
+    ${changes.length || admin ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
+      ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('') || '<p class="muted">Ningún cambio por validar.</p>'}</article>` : ''}
+    ${noGroup.length ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
+      <p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}</article>` : ''}
+    ${askable.length ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Mover o cancelar una clase' : 'Solicitar un cambio'}</h2></div>
+      <p class="muted" style="font-size:14px;margin:-6px 0 16px">${admin ? 'Como admin, el cambio se aplica directamente.' : 'El horario es fijo: el cambio se aplica cuando Pathway lo aprueba.'}</p>
+      <form id="chgForm" class="form">
+        <label class="field" for="chgSession">Clase<select id="chgSession" required>${askable.map(([g, l]) => `<optgroup label="${esc(g.name)}">${l.slice(0, 8).map(x => `<option value="${g.id}|${x.scheduled_at}">${esc(cap(sessionLabel(x.at)))}</option>`).join('')}</optgroup>`).join('')}</select></label>
+        <div class="form-2"><label class="field" for="chgKind">Cambio<select id="chgKind"><option value="move">Mover</option><option value="cancel">Cancelar</option></select></label>
+          <label class="field" for="chgAt">Nueva fecha y hora (tu hora local)<input id="chgAt" type="datetime-local" value="${localDefault}"></label></div>
+        <label class="field" for="chgWhy">Motivo<input id="chgWhy" maxlength="300" required placeholder="Feriado, cita médica…"></label>
+        <button class="btn btn-dark" type="submit">${admin ? 'Aplicar el cambio' : 'Enviar la solicitud'}</button>
+      </form></article>` : ''}
+    ${groups.map(groupTile).join('')}
+    ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Nuevo grupo</h2><p class="muted">Un grupo por horario: una clase privada es un grupo de un alumno.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Crear un grupo</button></article>`) : ''}
+    ${!groups.length && !admin ? '<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">Pathway crea los grupos con su horario fijo; aparecerán aquí.</p></article>' : ''}
+  </div></section>`;
+}
+
+function groupForm(g) {
+  const students = (A.staff.members || []).filter(m => m.role === 'student');
+  const members = new Set(g ? g.members.map(m => m.id) : []);
+  const slots = g ? g.slots : [];
+  const slotRow = i => { const s = slots[i] || {}; return `<div class="form-2" style="grid-template-columns:1.3fr 1fr 1fr"><label class="field" for="gsDay${i}">Día ${i + 1}<select id="gsDay${i}"><option value="">—</option>${WEEKDAYS.slice(1).map((d, k) => `<option value="${k + 1}" ${s.weekday === k + 1 ? 'selected' : ''}>${d}</option>`).join('')}</select></label><label class="field" for="gsTime${i}">Hora<input id="gsTime${i}" type="time" value="${esc(s.start_time || '19:00')}"></label><label class="field" for="gsDur${i}">Minutos<input id="gsDur${i}" type="number" min="15" max="240" step="15" value="${s.duration_min || 60}"></label></div>`; };
+  return `<article class="tile"><div class="tile-head"><h2>${g ? 'Editar ' + esc(g.name) : 'Nuevo grupo'}</h2></div>
+    <form id="groupForm" class="form" data-group-id="${g ? g.id : ''}">
+      <div class="form-2"><label class="field" for="gName">Nombre<input id="gName" required maxlength="80" value="${esc(g ? g.name : '')}" placeholder="Lucía · A2 · lun y mié"></label>
+        <label class="field" for="gTeacher">Profesor<select id="gTeacher">${A.staff.teachers.map(t => `<option value="${t.id}" ${(g ? g.teacher_id : A.profile.id) === t.id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label></div>
+      <div class="form-2"><label class="field" for="gLevel">Nivel<select id="gLevel">${LEVELS.map(l => `<option ${l === (g ? g.level : 'A2') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="field" for="gTz">Zona horaria del horario<select id="gTz">${TIMEZONES.map(([v, n]) => `<option value="${v}" ${v === (g ? g.timezone : 'America/Lima') ? 'selected' : ''}>${n}</option>`).join('')}</select></label></div>
+      <label class="field" for="gZoom">Enlace de Zoom<input id="gZoom" type="url" value="${esc(g && g.zoom_link || '')}" placeholder="https://zoom.us/j/…"></label>
+      ${[0, 1, 2, 3].map(slotRow).join('')}
+      <div class="field">Alumnos <span class="muted" style="font-weight:400">(pasan al nivel y al profesor del grupo)</span><div class="chips">${students.map((m, i) => `<label for="gm${i}"><input type="checkbox" id="gm${i}" value="${m.id}" ${members.has(m.id) ? 'checked' : ''}><span>${esc(m.full_name)}</span></label>`).join('') || '<span class="muted">Todavía no hay alumnos.</span>'}</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-group-cancel>Cancelar</button>${g ? `<button class="btn btn-light" type="button" data-group-delete="${g.id}" style="margin-left:auto">Eliminar el grupo</button>` : ''}</div>
+    </form></article>`;
+}
+
+function docsTile() {
+  if (A.profile.role !== 'admin' || A.docs === null) return '';
+  return `<article class="tile"><div class="tile-head"><h2>Documentos del programa</h2><span class="pill ghost num">${A.docs.length}</span></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada alumno ve los documentos de su nivel en «Mi curso» desde su primer día. Nadie tiene que enviarlos.</p>
+    ${LEVELS.map(l => { const list = A.docs.filter(d => d.level === l); return `<p class="label" style="margin-top:12px">${l}</p>${list.map(d => `<div class="err-row"><span>${esc(d.title)}</span><span style="display:flex;gap:6px"><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button><button class="btn btn-light btn-sm" type="button" data-doc-delete="${d.id}" data-doc-path="${esc(d.path)}">Quitar</button></span></div>`).join('') || '<p class="muted" style="font-size:14px">Ningún documento.</p>'}`; }).join('')}
+    <form id="docForm" class="form" style="margin-top:18px">
+      <div class="form-2"><label class="field" for="docLevel">Nivel<select id="docLevel">${LEVELS.map(l => `<option>${l}</option>`).join('')}</select></label>
+        <label class="field" for="docTitle">Título<input id="docTitle" required maxlength="120" placeholder="Manual del alumno A2"></label></div>
+      <label class="field" for="docFile">Archivo (PDF)<input id="docFile" type="file" accept="application/pdf" required></label>
+      <button class="btn btn-dark" type="submit">${icon('plus')}Añadir el documento</button>
+    </form></article>`;
+}
+
+async function openDoc(path) {
+  const win = window.open('', '_blank');
+  const { data, error } = await sb.storage.from('programa').createSignedUrl(path, 3600);
+  if (error || !data) { if (win) win.close(); return fail(error, 'No se pudo abrir el documento.'); }
+  if (win) win.location = data.signedUrl; else location.href = data.signedUrl;
+}
+
+function bindSchedule(id) {
+  $$('[data-doc]').forEach(b => b.onclick = () => openDoc(b.dataset.doc));
+  if (id === 'contenido') {
+    $$('[data-doc-delete]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      await sb.storage.from('programa').remove([b.dataset.docPath]);
+      const { error } = await sb.from('level_documents').delete().eq('id', b.dataset.docDelete);
+      if (error) { b.disabled = false; return fail(error); }
+      toast('Documento quitado.'); await refresh(); render();
+    });
+    const df = $('#docForm');
+    if (df) df.onsubmit = async e => {
+      e.preventDefault();
+      const file = $('#docFile').files[0], level = $('#docLevel').value, title = $('#docTitle').value.trim();
+      if (!file || !title) return toast('Elige un archivo y un título.');
+      const slug = title.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'documento';
+      const path = `${level}/${Date.now()}-${slug}.pdf`;
+      const btn = df.querySelector('button[type=submit]'); btn.disabled = true;
+      const up = await sb.storage.from('programa').upload(path, file, { contentType: 'application/pdf' });
+      if (up.error) { btn.disabled = false; return fail(up.error, 'No se pudo subir el archivo.'); }
+      const { error } = await sb.from('level_documents').insert({ level, title, path, position: A.docs.filter(d => d.level === level).length });
+      if (error) { btn.disabled = false; return fail(error); }
+      toast(`«${title}» añadido al programa ${level}.`); await refresh(); render();
+    };
+  }
+  if (id !== 'horarios') return;
+  $$('[data-group-edit]').forEach(b => b.onclick = () => { A.staff.groupEditing = b.dataset.groupEdit; render(); });
+  $$('[data-group-cancel]').forEach(b => b.onclick = () => { A.staff.groupEditing = null; render(); });
+  $$('[data-group-delete]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Eliminar este grupo? Sus alumnos se quedan sin horario.')) return;
+    const { error } = await sb.rpc('delete_group', { p_id: b.dataset.groupDelete });
+    if (error) return fail(error);
+    A.staff.groupEditing = null; toast('Grupo eliminado.'); await refresh(); render();
+  });
+  $$('[data-chg]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await sb.rpc('decide_schedule_change', { p_id: b.dataset.chg, p_approve: b.dataset.ok === '1' });
+    if (error) { b.disabled = false; return fail(error); }
+    toast(b.dataset.ok === '1' ? 'Cambio aprobado: los alumnos ya lo ven.' : 'Cambio rechazado.'); await refresh(); render();
+  });
+  const gf = $('#groupForm');
+  if (gf) gf.onsubmit = async e => {
+    e.preventDefault();
+    const slots = [0, 1, 2, 3].map(i => ({ weekday: +$('#gsDay' + i).value, start_time: $('#gsTime' + i).value, duration_min: +$('#gsDur' + i).value || 60 })).filter(s => s.weekday && s.start_time);
+    if (!slots.length) return toast('Añade al menos un día con su hora.');
+    const { error } = await sb.rpc('save_group', {
+      p_id: gf.dataset.groupId || null, p_name: $('#gName').value.trim(), p_teacher: $('#gTeacher').value || null, p_level: $('#gLevel').value,
+      p_zoom: $('#gZoom').value.trim(), p_timezone: $('#gTz').value, p_slots: slots, p_members: $$('#groupForm .chips input:checked').map(c => c.value)
+    });
+    if (error) return fail(error, 'No se pudo guardar el grupo.');
+    A.staff.groupEditing = null; toast('Grupo guardado: el horario ya aparece a sus alumnos.'); await refresh(); render();
+  };
+  const cf = $('#chgForm');
+  if (cf) {
+    const sync = () => { $('#chgAt').disabled = $('#chgKind').value === 'cancel'; };
+    $('#chgKind').onchange = sync; sync();
+    cf.onsubmit = async e => {
+      e.preventDefault();
+      const [group, original] = $('#chgSession').value.split('|');
+      const cancel = $('#chgKind').value === 'cancel';
+      const at = cancel ? null : new Date($('#chgAt').value);
+      if (!cancel && (!at || isNaN(at))) return toast('Elige la nueva fecha y hora.');
+      if (!cancel && at < new Date()) return toast('La nueva fecha ya pasó.');
+      const { error } = await sb.rpc('request_schedule_change', { p_group: group, p_original_at: original, p_new_at: at ? at.toISOString() : null, p_reason: $('#chgWhy').value.trim() });
+      if (error) return fail(error, /duplicate|unique/.test(error.message || '') ? 'Ya hay una solicitud para esa clase.' : 'No se pudo enviar el cambio.');
+      toast(A.profile.role === 'admin' ? 'Cambio aplicado.' : 'Solicitud enviada: el cambio se aplica cuando Pathway lo apruebe.'); await refresh(); render();
+    };
+  }
+}
+
 async function sendInvite(email) {
   const { data, error } = await sb.functions.invoke('invite-student', { body: { email } });
   if (error) return { ok: false };
@@ -736,6 +943,7 @@ function viewContenido() {
       <label class="field" for="nuTitle">Título<input id="nuTitle" maxlength="160" required placeholder="Le présent des verbes en -ir"></label>
       <button class="btn btn-dark" type="submit">${icon('plus')}Crear la unidad</button>
     </form></article>
+    ${docsTile()}
   </section>`;
 }
 
@@ -876,6 +1084,7 @@ function bindEditor() {
 }
 
 function bindView(id) {
+  bindSchedule(id);
   if (id === 'contenido') bindEditor();
   if (id === 'grupo') {
     const inf = $('#invForm');
