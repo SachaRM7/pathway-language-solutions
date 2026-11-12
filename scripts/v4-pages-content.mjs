@@ -8,8 +8,8 @@ export const ROUTES = {
   tef: { es: 'preparacion-tef-canada.html', fr: 'preparacion-tef-canada.html', en: 'preparacion-tef-canada.html', de: 'preparacion-tef-canada.html' },
   conditions: { es: 'condiciones.html', fr: 'conditions-nclc7.html', en: 'conditions-nclc7.html', de: 'conditions-nclc7.html' },
   privacy: { es: 'privacidad.html', fr: 'politique-confidentialite.html', en: 'politique-confidentialite.html', de: 'politique-confidentialite.html' },
-  cookies: { es: 'cookies.html' },
-  legal: { es: 'aviso-legal.html' },
+  cookies: { es: 'cookies.html', fr: 'cookies.html', en: 'cookies.html', de: 'cookies.html' },
+  legal: { es: 'aviso-legal.html', fr: 'mentions-legales.html', en: 'legal-notice.html', de: 'rechtliche-hinweise.html' },
   test: { es: 'test-placement.html', fr: 'test.html', en: 'test.html', de: 'test.html' },
   calculator: { es: 'calculador.html', fr: 'calculateur-crs.html', en: 'calculateur-crs.html', de: 'calculateur-crs.html' },
   inscription: { es: 'inscription.html', fr: 'inscription.html', en: 'inscription.html', de: 'inscription.html' }
