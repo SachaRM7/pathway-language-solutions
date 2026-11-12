@@ -73,7 +73,7 @@ export function renderReport(r: Report): { subject: string; html: string } {
     <h2 style="font-size:17px;margin:24px 0 8px">Élèves sans aucune activité sur le Campus cette semaine</h2>
     <p style="margin:0;font-size:14px">${r.inactive.length ? r.inactive.map(s => `${esc(s.name)}${s.teacher ? ` <span style="color:#50625c">(${esc(s.teacher)})</span>` : ''}`).join(', ') : 'Aucun : tout le monde a travaillé.'}</p>
     ${r.focus.length ? `<h2 style="font-size:17px;margin:24px 0 8px">Sorties d’onglet pendant une unité</h2><p style="margin:0;font-size:14px">${r.focus.map(f => `${esc(f.name)} : ${plural(f.times, 'fois', 'fois')}`).join(', ')}</p>` : ''}
-    <p style="margin:28px 0 0"><a href="${CAMPUS}" style="background:#122b26;color:#f5efe4;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:bold">Ouvrir « Horarios » dans le Campus</a></p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0"><tr><td style="border-radius:999px;background:#122b26;"><a href="${CAMPUS}" style="display:inline-block;padding:13px 20px;font:bold 15px/1 Arial,Helvetica,sans-serif;color:#f5efe4;text-decoration:none;white-space:nowrap;border-radius:999px;">Ouvrir « Horarios »</a></td></tr></table>
     <p style="margin:24px 0 0;font-size:12px;color:#50625c">« Sur Zoom » : cours dont Zoom a signalé le début entre 1 h avant et 1 h 30 après l’heure prévue. « Retards » : cours commencés plus de 5 minutes après l’heure prévue.</p>
   </div></body></html>`;
   return { subject: `Pathway · semaine ${period} : ${total.held}/${total.planned} cours tenus, ${total.recorded} enregistrés`, html };
