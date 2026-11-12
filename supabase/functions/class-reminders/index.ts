@@ -1,6 +1,8 @@
 // Supabase Edge Function « class-reminders » : prévient chaque élève par e-mail N minutes avant
-// son cours (campus/db/013_asistencia.sql). Appelée toutes les 5 minutes par pg_cron ; elle ne
-// fait rien tant que le rappel est désactivé dans « Horarios » → « Reglas de asistencia ».
+// son cours (campus/db/013_asistencia.sql), et l'avertit après chaque absence injustifiée
+// (campus/db/016_avisos.sql). Appelée toutes les 5 minutes par pg_cron ; le rappel ne part que
+// s'il est activé dans « Ajustes » → « Reglas de asistencia », et les avertissements que si les
+// présences et le contrat de l'élève y sont activés.
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor, nom
 // « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT » (pg_cron l'appelle
@@ -35,6 +37,8 @@ async function sendMail(key: string, to: string[], subject: string, html: string
 
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
+type Warning = { student_id: string; name: string; email: string; timezone: string | null; teacher: string | null; n: number; max: number;
+  period_start: string; last_at: string; last_kind: 'absent' | 'late'; lates: number; lates_per_absence: number; motives: string[] };
 type Due = { student_id: string; name: string; email: string; timezone: string | null; group: string; teacher: string | null; scheduled_at: string; at: string; status: string };
 
 // Same look as the Campus login email (supabase/templates/magic-link.html): Pathway logo, white
@@ -109,6 +113,35 @@ export function renderReminder(d: Due): { subject: string; html: string } {
   };
 }
 
+const ORDINAL = ['primera', 'segunda', 'tercera', 'cuarta', 'quinta', 'sexta', 'séptima', 'octava', 'novena', 'décima'];
+// Sent after each unjustified absence (or each series of lates worth one), until the last one.
+export function renderWarning(w: Warning): { subject: string; html: string } {
+  const tz = w.timezone || 'America/Lima';
+  const date = new Intl.DateTimeFormat('es', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(w.last_at));
+  const first = (w.name || '').split(/\s+/)[0] || '';
+  const left = Math.max(1, w.max - w.n), last = left === 1;
+  const what = w.last_kind === 'late'
+    ? `Llegaste tarde ${w.lates} ${w.lates === 1 ? 'vez' : 'veces'} (la última, el ${esc(date)}): según tu compromiso, ${w.lates_per_absence === 1 ? 'cada retraso cuenta' : `${w.lates_per_absence} retrasos cuentan`} como una ausencia.`
+    : `No asististe a tu última clase, la del ${esc(date)}.`;
+  const count = w.n > 1 ? ` Es la ${ORDINAL[w.n - 1] || `${w.n}.ª`} vez.` : '';
+  const then = last
+    ? '<b>A la próxima ausencia injustificada, quedarás fuera de Pathway.</b>'
+    : `<b>Si faltas a ${left} clases más sin justificación, quedarás fuera de Pathway.</b>`;
+  const motives = (w.motives || []).filter(Boolean);
+  const body = h1(last ? `${first ? `${esc(first)}, este` : 'Este'} es tu último aviso` : `${first ? `${esc(first)}, faltaste` : 'Faltaste'} a tu clase`)
+    + para('Atención: te comprometiste a asistir a todas nuestras clases.')
+    + panel(`<p style="margin:0;font:400 16px/1.6 ${FONT};color:#141414;">${what}${count}</p><p style="margin:10px 0 0;font:400 16px/1.6 ${FONT};color:#9a3412;">${then}</p>`, '#fff1ea')
+    + (last && motives.length ? `<p style="margin:0 0 8px;font:700 15px/1.5 ${FONT};color:#141414;">Te recordamos que los únicos motivos de ausencia justificada son:</p>
+        <ul style="margin:0 0 20px;padding-left:20px;font:400 15px/1.7 ${FONT};color:#5f5f66;">${motives.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : '')
+    + para(`Si tu ausencia tenía ${last && motives.length ? 'uno de estos motivos' : 'un motivo justificado'}, envía el comprobante a ${w.teacher ? esc(w.teacher) : 'tu profesor'}: la justificará en el campus y dejará de contar.`, 'font-size:15px;')
+    + button(CAMPUS, 'Ver mi asistencia')
+    + small('Estas reglas son las del compromiso que firmaste al empezar. Puedes releerlo en «Mi curso».');
+  return {
+    subject: last ? 'Último aviso: a la próxima ausencia, quedas fuera de Pathway' : `Aviso de ausencia · ${date}`,
+    html: layout({ lang: 'es', title: last ? 'Último aviso' : 'Aviso de ausencia', preview: last ? 'A la próxima ausencia injustificada, quedarás fuera de Pathway.' : `No asististe a tu clase del ${date}.`, tag: 'CAMPUS PATHWAY', hero: last ? 'Último aviso' : 'Aviso', body })
+  };
+}
+
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
@@ -124,7 +157,13 @@ Deno.serve(async req => {
     const at = new Date(Date.now() + 60 * 60000).toISOString();
     const { subject, html } = renderReminder({ student_id: '', name: caller.name, email: caller.email, timezone: caller.timezone || 'America/Lima', group: 'Grupo de prueba', teacher: 'Pathway', scheduled_at: at, at, status: 'planned' });
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
-    return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
+    const { data: ct } = await supabase.from('campus_settings').select('value').eq('key', 'contract').maybeSingle();
+    const cfg = (ct && ct.value) || {};
+    const max = Number(cfg.max_absences) || 3;
+    const warn = renderWarning({ student_id: '', name: caller.name, email: caller.email, timezone: caller.timezone || 'America/Lima', teacher: 'Pathway', n: Math.max(1, max - 1), max,
+      period_start: at, last_at: new Date(Date.now() - 864e5).toISOString(), last_kind: 'absent', lates: 0, lates_per_absence: Number(cfg.lates_per_absence) || 3, motives: cfg.motives || [] });
+    const sent2 = await sendMail(key, [caller.email], `[Prueba] ${warn.subject}`, warn.html);
+    return sent.ok && sent2.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.ok ? sent2.status : sent.status });
   }
 
   // Automatic run: only pg_cron, which sends the shared secret (db/014_cron_secreto.sql).
@@ -133,9 +172,22 @@ Deno.serve(async req => {
   const { data, error } = await supabase.rpc('due_reminders');
   if (error) return json(500, { error: 'query_failed' });
   const due = (data || []) as Due[];
-  if (!due.length) return json(200, { sent: 0 });
+  // Without db/016_avisos.sql the call fails: no warnings, reminders unchanged.
+  const { data: wd } = await supabase.rpc('due_absence_warnings');
+  const warnings = (wd || []) as Warning[];
+  if (!due.length && !warnings.length) return json(200, { sent: 0 });
   const key = Deno.env.get('RESEND_API_KEY');
   if (!key) return json(500, { error: 'missing_resend_key' });
+
+  let warned = 0;
+  for (const w of warnings) {
+    const { data: claimed } = await supabase.rpc('claim_absence_warning', { p_student: w.student_id, p_period: w.period_start, p_n: w.n });
+    if (claimed !== true) continue;
+    const { subject, html } = renderWarning(w);
+    const res = await sendMail(key, [w.email], subject, html);
+    if (res.ok) warned++;
+    else await supabase.from('absence_warnings').delete().eq('student_id', w.student_id).eq('period_start', w.period_start).eq('n', w.n);
+  }
 
   let sent = 0;
   for (const d of due) {
@@ -146,5 +198,5 @@ Deno.serve(async req => {
     if (res.ok) sent++;
     else await supabase.from('class_reminders_sent').delete().eq('student_id', d.student_id).eq('scheduled_at', d.scheduled_at);
   }
-  return json(200, { sent, due: due.length });
+  return json(200, { sent, due: due.length, warned });
 });
