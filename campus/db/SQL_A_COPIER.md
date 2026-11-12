@@ -1730,7 +1730,7 @@ export function renderReport(r: Report): { subject: string; html: string } {
     <h2 style="font-size:17px;margin:24px 0 8px">Élèves sans aucune activité sur le Campus cette semaine</h2>
     <p style="margin:0;font-size:14px">${r.inactive.length ? r.inactive.map(s => `${esc(s.name)}${s.teacher ? ` <span style="color:#50625c">(${esc(s.teacher)})</span>` : ''}`).join(', ') : 'Aucun : tout le monde a travaillé.'}</p>
     ${r.focus.length ? `<h2 style="font-size:17px;margin:24px 0 8px">Sorties d’onglet pendant une unité</h2><p style="margin:0;font-size:14px">${r.focus.map(f => `${esc(f.name)} : ${plural(f.times, 'fois', 'fois')}`).join(', ')}</p>` : ''}
-    <p style="margin:28px 0 0"><a href="${CAMPUS}" style="background:#122b26;color:#f5efe4;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:bold">Ouvrir « Horarios » dans le Campus</a></p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0"><tr><td style="border-radius:999px;background:#122b26;"><a href="${CAMPUS}" style="display:inline-block;padding:13px 20px;font:bold 15px/1 Arial,Helvetica,sans-serif;color:#f5efe4;text-decoration:none;white-space:nowrap;border-radius:999px;">Ouvrir « Horarios »</a></td></tr></table>
     <p style="margin:24px 0 0;font-size:12px;color:#50625c">« Sur Zoom » : cours dont Zoom a signalé le début entre 1 h avant et 1 h 30 après l’heure prévue. « Retards » : cours commencés plus de 5 minutes après l’heure prévue.</p>
   </div></body></html>`;
   return { subject: `Pathway · semaine ${period} : ${total.held}/${total.planned} cours tenus, ${total.recorded} enregistrés`, html };
@@ -2176,15 +2176,15 @@ const json = (status: number, body: Record<string, unknown>) =>
 // Test from the Campus (admin only): the caller's own session decides, and the email goes to them.
 const SITE = 'https://pathway-languages.com';
 const cors = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
-async function adminCaller(req: Request): Promise<{ email: string; name: string } | null> {
+async function adminCaller(req: Request): Promise<{ email: string; name: string; timezone?: string } | null> {
   const authorization = req.headers.get('Authorization') ?? '';
   if (!authorization.startsWith('Bearer ')) return null;
   const asCaller = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authorization } } });
   const { data: user } = await asCaller.auth.getUser();
   const { data: role } = await asCaller.rpc('my_role');
   if (!user?.user?.email || role !== 'admin') return null;
-  const { data: me } = await asCaller.from('profiles').select('full_name').eq('id', user.user.id).single();
-  return { email: user.user.email, name: me?.full_name || '' };
+  const { data: me } = await asCaller.from('profiles').select('full_name, timezone').eq('id', user.user.id).single();
+  return { email: user.user.email, name: me?.full_name || '', timezone: me?.timezone };
 }
 async function sendMail(key: string, to: string[], subject: string, html: string) {
   return fetch('https://api.resend.com/emails', {
@@ -2213,7 +2213,7 @@ export function renderReminder(d: Due): { subject: string; html: string } {
     ${moved}
     <p style="margin:0 0 6px;font-size:16px"><b>${esc(fmt(d.at, { weekday: 'long', day: 'numeric', month: 'long' }))} a las ${esc(hour)}</b> (tu hora local)</p>
     <p style="margin:0 0 20px;font-size:15px;color:#50625c">${esc(d.group)}${d.teacher ? ` · con ${esc(d.teacher)}` : ''}</p>
-    <p style="margin:0 0 22px"><a href="${CAMPUS}" style="background:#122b26;color:#f5efe4;padding:13px 20px;border-radius:999px;text-decoration:none;font-weight:bold">Entrar a la clase desde el campus</a></p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px"><tr><td style="border-radius:999px;background:#122b26;"><a href="${CAMPUS}" style="display:inline-block;padding:14px 22px;font:bold 15px/1 Arial,Helvetica,sans-serif;color:#f5efe4;text-decoration:none;white-space:nowrap;border-radius:999px;">Entrar a la clase</a></td></tr></table>
     <p style="margin:0;font-size:13px;color:#50625c">Entra siempre por el campus: así tu asistencia queda registrada.</p>
   </div></body></html>`;
   return { subject: `Tu clase empieza en ${when} · ${hour}`, html };
@@ -2232,7 +2232,7 @@ Deno.serve(async req => {
     const key = Deno.env.get('RESEND_API_KEY');
     if (!key) return json(500, { error: 'missing_resend_key' });
     const at = new Date(Date.now() + 60 * 60000).toISOString();
-    const { subject, html } = renderReminder({ student_id: '', name: caller.name, email: caller.email, timezone: 'America/Lima', group: 'Grupo de prueba', teacher: 'Pathway', scheduled_at: at, at, status: 'planned' });
+    const { subject, html } = renderReminder({ student_id: '', name: caller.name, email: caller.email, timezone: caller.timezone || 'America/Lima', group: 'Grupo de prueba', teacher: 'Pathway', scheduled_at: at, at, status: 'planned' });
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
     return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
   }

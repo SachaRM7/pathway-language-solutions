@@ -130,7 +130,7 @@ function showLogin(err, sent = false) {
           <input id="loginCode" class="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="${OTP_LEN}" pattern="[0-9]*" aria-describedby="otpHint" spellcheck="false">
           <div class="otp-boxes" aria-hidden="true">${Array.from({ length: OTP_LEN }, (_, i) => `<span class="otp-box" style="--i:${i}"><b></b></span>`).join('')}<i class="otp-caret"></i></div>
         </div>
-        <p class="otp-hint" id="otpHint">En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).</p>
+        <p class="otp-hint" id="otpHint">Pega el código del correo. Con la app Mail del iPhone, también aparece encima del teclado.</p>
         <button class="btn btn-dark" type="submit">Entrar con el código</button>
       </form>
       <button class="ob-link" type="button" id="otherEmail" style="justify-self:start">Usar otro correo</button>`;
@@ -140,7 +140,7 @@ function showLogin(err, sent = false) {
     // slot to slot; pasting or the phone's autofill drops the whole code in. One real input stays
     // underneath so « one-time-code » autofill (iPhone « From Mail ») keeps working.
     const otp = $('[data-otp]'), input = $('#loginCode'), boxes = $$('.otp-box', otp), caret = $('.otp-caret', otp);
-    const HINT = 'En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).';
+    const HINT = 'Pega el código del correo. Con la app Mail del iPhone, también aparece encima del teclado.';
     const slots = Array(OTP_LEN).fill('');
     let cur = 0, busy = false;
     const code = () => slots.join('');
