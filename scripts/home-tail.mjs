@@ -552,6 +552,7 @@ function closing(lang) {
   const f = T[lang].final;
   const o = T[lang].footer;
   const home = pages(lang).home;
+  const mail = lang === 'es' ? 'contacto@pathway-languages.com' : 'contact@pathway-languages.com';
   return `<section class="final-cta-v4" aria-labelledby="final-title">
       <div class="container final-cta-inner">
         <div class="final-copy"><p class="section-tag">${f.tag}</p><h2 id="final-title">${f.title}</h2><p>${f.text}</p><div class="final-actions"><a class="button button-sage" href="${pages(lang).test}" data-cta="v4-final-evaluation">${f.cta} ${arrow}</a><a class="text-link" href="${WHATSAPP}" target="_blank" rel="noopener" data-cta="v4-final-whatsapp">${f.whatsapp} ${out}</a></div></div>
@@ -564,7 +565,7 @@ function closing(lang) {
       <div class="footer-v4-main">
         <div class="footer-v4-brand"><a href="${home}" aria-label="${esc(o.home)}"><img src="/v4/assets/pathway-logo-inverse.svg" width="280" height="88" loading="lazy" alt="Pathway Language Solutions"></a><p>${o.motto}</p></div>
         <nav class="footer-v4-navigation" aria-label="${esc(o.nav)}"><h2>${o.navTitle}</h2><div>${o.links.map(([hash, label]) => `<a href="${home}${hash}">${label}</a>`).join('')}</div></nav>
-        <div class="footer-v4-contact"><h2>${o.contact}</h2><a href="mailto:contact@pathway-languages.com"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="1"/><path d="m2 5 10 8L22 5"/></svg>contact@pathway-languages.com</a><a href="${WHATSAPP}" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 12A8.5 8.5 0 0 1 8 19.5L3 21l1.5-5A8.5 8.5 0 1 1 20.5 12Z"/><path d="M8 7c-2 4 3 9 7 8l1-2-3-1-1 1-2-2 1-1-1-3Z"/></svg>+51 989 887 516</a><div class="footer-socials" data-social-links></div></div>
+        <div class="footer-v4-contact"><h2>${o.contact}</h2><a href="mailto:${mail}"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="1"/><path d="m2 5 10 8L22 5"/></svg>${mail}</a><a href="${WHATSAPP}" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 12A8.5 8.5 0 0 1 8 19.5L3 21l1.5-5A8.5 8.5 0 1 1 20.5 12Z"/><path d="M8 7c-2 4 3 9 7 8l1-2-3-1-1 1-2-2 1-1-1-3Z"/></svg>+51 989 887 516</a><div class="footer-socials" data-social-links></div></div>
       </div>
       <div class="footer-v4-bottom"><p>© <span data-year>2026</span> Pathway Language Solutions.<br> ${o.rights}</p><nav aria-label="${esc(o.legalNav)}">${o.legal.map(([key, label]) => `<a href="${LEGAL[lang][key]}">${label}</a>`).join('')}</nav></div>
     </div>

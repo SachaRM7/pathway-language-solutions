@@ -312,7 +312,7 @@ export const LINKS = Object.freeze({
     videoAssetsBase: '/assets/videos/'
   }),
   contact: Object.freeze({
-    email: 'contact@pathway-languages.com',
+    email: 'contacto@pathway-languages.com',
     whatsapp: 'https://wa.me/51989887516',
     whatsappNumber: '+51 989 887 516'
   }),

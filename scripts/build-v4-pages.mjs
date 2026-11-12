@@ -23,6 +23,9 @@ import { FLOWS, renderFlow } from './v4-flows.mjs';
 const SITE_ORIGIN = 'https://pathway-languages.com';
 const VERSION = 'pages-1';
 
+// Spanish pages show the Spanish alias; both addresses reach the same Pathway mailbox.
+export const mailOf = lang => (lang === 'es' ? 'contacto' : 'contact') + '@pathway-languages.com';
+
 export const pagePath = (lang, key) => {
   const name = ROUTES[key][lang] || ROUTES[key].es;
   return `${ROUTES[key][lang] ? prefix(lang) : '/v4/'}${name}`;
@@ -222,7 +225,7 @@ function legalPage(lang, key, source, homeMarkup) {
     }),
     doc(lang, legal.sections, key === 'conditions' ? 'compromiso-nclc7' : ''),
     key === 'privacy'
-      ? cta(lang, { title: ctaTitle, text: ctaText, primary: ['mailto:contact@pathway-languages.com', mailLabel], secondary: ['https://wa.me/51989887516', ui.whatsapp] })
+      ? cta(lang, { title: ctaTitle, text: ctaText, primary: [`mailto:${mailOf(lang)}`, mailLabel], secondary: ['https://wa.me/51989887516', ui.whatsapp] })
       : cta(lang, { title: ctaTitle, text: ctaText })
   ].join('\n');
   return shell({ lang, key, title: legal.h1, description: legal.lead, main, homeMarkup });
@@ -235,7 +238,7 @@ function newLegalPage(key, homeMarkup, lang = 'es') {
   const main = [
     hero({ lang, trail: [ui.legal, copy.title], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead), `<small>${esc(ui.updated)}</small>`], long: true, aside: card(copy.card) }),
     doc(lang, copy.sections),
-    cta(lang, { title: askTitle, text: askText, primary: ['mailto:contact@pathway-languages.com', mailLabel] })
+    cta(lang, { title: askTitle, text: askText, primary: [`mailto:${mailOf(lang)}`, mailLabel] })
   ].join('\n');
   return shell({ lang, key, title: copy.title, description: copy.description, main, homeMarkup });
 }
