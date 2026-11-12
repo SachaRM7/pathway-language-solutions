@@ -368,7 +368,6 @@ function storyCard(video, index, s, lang) {
             </button></li>`;
 }
 
-const monthYear = (value, locale) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}-15T12:00:00Z`));
 // Claimed only for the TCF Canada with its four tests (IRCC equivalence table).
 const reachesNclc7 = result => result.exam === 'TCF Canada' && result.skills.length === 4
   && result.skills.every(skill => skill.score >= TCF_CANADA_NCLC7[skill.skill]);
@@ -382,17 +381,14 @@ function resultCard(result, s, lang) {
     return `<li><span class="rs-skill">${esc(s.skills[skill.skill])}</span><span class="rs-score">${skill.score}<small>/${skill.max}</small></span><span class="rs-scale" aria-hidden="true">${CEFR.map((code, i) => `<i${i < level ? ' class="on"' : ''}></i>`).join('')}</span><b class="rs-level">${esc(skill.level)}</b></li>`;
   }).join('');
   const meta = [result.exam, result.session ? `${s.session} ${formatDate(result.session, locale)}` : ''].filter(Boolean).join(' · ');
-  const prep = result.prep ? `<p class="rs-prep">${esc(r.prep(result.prep.hours, r.span(monthYear(result.prep.from, locale), monthYear(result.prep.to, locale))))}</p>` : '';
   const links = [
     videoIndex >= 0 ? `<button class="text-link" type="button" data-story-open="${videoIndex}"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>${esc(r.watch(result.name))}</button>` : '',
-    result.image ? `<a class="source-link" href="${esc(result.image)}" data-result-image data-result-alt="${esc(r.documentAlt(result.name))}">${esc(r.document)}</a>` : '',
-    result.document ? `<a class="source-link" href="${esc(result.document)}" data-result-image data-result-alt="${esc(r.attestationAlt(result.name))}">${esc(r.attestation)}</a>` : ''
+    result.image ? `<a class="source-link" href="${esc(result.image)}" data-result-image data-result-alt="${esc(r.documentAlt(result.name))}">${esc(r.document)}</a>` : ''
   ].join('');
   return `<article class="result-card">
             <header><span class="rs-avatar" aria-hidden="true">${esc(initials(result.name))}</span><div><h4>${esc(result.name)}</h4><p>${esc(meta)}</p></div></header>
             ${reachesNclc7(result) ? `<p class="rs-goal"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${esc(r.nclc7)}</p>` : ''}
             <ul class="rs-skills" aria-label="${esc(s.levelScale)}">${rows}</ul>
-            ${prep}
             <footer>${links}</footer>
           </article>`;
 }
