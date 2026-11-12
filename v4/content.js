@@ -191,26 +191,61 @@ export const VIDEO_TESTIMONIALS = Object.freeze([
 
 /**
  * Resultados oficiales compartidos por alumnos (Drive « Témoignages »).
- * Puntuaciones copiadas de la captura del portal oficial; image: captura
- * publicada (null mientras no se haya recibido). video: nombre en
- * VIDEO_TESTIMONIALS cuando la misma persona grabó un testimonio.
- * CO y CE se puntúan sobre 699; EE y EO sobre 20.
+ * Puntuaciones copiadas de la captura del portal oficial (France Éducation
+ * international). image: captura publicada, recortada para no mostrar datos
+ * personales (foto, fecha de nacimiento, código). document: otro documento
+ * (constancia Pathway). video: nombre en VIDEO_TESTIMONIALS cuando la misma
+ * persona grabó un testimonio. prep: preparación indicada en la constancia.
+ * CO y CE se puntúan sobre 699; EE y EO sobre 20. session: null si la
+ * captura no muestra la fecha.
  */
 export const EXAM_RESULTS = Object.freeze([
+  Object.freeze({
+    name: 'Devon',
+    exam: 'TCF Canada',
+    session: '2026-10-07',
+    video: 'Devon',
+    image: '/assets/resultados/resultado-tcf-devon.jpg',
+    skills: Object.freeze([
+      Object.freeze({ skill: 'co', score: 644, max: 699, level: 'C2' }),
+      Object.freeze({ skill: 'ce', score: 690, max: 699, level: 'C2' }),
+      Object.freeze({ skill: 'eo', score: 13, max: 20, level: 'B2' }),
+      Object.freeze({ skill: 'ee', score: 13, max: 20, level: 'B2' })
+    ])
+  }),
   Object.freeze({
     name: 'Yazmin',
     exam: 'TCF Québec',
     session: '2026-09-03',
     video: 'Yazmin',
     image: null,
+    document: '/assets/resultados/constancia-yazmin.jpg',
+    prep: Object.freeze({ hours: 88, from: '2026-02', to: '2026-07' }),
     skills: Object.freeze([
       Object.freeze({ skill: 'co', score: 444, max: 699, level: 'B2' }),
       Object.freeze({ skill: 'ce', score: 435, max: 699, level: 'B2' }),
       Object.freeze({ skill: 'eo', score: 12, max: 20, level: 'B2' }),
       Object.freeze({ skill: 'ee', score: 8, max: 20, level: 'B1' })
     ])
+  }),
+  Object.freeze({
+    name: 'Luz',
+    exam: 'TCF',
+    session: null,
+    video: null,
+    image: '/assets/resultados/resultado-tcf-luz.jpg',
+    skills: Object.freeze([
+      Object.freeze({ skill: 'co', score: 541, max: 699, level: 'C1' }),
+      Object.freeze({ skill: 'eo', score: 10, max: 20, level: 'B2' })
+    ])
   })
 ]);
+
+/**
+ * Umbral NCLC 7 del TCF Canada (tabla de equivalencias de IRCC): CO 458,
+ * CE 453, EE 10, EO 10. Solo se afirma con las cuatro pruebas del TCF Canada.
+ */
+export const TCF_CANADA_NCLC7 = Object.freeze({ co: 458, ce: 453, ee: 10, eo: 10 });
 
 /** Dieciséis opiniones escritas condensadas (index.html #historias). */
 export const WRITTEN_TESTIMONIALS = Object.freeze([

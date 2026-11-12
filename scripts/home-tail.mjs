@@ -7,7 +7,7 @@
 // Express Entry, Canadian Experience Class, Superprof and people's names stay
 // as they are.
 
-import { VIDEO_TESTIMONIALS, WRITTEN_TESTIMONIALS, EXAM_RESULTS, LINKS } from '../v4/content.js';
+import { VIDEO_TESTIMONIALS, WRITTEN_TESTIMONIALS, EXAM_RESULTS, TCF_CANADA_NCLC7, LINKS } from '../v4/content.js';
 import { REVIEW_QUOTES, pages, t as runtime } from '../v4/i18n.js';
 import { renderPricing, escapeHtml as esc } from '../v4/render.js';
 
@@ -25,7 +25,7 @@ const T = {
   es: {
     stories: {
       tag: 'Historias reales', title: 'Lo cuentan quienes<br> ya aprendieron con Pathway.', lead: 'Distintas realidades, un mismo acompañamiento.',
-      stats: n => [[n.videos, 'testimonios en vídeo'], [n.reviews, 'recomendaciones públicas en Superprof'], ['TCF', 'resultados oficiales compartidos']],
+      stats: n => [[n.videos, 'testimonios en vídeo'], [n.reviews, 'recomendaciones públicas en Superprof'], [n.results, 'resultados oficiales TCF compartidos']],
       reel: 'Testimonios en vídeo', reelNote: 'Grabados por nuestros alumnos, en español.', previous: 'Testimonios anteriores', next: 'Testimonios siguientes',
       resultsTag: 'Resultados oficiales', resultsTitle: 'Resultados reales,<br> no promesas.',
       resultsText: 'Capturas del portal oficial del TCF, compartidas por nuestros alumnos al recibir sus resultados.',
@@ -105,7 +105,7 @@ const T = {
   fr: {
     stories: {
       tag: 'Histoires vraies', title: 'Ils et elles ont appris<br> avec Pathway, et le racontent.', lead: 'Des réalités différentes, un même accompagnement.',
-      stats: n => [[n.videos, 'témoignages vidéo'], [n.reviews, 'recommandations publiques sur Superprof'], ['TCF', 'résultats officiels partagés']],
+      stats: n => [[n.videos, 'témoignages vidéo'], [n.reviews, 'recommandations publiques sur Superprof'], [n.results, 'résultats officiels TCF partagés']],
       reel: 'Témoignages vidéo', reelNote: 'Enregistrés par nos élèves, en espagnol.', previous: 'Témoignages précédents', next: 'Témoignages suivants',
       resultsTag: 'Résultats officiels', resultsTitle: 'Des résultats réels,<br> pas des promesses.',
       resultsText: 'Captures du portail officiel du TCF, partagées par nos élèves à la réception de leurs résultats.',
@@ -185,7 +185,7 @@ const T = {
   en: {
     stories: {
       tag: 'Real stories', title: 'Told by the people<br> who learned with Pathway.', lead: 'Different lives, the same support.',
-      stats: n => [[n.videos, 'video testimonials'], [n.reviews, 'public recommendations on Superprof'], ['TCF', 'official results shared']],
+      stats: n => [[n.videos, 'video testimonials'], [n.reviews, 'public recommendations on Superprof'], [n.results, 'official TCF results shared']],
       reel: 'Video testimonials', reelNote: 'Recorded by our students, in Spanish.', previous: 'Previous testimonials', next: 'Next testimonials',
       resultsTag: 'Official results', resultsTitle: 'Real results,<br> not promises.',
       resultsText: 'Screenshots from the official TCF portal, shared by our students when they received their results.',
@@ -265,7 +265,7 @@ const T = {
   de: {
     stories: {
       tag: 'Echte Geschichten', title: 'Erzählt von denen,<br> die mit Pathway gelernt haben.', lead: 'Unterschiedliche Lebenswege, dieselbe Begleitung.',
-      stats: n => [[n.videos, 'Video-Erfahrungsberichte'], [n.reviews, 'öffentliche Empfehlungen auf Superprof'], ['TCF', 'geteilte offizielle Ergebnisse']],
+      stats: n => [[n.videos, 'Video-Erfahrungsberichte'], [n.reviews, 'öffentliche Empfehlungen auf Superprof'], [n.results, 'geteilte offizielle TCF-Ergebnisse']],
       reel: 'Video-Erfahrungsberichte', reelNote: 'Von unseren Lernenden aufgenommen, auf Spanisch.', previous: 'Vorherige Berichte', next: 'Nächste Berichte',
       resultsTag: 'Offizielle Ergebnisse', resultsTitle: 'Echte Ergebnisse,<br> keine Versprechen.',
       resultsText: 'Screenshots aus dem offiziellen TCF-Portal, geteilt von unseren Lernenden, als sie ihre Ergebnisse erhielten.',
@@ -359,25 +359,41 @@ function storyCard(video, index, s, lang) {
   const r = runtime(lang).stories;
   const result = EXAM_RESULTS.find(item => item.video === video.name);
   const best = result ? result.skills.map(skill => skill.level).sort().at(-1) : '';
+  const examShort = result ? (result.exam === 'TCF Canada' ? 'TCF Canada' : result.exam.split(' ')[0]) : '';
   return `<li class="reel-item"><button class="reel-card" type="button" data-story-open="${index}" aria-label="${esc(r.play(video.name))}">
               <img src="${esc(video.poster)}" alt="" loading="lazy" decoding="async" width="270" height="480">
               <span class="reel-play" aria-hidden="true"><svg class="icon"><use href="#i-play"/></svg></span>
-              ${result ? `<span class="reel-badge">${esc(result.exam.split(' ')[0])} · ${esc(best)}</span>` : ''}
+              ${result ? `<span class="reel-badge">${esc(examShort)} · ${esc(best)}</span>` : ''}
               <span class="reel-meta"><strong>${esc(video.name)}</strong><small>${esc(video.duration)}</small></span>
             </button></li>`;
 }
 
+const monthYear = (value, locale) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}-15T12:00:00Z`));
+// Claimed only for the TCF Canada with its four tests (IRCC equivalence table).
+const reachesNclc7 = result => result.exam === 'TCF Canada' && result.skills.length === 4
+  && result.skills.every(skill => skill.score >= TCF_CANADA_NCLC7[skill.skill]);
+
 function resultCard(result, s, lang) {
   const r = runtime(lang).stories;
-  const videoIndex = VIDEO_TESTIMONIALS.findIndex(video => video.name === result.video);
+  const locale = runtime(lang).locale;
+  const videoIndex = result.video ? VIDEO_TESTIMONIALS.findIndex(video => video.name === result.video) : -1;
   const rows = result.skills.map(skill => {
     const level = CEFR.indexOf(skill.level) + 1;
     return `<li><span class="rs-skill">${esc(s.skills[skill.skill])}</span><span class="rs-score">${skill.score}<small>/${skill.max}</small></span><span class="rs-scale" aria-hidden="true">${CEFR.map((code, i) => `<i${i < level ? ' class="on"' : ''}></i>`).join('')}</span><b class="rs-level">${esc(skill.level)}</b></li>`;
   }).join('');
+  const meta = [result.exam, result.session ? `${s.session} ${formatDate(result.session, locale)}` : ''].filter(Boolean).join(' · ');
+  const prep = result.prep ? `<p class="rs-prep">${esc(r.prep(result.prep.hours, r.span(monthYear(result.prep.from, locale), monthYear(result.prep.to, locale))))}</p>` : '';
+  const links = [
+    videoIndex >= 0 ? `<button class="text-link" type="button" data-story-open="${videoIndex}"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>${esc(r.watch(result.name))}</button>` : '',
+    result.image ? `<a class="source-link" href="${esc(result.image)}" data-result-image data-result-alt="${esc(r.documentAlt(result.name))}">${esc(r.document)}</a>` : '',
+    result.document ? `<a class="source-link" href="${esc(result.document)}" data-result-image data-result-alt="${esc(r.attestationAlt(result.name))}">${esc(r.attestation)}</a>` : ''
+  ].join('');
   return `<article class="result-card">
-            <header><span class="rs-avatar" aria-hidden="true">${esc(initials(result.name))}</span><div><h4>${esc(result.name)}</h4><p>${esc(result.exam)} · ${esc(s.session)} ${esc(formatDate(result.session, runtime(lang).locale))}</p></div></header>
+            <header><span class="rs-avatar" aria-hidden="true">${esc(initials(result.name))}</span><div><h4>${esc(result.name)}</h4><p>${esc(meta)}</p></div></header>
+            ${reachesNclc7(result) ? `<p class="rs-goal"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${esc(r.nclc7)}</p>` : ''}
             <ul class="rs-skills" aria-label="${esc(s.levelScale)}">${rows}</ul>
-            <footer>${videoIndex >= 0 ? `<button class="text-link" type="button" data-story-open="${videoIndex}"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>${esc(r.watch(result.name))}</button>` : ''}${result.image ? `<a class="source-link" href="${esc(result.image)}" data-result-image data-result-alt="${esc(r.documentAlt(result.name))}">${esc(r.document)}</a>` : ''}</footer>
+            ${prep}
+            <footer>${links}</footer>
           </article>`;
 }
 
@@ -393,7 +409,7 @@ function stories(lang) {
   const half = Math.ceil(WRITTEN_TESTIMONIALS.length / 2);
   const row = (from, to) => WRITTEN_TESTIMONIALS.slice(from, to).map((review, i) => reviewCard(review, quotes[from + i], r)).join('');
   const lane = (from, to, reverse) => `<div class="quote-lane${reverse ? ' is-reverse' : ''}"><ul class="quote-track">${row(from, to)}</ul><ul class="quote-track" aria-hidden="true">${row(from, to)}</ul></div>`;
-  const stats = s.stats({ videos: VIDEO_TESTIMONIALS.length, reviews: WRITTEN_TESTIMONIALS.length });
+  const stats = s.stats({ videos: VIDEO_TESTIMONIALS.length, reviews: WRITTEN_TESTIMONIALS.length, results: EXAM_RESULTS.length });
   return `<section class="v4-section stories-v4" id="historias" aria-labelledby="stories-title">
       <div class="container">
         <header class="stories-head">
