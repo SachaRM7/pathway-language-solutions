@@ -80,7 +80,7 @@ En vue « Profesor », un onglet par usage :
 - **Alumnos** : l'avance de chaque élève, ses absences (justificatifs à accepter, rattrapages à programmer, mois non validés : `db/017_reglas_clases.sql`) et la validation de fin de niveau.
 - **Tareas** : assigner une unité et noter une erreur entendue en cours.
 - **Horarios** : les groupes, leurs cours et les changements d'horaire.
-- **Contenido** : les unités, un niveau et un segment à la fois, et les documents du programme.
+- **Contenido** : les unités, un niveau et un segment à la fois, et les documents du programme (lus dans le Campus ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`). Amélioration possible : aujourd'hui le navigateur reçoit le PDF entier et le Campus n'affiche que les pages ouvertes ; pour un blocage strict, servir les pages unité par unité.
 - **Cuentas** : inviter des élèves et des profs ; l'admin y gère aussi tous les comptes.
 - **Ajustes** (admin) : les règles d'assistance, le rappel avant les cours, le contrat de l'élève (`db/015_contrato.sql`) et les e-mails de test.
 
