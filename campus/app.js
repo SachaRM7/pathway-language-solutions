@@ -128,53 +128,95 @@ function showLogin(err, sent = false) {
         <label class="otp-label" for="loginCode">O escribe el código del correo</label>
         <div class="otp" data-otp style="--n:${OTP_LEN}">
           <input id="loginCode" class="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="${OTP_LEN}" pattern="[0-9]*" aria-describedby="otpHint" spellcheck="false">
-          <div class="otp-boxes" aria-hidden="true">${Array.from({ length: OTP_LEN }, () => '<span class="otp-box"><b></b><i class="otp-caret"></i></span>').join('')}</div>
+          <div class="otp-boxes" aria-hidden="true">${Array.from({ length: OTP_LEN }, (_, i) => `<span class="otp-box" style="--i:${i}"><b></b></span>`).join('')}<i class="otp-caret"></i></div>
         </div>
         <p class="otp-hint" id="otpHint">En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).</p>
         <button class="btn btn-dark" type="submit">Entrar con el código</button>
       </form>
       <button class="ob-link" type="button" id="otherEmail" style="justify-self:start">Usar otro correo</button>`;
     $('#otherEmail').onclick = () => showLogin('');
-    const otp = $('[data-otp]'), input = $('#loginCode'), boxes = $$('.otp-box', otp);
-    let busy = false;
-    const paint = () => {
-      const v = input.value;
+    // Login code (RareUI-style slots): typing fills a slot and moves on; Backspace clears the
+    // slot in place, then steps back on the next press; arrows move the caret, which slides from
+    // slot to slot; pasting or the phone's autofill drops the whole code in. One real input stays
+    // underneath so « one-time-code » autofill (iPhone « From Mail ») keeps working.
+    const otp = $('[data-otp]'), input = $('#loginCode'), boxes = $$('.otp-box', otp), caret = $('.otp-caret', otp);
+    const HINT = 'En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).';
+    const slots = Array(OTP_LEN).fill('');
+    let cur = 0, busy = false;
+    const code = () => slots.join('');
+    const setStatus = st => {
+      otp.classList.remove('is-error', 'is-done');
+      if (st) { void otp.offsetWidth; otp.classList.add(st === 'error' ? 'is-error' : 'is-done'); }
+    };
+    const paint = (popAt = -1) => {
       boxes.forEach((b, i) => {
-        const d = v[i] || '';
-        const was = b.firstChild.textContent;
-        b.firstChild.textContent = d;
-        b.classList.toggle('is-filled', !!d);
-        b.classList.toggle('is-active', document.activeElement === input && (i === v.length || (v.length === OTP_LEN && i === OTP_LEN - 1)));
-        if (d && d !== was) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+        b.firstChild.textContent = slots[i];
+        b.classList.toggle('is-filled', !!slots[i]);
+        b.classList.toggle('is-active', otp.classList.contains('has-focus') && i === cur);
+        if (i === popAt) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
       });
+      const box = boxes[cur];
+      caret.style.transform = `translateX(${box.offsetLeft + box.offsetWidth / 2 - 1}px)`;
+      caret.classList.toggle('is-hidden', !otp.classList.contains('has-focus') || !!slots[cur]);
+      input.value = code();
+    };
+    const resetHint = () => { const h = $('#otpHint'); if (h.classList.contains('form-error')) { h.classList.remove('form-error'); h.textContent = HINT; } };
+    const fill = (text, from) => {
+      const digits = text.replace(/\D/g, '');
+      if (!digits) return;
+      // A full code (paste, autofill) always starts at the first slot.
+      let i = digits.length >= OTP_LEN ? 0 : from;
+      for (const d of digits) { if (i >= OTP_LEN) break; slots[i] = d; paint(i); i++; }
+      cur = Math.min(i, OTP_LEN - 1);
+      setStatus(null); resetHint(); paint();
+      if (slots.every(Boolean)) submit();
     };
     const submit = async () => {
       if (busy) return;
-      const token = input.value;
-      if (token.length !== OTP_LEN) { otp.classList.remove('is-error'); void otp.offsetWidth; otp.classList.add('is-error'); return input.focus(); }
+      if (!slots.every(Boolean)) { setStatus('error'); return input.focus(); }
       busy = true; otp.classList.add('is-busy'); input.blur();
-      const { error } = await sb.auth.verifyOtp({ email: loginEmail, token, type: 'email' });
+      const { error } = await sb.auth.verifyOtp({ email: loginEmail, token: code(), type: 'email' });
       busy = false; otp.classList.remove('is-busy');
       if (error) {
-        otp.classList.remove('is-error'); void otp.offsetWidth; otp.classList.add('is-error');
-        input.value = ''; paint();
-        const msg = $('#otpHint'); msg.textContent = 'Código incorrecto o caducado. Vuelve a escribirlo o pide un correo nuevo.'; msg.classList.add('form-error');
-        return setTimeout(() => input.focus(), 380);
+        setStatus('error');
+        const h = $('#otpHint'); h.textContent = 'Código incorrecto o caducado. Vuelve a escribirlo o pide un correo nuevo.'; h.classList.add('form-error');
+        return setTimeout(() => { slots.fill(''); cur = 0; paint(); input.focus(); }, 650);
       }
-      otp.classList.add('is-done');
+      setStatus('success');
     };
-    input.addEventListener('input', () => {
-      input.value = input.value.replace(/\D/g, '').slice(0, OTP_LEN);
-      otp.classList.remove('is-error'); paint();
-      const hint = $('#otpHint');
-      if (hint.classList.contains('form-error')) { hint.classList.remove('form-error'); hint.textContent = 'En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).'; }
-      if (input.value.length === OTP_LEN) submit();
+    input.addEventListener('beforeinput', e => {
+      if (busy) return e.preventDefault();
+      const t = e.inputType || '';
+      if (t === 'deleteContentBackward' || t === 'deleteContentForward' || t === 'deleteWordBackward') {
+        e.preventDefault();
+        if (slots[cur]) slots[cur] = '';
+        else if (cur > 0) { cur--; slots[cur] = ''; }
+        setStatus(null); paint(); return;
+      }
+      if (t === 'insertText' && e.data) { e.preventDefault(); fill(e.data, cur); }
+      // Paste, drop and autofill (insertFromPaste, insertReplacementText…) are read on « input ».
     });
-    input.addEventListener('focus', paint); input.addEventListener('blur', paint);
-    // Keep the caret at the end: the boxes are filled in order.
-    input.addEventListener('keyup', () => input.setSelectionRange(input.value.length, input.value.length));
-    input.addEventListener('click', () => input.setSelectionRange(input.value.length, input.value.length));
+    input.addEventListener('input', () => {
+      const v = input.value.replace(/\D/g, '');
+      if (v !== code()) { if (v.length >= OTP_LEN) fill(v, 0); else paint(); }
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); cur = Math.max(0, cur - 1); paint(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); cur = Math.min(OTP_LEN - 1, cur + 1); paint(); }
+      else if (e.key === 'Home') { e.preventDefault(); cur = 0; paint(); }
+      else if (e.key === 'End') { e.preventDefault(); cur = Math.min(code().length, OTP_LEN - 1); paint(); }
+    });
+    input.addEventListener('focus', () => { otp.classList.add('has-focus'); paint(); });
+    input.addEventListener('blur', () => { otp.classList.remove('has-focus'); paint(); });
+    // A tap on a slot puts the caret there.
+    otp.addEventListener('pointerdown', e => {
+      const x = e.clientX;
+      const i = boxes.findIndex(b => { const r = b.getBoundingClientRect(); return x >= r.left - 5 && x <= r.right + 5; });
+      if (i >= 0) cur = Math.min(i, code().length);
+      setTimeout(() => { input.focus(); paint(); }, 0);
+    });
     $('#codeForm').onsubmit = e => { e.preventDefault(); submit(); };
+    paint();
     setTimeout(() => input.focus(), 60);
   }
 }
