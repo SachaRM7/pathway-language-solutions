@@ -125,20 +125,62 @@ function showLogin(err, sent = false) {
       <p class="sub">Enviamos un enlace a <b>${esc(loginEmail)}</b>. Ábrelo en este dispositivo para entrar.</p>
       ${err ? `<p class="form-error" role="alert">${esc(err)}</p>` : ''}
       <form id="codeForm" class="form" novalidate>
-        <label class="field" for="loginCode">¿El correo trae un código? Escríbelo aquí<input id="loginCode" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}"></label>
+        <label class="otp-label" for="loginCode">O escribe el código del correo</label>
+        <div class="otp" data-otp style="--n:${OTP_LEN}">
+          <input id="loginCode" class="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="${OTP_LEN}" pattern="[0-9]*" aria-describedby="otpHint" spellcheck="false">
+          <div class="otp-boxes" aria-hidden="true">${Array.from({ length: OTP_LEN }, () => '<span class="otp-box"><b></b><i class="otp-caret"></i></span>').join('')}</div>
+        </div>
+        <p class="otp-hint" id="otpHint">En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).</p>
         <button class="btn btn-dark" type="submit">Entrar con el código</button>
       </form>
       <button class="ob-link" type="button" id="otherEmail" style="justify-self:start">Usar otro correo</button>`;
     $('#otherEmail').onclick = () => showLogin('');
-    $('#codeForm').onsubmit = async e => {
-      e.preventDefault();
-      const token = $('#loginCode').value.replace(/\D/g, '');
-      if (token.length < 6 || token.length > 8) return showLogin('Escribe el código completo que aparece en el correo.', true);
-      const { error } = await sb.auth.verifyOtp({ email: loginEmail, token, type: 'email' });
-      if (error) return showLogin('Código incorrecto o caducado. Pide un enlace nuevo.', true);
+    const otp = $('[data-otp]'), input = $('#loginCode'), boxes = $$('.otp-box', otp);
+    let busy = false;
+    const paint = () => {
+      const v = input.value;
+      boxes.forEach((b, i) => {
+        const d = v[i] || '';
+        const was = b.firstChild.textContent;
+        b.firstChild.textContent = d;
+        b.classList.toggle('is-filled', !!d);
+        b.classList.toggle('is-active', document.activeElement === input && (i === v.length || (v.length === OTP_LEN && i === OTP_LEN - 1)));
+        if (d && d !== was) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+      });
     };
+    const submit = async () => {
+      if (busy) return;
+      const token = input.value;
+      if (token.length !== OTP_LEN) { otp.classList.remove('is-error'); void otp.offsetWidth; otp.classList.add('is-error'); return input.focus(); }
+      busy = true; otp.classList.add('is-busy'); input.blur();
+      const { error } = await sb.auth.verifyOtp({ email: loginEmail, token, type: 'email' });
+      busy = false; otp.classList.remove('is-busy');
+      if (error) {
+        otp.classList.remove('is-error'); void otp.offsetWidth; otp.classList.add('is-error');
+        input.value = ''; paint();
+        const msg = $('#otpHint'); msg.textContent = 'Código incorrecto o caducado. Vuelve a escribirlo o pide un correo nuevo.'; msg.classList.add('form-error');
+        return setTimeout(() => input.focus(), 380);
+      }
+      otp.classList.add('is-done');
+    };
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '').slice(0, OTP_LEN);
+      otp.classList.remove('is-error'); paint();
+      const hint = $('#otpHint');
+      if (hint.classList.contains('form-error')) { hint.classList.remove('form-error'); hint.textContent = 'En iPhone, toca la primera casilla: el código aparece encima del teclado («Desde Mail»).'; }
+      if (input.value.length === OTP_LEN) submit();
+    });
+    input.addEventListener('focus', paint); input.addEventListener('blur', paint);
+    // Keep the caret at the end: the boxes are filled in order.
+    input.addEventListener('keyup', () => input.setSelectionRange(input.value.length, input.value.length));
+    input.addEventListener('click', () => input.setSelectionRange(input.value.length, input.value.length));
+    $('#codeForm').onsubmit = e => { e.preventDefault(); submit(); };
+    setTimeout(() => input.focus(), 60);
   }
 }
+
+// Length of the email code (Supabase → Authentication → Providers → Email → Email OTP Length).
+const OTP_LEN = (window.CAMPUS_CONFIG && window.CAMPUS_CONFIG.otpLength) || 6;
 
 async function loadAll() {
   const uid = A.session.user.id;
@@ -933,7 +975,8 @@ function rulesTile() {
       <label class="check-row" for="rrOn"><input id="rrOn" type="checkbox" ${r.enabled ? 'checked' : ''}>Enviar un correo de recordatorio a cada alumno</label>
       <label class="field" for="rrBefore">Recordatorio (min antes de la clase)<input id="rrBefore" type="number" min="15" max="1440" step="5" value="${r.before_min ?? 60}"></label>
       <p class="muted" style="font-size:13px">La asistencia solo cuenta desde su activación. El recordatorio va por correo, en español, con el botón para entrar por el campus.</p>
-      <button class="btn btn-dark" type="submit">Guardar las reglas</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar las reglas</button><button class="btn btn-light" type="button" data-mail-test>Enviar correos de prueba</button></div>
+      <p class="muted" style="font-size:13px">La prueba te envía solo a ti el informe del lunes (en francés) y un recordatorio de clase de ejemplo.</p>
     </form></article>`;
 }
 async function joinClass() {
@@ -1045,6 +1088,13 @@ function bindSchedule(id) {
     const { error } = await sb.rpc('decide_schedule_change', { p_id: b.dataset.chg, p_approve: b.dataset.ok === '1' });
     if (error) { b.disabled = false; return fail(error); }
     toast(b.dataset.ok === '1' ? 'Cambio aprobado: los alumnos ya lo ven.' : 'Cambio rechazado.'); await refresh(); render();
+  });
+  $$('[data-mail-test]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const results = await Promise.all(['weekly-report', 'class-reminders'].map(fn => sb.functions.invoke(fn, { body: { test: true } })));
+    b.disabled = false;
+    const ok = results.filter(r => !r.error && r.data && r.data.ok).length;
+    toast(ok === 2 ? `Enviados a ${results[0].data.to}: informe del lunes y recordatorio.` : ok ? 'Solo se envió uno de los dos correos: revisa los registros de las funciones en Supabase.' : 'No se pudo enviar: revisa que las funciones estén desplegadas.');
   });
   const rf = $('#rulesForm');
   if (rf) rf.onsubmit = async e => {
