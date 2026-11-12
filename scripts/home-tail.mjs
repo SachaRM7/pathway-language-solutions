@@ -424,8 +424,8 @@ function stories(lang) {
         </div>
         <div class="quotes" data-quotes>
           <div class="quotes-head"><div><h3>${esc(s.reviewsTitle)}</h3><p>${esc(s.reviewsText(WRITTEN_TESTIMONIALS.length))}</p></div><a class="source-link" href="${esc(LINKS.reviewsSource)}" target="_blank" rel="noopener noreferrer">${esc(s.reviewsLink)} ${out}</a><button class="v4-round quotes-toggle" type="button" data-quotes-toggle aria-pressed="false" aria-label="${esc(r.pause)}"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button></div>
-          ${lane(0, half, false)}
-          ${lane(half, WRITTEN_TESTIMONIALS.length, true)}
+          ${lane(0, half, true)}
+          ${lane(half, WRITTEN_TESTIMONIALS.length, false)}
         </div>
       </div>
       <dialog class="story-viewer" data-story-viewer aria-label="${esc(s.reel)}">

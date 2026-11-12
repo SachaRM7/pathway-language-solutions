@@ -136,7 +136,8 @@ function setupResults() {
   viewer.addEventListener('click', event => { if (event.target === viewer) viewer.close(); });
 }
 
-// Two lanes of written reviews scroll slowly in opposite directions; they stop
+// Two lanes of written reviews scroll slowly, the first to the right and the
+// second to the left; they stop
 // on hover or focus, with the pause button, and for reduced motion.
 function setupQuotes() {
   const quotes = document.querySelector('[data-quotes]');
