@@ -47,15 +47,21 @@
     { view: 'alumnos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6 },
     { view: 'tareas', target: () => tileWithTitle('Asignar una tarea'), title: 'Asignar una tarea', text: 'Elige una unidad y una fecha: el alumno la ve en su inicio y en sus avisos.' },
     { view: 'tareas', target: () => tileWithTitle('Anotar un error de la clase'), title: 'Anotar un error de la clase', text: 'Un error que oyes en clase se convierte en una tarjeta en la zona «Repasar» del alumno.' },
-    { view: 'tareas', target: () => navLink('horarios'), title: 'Horarios', text: 'Tus grupos, sus clases fijas y los cambios de horario.', pad: 6 },
-    { view: 'tareas', target: () => navLink('contenido'), title: 'Contenido', text: 'Las unidades y sus ejercicios, nivel por nivel. Entremos.', pad: 6 },
-    { view: 'contenido', target: () => pick('#main .seg-tabs'), title: 'Un nivel a la vez', text: 'Elige el nivel: ves cuántas unidades están publicadas en cada uno.', pad: 6 },
+    { view: 'tareas', target: () => navLink('horarios'), title: 'Horarios', text: 'Tus grupos y sus clases fijas. Entremos.', pad: 6 },
+    { view: 'horarios', target: () => tileWithTitle('Alumnos sin grupo'), title: 'Alumnos sin grupo', text: 'Un alumno sin grupo no tiene horario ni próxima clase: ponlo en un grupo para que reciba sus clases y sus recordatorios.' },
+    { view: 'horarios', target: () => tileWithTitle('Nuevo grupo'), title: 'Nuevo grupo', text: 'Un grupo por horario: su nivel, su profesor, sus días y horas, el enlace de Zoom y sus alumnos. Una clase privada es un grupo de un alumno.' },
+    { view: 'horarios', target: () => navLink('contenido'), title: 'Contenido', text: 'Las unidades y sus ejercicios, nivel por nivel. Entremos.', pad: 6 },
+    { view: 'contenido', target: () => pick('#main .seg-tabs'), title: 'Un nivel a la vez', text: 'Elige el nivel: ves cuántas unidades están publicadas en cada uno. «Documentos» guarda los PDF del programa.', pad: 6 },
+    { view: 'contenido', target: () => pick('#main .seg-chips'), title: 'Un segmento a la vez', text: 'Cada nivel tiene 4 segmentos de 16 unidades: elige el que quieres ver.', pad: 6 },
     { view: 'contenido', target: () => pick('#main .unit-row'), title: 'Tus unidades', text: 'Cada unidad con su estado: «Editar» los ejercicios, «Probar» como un alumno (no se guarda nada) y «Publicar» para que tus alumnos la vean.' },
-    { view: 'contenido', target: () => navLink('cuentas'), title: 'Cuentas', text: 'Para invitar a un alumno por correo y seguir tus invitaciones.', pad: 6 },
-    { view: 'contenido', target: () => navLink('ajustes'), title: 'Ajustes', text: 'Solo administración: las reglas de asistencia, los recordatorios y los correos automáticos.', pad: 6 },
-    { view: 'contenido', target: () => pick('#main .switch'), title: 'Vista Alumno', text: 'Pasa a la vista Alumno para usar el Campus como tus alumnos, con tu propia cuenta.', pad: 6 },
-    { view: 'contenido', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los alumnos inactivos y los que todavía no completaron la bienvenida.', pad: 6 },
-    { view: 'contenido', target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
+    { view: 'contenido', target: () => navLink('cuentas'), title: 'Cuentas', text: 'Las cuentas del campus. Entremos.', pad: 6 },
+    { view: 'cuentas', target: () => tileWithTitle('Invitar a un alumno'), title: 'Invitar a un alumno', text: 'Por correo: su nombre, su nivel y su profesor quedan configurados antes de que entre. La administración también invita a profesores.' },
+    { view: 'cuentas', target: () => tileWithTitle('Miembros'), title: 'Miembros', text: 'Solo administración: cambia el nombre, el nivel, el profesor o el tipo de cuenta, o elimina una cuenta.' },
+    { view: 'cuentas', target: () => navLink('ajustes'), title: 'Ajustes', text: 'Las reglas del campus. Entremos.', pad: 6 },
+    { view: 'ajustes', target: () => tileWithTitle('Reglas de asistencia'), title: 'Reglas de asistencia', text: 'Cuándo se abre el enlace de la clase, cuándo un alumno cuenta como tarde o ausente, y el correo de recordatorio antes de cada clase.' },
+    { target: () => pick('#main .switch'), title: 'Vista Alumno', text: 'Pasa a la vista Alumno para usar el Campus como tus alumnos, con tu propia cuenta.', pad: 6 },
+    { target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los alumnos inactivos y los que todavía no completaron la bienvenida.', pad: 6 },
+    { target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];
   TEACHER.home = 'panel';
 

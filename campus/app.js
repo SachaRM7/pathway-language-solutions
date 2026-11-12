@@ -1028,6 +1028,9 @@ function viewHorarios() {
       ${g.zoom_link ? '' : '<p class="form-error" style="margin-top:8px">Falta el enlace de Zoom.</p>'}
       ${admin ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-group-edit="${g.id}">Editar</button>` : ''}</article>`;
   const askable = groups.map(g => [g, g.upcoming.filter(x => x.status === 'planned' && new Date(x.at) > Date.now())]).filter(([, l]) => l.length);
+  // Shown on top when someone is missing a group; otherwise a quiet confirmation after the groups.
+  const noGroupTile = admin && A.staff.members ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
+      ${noGroup.length ? `<p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}` : '<p class="muted">Todos los alumnos tienen un grupo.</p>'}</article>` : '';
   const now = new Date(Date.now() + 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T19:00`;
   return `<section class="view" aria-labelledby="h-horarios">
   ${topBar('h-horarios', 'Horarios', admin ? 'Grupos, horarios fijos y cambios por validar' : 'Tus grupos y sus horarios fijos')}
@@ -1035,8 +1038,7 @@ function viewHorarios() {
     ${(admin ? pending.length : changes.length) ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
       ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('')}</article>` : ''}
     ${unmatchedTile()}
-    ${noGroup.length ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
-      <p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}</article>` : ''}
+    ${noGroup.length ? noGroupTile : ''}
     ${askable.length ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Mover o cancelar una clase' : 'Solicitar un cambio'}</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">${admin ? 'Como admin, el cambio se aplica directamente.' : 'El horario es fijo: el cambio se aplica cuando Pathway lo aprueba.'}</p>
       <form id="chgForm" class="form">
@@ -1047,6 +1049,7 @@ function viewHorarios() {
         <button class="btn btn-dark" type="submit">${admin ? 'Aplicar el cambio' : 'Enviar la solicitud'}</button>
       </form></article>` : ''}
     ${groups.map(groupTile).join('')}
+    ${noGroup.length ? '' : noGroupTile}
     ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Nuevo grupo</h2><p class="muted">Un grupo por horario: una clase privada es un grupo de un alumno.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Crear un grupo</button></article>`) : ''}
     ${!groups.length && !admin ? '<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">Pathway crea los grupos con su horario fijo; aparecerán aquí.</p></article>' : ''}
   </div></section>`;
