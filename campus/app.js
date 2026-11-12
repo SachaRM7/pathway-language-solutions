@@ -259,6 +259,8 @@ async function loadAll() {
     const [tu, pg] = await Promise.all([sb.from('taught_units').select('unit_id'), sb.rpc('progression_settings')]);
     A.taught = tu.error ? null : new Set((tu.data || []).map(x => x.unit_id));
     A.gate = !pg.error && !!(pg.data && pg.data.taught_gate) && !!A.taught;
+    const tn = await sb.from('taught_numbers').select('level,number').eq('level', A.profile.level);
+    A.taughtNums = tn.error ? null : (tn.data || []).map(x => x.number); // needs db/020_manual.sql
   }
   await loadSchedule();
   await loadWeekly();
@@ -278,7 +280,7 @@ function syncTimezone() {
 // Group, fixed timetable and level documents (campus/db/008_horarios.sql). Without the
 // migration A.schedule and A.docs stay null and the campus works as before.
 async function loadSchedule() {
-  const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position'), sb.rpc('my_recordings')]);
+  const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('*').order('position'), sb.rpc('my_recordings')]);
   A.schedule = sch.error ? null : (sch.data || null);
   A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
   const att = await sb.rpc('my_attendance');
@@ -880,19 +882,19 @@ function reportTile() {
   const due = list.filter(x => !x.report), done = list.filter(x => x.report).slice(0, 4);
   const k = x => `${x.group_id}|${x.scheduled_at}`;
   const who = x => esc(x.students.map(p => p.name).join(', ') || x.group);
-  const unitsOf = ids => (ids || []).map(id => unitById(id)).filter(Boolean).sort((a, b) => a.number - b.number);
+  const numsOf = r => r ? (r.unit_numbers && r.unit_numbers.length ? r.unit_numbers : (r.unit_ids || []).map(id => (unitById(id) || {}).number).filter(Boolean)) : [];
   const form = x => {
-    const sel = new Set(A.staff.reportSel || (x.report ? x.report.unit_ids : []));
-    const units = A.units.filter(u => u.level === x.level && !u.is_final).sort((a, b) => a.number - b.number);
-    const chosen = units.filter(u => sel.has(u.id));
-    return `<form class="form report-form" data-report-form="${esc(k(x))}">
+    const sel = new Set(A.staff.reportSel || numsOf(x.report));
+    const name = n => { const u = A.units.find(v => v.level === x.level && v.number === n && !v.is_final); return u ? u.title : ''; };
+    const chosen = [...sel].sort((a, b) => a - b);
+    return `<form class="form report-form" data-report-form="${esc(k(x))}" data-level="${esc(x.level)}">
       <p style="font-size:14px"><b>${who(x)}</b> · ${esc(cap(sessionLabel(x.at)))}</p>
-      <div class="field">Unidades vistas hoy (nivel ${esc(x.level)})<div class="unit-picks" role="group" aria-label="Unidades vistas">${units.map(u => `<button type="button" class="u-pick" data-pick="${u.id}" aria-pressed="${sel.has(u.id)}" title="${esc(u.title)}">${u.number}</button>`).join('')}</div></div>
-      <p class="muted" style="font-size:13px">${chosen.length ? chosen.map(u => `${u.number}. ${esc(u.title)}`).join(' · ') : 'Toca los números de las unidades que viste o repasaste en clase.'}</p>
+      <div class="field">Unidades vistas hoy (nivel ${esc(x.level)})${'ABCD'.split('').map((g, i) => `<div class="unit-seg"><span>Segmento ${g}</span><div class="unit-picks" role="group" aria-label="Segmento ${g}">${Array.from({ length: 16 }, (_, j) => i * 16 + j + 1).map(n => `<button type="button" class="u-pick" data-pick="${n}" aria-pressed="${sel.has(n)}" title="${esc(name(n) || 'Unidad ' + n)}">${n}</button>`).join('')}</div></div>`).join('')}</div>
+      <p class="muted" style="font-size:13px">${chosen.length ? chosen.map(n => `${n}${name(n) ? '. ' + esc(name(n)) : ''}`).join(' · ') : 'Toca los números de las unidades que viste o repasaste en clase: sus páginas del manual y sus ejercicios se abren para el alumno.'}</p>
       <label class="field" for="rpNote">Nota (opcional)<input id="rpNote" maxlength="500" value="${esc((x.report && x.report.note) || '')}" placeholder="Lo que trabajaron, lo que falta…"></label>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar el informe</button><button class="btn btn-light btn-sm" type="button" data-report-cancel>Cancelar</button></div></form>`;
   };
-  const row = x => A.staff.reportFor === k(x) ? form(x) : `<div class="err-row"><span><b>${who(x)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(x.at)))}${x.report ? ` · unidades ${unitsOf(x.report.unit_ids).map(u => u.number).join(', ') || '—'}` : ''}</span></span>
+  const row = x => A.staff.reportFor === k(x) ? form(x) : `<div class="err-row"><span><b>${who(x)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(x.at)))}${x.report ? ` · unidades ${numsOf(x.report).sort((a, b) => a - b).join(', ') || '—'}` : ''}</span></span>
       <span class="row-act">${x.report ? '<span class="status">Informado</span>' : '<span class="status warn">Sin informe</span>'}<button class="btn ${x.report ? 'btn-light' : 'btn-dark'} btn-sm" type="button" data-report="${esc(k(x))}">${x.report ? 'Editar' : 'Informar'}</button></span></div>`;
   return `<article class="tile"><div class="tile-head"><h2>Informe de clase</h2>${due.length ? `<span class="pill warn num">${due.length} por informar</span>` : '<span class="pill ghost">Al día</span>'}</div>
     <p class="muted" style="font-size:14px;margin:-6px 0 12px">Al terminar cada clase, marca las unidades que vieron: ${A.staff.settings && A.staff.settings.progression && A.staff.settings.progression.taught_gate ? 'se abren para el alumno, que debe superar sus ejercicios en orden.' : 'quedan anotadas (la apertura por informe se activa en «Ajustes»).'}</p>
@@ -1024,8 +1026,8 @@ function progressionTile() {
   const on = !!st.progression.taught_gate;
   return `<article class="tile c-6"><div class="tile-head"><h2>Apertura de las unidades</h2><span class="pill ghost">${on ? 'Según el informe' : 'Libre'}</span></div>
     <form id="pgForm" class="form">
-      <label class="check-row" for="pgGate"><input id="pgGate" type="checkbox" ${on ? 'checked' : ''}>Abrir cada unidad solo cuando el profesor la marca en su informe de clase</label>
-      <p class="muted" style="font-size:13px">El alumno debe además superar las unidades en orden (75 %). Las unidades ya superadas o dadas como tarea siguen abiertas. Sin esta opción, cada unidad se abre al superar la anterior.</p>
+      <label class="check-row" for="pgGate"><input id="pgGate" type="checkbox" ${on ? 'checked' : ''}>Abrir cada unidad (sus ejercicios y sus páginas del manual) solo cuando el profesor la marca en su informe de clase</label>
+      <p class="muted" style="font-size:13px">Para los ejercicios, el alumno debe además superar las unidades en orden (75 %). Las unidades ya superadas o dadas como tarea siguen abiertas. Sin esta opción, el manual se lee entero y cada unidad se abre al superar la anterior.</p>
       <button class="btn btn-dark" type="submit">Guardar</button>
     </form></article>`;
 }
@@ -1141,7 +1143,7 @@ function viewCurso() {
         ${next ? `<button class="btn btn-dark" style="margin-top:14px" type="button" data-join>${icon('video')}Entrar a la clase</button>${attendanceOn() ? `<p class="muted" style="font-size:13px;margin-top:10px">El enlace se abre ${esc(minutesText(s.attendance.open_min))} antes de la clase. Entra siempre por aquí: tu asistencia se registra con tu clic, y después de ${s.attendance.absent_after_min} minutos de clase cuenta como ausencia.</p>` : ''}` : ''}`
         : '<p class="muted">Pathway te asignará pronto a un grupo con su horario.</p>'}</article>
     <article class="tile c-6"><div class="tile-head"><h2>Tu programa</h2><span class="pill ghost">${esc(A.profile.level)}</span></div>
-      ${docs.length ? docs.map(d => `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b></span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button></div>`).join('')
+      ${docs.length ? docs.map(d => { const open = manualOpenNums(d); const n = d.unit_pages ? d.unit_pages.filter(Boolean).length : 0; return `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b>${open && n ? `<br><span class="muted" style="font-size:13px">${[...open].filter(x => d.unit_pages[x - 1]).length} de ${n} unidades abiertas · se abren al verlas en clase</span>` : ''}</span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Leer</button></div>`; }).join('')
         : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
     ${attendanceTile()}
     ${A.contract && A.contract.signed ? `<article class="tile c-6"><div class="tile-head"><h2>Tu compromiso</h2><span class="pill ghost">${contractSignedNow() ? 'Firmado' : 'Versión anterior'}</span></div>
@@ -1350,8 +1352,8 @@ function groupForm(g) {
 function docsTile() {
   if (A.profile.role !== 'admin' || A.docs === null) return '';
   return `<article class="tile"><div class="tile-head"><h2>Documentos del programa</h2><span class="pill ghost num">${A.docs.length}</span></div>
-    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada alumno ve los documentos de su nivel en «Mi curso» desde su primer día. Nadie tiene que enviarlos.</p>
-    ${LEVELS.map(l => { const list = A.docs.filter(d => d.level === l); return `<p class="label" style="margin-top:12px">${l}</p>${list.map(d => `<div class="err-row"><span>${esc(d.title)}</span><span style="display:flex;gap:6px"><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button><button class="btn btn-light btn-sm" type="button" data-doc-delete="${d.id}" data-doc-path="${esc(d.path)}">Quitar</button></span></div>`).join('') || '<p class="muted" style="font-size:14px">Ningún documento.</p>'}`; }).join('')}
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada alumno lee los documentos de su nivel en «Mi curso», dentro del campus, sin descargarlos. En un manual, el campus encuentra solo la primera página de cada unidad: con «Apertura de las unidades» activada, el alumno lee solo las unidades vistas en clase.</p>
+    ${LEVELS.map(l => { const list = A.docs.filter(d => d.level === l); return `<p class="label" style="margin-top:12px">${l}</p>${list.map(d => `<div class="err-row"><span>${esc(d.title)}<br><span class="muted" style="font-size:13px">${d.unit_pages ? `Manual · ${d.unit_pages.filter(Boolean).length} unidades · se abre al ritmo de las clases` : 'page_count' in d && d.page_count ? 'Se lee entero' : 'Sin analizar'}</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${'page_count' in d && !d.unit_pages ? `<button class="btn btn-light btn-sm" type="button" data-doc-scan="${d.id}">Detectar las unidades</button>` : ''}<button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button><button class="btn btn-light btn-sm" type="button" data-doc-delete="${d.id}" data-doc-path="${esc(d.path)}">Quitar</button></span></div>`).join('') || '<p class="muted" style="font-size:14px">Ningún documento.</p>'}`; }).join('')}
     <form id="docForm" class="form" style="margin-top:18px">
       <div class="form-2"><label class="field" for="docLevel">Nivel<select id="docLevel">${LEVELS.map(l => `<option>${l}</option>`).join('')}</select></label>
         <label class="field" for="docTitle">Título<input id="docTitle" required maxlength="120" placeholder="Manual del alumno A2"></label></div>
@@ -1372,8 +1374,9 @@ function bindSchedule(id) {
   $$('[data-report-cancel]').forEach(b => b.onclick = () => { A.staff.reportFor = null; A.staff.reportSel = null; render(); });
   $$('[data-pick]').forEach(b => b.onclick = () => {
     const x = (A.staff.reports || []).find(r => `${r.group_id}|${r.scheduled_at}` === A.staff.reportFor);
-    const sel = new Set(A.staff.reportSel || (x && x.report ? x.report.unit_ids : []));
-    if (sel.has(b.dataset.pick)) sel.delete(b.dataset.pick); else sel.add(b.dataset.pick);
+    const n = +b.dataset.pick;
+    const sel = new Set(A.staff.reportSel || (x && x.report ? (x.report.unit_numbers && x.report.unit_numbers.length ? x.report.unit_numbers : (x.report.unit_ids || []).map(id => (unitById(id) || {}).number).filter(Boolean)) : []));
+    if (sel.has(n)) sel.delete(n); else sel.add(n);
     A.staff.reportSel = [...sel]; const note = $('#rpNote') ? $('#rpNote').value : ''; render(); if ($('#rpNote')) $('#rpNote').value = note;
     $(`[data-pick="${b.dataset.pick}"]`)?.focus();
   });
@@ -1382,10 +1385,15 @@ function bindSchedule(id) {
     e.preventDefault();
     const [group, at] = rpf.dataset.reportForm.split('|');
     const x = (A.staff.reports || []).find(r => `${r.group_id}|${r.scheduled_at}` === rpf.dataset.reportForm);
-    const units = A.staff.reportSel || (x && x.report ? x.report.unit_ids : []);
-    if (!units.length && !$('#rpNote').value.trim()) return toast('Marca al menos una unidad.');
+    const nums = A.staff.reportSel || (x && x.report ? (x.report.unit_numbers && x.report.unit_numbers.length ? x.report.unit_numbers : (x.report.unit_ids || []).map(id => (unitById(id) || {}).number).filter(Boolean)) : []);
+    if (!nums.length && !$('#rpNote').value.trim()) return toast('Marca al menos una unidad.');
     const btn = rpf.querySelector('button[type=submit]'); btn.disabled = true;
-    const { error } = await sb.rpc('save_session_report', { p_group: group, p_scheduled: at, p_units: units, p_note: $('#rpNote').value.trim() });
+    let { error } = await sb.rpc('save_class_report', { p_group: group, p_scheduled: at, p_numbers: nums, p_note: $('#rpNote').value.trim() });
+    if (error && /save_class_report|PGRST202|function/i.test(error.message || '')) {
+      // Without db/020_manual.sql: units with exercises only.
+      const ids = A.units.filter(u => u.level === rpf.dataset.level && !u.is_final && nums.includes(u.number)).map(u => u.id);
+      ({ error } = await sb.rpc('save_session_report', { p_group: group, p_scheduled: at, p_units: ids, p_note: $('#rpNote').value.trim() }));
+    }
     if (error) { btn.disabled = false; return fail(error, 'No se pudo guardar el informe.'); }
     A.staff.reportFor = null; A.staff.reportSel = null; toast('Informe guardado.'); await refresh(); render();
   };
@@ -1504,7 +1512,18 @@ function bindSchedule(id) {
     if (error) return fail(error, 'No se pudo guardar el contrato.');
     toast('Contrato guardado.'); await refresh(); render();
   };
-  $$('[data-doc]').forEach(b => b.onclick = () => openDoc(b.dataset.doc));
+  $$('[data-doc]').forEach(b => b.onclick = () => { const d = (A.docs || []).find(x => x.path === b.dataset.doc); if (d) openReader(d); });
+  $$('[data-doc-scan]').forEach(b => b.onclick = async () => {
+    const d = (A.docs || []).find(x => x.id === b.dataset.docScan); if (!d) return;
+    b.disabled = true;
+    try {
+      const signed = await sb.storage.from('programa').createSignedUrl(d.path, 3600);
+      if (signed.error) throw signed.error;
+      const n = await scanDocument(d, { url: signed.data.signedUrl }, b);
+      toast(n ? `${n} unidades encontradas en «${d.title}».` : `No hay unidades en «${d.title}»: se leerá entero.`);
+    } catch (e) { b.disabled = false; b.textContent = 'Detectar las unidades'; return fail(e, 'No se pudo analizar el documento.'); }
+    await refresh(); render();
+  });
   $$('[data-join]').forEach(b => b.onclick = () => joinClass());
   {
     $$('[data-doc-delete]').forEach(b => b.onclick = async () => {
@@ -1526,7 +1545,12 @@ function bindSchedule(id) {
       if (up.error) { btn.disabled = false; return fail(up.error, 'No se pudo subir el archivo.'); }
       const { error } = await sb.from('level_documents').insert({ level, title, path, position: A.docs.filter(d => d.level === level).length });
       if (error) { btn.disabled = false; return fail(error); }
-      toast(`«${title}» añadido al programa ${level}.`); await refresh(); render();
+      let found = 0;
+      try {
+        const row = await sb.from('level_documents').select('id').eq('path', path).single();
+        if (row.data) found = await scanDocument({ id: row.data.id }, { data: new Uint8Array(await file.arrayBuffer()) }, btn);
+      } catch (e) { console.error(e); }
+      toast(`«${title}» añadido al programa ${level}${found ? ` · ${found} unidades encontradas` : ''}.`); await refresh(); render();
     };
   }
   $$('[data-final-create]').forEach(b => b.onclick = async () => {
@@ -2295,6 +2319,153 @@ function contractTile() {
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-ct-preview>Ver el contrato</button></div>
     </form></article>`;
 }
+
+/* ───────────── Lector del programa (db/020_manual.sql) ───────────── */
+// Documents are read inside the Campus (no download button). For a manual, the first page of
+// each unit is found when it is uploaded; with « Apertura de las unidades » on, the student only
+// sees the pages of the units seen in class, plus the opening pages of the book.
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+let pdfjsReady = null;
+function loadPdfjs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (!pdfjsReady) pdfjsReady = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = PDFJS + 'pdf.min.js';
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; resolve(window.pdfjsLib); };
+    s.onerror = () => { pdfjsReady = null; reject(new Error('No se pudo cargar el lector.')); };
+    document.head.appendChild(s);
+  });
+  return pdfjsReady;
+}
+// « SEGMENT A · UNITÉ 1 » opens each unit of the Pathway manuals (letter-spaced in the PDF:
+// « S E G M E N T A · U N I T É 1 »), so the spaces are removed before matching.
+const UNIT_RE = /SEGMENT[A-D][·•.\-–]UNIT[ÉE](\d{1,2})(?!\d)/i;
+const unitOnPage = items => {
+  for (const it of items) { const m = String(it.str || '').replace(/\s+/g, '').match(UNIT_RE); if (m) return +m[1]; }
+  return null;
+};
+async function scanUnits(pdf, onProgress) {
+  const starts = Array(64).fill(null);
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    const n = unitOnPage(tc.items);
+    if (n && n >= 1 && n <= 64 && !starts[n - 1]) starts[n - 1] = i;
+    page.cleanup();
+    if (onProgress && (i % 8 === 0 || i === pdf.numPages)) onProgress(i, pdf.numPages);
+  }
+  return starts.filter(Boolean).length >= 4 ? starts : null;
+}
+async function scanDocument(doc, source, label) {
+  const lib = await loadPdfjs();
+  const pdf = await lib.getDocument(source).promise;
+  const starts = await scanUnits(pdf, (i, n) => { if (label) label.textContent = `Analizando… ${i} / ${n}`; });
+  const { error } = await sb.rpc('set_document_pages', { p_id: doc.id, p_unit_pages: starts, p_page_count: pdf.numPages });
+  pdf.destroy();
+  if (error) throw error;
+  return starts ? starts.filter(Boolean).length : 0;
+}
+// Unit numbers the student may read (null = everything).
+function manualOpenNums(doc) {
+  if (isStaff() || !A.gate || !doc.unit_pages) return null;
+  const set = new Set(A.taughtNums || []);
+  for (const u of A.units) {
+    if (u.level !== doc.level || u.is_final) continue;
+    if ((A.taught && A.taught.has(u.id)) || A.runs.some(r => r.unit_id === u.id && runPassed(r)) || A.assignments.some(a => a.unit_id === u.id)) set.add(u.number);
+  }
+  return set;
+}
+const RD = { doc: null, pdf: null, io: null, token: 0 };
+function closeReader() {
+  RD.token++;
+  if (RD.io) RD.io.disconnect();
+  if (RD.pdf) RD.pdf.destroy();
+  Object.assign(RD, { doc: null, pdf: null, io: null });
+  $('#reader').hidden = true; $('#reader').innerHTML = '';
+  document.body.classList.remove('no-scroll');
+}
+async function openReader(doc) {
+  const token = ++RD.token;
+  RD.doc = doc;
+  const el = $('#reader');
+  el.hidden = false; document.body.classList.add('no-scroll');
+  el.innerHTML = `<div class="rd-top"><button type="button" class="round" data-rd="close" aria-label="Cerrar">${icon('x')}</button><div class="rd-title"><b>${esc(doc.title)}</b><span id="rdInfo">Abriendo…</span></div><label class="rd-jump" for="rdJump" hidden><span class="sr">Ir a</span><select id="rdJump"></select></label></div>
+    <div class="rd-scroll" id="rdScroll"><div class="rd-pages" id="rdPages"><p class="rd-loading">Abriendo el documento…</p></div></div>`;
+  try {
+    const [lib, signed] = await Promise.all([loadPdfjs(), sb.storage.from('programa').createSignedUrl(doc.path, 3600)]);
+    if (signed.error || !signed.data) throw signed.error || new Error('url');
+    const pdf = await lib.getDocument({ url: signed.data.signedUrl, disableAutoFetch: true, disableStream: true }).promise;
+    if (token !== RD.token) { pdf.destroy(); return; }
+    RD.pdf = pdf;
+    const first = await pdf.getPage(1), vp = first.getViewport({ scale: 1 });
+    const ratio = vp.height / vp.width;
+    const open = manualOpenNums(doc), total = pdf.numPages;
+    // Ranges: opening pages, then each unit (open or locked).
+    const starts = (doc.unit_pages || []).map((p, i) => ({ n: i + 1, p })).filter(x => x.p && x.p <= total).sort((a, b) => a.p - b.p);
+    const blocks = [];
+    if (!starts.length) blocks.push({ kind: 'pages', from: 1, to: total });
+    else {
+      if (starts[0].p > 1) blocks.push({ kind: 'pages', from: 1, to: starts[0].p - 1, label: 'Presentación' });
+      starts.forEach((s, i) => {
+        const to = i + 1 < starts.length ? starts[i + 1].p - 1 : total;
+        const ok = !open || open.has(s.n);
+        const last = blocks[blocks.length - 1];
+        if (!ok && last && last.kind === 'locked') { last.toUnit = s.n; last.pages += to - s.p + 1; }
+        else if (!ok) blocks.push({ kind: 'locked', fromUnit: s.n, toUnit: s.n, pages: to - s.p + 1 });
+        else blocks.push({ kind: 'pages', from: s.p, to, unit: s.n });
+      });
+    }
+    const title = n => { const u = A.units.find(x => x.level === doc.level && x.number === n && !x.is_final); return u ? ` · ${esc(u.title)}` : ''; };
+    const readable = blocks.filter(b => b.kind === 'pages').reduce((a, b) => a + b.to - b.from + 1, 0);
+    const openUnits = starts.length ? blocks.filter(b => b.unit).length : 0;
+    $('#rdInfo').textContent = open ? `${openUnits} de ${starts.length} unidades abiertas · ${readable} de ${total} páginas` : `${total} páginas`;
+    let html = '';
+    for (const b of blocks) {
+      if (b.kind === 'locked') {
+        html += `<section class="rd-locked" id="rd-u${b.fromUnit}"><span class="rd-lock">${icon('lock')}</span><b>${b.fromUnit === b.toUnit ? `Unidad ${b.fromUnit}` : `Unidades ${b.fromUnit} a ${b.toUnit}`}</b><p>${b.pages} página${b.pages === 1 ? '' : 's'} · ${b.fromUnit === b.toUnit ? 'se abre cuando la veas' : 'se abren cuando las veas'} en clase con tu profesor.</p></section>`;
+        continue;
+      }
+      if (b.unit) html += `<h2 class="rd-unit" id="rd-u${b.unit}">Unidad ${b.unit}${title(b.unit)}</h2>`;
+      else if (b.label) html += `<h2 class="rd-unit" id="rd-intro">${b.label}</h2>`;
+      for (let p = b.from; p <= b.to; p++) html += `<div class="rd-page" data-p="${p}" style="aspect-ratio:1/${ratio.toFixed(4)}"><span class="rd-pn">${p}</span></div>`;
+    }
+    $('#rdPages').innerHTML = html;
+    const jump = blocks.filter(b => b.kind === 'pages' && (b.unit || b.label));
+    if (jump.length > 1) {
+      $('#rdJump').innerHTML = jump.map(b => `<option value="${b.unit ? 'rd-u' + b.unit : 'rd-intro'}">${b.unit ? `Unidad ${b.unit}` : b.label}</option>`).join('');
+      $('#rdJump').closest('label').hidden = false;
+      $('#rdJump').onchange = e => document.getElementById(e.target.value)?.scrollIntoView({ block: 'start' });
+    }
+    const draw = async box => {
+      if (box.dataset.done) return; box.dataset.done = '1';
+      try {
+        const page = await pdf.getPage(+box.dataset.p);
+        if (token !== RD.token) return;
+        const w = box.clientWidth, d = Math.min(2, window.devicePixelRatio || 1);
+        const v = page.getViewport({ scale: (w * d) / page.getViewport({ scale: 1 }).width });
+        const c = document.createElement('canvas'); c.width = Math.round(v.width); c.height = Math.round(v.height);
+        await page.render({ canvasContext: c.getContext('2d'), viewport: v }).promise;
+        if (token !== RD.token) return;
+        box.prepend(c); box.classList.add('ready'); page.cleanup();
+      } catch (e) { box.dataset.done = ''; }
+    };
+    RD.io = new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting) draw(en.target); }), { root: $('#rdScroll'), rootMargin: '900px 0px' });
+    $$('#rdPages .rd-page').forEach(b => RD.io.observe(b));
+  } catch (e) {
+    if (token !== RD.token) return;
+    console.error(e);
+    $('#rdPages').innerHTML = '<p class="rd-loading">No se pudo abrir el documento. Revisa tu conexión e inténtalo de nuevo.</p>';
+    $('#rdInfo').textContent = '';
+  }
+}
+$('#reader').addEventListener('click', e => { if (e.target.closest('[data-rd="close"]')) { closeReader(); render(); } });
+$('#reader').addEventListener('contextmenu', e => e.preventDefault());
+$('#reader').addEventListener('dragstart', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if ($('#reader').hidden) return;
+  if (e.key === 'Escape') { closeReader(); render(); }
+  if ((e.ctrlKey || e.metaKey) && /^[sp]$/i.test(e.key)) e.preventDefault();
+});
 
 /* ───────────── Lesson player ───────────── */
 let L = null;
