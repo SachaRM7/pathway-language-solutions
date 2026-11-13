@@ -23,10 +23,10 @@ const COPY = {
   test: {
     trail: { es: 'Test de nivel', fr: 'Test de niveau', en: 'Placement test', de: 'Einstufungstest' },
     steps: {
-      es: [['Elige tu test', 'Express para orientarte, intensivo para afinar la estimación.'], ['Responde sin ayuda', 'Preguntas progresivas de A1 a B2, en francés.'], ['Recibe tu estimación', 'Un nivel por competencia, confirmado en tu primera clase.']],
-      fr: [['Choisissez votre test', 'Express pour vous orienter, intensif pour affiner l’estimation.'], ['Répondez sans aide', 'Des questions progressives de A1 à B2, en français.'], ['Recevez votre estimation', 'Un niveau par compétence, confirmé lors du premier cours.']],
-      en: [['Choose your test', 'Express to get your bearings, intensive for a sharper estimate.'], ['Answer on your own', 'Progressive questions from A1 to B2, in French.'], ['Get your estimate', 'A level per skill, confirmed in your first class.']],
-      de: [['Test wählen', 'Express zur Orientierung, intensiv für eine genauere Einschätzung.'], ['Ohne Hilfe antworten', 'Steigende Fragen von A1 bis B2, auf Französisch.'], ['Einschätzung erhalten', 'Ein Niveau pro Kompetenz, in der ersten Stunde bestätigt.']]
+      es: [['Elige tu test', 'Express para orientarte, intensivo para afinar la estimación.'], ['Responde sin ayuda', 'Preguntas progresivas de A1 a B2, en francés.'], ['Recibe tu estimación', 'Un nivel global y una puntuación por competencia, confirmados en tu primera clase.']],
+      fr: [['Choisissez votre test', 'Express pour vous orienter, intensif pour affiner l’estimation.'], ['Répondez sans aide', 'Des questions progressives de A1 à B2, en français.'], ['Recevez votre estimation', 'Un niveau global et un score par compétence, confirmés lors du premier cours.']],
+      en: [['Choose your test', 'Express to get your bearings, intensive for a sharper estimate.'], ['Answer on your own', 'Progressive questions from A1 to B2, in French.'], ['Get your estimate', 'An overall level and a score per skill, confirmed in your first class.']],
+      de: [['Test wählen', 'Express zur Orientierung, intensiv für eine genauere Einschätzung.'], ['Ohne Hilfe antworten', 'Steigende Fragen von A1 bis B2, auf Französisch.'], ['Einschätzung erhalten', 'Ein Gesamtniveau und ein Wert pro Kompetenz, in der ersten Stunde bestätigt.']]
     }
   },
   calculator: {
@@ -35,7 +35,7 @@ const COPY = {
     pill: { es: 'Reglas oficiales IRCC', fr: 'Règles officielles IRCC', en: 'Official IRCC rules', de: 'Offizielle IRCC-Regeln' }
   },
   inscription: {
-    trail: { es: 'Inscripción', fr: 'Inscription', en: 'Enrollment', de: 'Anmeldung' },
+    trail: { es: 'Inscripción', fr: 'Inscription', en: 'Enrolment', de: 'Anmeldung' },
     steps: {
       es: [['Elige tu ritmo', 'Elige entre 2 y 6 horas por semana, según tu fecha.'], ['Propón tus horarios', 'Pathway comprueba la disponibilidad real.'], ['Confirmamos por escrito', 'El pago solo se pide después de la confirmación.']],
       fr: [['Choisissez votre rythme', 'Choisissez entre 2 et 6 heures par semaine, selon votre date.'], ['Proposez vos horaires', 'Pathway vérifie les disponibilités réelles.'], ['Nous confirmons par écrit', 'Le paiement n’est demandé qu’après la confirmation.']],

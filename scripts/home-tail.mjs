@@ -21,7 +21,7 @@ const IRCC_EN = 'https://www.canada.ca/en/immigration-refugees-citizenship/servi
 const IRCC_FR = 'https://www.canada.ca/fr/immigration-refugies-citoyennete/services/immigrer-canada/entree-express';
 const IRCC_LINKS = {
   en: { rounds: `${IRCC_EN}/rounds-invitations.html`, category: `${IRCC_EN}/rounds-invitations/category-based-selection.html`, calculator: `${IRCC_EN}/check-score.html`, criteria: `${IRCC_EN}/check-score/crs-criteria.html` },
-  fr: { rounds: `${IRCC_FR}/rondes-invitations.html`, category: `${IRCC_FR}/rondes-invitations/selection-axee-ensembles.html`, calculator: `${IRCC_FR}/verifier-note.html`, criteria: `${IRCC_FR}/verifier-note/criteries-scg.html` }
+  fr: { rounds: `${IRCC_FR}/rondes-invitations.html`, category: `${IRCC_FR}/rondes-invitations/selection-axee-ensembles.html`, calculator: `${IRCC_FR}/verifier-note.html`, criteria: `${IRCC_FR}/verifier-note/criteres-scg.html` }
 };
 const ircc = lang => (lang === 'fr' ? IRCC_LINKS.fr : IRCC_LINKS.en);
 const WHATSAPP = 'https://wa.me/51989887516';

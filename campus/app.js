@@ -94,28 +94,44 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 let loginEmail = '';
+// The login screen speaks the language of the site page the visitor came from (/campus/?lang=fr|en|de,
+// set by the site header). The Campus itself is in Spanish, which the screen says plainly.
+const LOGIN_LANG = (() => {
+  let l = new URLSearchParams(location.search).get('lang');
+  try { if (l) sessionStorage.setItem('pwLoginLang', l); else l = sessionStorage.getItem('pwLoginLang'); } catch (_) {}
+  return ['fr', 'en', 'de'].includes(l) ? l : 'es';
+})();
+const LT = {
+  es: { h1: 'Entra a tu campus', sub: 'Te enviamos un enlace de acceso a tu correo. Sin contraseña.', email: 'Tu correo', ph: 'nombre@correo.com', send: 'Recibir mi enlace', sending: 'Enviando…', invalid: 'Escribe un correo válido, por ejemplo nombre@correo.com.', noAccess: 'Este correo no tiene acceso al campus. Pide a Pathway que te invite.', wait: 'Espera un minuto antes de pedir otro enlace.', failed: 'No pudimos enviar el enlace. Inténtalo de nuevo.', help: '¿Problemas para entrar? Escríbenos por WhatsApp.', note: '', back: '/' },
+  fr: { h1: 'Entrez dans votre Campus', sub: 'Nous vous envoyons un lien d’accès par e-mail. Sans mot de passe.', email: 'Votre e-mail', ph: 'nom@exemple.com', send: 'Recevoir mon lien', sending: 'Envoi…', invalid: 'Saisissez un e-mail valide, par exemple nom@exemple.com.', noAccess: 'Cet e-mail n’a pas accès au Campus. Demandez à Pathway de vous inviter.', wait: 'Attendez une minute avant de demander un autre lien.', failed: 'Le lien n’a pas pu être envoyé. Réessayez.', help: 'Un problème pour vous connecter\u202f? Écrivez-nous sur WhatsApp.', note: 'Une fois connecté, le Campus est en espagnol.', back: '/fr/' },
+  en: { h1: 'Sign in to your Campus', sub: 'We email you a sign-in link. No password.', email: 'Your email', ph: 'name@example.com', send: 'Get my link', sending: 'Sending…', invalid: 'Enter a valid email, for example name@example.com.', noAccess: 'This email has no Campus access. Ask Pathway to invite you.', wait: 'Wait a minute before asking for another link.', failed: 'We could not send the link. Please try again.', help: 'Trouble signing in? Message us on WhatsApp.', note: 'Once signed in, the Campus is in Spanish.', back: '/en/' },
+  de: { h1: 'Melden Sie sich im Campus an', sub: 'Wir senden Ihnen einen Anmeldelink per E-Mail. Ohne Passwort.', email: 'Ihre E-Mail', ph: 'name@beispiel.de', send: 'Link erhalten', sending: 'Wird gesendet…', invalid: 'Geben Sie eine gültige E-Mail ein, zum Beispiel name@beispiel.de.', noAccess: 'Diese E-Mail hat keinen Campus-Zugang. Bitten Sie Pathway um eine Einladung.', wait: 'Warten Sie eine Minute, bevor Sie einen neuen Link anfordern.', failed: 'Der Link konnte nicht gesendet werden. Bitte erneut versuchen.', help: 'Probleme bei der Anmeldung? Schreiben Sie uns auf WhatsApp.', note: 'Nach der Anmeldung ist der Campus auf Spanisch.', back: '/de/' }
+}[LOGIN_LANG];
 function showLogin(err, sent = false) {
   $('#app').hidden = true; $('#tabbar').hidden = true; $('#login').hidden = false;
   const box = $('#loginBox');
+  $('#loginBack').href = LT.back; $('#loginHelp').textContent = LT.help;
+  $('#login').lang = LOGIN_LANG;
   if (!sent) {
-    box.innerHTML = `<h1>Entra a tu campus</h1>
-      <p class="sub">Te enviamos un enlace de acceso a tu correo. Sin contraseña.</p>
+    box.innerHTML = `<h1>${LT.h1}</h1>
+      <p class="sub">${LT.sub}</p>
+      ${LT.note ? `<p class="sub login-note">${LT.note}</p>` : ''}
       ${err ? `<p class="form-error" role="alert">${esc(err)}</p>` : ''}
       <form id="loginForm" class="form" novalidate>
-        <label class="field" for="loginEmail">Tu correo<input id="loginEmail" type="email" autocomplete="email" inputmode="email" required value="${esc(loginEmail)}" placeholder="nombre@correo.com"></label>
-        <button class="btn btn-dark" type="submit">Recibir mi enlace<span class="arrow">${icon('arrow')}</span></button>
+        <label class="field" for="loginEmail">${LT.email}<input id="loginEmail" type="email" autocomplete="email" inputmode="email" required value="${esc(loginEmail)}" placeholder="${LT.ph}"></label>
+        <button class="btn btn-dark" type="submit">${LT.send}<span class="arrow">${icon('arrow')}</span></button>
       </form>`;
     $('#loginForm').onsubmit = async e => {
       e.preventDefault();
       const email = $('#loginEmail').value.trim().toLowerCase();
-      if (!/^\S+@\S+\.\S+$/.test(email)) return showLogin('Escribe un correo válido, por ejemplo nombre@correo.com.');
+      if (!/^\S+@\S+\.\S+$/.test(email)) return showLogin(LT.invalid);
       loginEmail = email;
-      const btn = e.submitter || $('#loginForm button'); btn.disabled = true; btn.textContent = 'Enviando…';
+      const btn = e.submitter || $('#loginForm button'); btn.disabled = true; btn.textContent = LT.sending;
       const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
       if (error) {
-        const m = /signups? not allowed|user not found/i.test(error.message) ? 'Este correo no tiene acceso al campus. Pide a Pathway que te invite.'
-          : /seconds|rate/i.test(error.message) ? 'Espera un minuto antes de pedir otro enlace.'
-          : 'No pudimos enviar el enlace. Inténtalo de nuevo.';
+        const m = /signups? not allowed|user not found/i.test(error.message) ? LT.noAccess
+          : /seconds|rate/i.test(error.message) ? LT.wait
+          : LT.failed;
         return showLogin(m);
       }
       showLogin('', true);

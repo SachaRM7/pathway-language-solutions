@@ -8,10 +8,27 @@
 import { pageLang, t } from './i18n.js';
 
 const ROUNDS_DATA_URL = 'https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json';
-const ROUNDS_PAGE_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html';
-const PER_ROUND_PAGE_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/policies-operational-instructions-agreements/ministerial-instructions/express-entry-rounds/invitations.html';
-const CRITERIA_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html';
-const CALCULATOR_URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score.html';
+// IRCC pages, in French on French pages (canada.ca only has English and French).
+const IRCC_PAGES = {
+  en: {
+    rounds: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html',
+    perRound: 'https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/policies-operational-instructions-agreements/ministerial-instructions/express-entry-rounds/invitations.html',
+    criteria: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html',
+    calculator: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score.html'
+  },
+  fr: {
+    rounds: 'https://www.canada.ca/fr/immigration-refugies-citoyennete/services/immigrer-canada/entree-express/rondes-invitations.html',
+    perRound: 'https://www.canada.ca/fr/immigration-refugies-citoyennete/organisation/mandat/politiques-directives-operationnelles-ententes-accords/instructions-ministerielles/entree-express-rondes/invitations.html',
+    criteria: 'https://www.canada.ca/fr/immigration-refugies-citoyennete/services/immigrer-canada/entree-express/verifier-note/criteres-scg.html',
+    calculator: 'https://www.canada.ca/fr/immigration-refugies-citoyennete/services/immigrer-canada/entree-express/verifier-note.html'
+  }
+};
+const irccPages = () => (typeof document !== 'undefined' && pageLang() === 'fr' ? IRCC_PAGES.fr : IRCC_PAGES.en);
+const ROUNDS_PAGE_URL = IRCC_PAGES.en.rounds;
+const PER_ROUND_PAGE_URL = IRCC_PAGES.en.perRound;
+const CRITERIA_URL = IRCC_PAGES.en.criteria;
+const CALCULATOR_URL = IRCC_PAGES.en.calculator;
+const perRoundUrl = drawNumber => drawNumber ? `${irccPages().perRound}?q=${encodeURIComponent(drawNumber)}` : irccPages().perRound;
 const SNAPSHOT_URL = new URL('./data/ircc-rounds.json', import.meta.url);
 const LIVE_TIMEOUT_MS = 8000;
 
@@ -58,9 +75,11 @@ function buildRoundSource(round, drawNumber) {
   } else if (href) {
     href = href.replace(/^\/content\/canadasite/i, '');
   }
+  // French pages always link the French round page (IRCC's own links are in English).
+  if (drawNumber && irccPages() === IRCC_PAGES.fr) return perRoundUrl(drawNumber);
   const fromMarkup = officialUrlOrNull(href);
   if (fromMarkup) return fromMarkup;
-  return drawNumber ? `${PER_ROUND_PAGE_URL}?q=${encodeURIComponent(drawNumber)}` : PER_ROUND_PAGE_URL;
+  return perRoundUrl(drawNumber);
 }
 
 function validIsoDate(value) {
@@ -128,8 +147,8 @@ function snapshotCategory(value, ceilingDate) {
   if (!validIsoDate(date) || date > ceilingDate) return null;
   if (!Number.isInteger(score) || score < 1 || score > 1200) return null;
   const drawNumber = String(value.drawNumber == null ? '' : value.drawNumber).trim();
-  const source = officialUrlOrNull(value.source)
-    || (drawNumber ? `${PER_ROUND_PAGE_URL}?q=${encodeURIComponent(drawNumber)}` : PER_ROUND_PAGE_URL);
+  const source = (drawNumber && irccPages() === IRCC_PAGES.fr ? perRoundUrl(drawNumber) : officialUrlOrNull(value.source))
+    || perRoundUrl(drawNumber);
   return {
     date,
     score,
@@ -221,16 +240,14 @@ function formatRoundDate(iso) {
   const date = new Date(`${String(iso).slice(0, 10)}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return '';
   return new Intl.DateTimeFormat(roundsLocale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
-    .format(date)
-    .replace(/\./g, '');
+    .format(date);
 }
 
 function formatUpdated(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   const day = new Intl.DateTimeFormat(roundsLocale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
-    .format(date)
-    .replace(/\./g, '');
+    .format(date);
   const time = new Intl.DateTimeFormat(roundsLocale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
     .format(date);
   return `${day}, ${time} UTC`;
@@ -283,9 +300,9 @@ function renderState(panel, state) {
     if (updated) updated.textContent = roundsCopy().noDate;
   }
 
-  for (const link of panel.querySelectorAll('[data-ircc-rounds-page]')) link.setAttribute('href', ROUNDS_PAGE_URL);
-  for (const link of panel.querySelectorAll('[data-ircc-calculator]')) link.setAttribute('href', CALCULATOR_URL);
-  for (const link of panel.querySelectorAll('[data-ircc-criteria]')) link.setAttribute('href', CRITERIA_URL);
+  for (const link of panel.querySelectorAll('[data-ircc-rounds-page]')) link.setAttribute('href', irccPages().rounds);
+  for (const link of panel.querySelectorAll('[data-ircc-calculator]')) link.setAttribute('href', irccPages().calculator);
+  for (const link of panel.querySelectorAll('[data-ircc-criteria]')) link.setAttribute('href', irccPages().criteria);
 }
 
 /**

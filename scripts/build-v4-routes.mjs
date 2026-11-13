@@ -211,19 +211,19 @@ export const THANKS_COPY = {
     savedH1: 'Recibimos tu solicitud.', savedLead: 'Pathway la revisa y te escribe para proponerte un horario. Envía también el mensaje preparado en WhatsApp: es por ahí que te respondemos más rápido.',
     waH1: 'Falta un último paso.', waLead: 'Envía el mensaje que abrimos en WhatsApp: así Pathway recibe tus datos y te responde. Si la ventana no se abrió, usa el botón de abajo.',
     reopen: 'Abrir el mensaje en WhatsApp', test: 'Hacer el test de nivel', schedule: 'Elegir mi ritmo y mis horarios', whatsapp: 'Escribir a Pathway por WhatsApp',
-    steps: [['Test de nivel', 'Mides tu punto de partida en línea, gratis (12 a 15 minutos). Tu nivel queda guardado para tu primera clase.'], ['Ritmo y horarios', 'Eliges entre 2 y 6 horas por semana de clases particulares y propones tus disponibilidades.'], ['Confirmación escrita', 'Pathway confirma por escrito un horario con tu profesor. El pago solo se pide después.']],
+    steps: [['Test de nivel', 'Mides tu punto de partida en línea, gratis (12 a 15 minutos). Tu nivel queda guardado para tu primera clase.'], ['Ritmo y horarios', 'Eliges entre 2 y 6 horas por semana de clases particulares y nos indicas tu disponibilidad.'], ['Confirmación escrita', 'Pathway confirma por escrito un horario con tu profesor. El pago solo se pide después.']],
     cardPill: 'Contacto directo', cardTitle: '¿Prefieres escribirnos?', cardText: 'Por correo o por WhatsApp, como te resulte más cómodo.', mailLabel: 'Correo', waLabel: 'WhatsApp',
     note: 'Pathway Language Solutions es un instituto de idiomas y no ofrece asesoría migratoria.'
   },
   fr: {
-    title: 'Merci', description: 'Les prochaines étapes avec Pathway : test de niveau, rythme et horaires, puis confirmation écrite.',
+    title: 'Merci', description: 'Les prochaines étapes avec Pathway : test de niveau, rythme et horaires, puis confirmation écrite.',
     trail: 'Merci', eyebrow: 'Pathway · prochaines étapes',
-    h1: 'Merci de nous avoir écrit.', lead: 'Voici comment commence votre cours avec Pathway : trois étapes, et aucun paiement avant la confirmation écrite de votre horaire.',
-    savedH1: 'Nous avons bien reçu votre demande.', savedLead: 'Pathway l’étudie et vous écrit pour vous proposer un horaire. Envoyez aussi le message préparé dans WhatsApp : c’est par là que nous vous répondons le plus vite.',
-    waH1: 'Il reste une dernière étape.', waLead: 'Envoyez le message que nous avons ouvert dans WhatsApp : Pathway reçoit ainsi vos informations et vous répond. Si la fenêtre ne s’est pas ouverte, utilisez le bouton ci-dessous.',
+    h1: 'Merci de nous avoir écrit.', lead: 'Voici comment commence votre cours avec Pathway : trois étapes, et aucun paiement avant la confirmation écrite de votre horaire.',
+    savedH1: 'Nous avons bien reçu votre demande.', savedLead: 'Pathway l’étudie et vous écrit pour vous proposer un horaire. Envoyez aussi le message préparé dans WhatsApp : c’est par là que nous vous répondons le plus vite.',
+    waH1: 'Il reste une dernière étape.', waLead: 'Envoyez le message que nous avons ouvert dans WhatsApp : Pathway reçoit ainsi vos informations et vous répond. Si la fenêtre ne s’est pas ouverte, utilisez le bouton ci-dessous.',
     reopen: 'Ouvrir le message dans WhatsApp', test: 'Faire le test de niveau', schedule: 'Choisir mon rythme et mes horaires', whatsapp: 'Écrire à Pathway sur WhatsApp',
     steps: [['Test de niveau', 'Vous mesurez votre point de départ en ligne, gratuitement (12 à 15 minutes). Votre niveau est enregistré pour votre premier cours.'], ['Rythme et horaires', 'Vous choisissez entre 2 et 6 heures de cours particuliers par semaine et proposez vos disponibilités.'], ['Confirmation écrite', 'Pathway confirme par écrit un horaire avec votre professeur. Le paiement n’est demandé qu’ensuite.']],
-    cardPill: 'Contact direct', cardTitle: 'Vous préférez nous écrire ?', cardText: 'Par e-mail ou par WhatsApp, comme vous préférez.', mailLabel: 'E-mail', waLabel: 'WhatsApp',
+    cardPill: 'Contact direct', cardTitle: 'Vous préférez nous écrire ?', cardText: 'Par e-mail ou par WhatsApp, comme vous préférez.', mailLabel: 'E-mail', waLabel: 'WhatsApp',
     note: 'Pathway Language Solutions est un institut de langues et ne fournit pas de conseil en immigration.'
   },
   en: {
@@ -270,8 +270,8 @@ export function thanksPage(lang, homeMarkup) {
   <meta name="description" content="${esc(t.description)}">
   <title>${esc(t.title)} | Pathway</title>
   <link rel="icon" type="image/svg+xml" href="/v4/assets/favicon.svg">
-  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/v4/home.css">
   <link rel="stylesheet" href="/v4/continuation.css">
   <link rel="stylesheet" href="/v4/pages.css?v=pages-1">

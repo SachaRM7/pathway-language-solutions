@@ -29,6 +29,7 @@ export async function buildCampus({ outDir, rootDir }) {
 // Adds the student access link to every published page header that has the main call to action,
 // in the page language. Pages are found by markup, so new pages get the link without extra work.
 const LABELS = { es: 'Acceso alumnos', fr: 'Espace élève', en: 'Student area', de: 'Kursbereich' };
+const SPANISH_NOTE = { fr: 'en espagnol', en: 'in Spanish', de: 'auf Spanisch' };
 const NAV_CTA = '<a class="button button-primary nav-cta"';
 async function htmlFiles(dir, base = dir) {
   const out = [];
@@ -48,7 +49,10 @@ async function linkCampusFromHeaders(outDir) {
     const lang = (html.match(/<html[^>]*\slang="([a-z]{2})/) || [])[1] || 'es';
     const label = LABELS[lang] || LABELS.es;
     const iconMarkup = html.includes('id="i-people"') ? '<svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>' : '';
-    const link = `<a class="nav-campus" href="/campus/" data-cta="header-campus" aria-label="${label}">${iconMarkup}<span class="nav-campus-label">${label}</span></a>\n        `;
+    // The Campus is in Spanish: other languages open a translated sign-in screen that says so.
+    const href = lang === 'es' ? '/campus/' : `/campus/?lang=${lang}`;
+    const aria = lang === 'es' ? label : `${label} (${SPANISH_NOTE[lang]})`;
+    const link = `<a class="nav-campus" href="${href}" data-cta="header-campus" aria-label="${aria}" title="${aria}">${iconMarkup}<span class="nav-campus-label">${label}</span></a>\n        `;
     await writeFile(file, html.replace(NAV_CTA, link + NAV_CTA), 'utf8');
     count++;
   }

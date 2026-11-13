@@ -854,3 +854,8 @@ a.pill.warn { text-decoration: none; }
 .enr-detail dd { margin: 2px 0 0; overflow-wrap: anywhere; }
 .enr-detail a { color: inherit; }
 @media (max-width: 640px) { .enr-detail { grid-template-columns: 1fr; } .enr-row .err-row { flex-wrap: wrap; } }
+/* Login: discreet way back to the public site, and the note on the Campus language. */
+.ob-back { display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; color: var(--ink-2); font-size: 13px; font-weight: 600; text-decoration: none; }
+.ob-back .icon { width: 15px; height: 15px; transform: scaleX(-1); }
+.ob-back:hover, .ob-back:focus-visible { color: var(--ink); text-decoration: underline; }
+.login-note { margin-top: -6px; font-size: 14px; }

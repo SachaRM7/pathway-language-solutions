@@ -130,7 +130,7 @@ const UI = {
     htmlLang: 'de', home: 'Startseite', programs: 'Programme', program: 'Programm',
     title: level => `${level}-Programm · Das Pathway-Lehrbuch`,
     eyebrow: level => `Französischprogramm · Niveau ${level}`,
-    openManual: 'Lehrbuch öffnen', evaluate: 'Mein Niveau einstufen', levelsLabel: 'Weitere Niveaus',
+    openManual: 'Lehrbuch öffnen', evaluate: 'Mein Niveau bestimmen', levelsLabel: 'Weitere Niveaus',
     facts: ['Einheiten', 'Segmente', 'Lernstandskontrollen', 'Übungsprüfungen'],
     yourManual: 'Ihr Französischlehrbuch', download: 'Auszüge herunterladen',
     goTo: 'Gehe zu', zoom: 'Seite vergrößern', zoomLabel: 'Aktuelle Seite vergrößern', fullscreen: 'Vollbild', exit: 'Beenden',
@@ -428,8 +428,8 @@ export function renderProgramPage({ lang, level, data, pages, tour, homeMarkup }
   <link rel="canonical" href="${canonical}">
   ${alternates}
   <link rel="icon" type="image/svg+xml" href="/v4/assets/favicon.svg">
-  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/v4/home.css">
   <link rel="stylesheet" href="/v4/continuation.css">
   <link rel="stylesheet" href="/manual-a2.css?v=${READER_VERSION}">
