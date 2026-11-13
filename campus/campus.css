@@ -843,3 +843,14 @@ a.pill.warn { text-decoration: none; }
 @media (max-width: 719px) { .top-tools { position: relative; } .top-tools .menu-wrap { position: static; } .top-tools .menu-wide { left: 0; right: auto; } }
 /* Small phones (staff with the Alumno/Profesor switch): the tool row fits on one line. */
 @media (max-width: 389px) { .top-tools { gap: 6px; } .top-tools .round { width: 40px; height: 40px; } .top-tools .round .pip { top: 9px; right: 10px; } .switch button { padding: 0 11px; } }
+
+/* Enrollment requests from the website (db/021_solicitudes.sql). */
+.enr-row + .enr-row { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 0; }
+.enr-row .err-row { border-top: 0; padding-top: 0; }
+.enr-row.done b { color: var(--ink-2); }
+.enr-detail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 4px 0 14px; padding: 14px 16px; border-radius: 14px; background: var(--soft); font-size: 14px; }
+.enr-detail div { min-width: 0; }
+.enr-detail dt { color: var(--ink-2); font-size: 12px; font-weight: 600; }
+.enr-detail dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.enr-detail a { color: inherit; }
+@media (max-width: 640px) { .enr-detail { grid-template-columns: 1fr; } .enr-row .err-row { flex-wrap: wrap; } }
