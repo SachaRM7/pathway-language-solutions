@@ -11,6 +11,7 @@
   const UI = {
     es: {
       skills: { reading: 'Comprensión escrita', listening: 'Comprensión oral', grammarVocabulary: 'Gramática y vocabulario', speaking: 'Expresión oral' },
+      skillsInSentence: { reading: 'la comprensión escrita', listening: 'la comprensión oral', grammarVocabulary: 'la gramática y el vocabulario' },
       question: 'pregunta',
       durationExpress: '12–15 min',
       durationIntensive: '25–30 min',
@@ -22,49 +23,51 @@
       next: 'Siguiente',
       showResult: 'Ver mi resultado',
       leadKicker: 'Tu resultado está listo',
-      leadTitle: '¿A qué correo lo enviamos?',
-      leadCopy: 'Guardamos tu nivel con tu correo: tu profesor lo tendrá listo para tu primera clase, y tu campus empezará en el nivel correcto.',
+      leadTitle: '¿Con qué correo guardamos tu resultado?',
+      leadCopy: 'Guardamos tu nivel con tu correo: tu profesor lo tendrá listo para tu primera clase, y tu Campus empezará en el nivel correcto. No te enviamos ningún correo.',
       leadLabel: 'Tu correo electrónico',
       leadPlaceholder: 'tu.nombre@correo.com',
-      leadInvalid: 'Escribe un correo válido.',
+      leadInvalid: 'Escribe un correo electrónico válido.',
       leadConsent: 'Usamos tu correo solo para preparar tu curso. Más detalles en nuestra <a href="/privacidad.html">política de privacidad</a>.',
       leadButton: 'Ver mi resultado',
       resultTitle: level => `Tu francés se sitúa alrededor de ${level}.`,
-      status: { construction: 'en construcción', functional: 'funcional', independent: 'independiente', solid: 'sólido' },
+      status: { construction: 'Tu nivel está en construcción.', functional: 'Tu nivel es funcional.', independent: 'Tu nivel es independiente.', solid: 'Tu nivel es sólido.' },
       confidence: { express: 'Orientativo: confirma tu nivel en una clase en vivo.', intensive: 'Más preciso: combina cuatro niveles y pondera la dificultad.' },
       diagnostic: { priority: 'prioridad', consolidating: 'por consolidar', operational: 'operativa', strength: 'fortaleza' },
-      speakingScore: 'No autoevaluada', speakingCopy: 'Se confirma en una clase en vivo.', speakingDiagnostic: 'por confirmar',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Índice global autoevaluado: ${overall}/100 (${totalCorrect} respuestas correctas de ${totalQuestions}). El nivel aparece ${status}. La competencia que más limita el avance es ${weakest.toLowerCase()}. ${confidence}`
+      speakingScore: 'No evaluada en este test', speakingCopy: 'Se confirma en una clase en vivo.', speakingDiagnostic: 'por confirmar',
+      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Índice global del test: ${overall}/100 (${totalCorrect} respuestas correctas de ${totalQuestions}). ${status} La competencia que más limita tu avance es ${weakest}. ${confidence}`
     },
     fr: {
       skills: { reading: 'Compréhension écrite', listening: 'Compréhension orale', grammarVocabulary: 'Grammaire et vocabulaire', speaking: 'Expression orale' },
+      skillsInSentence: { reading: 'la compréhension écrite', listening: 'la compréhension orale', grammarVocabulary: 'la grammaire et le vocabulaire' },
       question: 'question',
       durationExpress: '12–15 min',
       durationIntensive: '25–30 min',
-      audioWarning: 'Attention : tu n’as droit qu’à une seule écoute par question.',
-      audioPlaying: 'Écoute en cours · c’est ta seule écoute pour cette question',
+      audioWarning: 'Attention : vous n’avez droit qu’à une seule écoute par question.',
+      audioPlaying: 'Écoute en cours · c’est votre seule écoute pour cette question',
       audioSpent: 'Écoute utilisée (1/1) pour cette question',
-      audioLabel: 'Une seule écoute par question ; mettre en pause et reprendre ne consomme pas une écoute supplémentaire',
+      audioLabel: 'Une seule écoute par question ; mettre en pause et reprendre ne consomme pas une écoute supplémentaire',
       previous: 'Précédente',
       next: 'Suivante',
       showResult: 'Voir mon résultat',
       leadKicker: 'Votre résultat est prêt',
-      leadTitle: 'À quelle adresse l’enregistrer ?',
-      leadCopy: 'Nous gardons votre niveau avec votre adresse e-mail : votre professeur l’aura sous les yeux dès votre premier cours, et votre campus commencera au bon niveau.',
+      leadTitle: 'Avec quelle adresse e-mail enregistrons-nous votre résultat ?',
+      leadCopy: 'Nous enregistrons votre niveau avec votre adresse e-mail : votre professeur l’aura sous les yeux dès votre premier cours, et votre Campus commencera au bon niveau. Nous ne vous envoyons aucun e-mail.',
       leadLabel: 'Votre adresse e-mail',
       leadPlaceholder: 'prenom.nom@exemple.com',
-      leadInvalid: 'Écrivez une adresse e-mail valide.',
+      leadInvalid: 'Saisissez une adresse e-mail valide.',
       leadConsent: 'Votre adresse ne sert qu’à préparer votre cours. Plus de détails dans notre <a href="/fr/politique-confidentialite.html">politique de confidentialité</a>.',
       leadButton: 'Voir mon résultat',
       resultTitle: level => `Votre français se situe autour de ${level}.`,
-      status: { construction: 'en construction', functional: 'fonctionnel', independent: 'autonome', solid: 'solide' },
-      confidence: { express: 'Indication prudente : confirmez votre niveau en cours individuel.', intensive: 'Estimation plus précise : quatre niveaux et la difficulté sont pondérés.' },
+      status: { construction: 'Votre niveau est en construction.', functional: 'Votre niveau est fonctionnel.', independent: 'Votre niveau est autonome.', solid: 'Votre niveau est solide.' },
+      confidence: { express: 'Indication prudente : confirmez votre niveau lors d’un cours en direct.', intensive: 'Estimation plus précise : quatre niveaux et la difficulté sont pondérés.' },
       diagnostic: { priority: 'priorité', consolidating: 'à consolider', operational: 'opérationnel', strength: 'point fort' },
-      speakingScore: 'Non évaluée automatiquement', speakingCopy: 'À confirmer pendant un cours en direct.', speakingDiagnostic: 'à confirmer',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Indice global automatique : ${overall}/100 (${totalCorrect} bonnes réponses sur ${totalQuestions}). Le niveau semble ${status}. La compétence qui limite le plus la progression est ${weakest.toLowerCase()}. ${confidence}`
+      speakingScore: 'Non évaluée par ce test', speakingCopy: 'À confirmer pendant un cours en direct.', speakingDiagnostic: 'à confirmer',
+      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Indice global du test : ${overall}/100 (${totalCorrect} bonnes réponses sur ${totalQuestions}). ${status} La compétence qui limite le plus votre progression est ${weakest}. ${confidence}`
     },
     en: {
       skills: { reading: 'Reading comprehension', listening: 'Listening comprehension', grammarVocabulary: 'Grammar & vocabulary', speaking: 'Speaking' },
+      skillsInSentence: { reading: 'reading comprehension', listening: 'listening comprehension', grammarVocabulary: 'grammar and vocabulary' },
       question: 'question',
       durationExpress: '12–15 min',
       durationIntensive: '25–30 min',
@@ -76,22 +79,23 @@
       next: 'Next',
       showResult: 'See my result',
       leadKicker: 'Your result is ready',
-      leadTitle: 'Which email should we save it to?',
-      leadCopy: 'We keep your level with your email: your teacher will have it ready for your first class, and your campus will start at the right level.',
-      leadLabel: 'Your email',
+      leadTitle: 'Which email address should we save your result with?',
+      leadCopy: 'We save your level with your email address: your teacher will have it ready for your first class, and your Campus will start at the right level. We do not send you any email.',
+      leadLabel: 'Your email address',
       leadPlaceholder: 'name@example.com',
       leadInvalid: 'Enter a valid email address.',
-      leadConsent: 'We only use your email to prepare your course. More in our <a href="/en/politique-confidentialite.html">privacy policy</a>.',
+      leadConsent: 'We only use your email address to prepare your course. More in our <a href="/en/politique-confidentialite.html">privacy policy</a>.',
       leadButton: 'See my result',
-      resultTitle: level => `Your French is estimated around ${level}.`,
-      status: { construction: 'still developing', functional: 'functional', independent: 'independent', solid: 'solid' },
+      resultTitle: level => `Your French is estimated at around ${level}.`,
+      status: { construction: 'Your level is still developing.', functional: 'Your level is functional.', independent: 'Your level is independent.', solid: 'Your level is solid.' },
       confidence: { express: 'Guidance only: confirm your level in a live class.', intensive: 'More precise: four levels and difficulty weighting are included.' },
       diagnostic: { priority: 'priority', consolidating: 'to consolidate', operational: 'operational', strength: 'strength' },
-      speakingScore: 'Not auto-evaluated', speakingCopy: 'To be confirmed in a live class.', speakingDiagnostic: 'to confirm',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Automatic overall index: ${overall}/100 (${totalCorrect} correct answers out of ${totalQuestions}). The level appears ${status}. The skill limiting progress most is ${weakest.toLowerCase()}. ${confidence}`
+      speakingScore: 'Not assessed by this test', speakingCopy: 'To be confirmed in a live class.', speakingDiagnostic: 'to confirm',
+      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Overall test index: ${overall}/100 (${totalCorrect} correct answers out of ${totalQuestions}). ${status} The skill holding back your progress most is ${weakest}. ${confidence}`
     },
     de: {
       skills: { reading: 'Leseverstehen', listening: 'Hörverstehen', grammarVocabulary: 'Grammatik und Wortschatz', speaking: 'Sprechen' },
+      skillsInSentence: { reading: 'das Leseverstehen', listening: 'das Hörverstehen', grammarVocabulary: 'Grammatik und Wortschatz' },
       question: 'Frage',
       durationExpress: '12–15 Min.',
       durationIntensive: '25–30 Min.',
@@ -103,29 +107,54 @@
       next: 'Weiter',
       showResult: 'Ergebnis anzeigen',
       leadKicker: 'Ihr Ergebnis ist bereit',
-      leadTitle: 'Unter welcher E-Mail-Adresse speichern wir es?',
-      leadCopy: 'Wir speichern Ihr Niveau mit Ihrer E-Mail-Adresse: Ihre Lehrkraft hat es zur ersten Stunde vorliegen, und Ihr Campus beginnt auf dem richtigen Niveau.',
+      leadTitle: 'Unter welcher E-Mail-Adresse speichern wir Ihr Ergebnis?',
+      leadCopy: 'Wir speichern Ihr Niveau mit Ihrer E-Mail-Adresse: Ihre Lehrkraft hat es zur ersten Stunde vorliegen, und Ihr Campus beginnt auf dem richtigen Niveau. Wir senden Ihnen keine E-Mail.',
       leadLabel: 'Ihre E-Mail-Adresse',
       leadPlaceholder: 'name@beispiel.de',
       leadInvalid: 'Geben Sie eine gültige E-Mail-Adresse ein.',
       leadConsent: 'Wir nutzen Ihre Adresse nur zur Vorbereitung Ihres Kurses. Mehr dazu in unserer <a href="/de/politique-confidentialite.html">Datenschutzerklärung</a>.',
       leadButton: 'Ergebnis anzeigen',
-      resultTitle: level => `Ihr Französisch liegt ungefähr auf ${level}.`,
-      status: { construction: 'im Aufbau', functional: 'funktional', independent: 'selbstständig', solid: 'sicher' },
-      confidence: { express: 'Orientierung: Bestätigen Sie Ihr Niveau in einem Live-Unterricht.', intensive: 'Präzisere Einschätzung: vier Niveaus und die Schwierigkeit werden gewichtet.' },
+      resultTitle: level => `Ihr Französisch liegt ungefähr auf Niveau ${level}.`,
+      status: { construction: 'Ihr Niveau befindet sich im Aufbau.', functional: 'Ihr Niveau ist funktional.', independent: 'Ihr Niveau ist selbstständig.', solid: 'Ihr Niveau ist sicher.' },
+      confidence: { express: 'Orientierung: Bestätigen Sie Ihr Niveau in einer Live-Stunde.', intensive: 'Präzisere Einschätzung: vier Niveaus und die Schwierigkeit werden gewichtet.' },
       diagnostic: { priority: 'Priorität', consolidating: 'zu festigen', operational: 'funktional', strength: 'Stärke' },
-      speakingScore: 'Nicht automatisch bewertet', speakingCopy: 'Wird im Live-Unterricht bestätigt.', speakingDiagnostic: 'zu bestätigen',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Automatischer Gesamtindex: ${overall}/100 (${totalCorrect} richtige Antworten von ${totalQuestions}). Das Niveau wirkt ${status}. Die Kompetenz, die den Fortschritt am stärksten begrenzt, ist ${weakest.toLowerCase()}. ${confidence}`
+      speakingScore: 'Von diesem Test nicht bewertet', speakingCopy: 'Wird in einer Live-Stunde bestätigt.', speakingDiagnostic: 'zu bestätigen',
+      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Gesamtindex des Tests: ${overall}/100 (${totalCorrect} richtige Antworten von ${totalQuestions}). ${status} Die Kompetenz, die Ihren Fortschritt am stärksten begrenzt, ist ${weakest}. ${confidence}`
     }
   };
   const T = UI[locale] || UI.es;
+
+  // Styles of the e-mail step (built by this script) and of the level rail on phones, in the
+  // V4 tokens: the V4 test page only loads the shared V4 sheets.
+  if (!document.querySelector('style[data-placement-test]')) {
+    const style = document.createElement('style');
+    style.dataset.placementTest = '';
+    style.textContent = `
+      .lead-card { display: grid; gap: 16px; align-content: start; }
+      .lead-card h2 { margin: 0; }
+      .lead-card .lead-copy { margin: 0; color: var(--muted, #50625c); line-height: 1.55; }
+      .lead-field { display: grid; gap: 8px; max-width: 520px; margin-top: 8px; font-size: 15px; font-weight: 700; }
+      .lead-field input { min-height: 52px; padding: 0 16px; border: 1.5px solid var(--line, #d6d7cf); border-radius: 12px; background: var(--paper, #fffaf2); color: var(--ink, #122b26); font: inherit; font-weight: 500; font-size: 17px; }
+      .lead-field input:focus { outline: none; border-color: var(--ink, #122b26); box-shadow: 0 0 0 3px var(--sage, #cad8c3); }
+      .lead-field input[aria-invalid="true"] { border-color: var(--action, #a34e3b); }
+      .lead-error { display: flex; align-items: center; gap: 8px; margin: -4px 0 0; color: var(--action, #a34e3b); font-size: 15px; font-weight: 700; }
+      .lead-error::before { content: "!"; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--action, #a34e3b); color: var(--paper, #fffaf2); font-size: 12px; }
+      .lead-error[hidden] { display: none; }
+      .lead-consent { max-width: 60ch; margin: 0; color: var(--muted, #50625c); font-size: 14px; line-height: 1.5; }
+      .lead-consent a { color: inherit; }
+      @media (max-width: 640px) {
+        .level-rail li { font-size: 13px !important; }
+        .level-rail li span { display: none; }
+      }`;
+    document.head.append(style);
+  }
   const levelIndexForStatus = levelIndex => levelIndex >= 3 ? 'solid' : levelIndex >= 2 ? 'independent' : levelIndex >= 1 ? 'functional' : 'construction';
 
   const questions = [
     { level: 'A1', skill: 'Compréhension écrite', title: 'Où habite Lucas ?', context: 'Bonjour ! Je m’appelle Lucas. J’ai 20 ans et j’habite à Montréal. Je parle français et anglais. Le week-end, je sors avec mes amis.', options: ['À Paris', 'À Lima', 'À Montréal', 'À Québec'], answer: 2 },
     { level: 'A1', skill: 'Compréhension écrite', title: 'À quelle heure ferme la bibliothèque ?', context: 'Bibliothèque municipale — ouverte du lundi au vendredi de 9 h à 18 h. Fermée le samedi.', options: ['À 9 h', 'À 12 h', 'À 18 h', 'À 20 h'], answer: 2 },
-    { level: 'A1', skill: 'Compréhension orale', title: 'Où travaille Camille ?', audio: '/assets/audio/placement-a1.ogg', options: ['Dans une école', 'Dans une librairie', 'Dans un restaurant', 'Dans un hôpital'], answer: 1 },
-    { level: 'A1', skill: 'Compréhension orale', title: 'Que fait Camille le samedi ?', audio: '/assets/audio/placement-a1.ogg', options: ['Elle travaille à la librairie', 'Elle étudie le français', 'Elle fait du vélo avec ses amis', 'Elle va au restaurant'], answer: 2 },
+    { level: 'A1', skill: 'Compréhension orale', title: 'Où travaille Camille ?', audio: '/assets/audio/placement-a1.mp3', options: ['Dans une école', 'Dans une librairie', 'Dans un restaurant', 'Dans un hôpital'], answer: 1 },
+    { level: 'A1', skill: 'Compréhension orale', title: 'Que fait Camille le samedi ?', audio: '/assets/audio/placement-a1.mp3', options: ['Elle travaille à la librairie', 'Elle étudie le français', 'Elle fait du vélo avec ses amis', 'Elle va au restaurant'], answer: 2 },
     { level: 'A1', skill: 'Grammaire et vocabulaire', title: 'Choisis la présentation correctement écrite.', options: ['Je m’appelle Ana et je suis péruvienne.', 'Je appelle Ana et je est péruvienne.', 'Moi s’appelle Ana, péruvienne.', 'Je m’appelles Ana et suis péruvien.'], answer: 0 },
     { level: 'A1', skill: 'Grammaire et vocabulaire', title: 'Complète le message : « Bonjour, je ___ réserver une table pour deux personnes. »', options: ['voudrais', 'voudrait', 'voulez', 'voulons'], answer: 0 },
     { level: 'A1', skill: 'Grammaire et vocabulaire', title: 'Quel échange est naturel pour saluer quelqu’un ?', options: ['— Bonjour ! — Bonjour, comment ça va ?', '— Bonjour ! — J’ai vingt ans.', '— Bonjour ! — À la boulangerie.', '— Bonjour ! — Parce que oui.'], answer: 0 },
@@ -133,8 +162,8 @@
 
     { level: 'A2', skill: 'Compréhension écrite', title: 'Pourquoi Sophie a-t-elle acheté des fleurs ?', context: 'Samedi, Sophie est allée au marché avec sa sœur. Elle a acheté des légumes, du fromage et de belles fleurs pour sa mère, qui fêtait son anniversaire ce jour-là.', options: ['Pour décorer le restaurant', 'Pour remercier sa sœur', 'Pour l’anniversaire de sa mère', 'Pour les vendre au marché'], answer: 2 },
     { level: 'A2', skill: 'Compréhension écrite', title: 'Que doit faire le locataire avant vendredi ?', context: 'Bonjour, une coupure d’eau est prévue vendredi entre 8 h et 11 h. Merci de fermer vos robinets avant 8 h et de ne pas utiliser le lave-linge pendant l’intervention.', options: ['Quitter son logement', 'Fermer les robinets', 'Réparer le lave-linge', 'Téléphoner au propriétaire'], answer: 1 },
-    { level: 'A2', skill: 'Compréhension orale', title: 'Quand aura lieu le nouveau rendez-vous ?', audio: '/assets/audio/placement-a2.ogg', options: ['Mercredi à midi', 'Jeudi 15 à 10 h 30', 'Jeudi à 15 h', 'Vendredi à 10 h 30'], answer: 1 },
-    { level: 'A2', skill: 'Compréhension orale', title: 'Que faut-il faire si la nouvelle heure ne convient pas ?', audio: '/assets/audio/placement-a2.ogg', options: ['Venir mercredi midi', 'Envoyer un courrier jeudi', 'Rappeler avant mercredi midi', 'Annuler le rendez-vous en ligne'], answer: 2 },
+    { level: 'A2', skill: 'Compréhension orale', title: 'Quand aura lieu le nouveau rendez-vous ?', audio: '/assets/audio/placement-a2.mp3', options: ['Mercredi à midi', 'Jeudi 15 à 10 h 30', 'Jeudi à 15 h', 'Vendredi à 10 h 30'], answer: 1 },
+    { level: 'A2', skill: 'Compréhension orale', title: 'Que faut-il faire si la nouvelle heure ne convient pas ?', audio: '/assets/audio/placement-a2.mp3', options: ['Venir mercredi midi', 'Envoyer un courrier jeudi', 'Rappeler avant mercredi midi', 'Annuler le rendez-vous en ligne'], answer: 2 },
     { level: 'A2', skill: 'Grammaire et vocabulaire', title: 'Choisis la phrase correcte au passé composé.', options: ['Sophie est allé au marché.', 'Sophie a allée au marché.', 'Sophie est allée au marché.', 'Sophie va au marché hier.'], answer: 2 },
     { level: 'A2', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase convient à un courriel pour reporter un rendez-vous ?', options: ['Je peux pas. Change.', 'Serait-il possible de déplacer notre rendez-vous à jeudi ?', 'Rendez-vous non, jeudi oui.', 'Tu dois changer notre heure.'], answer: 1 },
     { level: 'A2', skill: 'Grammaire et vocabulaire', title: 'Tu n’as pas compris une consigne. Que dis-tu ?', options: ['Quoi ?', 'Répétez.', 'Excusez-moi, pourriez-vous répéter plus lentement ?', 'Je ne veux pas écouter.'], answer: 2 },
@@ -142,8 +171,8 @@
 
     { level: 'B1', skill: 'Compréhension écrite', title: 'Qu’est-ce qu’un modèle de travail hybride ?', context: 'Le télétravail évite certains déplacements mais peut isoler les salariés. Plusieurs entreprises proposent donc un modèle hybride afin de garder les avantages des deux façons de travailler.', options: ['Confier l’ensemble des tâches collectives à des équipes entièrement à distance', 'Remplacer toutes les réunions du bureau par des échanges écrits permanents', 'Alterner des journées de télétravail et des journées de présence au bureau', 'Laisser chaque salarié partager son poste entre deux entreprises différentes'], answer: 2 },
     { level: 'B1', skill: 'Compréhension écrite', title: 'Quelle réserve l’auteur exprime-t-il ?', context: 'Les cours en ligne offrent une grande souplesse. Cependant, sans calendrier précis ni échanges réguliers, certains apprenants perdent rapidement leur motivation.', options: ['Le coût des formations en ligne décourage la majorité des apprenants inscrits', 'La souplesse des horaires garantit à elle seule la régularité des progrès', 'Sans cadre précis ni échanges réguliers, la motivation des apprenants s’érode', 'Les échanges entre apprenants empêchent de travailler à son propre rythme'], answer: 2 },
-    { level: 'B1', skill: 'Compréhension orale', title: 'Pourquoi certains employés préfèrent-ils venir au bureau ?', audio: '/assets/audio/placement-b1.wav', options: ['Parce que leurs déplacements quotidiens leur sont remboursés par l’entreprise', 'Parce que leur connexion Internet à domicile est devenue trop instable', 'Parce qu’ils se concentrent mieux en travaillant auprès de leurs collègues', 'Parce qu’ils souhaitent pouvoir travailler aussi pendant le week-end'], answer: 2 },
-    { level: 'B1', skill: 'Compréhension orale', title: 'Combien de jours de télétravail sont autorisés par semaine ?', audio: '/assets/audio/placement-b1.wav', options: ['Un jour par semaine', 'Deux jours par semaine', 'Trois jours par semaine', 'Quatre jours par semaine'], answer: 1 },
+    { level: 'B1', skill: 'Compréhension orale', title: 'Pourquoi certains employés préfèrent-ils venir au bureau ?', audio: '/assets/audio/placement-b1.mp3', options: ['Parce que leurs déplacements quotidiens leur sont remboursés par l’entreprise', 'Parce que leur connexion Internet à domicile est devenue trop instable', 'Parce qu’ils se concentrent mieux en travaillant auprès de leurs collègues', 'Parce qu’ils souhaitent pouvoir travailler aussi pendant le week-end'], answer: 2 },
+    { level: 'B1', skill: 'Compréhension orale', title: 'Combien de jours de télétravail sont autorisés par semaine ?', audio: '/assets/audio/placement-b1.mp3', options: ['Un jour par semaine', 'Deux jours par semaine', 'Trois jours par semaine', 'Quatre jours par semaine'], answer: 1 },
     { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase articule clairement une opposition ?', options: ['Le télétravail est pratique, pourtant il peut aussi isoler les équipes.', 'Le télétravail est pratique, donc il peut aussi isoler les équipes.', 'Le télétravail est pratique, parce qu’il peut aussi isoler les équipes.', 'Le télétravail est pratique, en effet il peut aussi isoler les équipes.'], answer: 0 },
     { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Choisis la formulation la plus claire pour donner un conseil.', options: ['À ta place, je définirais des horaires fixes afin de mieux progresser.', 'Si tu définirais des horaires fixes, tu progresserais bien plus vite.', 'Il faudrait que tu définis des horaires fixes pour progresser plus vite.', 'Je te conseille que tu définisses des horaires fixes pour mieux progresser.'], answer: 0 },
     { level: 'B1', skill: 'Grammaire et vocabulaire', title: 'Comment exprimer un désaccord de façon nuancée ?', options: ['Je suis absolument contre cette solution, elle ne convient vraiment à personne.', 'Je ne suis pas tout à fait d’accord, car cette solution ne convient pas à tous.', 'Cette solution est totalement inadaptée et personne ne peut sérieusement la défendre.', 'Je suis entièrement d’accord, même si cette solution ne convient pas à tous.'], answer: 1 },
@@ -151,8 +180,8 @@
 
     { level: 'B2', skill: 'Compréhension écrite', title: 'Pourquoi les compétences humaines restent-elles importantes ?', context: 'Les entreprises forment leurs employés pour travailler avec les nouvelles technologies. La créativité, la communication, l’esprit critique et l’adaptation deviennent recherchés, alors que certaines compétences techniques risquent de devenir obsolètes.', options: ['Parce qu’elles compensent le retard technologique accumulé par certaines entreprises', 'Parce qu’elles permettent de suivre les évolutions technologiques plutôt que de les subir', 'Parce qu’elles ralentissent une automatisation que les entreprises jugent excessive', 'Parce qu’elles rendent inutile toute mise à jour des compétences techniques'], answer: 1 },
     { level: 'B2', skill: 'Compréhension écrite', title: 'Quelle conclusion implicite se dégage du texte ?', context: 'L’accès immédiat à l’information donne l’impression que toute réponse est à portée de main. Pourtant, distinguer une source fiable d’une affirmation séduisante exige du temps, des méthodes et une vigilance que la vitesse de consultation ne garantit pas.', options: ['La rapidité d’accès garantit désormais la fiabilité des informations consultées', 'Toute information disponible en ligne doit être considérée comme trompeuse', 'Disposer de l’information ne dispense pas du travail de vérification', 'Les méthodes de vérification deviennent inutiles quand les sources sont nombreuses'], answer: 2 },
-    { level: 'B2', skill: 'Compréhension orale', title: 'Quelle est l’idée principale de l’extrait ?', audio: '/assets/audio/placement-b2.wav', options: ['Les outils numériques suppriment l’essentiel des tâches répétitives sans contrepartie', 'Les outils numériques devraient être abandonnés au profit de méthodes traditionnelles', 'La maîtrise technique des outils suffit à protéger durablement la concentration', 'Les outils numériques peuvent aider, à condition d’en limiter aussi l’usage'], answer: 3 },
-    { level: 'B2', skill: 'Compréhension orale', title: 'Quel effet négatif des outils numériques est mentionné ?', audio: '/assets/audio/placement-b2.wav', options: ['Ils ralentissent l’ensemble des tâches quotidiennes des équipes', 'Ils multiplient les sollicitations pendant le temps de travail', 'Ils rendent toute forme de créativité impossible à long terme', 'Ils réservent la technologie aux personnes déjà expertes'], answer: 1 },
+    { level: 'B2', skill: 'Compréhension orale', title: 'Quelle est l’idée principale de l’extrait ?', audio: '/assets/audio/placement-b2.mp3', options: ['Les outils numériques suppriment l’essentiel des tâches répétitives sans contrepartie', 'Les outils numériques devraient être abandonnés au profit de méthodes traditionnelles', 'La maîtrise technique des outils suffit à protéger durablement la concentration', 'Les outils numériques peuvent aider, à condition d’en limiter aussi l’usage'], answer: 3 },
+    { level: 'B2', skill: 'Compréhension orale', title: 'Quel effet négatif des outils numériques est mentionné ?', audio: '/assets/audio/placement-b2.mp3', options: ['Ils ralentissent l’ensemble des tâches quotidiennes des équipes', 'Ils multiplient les sollicitations pendant le temps de travail', 'Ils rendent toute forme de créativité impossible à long terme', 'Ils réservent la technologie aux personnes déjà expertes'], answer: 1 },
     { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Quelle phrase présente l’argumentation la plus précise ?', options: ['Bien que ces outils améliorent la productivité, leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Malgré que ces outils améliorent la productivité, leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Ces outils améliorent la productivité, donc leur efficacité dépend de l’usage réfléchi que l’on en fait.', 'Bien que ces outils améliorent la productivité, leur efficacité en dépend de l’usage réfléchi que l’on en fait.'], answer: 0 },
     { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Choisis la reformulation qui conserve la nuance.', context: 'La mesure pourrait être utile, à condition qu’elle soit accompagnée d’un suivi régulier.', options: ['La mesure sera forcément utile, même si le suivi qui l’accompagne reste irrégulier.', 'Sans un suivi régulier, l’utilité de la mesure demeure incertaine.', 'Le suivi régulier rend la mesure inutile dans la plupart des situations.', 'La mesure conserve son utilité indépendamment du suivi qui l’accompagne.'], answer: 1 },
     { level: 'B2', skill: 'Grammaire et vocabulaire', title: 'Quelle intervention structure le mieux une prise de position ?', options: ['Je dirais d’abord que cette solution répond à un besoin réel ; néanmoins, deux limites doivent être examinées.', 'Je pense que cette solution répond à un besoin réel et qu’il y a aussi deux ou trois limites.', 'Cette solution répond à un besoin réel, par conséquent deux limites doivent être examinées.', 'D’un côté cette solution répond à un besoin réel, d’un côté deux limites doivent être examinées.'], answer: 0 },
@@ -342,6 +371,7 @@
 
   // The result is saved with the email so the teacher finds the level when creating the account
   // (campus/db/019_test_nivel.sql). A network failure never blocks the result.
+  const track = (name, data) => { try { window.PathwayAnalytics?.track(name, data); } catch (error) { /* never blocks */ } };
   const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
   const saveResult = (email, data) => {
     try {
@@ -351,8 +381,12 @@
         headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ p_email: email, p_level: data.level, p_overall: Math.round(data.overall), p_mode: mode, p_lang: ['es', 'fr', 'en', 'de'].includes(locale) ? locale : 'es', p_detail: { skills, correct: data.totalCorrect, questions: data.totalQuestions } }),
         keepalive: true
-      }).catch(() => null);
-    } catch (error) { return Promise.resolve(null); }
+      }).then(response => {
+        // A refused save (more than 5 tests per address and hour, network) is logged; the result still shows.
+        if (!response.ok) track('placement_save_failed', { status: response.status });
+        return response.ok;
+      }, () => { track('placement_save_failed', { status: 0 }); return false; });
+    } catch (error) { track('placement_save_failed', { status: -1 }); return Promise.resolve(false); }
   };
   let lead = null;
   const askEmail = () => {
@@ -404,7 +438,7 @@
       totalCorrect,
       totalQuestions,
       status: statusLabel,
-      weakest: T.skills[weakestSkill],
+      weakest: T.skillsInSentence[weakestSkill],
       confidence: T.confidence[mode]
     });
     document.querySelector('[data-skill-scores]').innerHTML = [...SKILLS.map(skillName => {
