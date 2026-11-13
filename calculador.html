@@ -54,7 +54,7 @@
     <div class="wrap">
       <div class="intro">
         <div>
-          <p class="eyebrow">Calculador CRS completo</p>
+          <p class="eyebrow">Calculadora CRS completa</p>
           <h1>Calcula tu puntaje con la tabla oficial.</h1>
         </div>
         <div>
@@ -80,7 +80,7 @@
                   <div class="choice"><input id="status-single" type="radio" name="marital_status" value="single" checked><label for="status-single">Sin cónyuge acompañante</label></div>
                   <div class="choice"><input id="status-spouse" type="radio" name="marital_status" value="accompanying"><label for="status-spouse">Cónyuge acompañante</label></div>
                 </div>
-                <span class="hint">Selecciona la primera opción si eres soltero/a, si tu pareja no te acompaña o si ya es residente permanente o ciudadana canadiense.</span>
+                <span class="hint">Selecciona la primera opción si eres soltero/a, si tu pareja no te acompaña o si ya es residente permanente o ciudadano/a canadiense.</span>
               </fieldset>
               <div class="field"><label for="age">Edad</label><input id="age" name="age" type="number" min="17" max="99" inputmode="numeric" required></div>
               <div class="field"><label for="education">Nivel de estudios reconocido</label><select id="education" name="education" required>
@@ -161,24 +161,24 @@
             </div>
             <div class="comparison" id="comparison"></div>
             <p class="eligibility" id="french-eligibility"></p>
-            <p class="result-source">Cálculo basado en las reglas CRS oficiales cargadas automáticamente desde IRCC, versión <span id="criteria-date">22 de junio de 2026</span>. Verifica siempre el resultado antes de presentar un perfil.</p>
+            <p class="result-source">Cálculo basado en las reglas CRS de IRCC. Verifica siempre el resultado antes de presentar un perfil.</p>
           </div>
         </aside>
       </div>
 
-      <section class="lead" id="evaluacion">
+      <section class="lead" id="evaluacion" aria-labelledby="lead-title">
         <div class="lead-grid">
-          <div><p class="eyebrow" id="lead-eyebrow">Evaluación gratuita · 20 minutos</p><h2 id="lead-title">Ahora falta la variable más importante: el tiempo.</h2><p id="lead-copy">Compararemos tu nivel actual con la fecha de vencimiento de tu permiso para darte un calendario realista hacia NCLC 7.</p></div>
-          <form class="capture" id="capture">
+          <div><p class="eyebrow" id="lead-eyebrow">Siguiente paso · gratis</p><h2 id="lead-title">Ahora mide tu nivel de francés.</h2><p id="lead-copy">Tu puntaje depende sobre todo de tus resultados en francés. El test de nivel en línea (12 a 15 minutos) sitúa tu punto de partida entre A1 y B2; después eliges tu ritmo y Pathway confirma un horario por escrito.</p><p class="lead-actions"><a class="button button-coral" href="test-placement.html" data-cta="calculator-test">Hacer el test de nivel <span aria-hidden="true">→</span></a></p></div>
+          <form class="capture" id="capture" novalidate>
+            <p class="capture-intro wide"><strong>¿Prefieres que te escribamos?</strong> Deja tus datos y continúa por WhatsApp con tu resultado.</p>
             <input type="hidden" id="capture-score" name="current_crs">
             <input type="hidden" id="capture-french-eligible" name="french_category_eligible">
-            <div class="field"><label for="name">Nombre <span class="required">*</span></label><input id="name" name="first_name" autocomplete="given-name" required></div>
-            <div class="field"><label for="email">Email <span class="required">*</span></label><input id="email" name="email" type="email" autocomplete="email" required></div>
-            <div class="field wide"><label for="whatsapp">WhatsApp <span class="required">*</span></label><input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" placeholder="+1 416 000 0000" required></div>
-            <div class="field wide"><label for="permit">¿Cuándo vence tu permiso de trabajo? <span class="required">*</span></label><select id="permit" name="permit_expiry" required><option value="">Selecciona una opción</option><option value="under-12">En menos de 12 meses</option><option value="12-24">Entre 12 y 24 meses</option><option value="over-24">En más de 24 meses</option><option value="no-permit">No tengo permiso</option><option value="na">No aplica a mi caso</option></select></div>
+            <div class="field"><label for="name">Nombre</label><input id="name" name="first_name" autocomplete="given-name" maxlength="120" required></div>
+            <div class="field"><label for="email">Correo electrónico</label><input id="email" name="email" type="email" autocomplete="email" maxlength="200" required></div>
+            <div class="field wide"><label for="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" placeholder="+51 987 654 321" maxlength="30" required></div>
             <div class="status" id="form-status" role="alert" tabindex="-1"></div>
             <button class="button" id="lead-submit" type="submit">Continuar por WhatsApp</button>
-            <p class="privacy">Al continuar, abriremos WhatsApp con tus respuestas preparadas. Tú decides si envías el mensaje. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+            <p class="privacy">Al continuar, abriremos WhatsApp con tus datos y tu resultado. Tú decides si envías el mensaje. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
           </form>
         </div>
       </section>
@@ -187,6 +187,19 @@
 
   <footer class="footer"><div class="wrap"><p>Pathway Language Solutions es un instituto de idiomas y no ofrece consultoría migratoria. El resultado depende de la exactitud de tus respuestas y no sustituye el cálculo de IRCC. Consulta los <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html" target="_blank" rel="noopener">criterios CRS oficiales</a>.<br><br>Contacto: <a href="mailto:contacto@pathway-languages.com">contacto@pathway-languages.com</a> · <a href="https://wa.me/51989887516" target="_blank" rel="noopener">+51 989 887 516</a></p></div></footer>
 
+  <style>
+    /* V4 calculator page: inline errors, result in view under the fixed header, contact block. */
+    .pg-flow-calculator .field, .pg-flow-calculator .capture .field { scroll-margin-top: calc(var(--header-height, 88px) + 24px); }
+    .pg-flow-calculator .result-panel { scroll-margin-top: calc(var(--header-height, 88px) + 16px); }
+    .pg-flow-calculator .result-panel:focus { outline: none; }
+    .pg-flow-calculator .result-panel:focus-visible { outline: 3px solid var(--sage, #cad8c3); outline-offset: 3px; }
+    .pg-flow-calculator .field-error { display: flex; align-items: center; gap: 8px; margin-top: 2px; color: var(--action, #a34e3b); font-size: 14px; font-weight: 700; }
+    .pg-flow-calculator .field-error::before { content: "!"; flex: none; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--action, #a34e3b); color: var(--paper, #fffaf2); font-size: 12px; }
+    .pg-flow-calculator [aria-invalid="true"] { border-color: var(--action, #a34e3b) !important; }
+    .pg-flow-calculator .capture .capture-intro { grid-column: 1 / -1; margin: 0; color: var(--ink, #122b26); font-size: 15px; }
+    .pg-flow-calculator .lead-actions { margin-top: 20px; }
+    .pg-flow-calculator .language-grid label small { display: block; font-weight: 400; }
+  </style>
   <script src="analytics.js"></script>
   <script src="crs-engine.js"></script>
   <script src="ircc-data.js"></script>
@@ -194,49 +207,74 @@
     const form=document.querySelector('#crs-form');
     const resultEmpty=document.querySelector('#result-empty');
     const resultContent=document.querySelector('#result-content');
+    const resultPanel=document.querySelector('.result-panel');
     const lead=document.querySelector('#evaluacion');
     const config=window.PATHWAY_CONFIG||{};
     const languageValidity=document.querySelector('#language-results-valid');
     const calculateButton=document.querySelector('#calculate-button');
+    const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
     let rulesReady=false;
     let rounds=PathwayIRCC.FALLBACK;
+    let rulesNote='';
+    form.noValidate=true;
+    resultPanel.tabIndex=-1;
 
     document.querySelectorAll('.level-select').forEach(select=>{
       select.innerHTML='<option value="">Nivel</option>'+Array.from({length:11},(_,level)=>`<option value="${level}">${level===10?'10 o más':level}</option>`).join('');
     });
 
+    // Inline errors instead of the browser bubbles; the first one scrolls into view under the header.
+    const clearError=control=>{control.removeAttribute('aria-invalid');const id=control.dataset.errorId;if(id)document.getElementById(id)?.remove();delete control.dataset.errorId;};
+    const checkForm=(target,message)=>{
+      let first=null;
+      target.querySelectorAll('input,select').forEach(control=>{
+        if(control.type==='hidden'||control.disabled)return;
+        clearError(control);
+        if(control.checkValidity())return;
+        const node=document.createElement('span');
+        node.className='field-error';node.id=`err-${control.id}`;node.textContent=control.validity.typeMismatch?'Revisa este dato.':message;
+        control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby',node.id);control.dataset.errorId=node.id;
+        control.after(node);
+        first=first||control;
+      });
+      if(first){first.closest('.field,div')?.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'});first.focus({preventScroll:true});}
+      return !first;
+    };
+    document.addEventListener('input',event=>{if(event.target.matches('input,select'))clearError(event.target);});
+    document.addEventListener('change',event=>{if(event.target.matches('input,select'))clearError(event.target);});
+
     const toggleConditional=(container,show)=>{
       container.hidden=!show;
-      container.querySelectorAll('select,input').forEach(control=>{control.disabled=!show;control.required=show});
+      container.querySelectorAll('select,input').forEach(control=>{control.disabled=!show;control.required=show;if(!show)clearError(control);});
     };
 
     const firstLanguageControls=[document.querySelector('#first-language-name'),...document.querySelectorAll('[data-group="first"]')];
     const updateLanguageMode=()=>{
       const hasValidResults=languageValidity.value==='yes';
-      firstLanguageControls.forEach(control=>{control.disabled=!hasValidResults;control.required=hasValidResults});
+      firstLanguageControls.forEach(control=>{control.disabled=!hasValidResults;control.required=hasValidResults;if(!hasValidResults)clearError(control);});
       document.querySelector('#second-language-present').disabled=!hasValidResults;
       document.querySelector('#second-language-present').required=hasValidResults;
       toggleConditional(document.querySelector('#second-language-fields'),hasValidResults&&document.querySelector('#second-language-present').value==='yes');
       document.querySelector('#language-validity-hint').textContent=hasValidResults
         ?'Express Entry exige resultados válidos de un examen aceptado por IRCC.'
-        :'No necesitas inventar niveles. Puedes solicitar directamente el examen gratuito de ubicación.';
+        :'No necesitas inventar niveles: empieza por el test de nivel en línea, gratis.';
       if(!hasValidResults){
         lead.classList.add('active');
-        document.querySelector('#lead-eyebrow').textContent='Examen de ubicación gratuito · 20 minutos';
+        document.querySelector('#lead-eyebrow').textContent='Sin resultados de idioma vigentes';
         document.querySelector('#lead-title').textContent='Empieza por saber dónde estás.';
-        document.querySelector('#lead-copy').textContent='Mediremos tu nivel actual y construiremos una ruta realista hacia el examen que corresponde a tu proyecto.';
+        document.querySelector('#lead-copy').textContent='El test de nivel en línea (12 a 15 minutos) sitúa tu francés entre A1 y B2. Con ese punto de partida, Pathway te propone un ritmo realista hacia el examen que corresponde a tu proyecto.';
         document.querySelector('#capture-score').value='';
         document.querySelector('#capture-french-eligible').value='unknown';
       }
       calculateButton.disabled=hasValidResults&&!rulesReady;
-      calculateButton.textContent=hasValidResults?(rulesReady?'Calcular mi puntaje CRS':'Verificando la tabla oficial…'):'Ir a mi evaluación de nivel';
+      calculateButton.textContent=hasValidResults?(rulesReady?'Calcular mi puntaje CRS':'Verificando la tabla oficial…'):'Ir al test de nivel';
     };
     languageValidity.addEventListener('change',updateLanguageMode);
     calculateButton.addEventListener('click',event=>{
       if(languageValidity.value!=='yes'){
         event.preventDefault();
         lead.classList.add('active');
-        lead.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+        lead.scrollIntoView({behavior:reduced()?'auto':'smooth'});
       }
     });
 
@@ -256,12 +294,13 @@
       PathwayCRS.setRules(rulesState.rules);
       rulesReady=true;
       updateLanguageMode();
-      const criteriaDate=PathwayIRCC.formatLongDate(rulesState.modified||PathwayIRCC.RULES_VERSION,'es-ES');
-      const drawDate=PathwayIRCC.formatLongDate(data.french.date,'es-ES');
-      const checkDate=PathwayIRCC.formatLongDate((data.fetchedAt||PathwayIRCC.todayIso()).slice(0,10),'es-ES');
+      const criteriaDate=PathwayIRCC.formatLongDate(rulesState.modified||PathwayIRCC.RULES_VERSION,'es-419');
+      const drawDate=PathwayIRCC.formatLongDate(data.french.date,'es-419');
+      const checkDate=PathwayIRCC.formatLongDate((data.fetchedAt||PathwayIRCC.todayIso()).slice(0,10),'es-419');
       const rulesSource=rulesState.source==='live'?'reglas CRS cargadas desde IRCC':rulesState.source==='cache'?'reglas CRS guardadas de la última consulta':'reglas CRS de respaldo';
-      document.querySelector('#criteria-date').textContent=criteriaDate;
-      status.textContent=`${source}: ronda francófona ${data.french.score} (${drawDate}) · ${rulesSource} (${criteriaDate}) · consulta ${checkDate}`;
+      rulesNote=`Cálculo basado en las ${rulesSource}, versión del ${criteriaDate}. Verifica siempre el resultado antes de presentar un perfil.`;
+      document.querySelector('.result-source').textContent=rulesNote;
+      status.textContent=`${source}: ronda francófona ${data.french.score} (${drawDate}) · ${rulesSource} (${criteriaDate}) · consulta del ${checkDate}`;
     }).catch(()=>{
       rulesReady=false;
       updateLanguageMode();
@@ -269,11 +308,19 @@
       document.querySelector('#data-status').textContent='No fue posible validar los datos oficiales. El cálculo queda suspendido para evitar un resultado incorrecto.';
     });
 
+    // The result card comes into view below the fixed header, with the focus on it.
+    const showResult=()=>{
+      resultEmpty.hidden=true;resultContent.hidden=false;lead.classList.add('active');
+      const header=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height'))||88;
+      const top=resultPanel.getBoundingClientRect().top;
+      if(top<header+8||top>innerHeight*.6)resultPanel.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'});
+      resultPanel.focus({preventScroll:true});
+    };
+
     form.addEventListener('submit',event=>{
       event.preventDefault();
-      if(!form.reportValidity())return;
+      if(!checkForm(form,'Completa este dato.'))return;
       if(document.querySelector('#language-results-valid').value!=='yes'){
-        resultEmpty.hidden=true;resultContent.hidden=false;
         document.querySelector('#total-score').textContent='—';
         document.querySelector('#core-score').textContent='—';
         document.querySelector('#spouse-score').textContent='—';
@@ -281,7 +328,7 @@
         document.querySelector('#additional-score').textContent='—';
         document.querySelector('#comparison').innerHTML='<strong>No se puede calcular un puntaje CRS válido.</strong> IRCC exige resultados lingüísticos de menos de dos años para crear o actualizar un perfil Express Entry.';
         document.querySelector('#french-eligibility').textContent='Renueva el examen y vuelve a calcular con la equivalencia CLB/NCLC vigente.';
-        lead.classList.add('active');
+        showResult();
         return;
       }
       const maritalStatus=document.querySelector('input[name="marital_status"]:checked').value;
@@ -320,53 +367,50 @@
         :'<strong>Categoría francófona:</strong> todavía no cumples NCLC 7 en las cuatro competencias de francés.';
       document.querySelector('#capture-score').value=score.total;
       document.querySelector('#capture-french-eligible').value=score.frenchEligible?'yes':'no';
-      resultEmpty.hidden=true;resultContent.hidden=false;lead.classList.add('active');
-      if(window.innerWidth<900)document.querySelector('.result-panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+      showResult();
     });
 
+    // Optional contact: WhatsApp with the result, then the thanks page (gracias.html can reopen the message).
     document.querySelector('#capture').addEventListener('submit',async event=>{
       event.preventDefault();
       const capture=event.currentTarget,status=document.querySelector('#form-status'),submit=document.querySelector('#lead-submit');
-      if(!capture.reportValidity())return;
+      if(!checkForm(capture,'Completa este dato.'))return;
       const data=Object.fromEntries(new FormData(capture).entries());
       submit.disabled=true;
-      submit.textContent='Preparando tu solicitud…';
+      submit.textContent='Preparando tu mensaje…';
       try{
         const webhookUrl=String(config.leadWebhook||'').trim();
-        sessionStorage.setItem('pathwayLead',JSON.stringify(data));
-        sessionStorage.setItem('pathwayPermit',data.permit_expiry);
+        try{sessionStorage.setItem('pathwayLead',JSON.stringify(data));}catch(_){}
         if(webhookUrl){
           const response=await fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
           if(!response.ok)throw new Error('Webhook error');
-          window.location.href=`gracias.html?channel=webhook&priority=${encodeURIComponent(data.permit_expiry)}`;
+          window.location.href='gracias.html?channel=webhook&from=calculator';
         }else{
-          const permitLabels={'under-12':'menos de 12 meses','12-24':'entre 12 y 24 meses','over-24':'más de 24 meses','no-permit':'sin permiso','na':'no aplica'};
           const message=[
-            'Hola Pathway, quiero solicitar mi evaluación gratuita.',
+            'Hola Pathway, calculé mi puntaje CRS y quiero preparar mi francés.',
+            '',
             `Nombre: ${data.first_name}`,
-            `Email: ${data.email}`,
+            `Correo: ${data.email}`,
             `WhatsApp: ${data.whatsapp}`,
-            `Vencimiento del permiso: ${permitLabels[data.permit_expiry]||data.permit_expiry}`,
-            data.current_crs?`Puntaje CRS estimado: ${data.current_crs}`:'Necesito un examen de ubicación.',
-            `NCLC 7 actual: ${data.french_category_eligible==='yes'?'sí':data.french_category_eligible==='no'?'no':'por evaluar'}`
+            data.current_crs?`Puntaje CRS estimado: ${data.current_crs}`:'Todavía no tengo resultados de idioma vigentes.',
+            `NCLC 7 en francés: ${data.french_category_eligible==='yes'?'sí':data.french_category_eligible==='no'?'todavía no':'por evaluar'}`
           ].join('\n');
           const whatsappUrl=`https://wa.me/51989887516?text=${encodeURIComponent(message)}`;
-          sessionStorage.setItem('pathwayWhatsAppUrl',whatsappUrl);
+          try{sessionStorage.setItem('pathwayWhatsAppUrl',whatsappUrl);}catch(_){}
           const opened=window.open(whatsappUrl,'_blank');
-          if(window.PathwayAnalytics)PathwayAnalytics.track('lead_whatsapp_prepared',{permit:data.permit_expiry});
-          if(!opened){window.location.href=whatsappUrl;return;}
-          opened.opener=null;
-          window.location.href=`gracias.html?channel=whatsapp&priority=${encodeURIComponent(data.permit_expiry)}`;
+          if(opened){try{opened.opener=null;}catch(_){}}
+          if(window.PathwayAnalytics)PathwayAnalytics.track('lead_whatsapp_prepared',{from:'calculator'});
+          window.location.href='gracias.html?channel=whatsapp&from=calculator';
         }
       }catch(error){
         status.style.display='block';
         status.textContent='No pudimos enviar tus datos. Inténtalo de nuevo o escríbenos por WhatsApp.';
         status.focus();
         submit.disabled=false;
-        submit.textContent=String(config.leadWebhook||'').trim()?'Solicitar mi evaluación gratuita':'Continuar por WhatsApp';
+        submit.textContent=String(config.leadWebhook||'').trim()?'Enviar mis datos':'Continuar por WhatsApp';
       }
     });
-    document.querySelector('#lead-submit').textContent=String(config.leadWebhook||'').trim()?'Solicitar mi evaluación gratuita':'Continuar por WhatsApp';
+    document.querySelector('#lead-submit').textContent=String(config.leadWebhook||'').trim()?'Enviar mis datos':'Continuar por WhatsApp';
   </script>
 </body>
 </html>
