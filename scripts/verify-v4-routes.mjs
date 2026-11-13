@@ -8,7 +8,7 @@
 
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { access, cp, mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { access, cp, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +16,7 @@ import { runInNewContext } from 'node:vm';
 import { buildV4Routes, resolveEnrollPreferences, rebaseHtml, buildAdapterSource, PLAN_VALUES, BILLING_VALUES } from './build-v4-routes.mjs';
 import { PRICING } from '../v4/content.js';
 import { buildV4Programs } from './build-v4-programs.mjs';
+import { homeTail, HOME_TAIL_MARKER } from './home-tail.mjs';
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let checks = 0;
@@ -26,6 +27,12 @@ try {
   // Mirror production: the v4 tree is copied first, then these routes overwrite
   // the placeholders. Seeding it lets us assert every local ref resolves.
   await cp(join(rootDir, 'v4'), join(outBase, 'v4'), { recursive: true });
+  // As in build.mjs, the homes receive their shared tail (stories to footer),
+  // which the program pages copy their header and footer from.
+  for (const lang of ['es', 'fr', 'en', 'de']) {
+    const home = join(outBase, 'v4', lang === 'es' ? '' : lang, 'index.html');
+    await writeFile(home, (await readFile(home, 'utf8')).replace(HOME_TAIL_MARKER, homeTail(lang)), 'utf8');
+  }
   const result = await buildV4Routes({ rootDir, outDir: outBase });
   // Production then generates the program pages over their placeholders.
   await buildV4Programs({ rootDir, outDir: outBase });
