@@ -49,7 +49,7 @@ const THANK_YOU = ['/gracias.html', '/fr/merci.html', '/en/merci.html', '/de/mer
 const OG_LOCALE = { es: 'es_419', fr: 'fr_CA', en: 'en_CA', de: 'de_DE' };
 const OG_IMAGE_ALT = {
   es: 'Pathway Language Solutions · Tu ruta al NCLC 7 · Clases privadas de francés en vivo',
-  fr: 'Pathway Language Solutions · Votre parcours vers le NCLC 7 · Cours privés de français en direct',
+  fr: 'Pathway Language Solutions · Votre parcours vers le NCLC 7 · Cours particuliers de français en direct',
   en: 'Pathway Language Solutions · Your path to NCLC 7 · Private live French lessons',
   de: 'Pathway Language Solutions · Ihr Weg zu NCLC 7 · Französisch-Einzelunterricht live'
 };
