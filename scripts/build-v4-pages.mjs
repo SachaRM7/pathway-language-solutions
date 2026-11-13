@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-// Generates the V4 versions of the pages that were still "en refonte":
-// guides (NCLC 7, TEF Canada), legal pages (conditions, privacy, cookies,
-// legal notice) and the V4 frame of the interactive flows (placement test,
-// CRS calculator, enrollment).
+// Generates the V4 versions of the content pages: guides (NCLC 7, TEF Canada,
+// Quebec), the resources hub, legal pages (conditions of enrolment with the
+// NCLC 7 commitment, privacy, cookies, legal notice) and the V4 frame of the
+// interactive flows (placement test, CRS calculator, enrollment).
 //
 // Pages are written into the /v4 tree of the build; build-v4-default.mjs then
-// publishes them at their root address. Legal text and the working markup of
-// the interactive flows are read from the current pages at build time, so the
-// terms and the scripts never drift from what is published today.
+// publishes them at their root address. The Spanish conditions and privacy
+// policy are read from /condiciones.html and /privacidad.html; their French,
+// English and German versions are in v4-legal-i18n.mjs. The working markup of
+// the interactive flows is read from the current pages at build time.
 //
 // Integration: build.mjs calls buildV4Pages({ outDir, rootDir }) after the
 // locale trees are written and before makeV4Default.
@@ -15,13 +16,13 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { icon } from '../v4/icons.js';
-import { LANGS, esc, prefix, v4Chrome } from './build-v4-programs.mjs';
-import { ROUTES, UI, GUIDES, LEGAL_CARD, LEGAL_CTA, NEW_LEGAL } from './v4-pages-content.mjs';
-import { NEW_LEGAL_I18N, NEW_LEGAL_ASK } from './v4-legal-i18n.mjs';
+import { LANGS, esc, prefix, programPath, v4Chrome, typo, typoText } from './build-v4-programs.mjs';
+import { ROUTES, UI, GUIDES, LEGAL_CARD, LEGAL_CTA, NEW_LEGAL, CONDITIONS_CARD, RESOURCES, IRCC } from './v4-pages-content.mjs';
+import { NEW_LEGAL_I18N, NEW_LEGAL_ASK, CONDITIONS_I18N, PRIVACY_I18N } from './v4-legal-i18n.mjs';
 import { FLOWS, renderFlow } from './v4-flows.mjs';
 
 const SITE_ORIGIN = 'https://pathway-languages.com';
-const VERSION = 'pages-1';
+const VERSION = 'pages-2';
 
 // Spanish pages show the Spanish alias; both addresses reach the same Pathway mailbox.
 export const mailOf = lang => (lang === 'es' ? 'contacto' : 'contact') + '@pathway-languages.com';
@@ -53,8 +54,8 @@ export function shell({ lang, key, title, description, main, homeMarkup, bodyCla
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#F5EFE4">
   <meta name="robots" content="index, follow">
-  <meta name="description" content="${esc(description)}">
-  <title>${esc(title)} | Pathway</title>
+  <meta name="description" content="${esc(typoText(lang, description))}">
+  <title>${esc(typoText(lang, title))} | Pathway</title>
   <link rel="canonical" href="${canonical}">
   ${alternates}
   <link rel="icon" type="image/svg+xml" href="/v4/assets/favicon.svg">
@@ -103,7 +104,7 @@ export function hero({ lang, trail, eyebrow, h1, leads, actions = '', aside = ''
     </section>`;
 }
 
-function card({ pill, title, text, rows = [], note, numbered = false, dark = false, source }) {
+function card({ pill, title, text, rows = [], note, numbered = false, dark = false, source, link }) {
   return `<aside class="pg-card${dark ? ' pg-card-dark' : ''}">
           ${pill ? `<span class="pg-pill">${esc(pill)}</span>` : ''}
           <h2>${esc(title)}</h2>
@@ -111,6 +112,7 @@ function card({ pill, title, text, rows = [], note, numbered = false, dark = fal
           <ul class="pg-card-rows${numbered ? ' pg-numbered' : ''}">${rows.map(row => Array.isArray(row) ? `<li><span>${row[0]}</span><b>${row[1]}</b></li>` : `<li>${row}</li>`).join('')}</ul>
           ${note ? `<p class="pg-card-note">${esc(note)}</p>` : ''}
           ${source ? `<a class="pg-card-source text-link" href="${source[0]}" target="_blank" rel="noopener">${esc(source[1])} ↗</a>` : ''}
+          ${link ? `<a class="pg-card-source text-link" href="${link[0]}">${esc(link[1])} ↓</a>` : ''}
         </aside>`;
 }
 
@@ -145,10 +147,11 @@ export function cta(lang, { title, text, primary, secondary }) {
   const ui = UI[lang];
   const [primaryHref, primaryLabel] = primary || [pagePath(lang, 'test'), ui.evaluate];
   const [secondaryHref, secondaryLabel] = secondary || ['https://wa.me/51989887516', ui.whatsapp];
+  const external = href => (href.startsWith('http') ? ' target="_blank" rel="noopener"' : '');
   return `    <section class="pg-cta" aria-labelledby="pg-cta-title">
       <div class="container pg-cta-inner">
         <div><p class="eyebrow">${esc(ui.ctaEyebrow)}</p><h2 id="pg-cta-title">${esc(title)}</h2><p>${esc(text)}</p></div>
-        <div class="pg-actions"><a class="button button-primary" href="${primaryHref}" data-cta="v4-page-closing">${esc(primaryLabel)} ${arrow}</a><a class="text-link" href="${secondaryHref}"${secondaryHref.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${esc(secondaryLabel)} ↗</a></div>
+        <div class="pg-actions"><a class="button button-primary" href="${primaryHref}"${external(primaryHref)} data-cta="v4-page-closing">${esc(primaryLabel)} ${arrow}</a><a class="text-link" href="${secondaryHref}"${external(secondaryHref)}>${esc(secondaryLabel)} ${secondaryHref.startsWith('http') ? '↗' : arrow}</a></div>
       </div>
     </section>`;
 }
@@ -156,22 +159,52 @@ export function cta(lang, { title, text, primary, secondary }) {
 function guidePage(lang, key, homeMarkup) {
   const copy = GUIDES[key][lang];
   const ui = UI[lang];
+  const target = ([href, label]) => [ROUTES[href] ? pagePath(lang, href) : href, label];
+  const closing = { ...copy.cta, ...(copy.cta.primary && { primary: target(copy.cta.primary) }), ...(copy.cta.secondary && { secondary: target(copy.cta.secondary) }) };
   const main = [
     hero({
-      lang, trail: [ui.guides, copy.title], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead)], long: key === 'tef',
+      lang, trail: [ui.guides, copy.title], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead)], long: key !== 'nclc',
       actions: `<a class="button button-primary" href="${pagePath(lang, 'test')}" data-cta="v4-guide-${key}-evaluation">${esc(ui.evaluateStart)} ${arrow}</a><a class="text-link" href="#${copy.sections[0][0]}">${esc(copy.sections[0][1])} ↓</a>`,
-      aside: card({ ...copy.card, source: ['https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-requirements.html', ui.officialSource] })
+      aside: card({ ...copy.card, source: key === 'tefaq' ? null : [IRCC.language(lang), ui.officialSource] })
     }),
     doc(lang, copy.sections),
     related(lang, copy.related),
+    cta(lang, closing)
+  ].join('\n');
+  return shell({ lang, key, title: copy.title, description: copy.description, main: typo(lang, main), homeMarkup });
+}
+
+// Resources hub: guides, tools, programs and official sources, as cards.
+function resourcesPage(lang, homeMarkup) {
+  const copy = RESOURCES[lang];
+  const ui = UI[lang];
+  const hrefOf = key => (key.startsWith('program:') ? programPath(lang, key.slice(8)) : key.startsWith('IRCC.') ? IRCC[key.slice(5)](lang) : linkFor(lang, key));
+  const linkCard = ([key, label, title, text]) => {
+    const href = hrefOf(key);
+    const external = href.startsWith('http');
+    return `<a class="pg-link" href="${href}"${external ? ' target="_blank" rel="noopener"' : ''}><small>${esc(label)}</small><strong>${esc(title)}</strong><p>${esc(text)}</p><span>${ui.open} ${external ? '↗' : arrow}</span></a>`;
+  };
+  const groups = copy.groups.map(({ id, title, text, links }, index) => `    <section class="pg-group" id="${id}" aria-labelledby="${id}-title">
+      <div class="container">
+        <div class="pg-group-head"><span class="pg-section-number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><div><h2 id="${id}-title">${esc(title)}</h2><p>${esc(text)}</p></div></div>
+        <div class="pg-links${links.length === 4 ? ' pg-links-4' : ''}">${links.map(linkCard).join('')}</div>
+      </div>
+    </section>`).join('\n');
+  const main = [
+    hero({
+      lang, trail: [copy.eyebrow], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead)], long: true,
+      actions: `<a class="button button-primary" href="${pagePath(lang, 'test')}" data-cta="v4-resources-evaluation">${esc(ui.evaluateStart)} ${arrow}</a><a class="text-link" href="#${copy.groups[0].id}">${esc(copy.groups[0].title)} ↓</a>`,
+      aside: card({ pill: copy.cardTitle, title: copy.eyebrow, rows: copy.groups.map(({ id, title }) => `<a href="#${id}">${esc(title)}</a>`), numbered: true })
+    }),
+    `    <div class="pg-groups">\n${groups}\n    </div>`,
     cta(lang, copy.cta)
   ].join('\n');
-  return shell({ lang, key, title: copy.title, description: copy.description, main, homeMarkup });
+  return shell({ lang, key: 'resources', title: copy.title, description: copy.description, main: typo(lang, main), homeMarkup });
 }
 
 // --- Legal pages, read from the current pages ------------------------------
 
-const decode = text => text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, '’').replace(/&quot;/g, '"');
+const decode = text => text.replace(/&nbsp;/g, '\u00A0').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, '’').replace(/&quot;/g, '"');
 const plain = html => decode(html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 
 // Keep the meaning of the markup, drop the old classes and layout wrappers.
@@ -188,7 +221,7 @@ function cleanBody(html, lang) {
 // Links inside the old legal text point to old file names.
 function legacyHref(href, lang) {
   const name = href.replace(/^\.\//, '').replace(/^\.\.\//, '');
-  const known = { 'privacidad.html': 'privacy', 'politique-confidentialite.html': 'privacy', 'condiciones.html': 'conditions', 'conditions-nclc7.html': 'conditions', 'test-placement.html': 'test', 'test.html': 'test', 'calculador.html': 'calculator', 'calculateur-crs.html': 'calculator', 'inscription.html': 'inscription', 'nclc-7.html': 'nclc', 'preparacion-tef-canada.html': 'tef' };
+  const known = { 'cookies.html': 'cookies', 'privacidad.html': 'privacy', 'politique-confidentialite.html': 'privacy', 'condiciones.html': 'conditions', 'conditions-nclc7.html': 'conditions', 'test-placement.html': 'test', 'test.html': 'test', 'calculador.html': 'calculator', 'calculateur-crs.html': 'calculator', 'inscription.html': 'inscription', 'nclc-7.html': 'nclc', 'preparacion-tef-canada.html': 'tef' };
   if (known[name]) return pagePath(lang, known[name]);
   if (name === '' || name === 'index-v2.html' || name === 'index.html') return prefix(lang);
   return `/${lang === 'es' ? '' : `${lang}/`}${name}`;
@@ -213,22 +246,24 @@ export function readLegal(markup, lang) {
   return { eyebrow, h1, lead, sections };
 }
 
+const LEGAL_I18N = { conditions: CONDITIONS_I18N, privacy: PRIVACY_I18N };
+
 function legalPage(lang, key, source, homeMarkup) {
   const ui = UI[lang];
-  const legal = readLegal(source, lang);
-  const [pill, title] = LEGAL_CARD[key][lang];
+  const legal = lang === 'es' ? readLegal(source, lang) : LEGAL_I18N[key][lang];
   const [ctaTitle, ctaText, mailLabel] = LEGAL_CTA[key][lang];
+  // Conditions: a summary of prices and rules; privacy: its sections.
+  const aside = key === 'conditions'
+    ? card(CONDITIONS_CARD[lang])
+    : card({ pill: LEGAL_CARD[key][lang][0], title: LEGAL_CARD[key][lang][1], rows: legal.sections.map(([id, heading]) => `<a href="#${id}">${esc(heading)}</a>`), numbered: true });
   const main = [
-    hero({
-      lang, trail: [ui.legal, legal.h1], eyebrow: legal.eyebrow || ui.legal, h1: legal.h1, leads: [esc(legal.lead), `<small>${esc(ui.updated)}</small>`], long: true,
-      aside: card({ pill, title, rows: legal.sections.map(([id, heading]) => `<a href="#${id}">${esc(heading)}</a>`), numbered: true })
-    }),
-    doc(lang, legal.sections, key === 'conditions' ? 'compromiso-nclc7' : ''),
+    hero({ lang, trail: [ui.legal, legal.h1], eyebrow: legal.eyebrow || ui.legal, h1: legal.h1, leads: [esc(legal.lead), `<small>${esc(ui.updated)}</small>`], long: true, aside }),
+    doc(lang, legal.sections),
     key === 'privacy'
       ? cta(lang, { title: ctaTitle, text: ctaText, primary: [`mailto:${mailOf(lang)}`, mailLabel], secondary: ['https://wa.me/51989887516', ui.whatsapp] })
       : cta(lang, { title: ctaTitle, text: ctaText })
   ].join('\n');
-  return shell({ lang, key, title: legal.h1, description: legal.lead, main, homeMarkup });
+  return shell({ lang, key, title: legal.h1, description: legal.lead, main: typo(lang, main), homeMarkup });
 }
 
 function newLegalPage(key, homeMarkup, lang = 'es') {
@@ -240,7 +275,7 @@ function newLegalPage(key, homeMarkup, lang = 'es') {
     doc(lang, copy.sections),
     cta(lang, { title: askTitle, text: askText, primary: [`mailto:${mailOf(lang)}`, mailLabel] })
   ].join('\n');
-  return shell({ lang, key, title: copy.title, description: copy.description, main, homeMarkup });
+  return shell({ lang, key, title: copy.title, description: copy.description, main: typo(lang, main), homeMarkup });
 }
 
 export async function buildV4Pages({ outDir, rootDir }) {
@@ -251,12 +286,15 @@ export async function buildV4Pages({ outDir, rootDir }) {
     await writeFile(target, markup, 'utf8');
     written.push(path);
   };
-  const legacy = async (lang, name) => readFile(lang === 'es' ? join(rootDir, name) : join(outDir, lang, name), 'utf8');
+  // Spanish legal source pages (the other languages are in v4-legal-i18n.mjs).
+  const legacy = async (lang, name) => (lang === 'es' ? readFile(join(rootDir, name), 'utf8') : '');
 
   for (const lang of LANGS) {
     const homeMarkup = await readFile(join(outDir, 'v4', lang === 'es' ? '' : lang, 'index.html'), 'utf8'); // built home: shared tail included
     await write(pagePath(lang, 'nclc'), guidePage(lang, 'nclc', homeMarkup));
     await write(pagePath(lang, 'tef'), guidePage(lang, 'tef', homeMarkup));
+    await write(pagePath(lang, 'tefaq'), guidePage(lang, 'tefaq', homeMarkup));
+    await write(pagePath(lang, 'resources'), resourcesPage(lang, homeMarkup));
     await write(pagePath(lang, 'conditions'), legalPage(lang, 'conditions', await legacy(lang, ROUTES.conditions[lang]), homeMarkup));
     await write(pagePath(lang, 'privacy'), legalPage(lang, 'privacy', await legacy(lang, ROUTES.privacy[lang]), homeMarkup));
     for (const flow of Object.keys(FLOWS)) {

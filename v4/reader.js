@@ -40,11 +40,14 @@
   const spots = T.spots.map((s, k) => ({ ...s, n: k + 1, index: pageIndex[s.page] })).filter(s => s.index !== undefined);
   spots.forEach((s, k) => { s.n = k + 1; });
 
-  let current = 0, busy = false, opened = false, autoTimer, gesture;
+  let current = 0, busy = false, opened = false, autoTimer, gesture, autoDone = false;
   let tourStep = -1;
 
   const lock = '<span class="rd-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span>';
-  const intro = `<div class="book-inside"><img src="/pathway-mark.svg" alt="Pathway"><small>Manuel de français · ${level}</small><h2>Le français,<br>page après page.</h2><p>Extraits du manuel original.<br>64 unités · 4 segments</p><small>Pathway Language Solutions</small></div>`;
+  // Inside of the cover: the manual's French tagline, the caption in the page language.
+  const cover = t.cover || {};
+  const closedLabel = cover.kicker || `Manuel de français · ${level}`;
+  const intro = `<div class="book-inside"><img src="/pathway-mark.svg" alt="Pathway"><small>${closedLabel}</small><h2 lang="fr">Le français,<br>page après page.</h2><p>${cover.excerpt || 'Extraits du manuel original.'}<br>${cover.units || '64 unités · 4 segments'}</p><small>Pathway Language Solutions</small></div>`;
   const teaser = pages.filter(p => p.key === 'unite-1').slice(1, 4);
   const lockedPage = withCard => `<div class="rd-locked"><div class="rd-locked-pages">${teaser.map(p => `<img src="${p.src}" alt="" draggable="false">`).join('')}</div>${withCard ? `<div class="rd-locked-card">${lock}<b>${T.lockedTitle}</b><p>${T.lockedText}</p></div>` : `<div class="rd-locked-mark">${lock}</div>`}</div>`;
   const cta = `<div class="rd-cta"><small>${T.ctaKicker}</small><h2>${T.ctaTitle}</h2><p>${T.ctaText}</p><a href="${t.ctaHref || '/test-placement.html'}" data-cta="v4-program-${level.toLowerCase()}-book">${T.ctaButton}</a></div>`;
@@ -78,7 +81,7 @@
 
   const strip = document.createElement('div');
   strip.className = 'rd-thumbs';
-  strip.innerHTML = pages.map((p, i) => `<button type="button" data-thumb="${i}" aria-label="${chapter(p)} · ${t.page || 'p.'} ${p.n}"><img src="${p.src}" alt="" loading="lazy" decoding="async">${spots.some(s => s.index === i) ? '<i></i>' : ''}</button>`).join('')
+  strip.innerHTML = pages.map((p, i) => `<button type="button" data-thumb="${i}" aria-label="${chapter(p)} · ${t.page || 'p.'} ${p.n}"><img src="${t.thumbs ? `${t.thumbs}${baseName(p.src)}.webp` : p.src}" alt="" width="46" height="65" loading="lazy" decoding="async">${spots.some(s => s.index === i) ? '<i></i>' : ''}</button>`).join('')
     + `<button type="button" data-thumb="${LOCKED}" class="is-locked" aria-label="${T.lockedTitle}">${lock}<b>+63</b></button>`;
   const progress = $('.reader-progress');
   if (progress) progress.replaceWith(strip); else desk.after(strip);
@@ -95,6 +98,7 @@
   function showSpot(k) {
     const s = spots[k];
     tourStep = k;
+    book.classList.add('is-touring');
     book.querySelectorAll('.rd-spot').forEach(b => b.classList.toggle('is-active', Number(b.dataset.spot) === k));
     const dot = book.querySelector(`.book-page .rd-spot[data-spot="${k}"]`);
     if (!dot) return;
@@ -115,6 +119,7 @@
   function hideNote() {
     note.hidden = true;
     tourStep = -1;
+    book.classList.remove('is-touring');
     tourButton.classList.remove('is-on');
     book.querySelectorAll('.rd-spot.is-active').forEach(b => b.classList.remove('is-active'));
   }
@@ -153,17 +158,29 @@
     const ref = mobile.matches || current < LEN ? current : current - 1;
     const p = pages[Math.min(Math.max(ref, 0), LEN - 1)];
     const prev = !mobile.matches && current > 0 && current < LEN ? pages[current - 1] : null;
-    $('#page-label').textContent = !opened ? `Manuel de français · ${level}`
+    $('#page-label').textContent = !opened ? closedLabel
       : ref >= LOCKED ? T.tabs.after
         : `${chapter(p)} · ${prev && prev.n !== p.n ? `p. ${prev.n}–${p.n}` : `p. ${p.n}`}`;
+    let first = null;
     strip.querySelectorAll('[data-thumb]').forEach(b => {
       const i = Number(b.dataset.thumb);
       const on = opened && (i === LOCKED ? current >= LOCKED : onScreen(i));
       b.classList.toggle('is-current', on);
-      if (on && !busy) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      if (on && !first) first = b;
     });
+    if (first && !busy) revealThumb(first);
     const at = ref >= LOCKED ? chapters.length - 1 : chapters.reduce((k, c, j) => (!c.locked && c.index <= ref ? j : k), 0);
     tabs.querySelectorAll('[data-tab]').forEach((b, j) => { const on = opened && j === at; b.classList.toggle('is-current', on); b.setAttribute('aria-current', on ? 'true' : 'false'); });
+  }
+  // Bring the current thumbnail into view by scrolling the strip itself:
+  // never scrollIntoView, which would also scroll the page.
+  function revealThumb(button) {
+    const from = button.offsetLeft, to = from + button.offsetWidth; // the strip is the offset parent (position: relative)
+    const view = strip.scrollLeft, width = strip.clientWidth;
+    if (from >= view && to <= view + width) return;
+    const left = Math.max(0, from < view ? from - 8 : to - width + 8);
+    if (strip.scrollTo) strip.scrollTo({ left, behavior: reduced.matches ? 'auto' : 'smooth' });
+    else strip.scrollLeft = left;
   }
   function render() {
     left.innerHTML = markup(current - 1, true);
@@ -177,6 +194,7 @@
   }
   async function open() {
     clearTimeout(autoTimer);
+    autoDone = true; // opened once: never open again by itself
     if (opened || busy) return;
     busy = true; sync();
     await prepare([current - 1, current]);
@@ -292,7 +310,23 @@
     if (busy) setTimeout(settle, 1200); else settle();
   });
   addEventListener('resize', () => { if (tourStep >= 0 && !busy && !note.hidden) showSpot(tourStep); });
+  // Desktop hint: arrows and clicks; touch screens: swipes and taps.
+  const hint = $('#reader-hint');
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  const setHint = () => { if (hint && t.hintPointer && t.hintTouch) hint.textContent = finePointer.matches ? t.hintPointer : t.hintTouch; };
+  setHint();
+  if (finePointer.addEventListener) finePointer.addEventListener('change', setHint);
   render();
-  // Open the book once the cover has been visible for a few seconds.
-  $('#cover img').decode().catch(() => {}).then(() => { if (!opened && !busy) autoTimer = setTimeout(open, 4000); });
+  // Open the book by itself only once the visitor has had it in view for a
+  // moment. Opening never scrolls the page: the visitor stays where they are.
+  const autoOpen = () => { clearTimeout(autoTimer); if (!autoDone && !busy) autoTimer = setTimeout(() => { if (!autoDone && !busy) open(); }, 2500); };
+  if ('IntersectionObserver' in window) {
+    const watch = new IntersectionObserver(entries => {
+      const entry = entries[entries.length - 1];
+      if (autoDone) { watch.disconnect(); return; }
+      if (entry.isIntersecting && entry.intersectionRatio >= .6) $('#cover img').decode().catch(() => {}).then(autoOpen);
+      else clearTimeout(autoTimer);
+    }, { threshold: [0, .6, 1] });
+    watch.observe(book);
+  }
 })();
