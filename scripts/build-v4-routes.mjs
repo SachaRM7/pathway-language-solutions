@@ -4,8 +4,7 @@
 // media, root form preserved. inscription-v4.js preselects plan/hours/billing
 // from ?plan=&hours=&billing= (query wins) or the `pathwayV4Selection` session
 // key, in the four languages (the FR/EN/DE pages load it too). It also writes
-// the V4 thank-you pages (gracias / merci) and moves the old FR/EN/DE
-// « ressources » pages to the TEF Canada guide of each language.
+// the V4 thank-you pages (gracias / merci).
 //
 // Integration: build.mjs calls buildV4Routes({ outDir, rootDir }) after copying
 // the v4 directory, so these pages replace the plain placeholders.
@@ -203,7 +202,6 @@ function transformPage(sourceHtml, page) {
 // are not indexed and can reopen the prepared WhatsApp message.
 
 const THANKS_PAGES = { es: 'gracias.html', fr: 'merci.html', en: 'merci.html', de: 'merci.html' };
-const RESOURCES_TARGET = { fr: '/fr/preparacion-tef-canada.html', en: '/en/preparacion-tef-canada.html', de: '/de/preparacion-tef-canada.html' };
 
 export const THANKS_COPY = {
   es: {
@@ -351,28 +349,6 @@ export function thanksPage(lang, homeMarkup) {
 `;
 }
 
-// The old FR/EN/DE « ressources » pages are replaced by the TEF Canada guide of
-// the same language (same subject, V4 layout); the address keeps working.
-function resourcesRedirect(lang) {
-  const target = RESOURCES_TARGET[lang];
-  return `<!doctype html>
-<html lang="${lang}">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
-  <title>Pathway Language Solutions</title>
-  <link rel="canonical" href="${SITE_ORIGIN}${target}">
-  <meta http-equiv="refresh" content="0; url=${target}">
-  <script>location.replace(${JSON.stringify(target)} + location.hash);</script>
-</head>
-<body>
-  <p><a href="${target}">Pathway · TEF Canada</a></p>
-</body>
-</html>
-`;
-}
-
 function sha256(content) {
   return createHash('sha256').update(content).digest('hex');
 }
@@ -413,13 +389,12 @@ export async function buildV4Routes(options = {}) {
 
   await emit(ADAPTER_ASSET, buildAdapterSource());
 
-  // Thank-you pages and the old « ressources » addresses (promoted to the root by build-v4-default.mjs).
+  // Thank-you pages (promoted to the root by build-v4-default.mjs).
   for (const lang of ['es', 'fr', 'en', 'de']) {
     let homeMarkup;
     try { homeMarkup = await readFile(join(v4Dir, lang === 'es' ? '' : lang, 'index.html'), 'utf8'); }
     catch (_) { throw new Error(`V4 home (${lang}) must be built before the thank-you page.`); }
     await emit(`${lang === 'es' ? '' : `${lang}/`}${THANKS_PAGES[lang]}`, thanksPage(lang, homeMarkup));
-    if (RESOURCES_TARGET[lang]) await emit(`${lang}/ressources.html`, resourcesRedirect(lang));
   }
 
   return { rootDir, outDir, v4Dir, files };
