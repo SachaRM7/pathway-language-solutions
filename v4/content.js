@@ -2,25 +2,32 @@
 // Keep the full-cycle calculations together so the monthly and cycle views agree.
 //
 // Fuentes:
-// - Tarifas y ritmos: index.html sección #planes y inscription.html (radios "plan"/"billing").
+// - Tarifas y ritmos: decisión validada por Pathway (5 intensidades, 3 duraciones de ciclo).
 // - Testimonios en video: pathway-v3.js (testimonialVideos).
-// - Testimonios escritos: index.html sección #historias (16 opiniones condensadas).
+// - Testimonios escritos: index.html sección #historias (opiniones condensadas).
 // - Enlaces: rutas /v4/ reales del espejo; redes sociales aún no documentadas.
 //
+// Tres ritmos (Esencial, Acelerado, Intensivo) y cinco intensidades:
+//   Esencial 2 h/semana (ciclo de 6 meses), Acelerado 3 o 4 h/semana (ciclo de
+//   5 meses), Intensivo 5 o 6 h/semana (ciclo de 4 meses).
+// Precio mensual = 92,50 CAD por hora semanal; nunca depende del nivel.
 // Los importes de ciclo se derivan del mensual y no se codifican a mano:
-//   original = mensual * meses ; amount = original * (1 - 0,15) ; saving = original - amount.
+//   original = mensual * meses ; amount = original * (1 - 0,15), redondeado a 0,50 CAD ;
+//   saving = original - amount.
 
 const CAD = 'CAD';
 const CYCLE_DISCOUNT_RATE = 0.15;
-const MONTHLY_AMOUNTS = Object.freeze({ essential: 185, accelerated: 370, intensive: 555 });
+const PRICE_PER_WEEKLY_HOUR = 92.5;
 
 /** Redondeo a 2 decimales para los importes derivados. */
 const round2 = value => Math.round(value * 100) / 100;
+/** Redondeo a 0,50 CAD (1.179,375 → 1.179,50), como en la inscripción. */
+const roundHalf = value => Math.round(value * 2) / 2;
 
 /** Importe de ciclo derivado del precio mensual validado y del descuento del 15 %. */
 const cycleFromMonthly = (monthly, months) => {
   const originalAmount = round2(monthly * months);
-  const amount = round2(originalAmount * (1 - CYCLE_DISCOUNT_RATE));
+  const amount = roundHalf(originalAmount * (1 - CYCLE_DISCOUNT_RATE));
   return Object.freeze({
     amount,
     originalAmount,
@@ -31,12 +38,48 @@ const cycleFromMonthly = (monthly, months) => {
   });
 };
 
+/** Una intensidad (horas por semana) de un ritmo, con su precio mensual y de ciclo. */
+const option = (hoursPerWeek, cycleMonths) => {
+  const monthly = round2(hoursPerWeek * PRICE_PER_WEEKLY_HOUR);
+  return Object.freeze({
+    hoursPerWeek,
+    hoursPerMonth: hoursPerWeek * 4,
+    monthly,
+    cycle: cycleFromMonthly(monthly, cycleMonths)
+  });
+};
+
+/**
+ * Un ritmo de #planes. monthly.amount y cycle.amount son el precio « desde »
+ * (la intensidad más baja del ritmo); defaultHours es la intensidad que el
+ * botón de la tarjeta preselecciona en la inscripción (hours=…).
+ */
+const plan = ({ id, rhythm, tag, fullPathMonths, featured, cycleMonths, hours, defaultHours, includes }) => {
+  const options = Object.freeze(hours.map(h => option(h, cycleMonths)));
+  const [first] = options;
+  return Object.freeze({
+    id,
+    enrollmentRhythmId: rhythm,
+    name: rhythm,
+    tag,
+    fullPathMonths,
+    featured,
+    defaultHours,
+    from: options.length > 1,
+    options,
+    monthly: Object.freeze({ amount: first.monthly, currency: CAD, hoursPerMonth: first.hoursPerMonth, hoursPerWeek: first.hoursPerWeek }),
+    cycle: Object.freeze({ ...first.cycle, hoursPerWeek: first.hoursPerWeek }),
+    includes: Object.freeze(includes)
+  });
+};
+
 /**
  * Tres ritmos de referencia de #planes.
  * monthly.amount y cycle.amount son la interfaz estable que consume la home.
  */
 export const PRICING = Object.freeze({
   currency: CAD,
+  pricePerWeeklyHour: PRICE_PER_WEEKLY_HOUR,
   registrationFee: Object.freeze({
     amount: 15,
     currency: CAD,
@@ -48,82 +91,32 @@ export const PRICING = Object.freeze({
     note: 'Ciclo completo: 15 % de descuento. Si se pasa al ciclo tras un primer mes, el descuento es del 10 %.'
   }),
   cycles: Object.freeze({
-    note: 'Un ciclo corresponde al trabajo previsto para dominar un nivel del CECRL (A1, A2, B1, B2…), según el nivel de partida acreditado y el ritmo elegido.',
+    note: 'Un ciclo completo corresponde a un nivel del CECRL (A1, A2, B1, B2), con una duración de referencia fija según el ritmo: 6 meses en Esencial, 5 en Acelerado y 4 en Intensivo.',
     perLevels: Object.freeze(['A1', 'A2', 'B1', 'B2'])
   }),
   plans: Object.freeze([
-    Object.freeze({
-      id: 'essential',
-      enrollmentRhythmId: 'Esencial',
-      name: 'Esencial',
-      tag: 'Más de 18 meses',
-      featured: false,
-      tone: 'outline',
-      monthly: Object.freeze({
-        amount: MONTHLY_AMOUNTS.essential,
-        currency: CAD,
-        hoursPerMonth: 8,
-        hoursPerWeek: 2,
-        hoursLabel: '8 horas al mes · 2 h/semana'
-      }),
-      cycle: Object.freeze({ ...cycleFromMonthly(MONTHLY_AMOUNTS.essential, 6), hoursPerWeek: 2, referenceHours: '2 h/semana' }),
-      includes: Object.freeze([
-        'Clases privadas en vivo',
-        'Cuaderno y seguimiento',
-        'Talleres prácticos',
-        '2 simulacros TEF / TCF'
-      ])
+    plan({
+      id: 'essential', rhythm: 'Esencial', tag: 'De A1 a B2: unos 24 meses', fullPathMonths: 24, featured: false,
+      cycleMonths: 6, hours: [2], defaultHours: 2,
+      includes: ['Clases individuales en vivo por Zoom', 'Campus Pathway: ejercicios, manual en línea y grabaciones', 'Seguimiento de tu progreso', '2 simulacros TEF / TCF Canada']
     }),
-    Object.freeze({
-      id: 'accelerated',
-      enrollmentRhythmId: 'Acelerado',
-      name: 'Acelerado',
-      tag: 'El más elegido',
-      featured: true,
-      tone: 'coral',
-      monthly: Object.freeze({
-        amount: MONTHLY_AMOUNTS.accelerated,
-        currency: CAD,
-        hoursPerMonth: 16,
-        hoursPerWeek: 4,
-        hoursLabel: '16 horas al mes · 4 h/semana'
-      }),
-      cycle: Object.freeze({ ...cycleFromMonthly(MONTHLY_AMOUNTS.accelerated, 5), hoursPerWeek: 4, referenceHours: '4 h/semana' }),
-      includes: Object.freeze([
-        'Compatible con trabajo a tiempo completo',
-        'Clases privadas en vivo',
-        'Cuaderno, seguimiento y talleres',
-        '2 simulacros TEF / TCF'
-      ])
+    plan({
+      id: 'accelerated', rhythm: 'Acelerado', tag: 'De A1 a B2: unos 20 meses', fullPathMonths: 20, featured: true,
+      cycleMonths: 5, hours: [3, 4], defaultHours: 4,
+      includes: ['Compatible con trabajo a tiempo completo', 'Clases individuales en vivo por Zoom', 'Campus Pathway y seguimiento de tu progreso', '2 simulacros TEF / TCF Canada']
     }),
-    Object.freeze({
-      id: 'intensive',
-      enrollmentRhythmId: 'Intensivo',
-      name: 'Intensivo',
-      tag: 'Menos de 12 meses',
-      featured: false,
-      tone: 'outline',
-      monthly: Object.freeze({
-        amount: MONTHLY_AMOUNTS.intensive,
-        currency: CAD,
-        hoursPerMonth: 24,
-        hoursPerWeek: 6,
-        hoursLabel: '24 horas al mes · 6 h/semana'
-      }),
-      cycle: Object.freeze({ ...cycleFromMonthly(MONTHLY_AMOUNTS.intensive, 4), hoursPerWeek: 6, referenceHours: '6 h/semana' }),
-      includes: Object.freeze([
-        'Ritmo de avance prioritario',
-        'Clases privadas en vivo',
-        'Cuaderno, seguimiento y talleres',
-        '2 simulacros TEF / TCF'
-      ])
+    plan({
+      id: 'intensive', rhythm: 'Intensivo', tag: 'De A1 a B2: unos 16 meses', fullPathMonths: 16, featured: false,
+      cycleMonths: 4, hours: [5, 6], defaultHours: 6,
+      includes: ['Ritmo de avance prioritario', 'Clases individuales en vivo por Zoom', 'Campus Pathway y seguimiento de tu progreso', '2 simulacros TEF / TCF Canada']
     })
   ]),
   billingOptions: Object.freeze([
-    Object.freeze({ id: 'Mensual', label: 'Mensual', note: 'Mes a mes, sin permanencia' }),
+    Object.freeze({ id: 'Mensual', label: 'Mensual', note: 'Mes a mes, sin contrato mínimo' }),
     Object.freeze({ id: 'Ciclo', label: 'Ciclo', discountRate: 0.15, note: 'Inscripción directa por el ciclo completo' })
   ])
 });
+
 
 /** Diez testimonios en video reales (Drive « Témoignages »). */
 export const VIDEO_TESTIMONIALS = Object.freeze([
@@ -244,13 +237,17 @@ export const EXAM_RESULTS = Object.freeze([
  */
 export const TCF_CANADA_NCLC7 = Object.freeze({ co: 458, ce: 453, ee: 10, eo: 10 });
 
-/** Dieciséis opiniones escritas condensadas (index.html #historias). */
+/**
+ * Quince opiniones escritas condensadas (index.html #historias). La opinión
+ * firmada « La » se retiró: el nombre completo no figura en el repositorio.
+ * La de Cris se reformuló sin « todos avanzáramos », que sugería un grupo
+ * (las clases son individuales).
+ */
 export const WRITTEN_TESTIMONIALS = Object.freeze([
   Object.freeze({ name: 'Oscar', quote: 'Con Pathway, las explicaciones claras y las clases dinámicas hacen que el francés resulte fácil de entender.', source: 'Opinión condensada' }),
   Object.freeze({ name: 'Maximiliano', quote: 'Diálogos en francés, tareas entre clases y apoyo constante para mejorar la pronunciación.', source: 'Opinión condensada' }),
   Object.freeze({ name: 'Carol', quote: 'Paciencia, excelente metodología y un compromiso real con el progreso de cada alumno.', source: 'Opinión condensada' }),
-  Object.freeze({ name: 'Cris', quote: 'Al empezar desde cero, Pathway me acompañó, me hizo participar y se aseguró de que todos avanzáramos.', source: 'Opinión condensada' }),
-  Object.freeze({ name: 'La', quote: 'Clases amenas y participativas que enriquecen el vocabulario al escuchar distintas formas de expresarse.', source: 'Opinión condensada' }),
+  Object.freeze({ name: 'Cris', quote: 'Al empezar desde cero, Pathway me acompañó, me hizo participar y se aseguró de que avanzara.', source: 'Opinión condensada' }),
   Object.freeze({ name: 'Jesús', quote: 'En pocas clases empecé a comunicarme con situaciones del día a día y a escuchar francés auténtico.', source: 'Opinión condensada' }),
   Object.freeze({ name: 'Juanita', quote: 'He aprendido mucho y sigo motivada gracias a clases lúdicas que trabajan todas las competencias.', source: 'Opinión condensada' }),
   Object.freeze({ name: 'Dana', quote: 'En Pathway, el apoyo en español aclara los errores frecuentes de los hispanohablantes y enriquece cada clase.', source: 'Opinión condensada' }),
@@ -306,8 +303,8 @@ export const LINKS = Object.freeze({
     favicon: '/v4/assets/favicon.svg',
     tourLandscape: '/v4/assets/parcours-canada.png',
     teacherPortraits: Object.freeze([
-      '/v4/assets/profesor-01.jpg',
-      '/v4/assets/profesor-02.jpg'
+      '/v4/assets/profesor-01-800.webp',
+      '/v4/assets/profesor-02-800.webp'
     ]),
     videoAssetsBase: '/assets/videos/'
   }),

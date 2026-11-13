@@ -10,32 +10,41 @@ export const pageLang = () => {
   return LANGS.includes(lang) ? lang : 'es';
 };
 
-// Address of a page in each language (same names as scripts/v4-pages-content.mjs).
+// Public address of a page in each language (same names as
+// scripts/v4-pages-content.mjs). The V4 pages are served at the root, so the
+// links never go through the /v4/ working copies (which only redirect).
 const PAGES = {
-  es: { home: '/v4/', test: '/v4/test-placement.html', inscription: '/v4/inscription.html', conditions: '/v4/condiciones.html', nclc: '/v4/nclc-7.html' },
-  fr: { home: '/v4/fr/', test: '/v4/fr/test.html', inscription: '/v4/fr/inscription.html', conditions: '/v4/fr/conditions-nclc7.html', nclc: '/v4/fr/nclc-7.html' },
-  en: { home: '/v4/en/', test: '/v4/en/test.html', inscription: '/v4/en/inscription.html', conditions: '/v4/en/conditions-nclc7.html', nclc: '/v4/en/nclc-7.html' },
-  de: { home: '/v4/de/', test: '/v4/de/test.html', inscription: '/v4/de/inscription.html', conditions: '/v4/de/conditions-nclc7.html', nclc: '/v4/de/nclc-7.html' }
+  es: { home: '/', test: '/test-placement.html', inscription: '/inscription.html', conditions: '/condiciones.html', nclc: '/nclc-7.html' },
+  fr: { home: '/fr/', test: '/fr/test.html', inscription: '/fr/inscription.html', conditions: '/fr/conditions-nclc7.html', nclc: '/fr/nclc-7.html' },
+  en: { home: '/en/', test: '/en/test.html', inscription: '/en/inscription.html', conditions: '/en/conditions-nclc7.html', nclc: '/en/nclc-7.html' },
+  de: { home: '/de/', test: '/de/test.html', inscription: '/de/inscription.html', conditions: '/de/conditions-nclc7.html', nclc: '/de/nclc-7.html' }
 };
 export const pages = lang => PAGES[lang] || PAGES.es;
+
+// French elision before a vowel or a mute h: « d’Elena », « de Devon ».
+const frDe = name => (/^[aeiouyàâéèêëîïôûüh]/i.test(name) ? `d’${name}` : `de ${name}`);
 
 export const I18N = {
   es: {
     locale: 'es-ES',
     pricing: {
       plans: {
-        essential: { name: 'Esencial', tag: 'Más de 18 meses', includes: ['Clases privadas en vivo', 'Cuaderno y seguimiento', 'Talleres prácticos', '2 simulacros TEF / TCF'] },
-        accelerated: { name: 'Acelerado', tag: 'El más elegido', includes: ['Compatible con trabajo a tiempo completo', 'Clases privadas en vivo', 'Cuaderno, seguimiento y talleres', '2 simulacros TEF / TCF'] },
-        intensive: { name: 'Intensivo', tag: 'Menos de 12 meses', includes: ['Ritmo de avance prioritario', 'Clases privadas en vivo', 'Cuaderno, seguimiento y talleres', '2 simulacros TEF / TCF'] }
+        essential: { name: 'Esencial', tag: 'De A1 a B2: unos 24 meses', includes: ['Clases individuales en vivo por Zoom', 'Campus Pathway: ejercicios, manual en línea y grabaciones', 'Seguimiento de tu progreso', '2 simulacros TEF / TCF Canada'] },
+        accelerated: { name: 'Acelerado', tag: 'De A1 a B2: unos 20 meses', includes: ['Compatible con trabajo a tiempo completo', 'Clases individuales en vivo por Zoom', 'Campus Pathway y seguimiento de tu progreso', '2 simulacros TEF / TCF Canada'] },
+        intensive: { name: 'Intensivo', tag: 'De A1 a B2: unos 16 meses', includes: ['Ritmo de avance prioritario', 'Clases individuales en vivo por Zoom', 'Campus Pathway y seguimiento de tu progreso', '2 simulacros TEF / TCF Canada'] }
       },
+      featured: 'El más elegido',
       perCycle: ' · ciclo completo', perMonth: ' / mes',
-      monthlyHours: (h, w) => `${h} horas al mes · ${w} h*/semana`,
-      cycleHours: (m, w) => `<strong>${m} meses</strong> · ${w} h*/semana`,
+      monthlyHours: weeks => `${weeks.join(' o ')} h*/semana · ${weeks.map(w => w * 4).join(' a ')} horas al mes`,
+      cycleHours: (m, weeks) => `<strong>Ciclo de ${m} meses</strong> · ${weeks.join(' o ')} h*/semana`,
       saving: amount => `Ahorras ${amount} CAD`,
       equivalent: amount => `Equivale a ${amount} CAD al mes.`,
       reference: w => `Precio de referencia: ${w} h/semana.`,
-      monthToMonth: 'Mes a mes, sin permanencia.',
-      cta: 'Evaluar este ritmo',
+      monthToMonth: 'Mes a mes, sin contrato mínimo.',
+      cycleTeaser: (m, amount, from) => `O un ciclo completo de ${m} meses: ${from ? 'desde ' : ''}${amount} CAD (−15 %).`,
+      from: 'desde',
+      option: (w, amount, cycle) => `Con ${w} h/semana: ${amount} CAD${cycle ? ' el ciclo' : '/mes'}.`,
+      cta: 'Elegir este ritmo',
       statusMonthly: 'Tarifas mensuales en dólares canadienses.',
       statusCycle: 'Tarifas por ciclo completo en dólares canadienses. Descuento directo del 15 %.'
     },
@@ -44,12 +53,13 @@ export const I18N = {
       videoOf: name => `Testimonio de ${name}`,
       counter: (i, n) => `${i} / ${n}`,
       close: 'Cerrar', previous: 'Testimonio anterior', next: 'Testimonio siguiente',
-      error: 'No se pudo cargar el vídeo.', openFile: 'Abrir el archivo',
-      watch: name => `Ver el vídeo de ${name}`,
+      error: 'No se pudo cargar el video.', openFile: 'Abrir el archivo',
+      watch: name => `Ver el video de ${name}`,
       document: 'Ver la captura',
       documentAlt: name => `Captura de los resultados oficiales de ${name}`,
       nclc7: 'NCLC 7 o más en las cuatro competencias',
       missing: 'No figura en la captura', noDate: 'Fecha no visible',
+      partial: skills => `Captura parcial: ${skills}.`,
       reviewSource: 'Opinión resumida · Superprof',
       pause: 'Pausar el desfile de opiniones', resume: 'Reanudar el desfile de opiniones'
     },
@@ -68,38 +78,43 @@ export const I18N = {
     locale: 'fr-FR',
     pricing: {
       plans: {
-        essential: { name: 'Essentiel', tag: 'Plus de 18 mois', includes: ['Cours privés en direct', 'Cahier et suivi', 'Ateliers pratiques', '2 examens blancs TEF / TCF'] },
-        accelerated: { name: 'Accéléré', tag: 'Le plus choisi', includes: ['Compatible avec un emploi à temps plein', 'Cours privés en direct', 'Cahier, suivi et ateliers', '2 examens blancs TEF / TCF'] },
-        intensive: { name: 'Intensif', tag: 'Moins de 12 mois', includes: ['Rythme de progression prioritaire', 'Cours privés en direct', 'Cahier, suivi et ateliers', '2 examens blancs TEF / TCF'] }
+        essential: { name: 'Essentiel', tag: 'De A1 à B2 : environ 24 mois', includes: ['Cours particuliers en direct sur Zoom', 'Campus Pathway : exercices, manuel en ligne et enregistrements', 'Suivi de vos progrès', '2 examens blancs TEF / TCF Canada'] },
+        accelerated: { name: 'Accéléré', tag: 'De A1 à B2 : environ 20 mois', includes: ['Compatible avec un emploi à temps plein', 'Cours particuliers en direct sur Zoom', 'Campus Pathway et suivi de vos progrès', '2 examens blancs TEF / TCF Canada'] },
+        intensive: { name: 'Intensif', tag: 'De A1 à B2 : environ 16 mois', includes: ['Rythme de progression prioritaire', 'Cours particuliers en direct sur Zoom', 'Campus Pathway et suivi de vos progrès', '2 examens blancs TEF / TCF Canada'] }
       },
+      featured: 'Le plus choisi',
       perCycle: ' · cycle complet', perMonth: ' / mois',
-      monthlyHours: (h, w) => `${h} heures par mois · ${w} h*/semaine`,
-      cycleHours: (m, w) => `<strong>${m} mois</strong> · ${w} h*/semaine`,
-      saving: amount => `Vous économisez ${amount} CAD`,
-      equivalent: amount => `Soit ${amount} CAD par mois.`,
-      reference: w => `Prix de référence : ${w} h/semaine.`,
-      monthToMonth: 'Mois par mois, sans engagement.',
-      cta: 'Évaluer ce rythme',
+      monthlyHours: weeks => `${weeks.join(' ou ')} h*/semaine · ${weeks.map(w => w * 4).join(' à ')} heures par mois`,
+      cycleHours: (m, weeks) => `<strong>Cycle de ${m} mois</strong> · ${weeks.join(' ou ')} h*/semaine`,
+      saving: amount => `Vous économisez ${amount} CAD`,
+      equivalent: amount => `Soit ${amount} CAD par mois.`,
+      reference: w => `Prix de référence : ${w} h/semaine.`,
+      monthToMonth: 'Mois par mois, sans engagement minimum.',
+      cycleTeaser: (m, amount, from) => `Ou un cycle complet de ${m} mois : ${from ? 'à partir de ' : ''}${amount} CAD (−15 %).`,
+      from: 'à partir de',
+      option: (w, amount, cycle) => `Avec ${w} h/semaine : ${amount} CAD${cycle ? ' le cycle' : ' par mois'}.`,
+      cta: 'Choisir ce rythme',
       statusMonthly: 'Tarifs mensuels en dollars canadiens.',
-      statusCycle: 'Tarifs par cycle complet en dollars canadiens. Remise directe de 15 %.'
+      statusCycle: 'Tarifs par cycle complet en dollars canadiens. Remise directe de 15 %.'
     },
     stories: {
-      play: name => `Voir le témoignage de ${name}`,
-      videoOf: name => `Témoignage de ${name}`,
+      play: name => `Voir le témoignage ${frDe(name)}`,
+      videoOf: name => `Témoignage ${frDe(name)}`,
       counter: (i, n) => `${i} / ${n}`,
       close: 'Fermer', previous: 'Témoignage précédent', next: 'Témoignage suivant',
       error: 'La vidéo n’a pas pu être chargée.', openFile: 'Ouvrir le fichier',
-      watch: name => `Voir la vidéo de ${name}`,
+      watch: name => `Voir la vidéo ${frDe(name)}`,
       document: 'Voir la capture',
-      documentAlt: name => `Capture des résultats officiels de ${name}`,
+      documentAlt: name => `Capture des résultats officiels ${frDe(name)}`,
       nclc7: 'NCLC 7 ou plus dans les quatre compétences',
       missing: 'Absent de la capture', noDate: 'Date non visible',
+      partial: skills => `Capture partielle : ${skills}.`,
       reviewSource: 'Avis résumé et traduit de l’espagnol · Superprof',
       pause: 'Mettre en pause le défilement des avis', resume: 'Reprendre le défilement des avis'
     },
     rounds: {
-      official: n => (n ? `Ronde officielle n° ${n}` : 'Ronde officielle'),
-      live: 'Rondes officielles d’IRCC pour le français et la Canadian Experience Class.',
+      official: n => (n ? `Ronde officielle n° ${n}` : 'Ronde officielle'),
+      live: 'Rondes officielles d’IRCC pour le français et la catégorie de l’expérience canadienne.',
       checked: when => `Consulté le ${when}.`,
       snapshot: 'Données en direct indisponibles. Voici une copie datée de la source officielle, qui peut ne pas inclure les rondes les plus récentes.',
       verified: when => `Copie vérifiée le ${when}.`,
@@ -112,18 +127,22 @@ export const I18N = {
     locale: 'en-CA',
     pricing: {
       plans: {
-        essential: { name: 'Essential', tag: 'Over 18 months', includes: ['Live private lessons', 'Workbook and follow-up', 'Hands-on workshops', '2 TEF / TCF mock exams'] },
-        accelerated: { name: 'Accelerated', tag: 'Most chosen', includes: ['Fits around a full-time job', 'Live private lessons', 'Workbook, follow-up and workshops', '2 TEF / TCF mock exams'] },
-        intensive: { name: 'Intensive', tag: 'Under 12 months', includes: ['Priority pace of progress', 'Live private lessons', 'Workbook, follow-up and workshops', '2 TEF / TCF mock exams'] }
+        essential: { name: 'Essential', tag: 'A1 to B2: about 24 months', includes: ['Live one-to-one lessons on Zoom', 'Pathway Campus: exercises, online manual and recordings', 'Progress follow-up', '2 TEF / TCF Canada mock exams'] },
+        accelerated: { name: 'Accelerated', tag: 'A1 to B2: about 20 months', includes: ['Fits around a full-time job', 'Live one-to-one lessons on Zoom', 'Pathway Campus and progress follow-up', '2 TEF / TCF Canada mock exams'] },
+        intensive: { name: 'Intensive', tag: 'A1 to B2: about 16 months', includes: ['Priority pace of progress', 'Live one-to-one lessons on Zoom', 'Pathway Campus and progress follow-up', '2 TEF / TCF Canada mock exams'] }
       },
+      featured: 'Most chosen',
       perCycle: ' · full cycle', perMonth: ' / month',
-      monthlyHours: (h, w) => `${h} hours a month · ${w} h*/week`,
-      cycleHours: (m, w) => `<strong>${m} months</strong> · ${w} h*/week`,
+      monthlyHours: weeks => `${weeks.join(' or ')} h*/week · ${weeks.map(w => w * 4).join(' to ')} hours a month`,
+      cycleHours: (m, weeks) => `<strong>${m}-month cycle</strong> · ${weeks.join(' or ')} h*/week`,
       saving: amount => `You save ${amount} CAD`,
       equivalent: amount => `That is ${amount} CAD a month.`,
       reference: w => `Reference price: ${w} h/week.`,
-      monthToMonth: 'Month to month, no commitment.',
-      cta: 'Consider this pace',
+      monthToMonth: 'Month to month, no minimum term.',
+      cycleTeaser: (m, amount, from) => `Or a full ${m}-month cycle: ${from ? 'from ' : ''}${amount} CAD (−15%).`,
+      from: 'from',
+      option: (w, amount, cycle) => `With ${w} h/week: ${amount} CAD${cycle ? ' per cycle' : ' a month'}.`,
+      cta: 'Choose this pace',
       statusMonthly: 'Monthly prices in Canadian dollars.',
       statusCycle: 'Full-cycle prices in Canadian dollars. 15% direct discount.'
     },
@@ -138,6 +157,7 @@ export const I18N = {
       documentAlt: name => `Screenshot of ${name}’s official results`,
       nclc7: 'NCLC 7 or higher in all four skills',
       missing: 'Not shown in the screenshot', noDate: 'Date not shown',
+      partial: skills => `Partial screenshot: ${skills}.`,
       reviewSource: 'Review summarized and translated from Spanish · Superprof',
       pause: 'Pause the scrolling reviews', resume: 'Resume the scrolling reviews'
     },
@@ -156,18 +176,22 @@ export const I18N = {
     locale: 'de-DE',
     pricing: {
       plans: {
-        essential: { name: 'Basis', tag: 'Über 18 Monate', includes: ['Live-Einzelunterricht', 'Arbeitsheft und Begleitung', 'Praxis-Workshops', '2 Probeprüfungen TEF / TCF'] },
-        accelerated: { name: 'Beschleunigt', tag: 'Am häufigsten gewählt', includes: ['Mit einem Vollzeitjob vereinbar', 'Live-Einzelunterricht', 'Arbeitsheft, Begleitung und Workshops', '2 Probeprüfungen TEF / TCF'] },
-        intensive: { name: 'Intensiv', tag: 'Unter 12 Monaten', includes: ['Vorrangiges Lerntempo', 'Live-Einzelunterricht', 'Arbeitsheft, Begleitung und Workshops', '2 Probeprüfungen TEF / TCF'] }
+        essential: { name: 'Basis', tag: 'Von A1 bis B2: etwa 24 Monate', includes: ['Live-Einzelunterricht über Zoom', 'Pathway Campus: Übungen, Online-Lehrbuch und Aufzeichnungen', 'Begleitung Ihres Fortschritts', '2 Probeprüfungen TEF / TCF Canada'] },
+        accelerated: { name: 'Beschleunigt', tag: 'Von A1 bis B2: etwa 20 Monate', includes: ['Mit einem Vollzeitjob vereinbar', 'Live-Einzelunterricht über Zoom', 'Pathway Campus und Begleitung Ihres Fortschritts', '2 Probeprüfungen TEF / TCF Canada'] },
+        intensive: { name: 'Intensiv', tag: 'Von A1 bis B2: etwa 16 Monate', includes: ['Vorrangiges Lerntempo', 'Live-Einzelunterricht über Zoom', 'Pathway Campus und Begleitung Ihres Fortschritts', '2 Probeprüfungen TEF / TCF Canada'] }
       },
+      featured: 'Am häufigsten gewählt',
       perCycle: ' · ganzer Zyklus', perMonth: ' / Monat',
-      monthlyHours: (h, w) => `${h} Stunden im Monat · ${w} Std.*/Woche`,
-      cycleHours: (m, w) => `<strong>${m} Monate</strong> · ${w} Std.*/Woche`,
+      monthlyHours: weeks => `${weeks.join(' oder ')} Std.*/Woche · ${weeks.map(w => w * 4).join(' bis ')} Stunden im Monat`,
+      cycleHours: (m, weeks) => `<strong>Zyklus von ${m} Monaten</strong> · ${weeks.join(' oder ')} Std.*/Woche`,
       saving: amount => `Sie sparen ${amount} CAD`,
       equivalent: amount => `Das entspricht ${amount} CAD im Monat.`,
       reference: w => `Referenzpreis: ${w} Std./Woche.`,
       monthToMonth: 'Monatlich, ohne Mindestlaufzeit.',
-      cta: 'Dieses Tempo prüfen',
+      cycleTeaser: (m, amount, from) => `Oder ein ganzer Zyklus von ${m} Monaten: ${from ? 'ab ' : ''}${amount} CAD (−15 %).`,
+      from: 'ab',
+      option: (w, amount, cycle) => `Mit ${w} Std./Woche: ${amount} CAD${cycle ? ' pro Zyklus' : ' im Monat'}.`,
+      cta: 'Dieses Tempo wählen',
       statusMonthly: 'Monatspreise in kanadischen Dollar.',
       statusCycle: 'Preise für den ganzen Zyklus in kanadischen Dollar. 15 % Direktrabatt.'
     },
@@ -182,6 +206,7 @@ export const I18N = {
       documentAlt: name => `Screenshot der offiziellen Ergebnisse von ${name}`,
       nclc7: 'NCLC 7 oder mehr in allen vier Kompetenzen',
       missing: 'Nicht im Screenshot', noDate: 'Datum nicht sichtbar',
+      partial: skills => `Teilweiser Screenshot: ${skills}.`,
       reviewSource: 'Bewertung zusammengefasst und aus dem Spanischen übersetzt · Superprof',
       pause: 'Laufende Bewertungen anhalten', resume: 'Laufende Bewertungen fortsetzen'
     },
@@ -199,15 +224,15 @@ export const I18N = {
 };
 export const t = lang => I18N[lang] || I18N.es;
 
-// The sixteen public Superprof recommendations, condensed in Spanish and
-// translated from that version. Same order as WRITTEN_TESTIMONIALS.
+// The public Superprof recommendations shown on the home (fifteen), condensed
+// in Spanish and translated from that version. Same order as
+// WRITTEN_TESTIMONIALS.
 export const REVIEW_QUOTES = {
   fr: [
     'Avec Pathway, des explications claires et des cours dynamiques rendent le français facile à comprendre.',
     'Des dialogues en français, des devoirs entre les cours et un soutien constant pour améliorer la prononciation.',
     'De la patience, une excellente méthode et un véritable engagement envers les progrès de chaque élève.',
-    'Je partais de zéro : Pathway m’a fait participer à chaque cours et s’est assuré que tout le monde avance.',
-    'Des cours agréables et participatifs, qui enrichissent le vocabulaire en faisant entendre différentes façons de s’exprimer.',
+    'Je partais de zéro : Pathway m’a accompagné, m’a fait participer et s’est assuré que je progresse.',
     'En quelques cours, j’ai commencé à communiquer dans des situations du quotidien et à écouter du français authentique.',
     'J’ai beaucoup appris et je reste motivée grâce à des cours ludiques qui travaillent toutes les compétences.',
     'Chez Pathway, l’appui en espagnol éclaire les erreurs fréquentes des hispanophones et enrichit chaque cours.',
@@ -215,17 +240,16 @@ export const REVIEW_QUOTES = {
     'Beaucoup de patience pour la prononciation, et des cours participatifs, dynamiques et sans précipitation.',
     'De la patience, une prononciation juste et des explications sur les nuances propres au français.',
     'Une attention à chaque question, à l’écrit comme à l’oral, avec de la patience et une énergie qui rend les cours agréables.',
-    'Des cours de conversation aux sujets excellents : l’une de mes meilleures expériences d’apprentissage du français.',
+    'Des cours de conversation aux sujets excellents : l’une de mes meilleures expériences d’apprentissage du français.',
     'L’approche la plus pratique, intéressante et charismatique que j’aie trouvée en deux ans d’apprentissage du français.',
-    'Le meilleur cours de français que j’aie suivi : toujours avec l’envie d’enseigner.',
+    'Le meilleur cours de français que j’aie suivi : toujours avec l’envie d’enseigner.',
     'Grâce à la patience dans les cours, j’ai pu progresser jusqu’au niveau A2.'
   ],
   en: [
     'With Pathway, clear explanations and lively lessons make French easy to understand.',
     'Dialogues in French, homework between lessons and constant support to improve pronunciation.',
     'Patience, an excellent method and a real commitment to every student’s progress.',
-    'Starting from zero, Pathway supported me, got me taking part and made sure we all moved forward.',
-    'Enjoyable, interactive lessons that build vocabulary by letting you hear different ways of expressing yourself.',
+    'Starting from zero, Pathway supported me, got me taking part and made sure I kept moving forward.',
     'Within a few lessons I was communicating in everyday situations and listening to authentic French.',
     'I’ve learned a lot and I’m still motivated, thanks to playful lessons that work on every skill.',
     'At Pathway, support in Spanish clears up the mistakes Spanish speakers often make and enriches every lesson.',
@@ -242,8 +266,7 @@ export const REVIEW_QUOTES = {
     'Bei Pathway machen klare Erklärungen und lebendige Stunden Französisch leicht verständlich.',
     'Dialoge auf Französisch, Aufgaben zwischen den Stunden und ständige Unterstützung bei der Aussprache.',
     'Geduld, eine hervorragende Methode und echtes Engagement für den Fortschritt jedes Lernenden.',
-    'Ich habe bei null angefangen: Pathway hat mich begleitet, zum Mitmachen gebracht und darauf geachtet, dass alle vorankommen.',
-    'Angenehme, interaktive Stunden, die den Wortschatz erweitern, weil man verschiedene Ausdrucksweisen hört.',
+    'Ich habe bei null angefangen: Pathway hat mich begleitet, zum Mitmachen gebracht und darauf geachtet, dass ich vorankomme.',
     'Nach wenigen Stunden konnte ich mich in Alltagssituationen verständigen und authentisches Französisch hören.',
     'Ich habe viel gelernt und bleibe motiviert – dank spielerischer Stunden, die alle Kompetenzen trainieren.',
     'Bei Pathway klärt die Unterstützung auf Spanisch die typischen Fehler spanischsprachiger Lernender und bereichert jede Stunde.',

@@ -15,22 +15,36 @@ export const HOME_TAIL_MARKER = '<!-- home-tail -->';
 
 const arrow = '<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>';
 const out = '<span aria-hidden="true">↗</span>';
-const IRCC_ROUNDS = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html';
-const IRCC_CATEGORY = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html';
-const IRCC_CALCULATOR = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score.html';
-const IRCC_CRITERIA = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html';
+// Official IRCC pages: the French home links to the French pages of
+// canada.ca; the other languages use the English ones (no Spanish or German).
+const IRCC_EN = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry';
+const IRCC_FR = 'https://www.canada.ca/fr/immigration-refugies-citoyennete/services/immigrer-canada/entree-express';
+const IRCC_LINKS = {
+  en: { rounds: `${IRCC_EN}/rounds-invitations.html`, category: `${IRCC_EN}/rounds-invitations/category-based-selection.html`, calculator: `${IRCC_EN}/check-score.html`, criteria: `${IRCC_EN}/check-score/crs-criteria.html` },
+  fr: { rounds: `${IRCC_FR}/rondes-invitations.html`, category: `${IRCC_FR}/rondes-invitations/selection-axee-ensembles.html`, calculator: `${IRCC_FR}/verifier-note.html`, criteria: `${IRCC_FR}/verifier-note/criteries-scg.html` }
+};
+const ircc = lang => (lang === 'fr' ? IRCC_LINKS.fr : IRCC_LINKS.en);
 const WHATSAPP = 'https://wa.me/51989887516';
+const NBSP = ' ';
+const NNBSP = ' ';
+
+// French typography in text (never inside tags): narrow no-break space before
+// ; ! ? and inside « », no-break space before : and %.
+export const frenchTypography = html => html.replace(/(<[^>]*>)|([^<]+)/g, (match, tag, text) => tag || text
+  .replace(/[   ]+([;!?»])/g, `${NNBSP}$1`)
+  .replace(/«[   ]+/g, `«${NNBSP}`)
+  .replace(/[   ]+([:%])/g, `${NBSP}$1`));
 
 const T = {
   es: {
     stories: {
       tag: 'Historias reales', title: 'Lo cuentan quienes<br> ya aprendieron con Pathway.', lead: 'Distintas realidades, un mismo acompañamiento.',
-      stats: n => [[n.videos, 'testimonios en vídeo'], [n.reviews, 'recomendaciones públicas en Superprof'], [n.results, 'resultados oficiales TCF compartidos']],
-      reel: 'Testimonios en vídeo', reelNote: 'Grabados por nuestros alumnos, en español.', previous: 'Testimonios anteriores', next: 'Testimonios siguientes',
+      stats: n => [[n.videos, 'testimonios en video'], [n.reviews, 'recomendaciones públicas en Superprof'], [n.results, 'resultados oficiales TCF compartidos']],
+      reel: 'Testimonios en video', reelNote: 'Grabados por nuestros alumnos, en español.', previous: 'Testimonios anteriores', next: 'Testimonios siguientes',
       resultsTag: 'Resultados oficiales', resultsTitle: 'Resultados reales,<br> no promesas.',
       resultsText: 'Capturas del portal oficial del TCF, compartidas por nuestros alumnos al recibir sus resultados.',
       resultsNote: 'El examen oficial se realiza con el organismo examinador, no con Pathway.',
-      session: 'Sesión del', levelScale: 'Nivel CECRL',
+      and: ' y ', session: 'Sesión del', levelScale: 'Nivel CECRL',
       skills: { co: 'Comprensión oral', ce: 'Comprensión escrita', eo: 'Expresión oral', ee: 'Expresión escrita' },
       reviewsTitle: 'Lo que escriben en Superprof', reviewsText: n => `${n} recomendaciones públicas, resumidas aquí.`, reviewsLink: 'Ver las recomendaciones en Superprof'
     },
@@ -38,40 +52,48 @@ const T = {
       tag: 'Vista del programa', title: 'Tres ritmos.<br> El mismo acompañamiento.',
       lead: 'La evaluación inicial indica el ritmo coherente con tu nivel y tu fecha, incluso si la respuesta es que el tiempo no alcanza.',
       billingTitle: 'Dos formas de inscribirte',
-      billing: '<strong>Mes a mes sin permanencia, o un ciclo completo** con 15 % de descuento.</strong><p>Si empiezas con un mes y continúas después con un ciclo completo, el descuento aplicado al ciclo es del 10 %.</p><p>* Volúmenes horarios y precios de referencia: el ritmo exacto se confirma después de la evaluación inicial y según tus necesidades.</p><p>** El ciclo completo es una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo: no es reembolsable. Las horas perdidas por ausencias sin justificar no se recuperan, y no hay reembolso si al final del ciclo no alcanzas el nivel.</p>',
-      switchLabel: 'Forma de inscripción', monthly: 'Inscripción mensual', cycle: 'Ciclo* <span>AHORRA 15 %</span>',
-      notes: ['Todos los precios están en CAD. Cuota de inscripción única de <strong>15 CAD</strong>, añadida al primer pago tras confirmar el horario.', 'Un ciclo corresponde a un nivel del CECRL. Las duraciones son referencias desde A1 y se confirman tras la evaluación inicial.', 'El descuento del 15 % se aplica a la inscripción directa por el ciclo completo. Si empiezas con un mes y después eliges el ciclo, el descuento es del 10 %.'],
+      billing: '<strong>Mes a mes sin contrato mínimo, o un ciclo completo** con 15 % de descuento.</strong><p>Si empiezas con un mes y continúas después con un ciclo completo, el descuento aplicado al ciclo es del 10 %.</p><p>* Carga horaria y precios de referencia: el ritmo exacto se confirma después de la evaluación inicial y según tus necesidades.</p><p>** El ciclo completo es una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo: no es reembolsable. Las horas perdidas por ausencias sin justificar no se recuperan, y no hay reembolso si al final del ciclo no alcanzas el nivel.</p>',
+      switchLabel: 'Forma de inscripción', monthly: 'Inscripción mensual', cycle: 'Ciclo completo <span>AHORRA 15 %</span>',
+      notes: ['Todos los precios están en CAD: 92,50 CAD al mes por cada hora semanal (2 h: 185 · 3 h: 277,50 · 4 h: 370 · 5 h: 462,50 · 6 h: 555 CAD/mes), sin variación según tu nivel. Cuota de inscripción única de <strong>15 CAD</strong>, añadida al primer pago tras confirmar el horario.', 'Un ciclo completo corresponde a un nivel del CECRL, con una duración de referencia fija: ciclo de 6 meses en Esencial (2 h/semana), de 5 meses en Acelerado (3 o 4 h/semana) y de 4 meses en Intensivo (5 o 6 h/semana). El ritmo exacto se confirma después de la evaluación inicial.', 'El descuento del 15 % se aplica a la inscripción directa por el ciclo completo. Si empiezas con un mes y después eliges el ciclo, el descuento es del 10 %.'],
+      attendance: {
+        title: 'Asistencia',
+        items: ['Si avisas con al menos 48 h de anticipación, o justificas tu ausencia dentro de las 72 h siguientes, recuperamos la clase. Sin aviso ni justificación válida, la hora se pierde y no se recupera.', '<strong>Inscripción mensual (4 semanas):</strong> 3 ausencias sin justificar en las mismas 4 semanas invalidan el mes: no se valida el paso al nivel siguiente y, para continuar, el mes debe pagarse de nuevo.', '<strong>Ciclo completo:</strong> sin esta sanción, pero las horas perdidas no se recuperan ni se reembolsan.'],
+        link: 'Ver las reglas de asistencia en las condiciones'
+      },
       conditions: 'Consultar las condiciones de inscripción'
     },
     outcome: {
       tag: 'Tu resultado', title: 'El recorrido termina<br> con un nivel demostrado.<span class="title-soft">No con un calendario<br> agotado.</span>',
-      text: 'Un acompañamiento flexible, centrado en tu progreso real, para que llegues a tu meta con confianza y una prueba concreta de tu nivel.',
-      benefits: ['Un método que te hace avanzar, sin presión innecesaria.', 'Un ritmo que se adapta a tu vida.', 'Preparación para demostrar tu nivel en un examen oficial TEF o TCF.'],
-      cta: 'Evaluar mi nivel', example: 'Ejemplo', sheet: 'Resultado de nivel', name: 'Nombre', person: 'Alex <span>(ejemplo)</span>', date: 'Fecha', dateValue: '12 jun 2026',
-      language: 'Idioma', french: 'Francés', global: 'Nivel global', balance: 'Balance de competencias', motto: 'Un camino real. Un nivel alcanzado.',
-      caption: 'Ejemplo de balance pedagógico Pathway.<br> No es un certificado oficial TEF o TCF.'
+      text: 'Un acompañamiento flexible, centrado en tu progreso real, para que llegues a tu meta con confianza y demuestres tu nivel en el examen oficial.',
+      benefits: ['Un método que te hace avanzar, sin presión innecesaria.', 'Un ritmo que se adapta a tu vida.', 'Preparación para demostrar tu nivel en el examen oficial TEF Canada o TCF Canada.'],
+      cta: 'Evaluar mi nivel',
+      campus: {
+        label: 'Vista del Campus Pathway, ejemplo', name: 'Campus Pathway', example: 'Ejemplo', progress: 'Avance del nivel B1', percent: '38 %',
+        items: [['check', 'Ejercicios de la unidad 23', '10 de 10 · corregidos'], ['clipboard', 'Ejercicios de la unidad 24', '6 de 10 · en curso'], ['map', 'Manual en línea', 'La unidad 25 se abre después de tu próxima clase'], ['play', 'Grabación de tu clase del lunes', 'Disponible'], ['calendar', 'Simulacro TEF / TCF Canada', 'Al final del B2']]
+      },
+      caption: 'Ejemplo de seguimiento en el Campus Pathway.<br> Pathway no emite certificados: tu nivel se demuestra en el examen oficial.'
     },
     faq: {
       tag: '¿Dudas?', title: 'Todo lo que necesitas<br> saber para empezar<br> con tranquilidad.', lead: 'Resolvemos las preguntas más frecuentes para que puedas dar el primer paso con confianza.',
       items: [
         ['¿Qué ritmo me conviene?', '<p>Depende de tu nivel, tu disponibilidad y tus objetivos. La evaluación inicial te ayuda a elegir el ritmo más adecuado.</p>'],
-        ['¿Las clases son realmente privadas?', '<p>Sí. Las clases son individuales, en vivo, con un profesor que conoce tu recorrido. Los talleres ofrecen otras oportunidades de practicar, sin sustituir tus clases privadas.</p>'],
-        ['¿Cómo funciona la evaluación inicial?', '<p>Un test progresivo evalúa tu comprensión escrita, tu comprensión oral y tu gramática y vocabulario. La expresión oral se confirma con un profesor. Con estos resultados y tu disponibilidad, definimos el punto de partida.</p><a class="source-link" href="{test}">Hacer la evaluación inicial →</a>'],
-        ['¿Preparan para el TEF y el TCF?', '<p>Sí, el recorrido se centra en el TEF y el TCF Canadá. Trabajamos las cuatro competencias e incluimos dos simulacros completos. El examen oficial se realiza con el organismo examinador, no con Pathway.</p>'],
-        ['¿Cómo me inscribo?', '<p>Evalúa tu nivel y solicita un horario indicando el ritmo y tus disponibilidades. Confirmamos el horario y el precio final antes de cualquier pago.</p><a class="source-link" href="{inscription}">Solicitar un horario →</a>']
+        ['¿Las clases son realmente individuales?', '<p>Sí. Cada clase es individual, en vivo por Zoom, con un profesor que conoce tu recorrido. Entre clases, el Campus Pathway te da ejercicios por unidad, tu manual en línea que se abre clase a clase, simulacros TEF y TCF Canada, y las grabaciones de tus clases.</p>'],
+        ['¿Cómo funciona la evaluación inicial?', '<p>Un test progresivo evalúa tu comprensión escrita, tu comprensión oral y tu gramática y vocabulario; toma entre 12 y 30 minutos, según la versión que elijas. La expresión oral se confirma con tu profesor en la primera clase. Con estos resultados y tu disponibilidad, definimos el punto de partida.</p><a class="source-link" href="{test}">Hacer la evaluación inicial →</a>'],
+        ['¿Preparan para el TEF Canada y el TCF Canada?', '<p>Sí, el recorrido se centra en el TEF Canada y el TCF Canada. Trabajamos las cuatro competencias e incluimos dos simulacros completos. El examen oficial se realiza con el organismo examinador, no con Pathway.</p>'],
+        ['¿Cómo me inscribo?', '<p>Evalúa tu nivel y solicita un horario indicando el ritmo y tu disponibilidad. Confirmamos el horario y el precio final antes de cualquier pago.</p><a class="source-link" href="{inscription}">Solicitar un horario →</a>']
       ],
-      inviteTitle: '¿Listo para avanzar<br> hacia tu objetivo?', inviteText: 'Evalúa tu nivel y recibe una recomendación<br> adaptada a tu punto de partida.', inviteSmall: 'Sin compromiso · Toma solo unos minutos.'
+      inviteTitle: '¿Listo para avanzar<br> hacia tu objetivo?', inviteText: 'Evalúa tu nivel y recibe una recomendación<br> adaptada a tu punto de partida.', inviteSmall: 'Sin compromiso · El test toma entre 12 y 30 minutos.'
     },
     nclc: {
       tag: 'Objetivo NCLC 7', title: '¿Por qué apuntar<br> <span class="title-muted">al NCLC 7?</span>',
-      text: ['Para la categoría de competencia lingüística en francés de Express Entry, necesitas NCLC 7 o más en las cuatro competencias y cumplir los requisitos de uno de los programas de Express Entry.', 'Alcanzar este umbral no garantiza una invitación. El perfil, la puntuación CRS y las rondas publicadas por IRCC también cuentan.'],
+      text: ['Para la categoría de competencia lingüística en francés de Express Entry, necesitas NCLC 7 o más en las cuatro competencias y cumplir los requisitos de uno de los programas de Express Entry.', 'Alcanzar este umbral no garantiza una invitación. El perfil, el puntaje CRS y las rondas publicadas por IRCC también cuentan.'],
       link: 'Entender el objetivo NCLC 7', panel: 'NCLC 7: el umbral francófono', intro: 'Categoría de competencia lingüística en francés',
       skills: ['Comprensión oral', 'Comprensión escrita', 'Expresión oral', 'Expresión escrita'], note: 'NCLC 7 o más en cada competencia.<br> No garantiza una invitación.', source: 'Fuente oficial: IRCC'
     },
     crs: {
-      tag: 'Tu proyecto en Express Entry', title: 'Entiende tu<br> puntuación CRS.',
-      text: ['El CRS clasifica los perfiles de Express Entry según varios factores: edad, estudios, idiomas y experiencia, entre otros.', 'La calculadora oficial te permite obtener una estimación a partir de tu situación. No es una invitación ni una decisión de inmigración.'],
-      cta: 'Calcular mi puntuación CRS', panel: '¿Qué influye en tu puntuación?',
+      tag: 'Tu proyecto en Express Entry', title: 'Entiende tu<br> puntaje CRS.',
+      text: ['El CRS clasifica los perfiles de Express Entry según varios factores: edad, estudios, idiomas y experiencia, entre otros.', 'La calculadora oficial de IRCC te permite obtener una estimación a partir de tu situación. No es una invitación ni una decisión de inmigración.'],
+      cta: 'Calculadora oficial de IRCC', panel: '¿Qué influye en tu puntaje?',
       factors: [['Edad', 'Tu rango de edad.'], ['Estudios', 'Tus credenciales académicas.'], ['Idiomas oficiales', 'Tus resultados en francés e inglés.'], ['Experiencia laboral en Canadá', 'Tu experiencia de trabajo canadiense.']],
       note: 'Otros criterios también pueden influir según tu perfil.', source: 'Fuente oficial: criterios CRS de IRCC'
     },
@@ -79,7 +101,7 @@ const T = {
       tag: 'Leer las rondas de Express Entry', title: 'Los cortes cambian<br> de una ronda a otra.',
       text: ['IRCC publica los resultados de cada ronda de invitaciones. Aquí puedes consultar las últimas rondas disponibles para la categoría de francés y Canadian Experience Class.', 'Son datos históricos, no una previsión ni una garantía para tu perfil.'],
       cta: 'Consultar las rondas oficiales', panel: 'Rondas publicadas por IRCC', intro: 'Última ronda disponible en cada categoría.',
-      french: 'Competencia lingüística en francés', date: 'Fecha de la ronda', score: 'CRS mínimo', loading: 'Consultando…', official: 'Rondas oficiales',
+      french: 'Competencia lingüística en francés', date: 'Fecha de la ronda', score: 'CRS mínimo', cec: 'Canadian Experience Class', loading: 'Consultando…', official: 'Rondas oficiales',
       note: 'Son categorías distintas. Estos cortes no permiten calcular tu probabilidad individual de recibir una invitación.',
       status: 'Consultando las publicaciones oficiales de IRCC…', source: 'Fuente oficial: IRCC', noscript: 'Las cifras en vivo requieren JavaScript. Consulta las rondas en la fuente oficial.'
     },
@@ -92,7 +114,7 @@ const T = {
     },
     final: {
       tag: 'Tu primer paso · Sin compromiso', title: 'Tu objetivo<br> merece<br> <span>una ruta<br> clara.</span>',
-      text: 'En veinte minutos situamos tu punto de partida, tu fecha y el ritmo que realmente cabe en tu vida.', cta: 'Evaluar mi nivel', whatsapp: 'Prefiero hablar por WhatsApp'
+      text: 'Con un test de 12 a 30 minutos situamos tu punto de partida; después definimos contigo tu fecha y el ritmo que realmente cabe en tu vida.', cta: 'Evaluar mi nivel', whatsapp: 'Prefiero hablar por WhatsApp'
     },
     footer: {
       home: 'Pathway Language Solutions, inicio', motto: 'Un acompañamiento real<br> para llegar más lejos en francés.',
@@ -104,13 +126,13 @@ const T = {
 
   fr: {
     stories: {
-      tag: 'Histoires vraies', title: 'Ils et elles ont appris<br> avec Pathway, et le racontent.', lead: 'Des réalités différentes, un même accompagnement.',
+      tag: 'Histoires vraies', title: 'Ils ont appris avec Pathway.<br> Ils le racontent.', lead: 'Des réalités différentes, un même accompagnement.',
       stats: n => [[n.videos, 'témoignages vidéo'], [n.reviews, 'recommandations publiques sur Superprof'], [n.results, 'résultats officiels TCF partagés']],
       reel: 'Témoignages vidéo', reelNote: 'Enregistrés par nos élèves, en espagnol.', previous: 'Témoignages précédents', next: 'Témoignages suivants',
       resultsTag: 'Résultats officiels', resultsTitle: 'Des résultats réels,<br> pas des promesses.',
       resultsText: 'Captures du portail officiel du TCF, partagées par nos élèves à la réception de leurs résultats.',
       resultsNote: 'L’examen officiel se passe auprès de l’organisme certificateur, pas chez Pathway.',
-      session: 'Session du', levelScale: 'Niveau CECRL',
+      and: ' et ', session: 'Session du', levelScale: 'Niveau CECRL',
       skills: { co: 'Compréhension orale', ce: 'Compréhension écrite', eo: 'Expression orale', ee: 'Expression écrite' },
       reviewsTitle: 'Ce qu’ils écrivent sur Superprof', reviewsText: n => `${n} recommandations publiques, résumées et traduites de l’espagnol.`, reviewsLink: 'Voir les recommandations sur Superprof'
     },
@@ -118,48 +140,56 @@ const T = {
       tag: 'Aperçu du programme', title: 'Trois rythmes.<br> Le même accompagnement.',
       lead: 'L’évaluation initiale indique le rythme cohérent avec votre niveau et votre échéance, même si la réponse est que le temps ne suffit pas.',
       billingTitle: 'Deux façons de vous inscrire',
-      billing: '<strong>Mois par mois sans engagement, ou un cycle complet** avec 15 % de remise.</strong><p>Si vous commencez par un mois et poursuivez ensuite avec un cycle complet, la remise appliquée au cycle est de 10 %.</p><p>* Volumes horaires et prix de référence : le rythme exact est confirmé après l’évaluation initiale, selon vos besoins.</p><p>** Le cycle complet est un tarif réduit en échange de votre engagement à assister aux cours pendant tout le cycle : il n’est pas remboursable. Les heures perdues par absence non justifiée ne sont pas rattrapées, et aucun remboursement n’est possible si vous n’atteignez pas le niveau à la fin du cycle.</p>',
-      switchLabel: 'Mode d’inscription', monthly: 'Inscription mensuelle', cycle: 'Cycle* <span>−15 %</span>',
-      notes: ['Tous les prix sont en CAD. Frais d’inscription uniques de <strong>15 CAD</strong>, ajoutés au premier paiement après confirmation de l’horaire.', 'Un cycle correspond à un niveau du CECRL. Les durées sont des références depuis A1 et sont confirmées après l’évaluation initiale.', 'La remise de 15 % s’applique à l’inscription directe pour le cycle complet. Si vous commencez par un mois puis choisissez le cycle, la remise est de 10 %.'],
+      billing: '<strong>Mois par mois sans engagement minimum, ou un cycle complet** avec 15 % de remise.</strong><p>Si vous commencez par un mois et poursuivez ensuite avec un cycle complet, la remise appliquée au cycle est de 10 %.</p><p>* Volume horaire et prix de référence : le rythme exact est confirmé après l’évaluation initiale, selon vos besoins.</p><p>** Le cycle complet est un tarif réduit en échange de votre engagement à assister aux cours pendant tout le cycle : il n’est pas remboursable. Les heures perdues par absence non justifiée ne sont pas rattrapées, et aucun remboursement n’est possible si vous n’atteignez pas le niveau à la fin du cycle.</p>',
+      switchLabel: 'Mode d’inscription', monthly: 'Inscription mensuelle', cycle: 'Cycle complet <span>−15 %</span>',
+      notes: ['Tous les prix sont en CAD : 92,50 CAD par mois pour chaque heure hebdomadaire (2 h : 185 · 3 h : 277,50 · 4 h : 370 · 5 h : 462,50 · 6 h : 555 CAD/mois), quel que soit votre niveau. Frais d’inscription uniques de <strong>15 CAD</strong>, ajoutés au premier paiement après confirmation de l’horaire.', 'Un cycle complet correspond à un niveau du CECRL, avec une durée de référence fixe : cycle de 6 mois en Essentiel (2 h/semaine), de 5 mois en Accéléré (3 ou 4 h/semaine) et de 4 mois en Intensif (5 ou 6 h/semaine). Le rythme exact est confirmé après l’évaluation initiale.', 'La remise de 15 % s’applique à l’inscription directe pour le cycle complet. Si vous commencez par un mois puis choisissez le cycle, la remise est de 10 %.'],
+      attendance: {
+        title: 'Assiduité',
+        items: ['Si vous prévenez au moins 48 h à l’avance, ou justifiez votre absence dans les 72 h qui suivent, nous rattrapons le cours. Sans préavis ni justification valable, l’heure est perdue et n’est pas rattrapée.', '<strong>Inscription mensuelle (4 semaines) :</strong> 3 absences non justifiées sur les mêmes 4 semaines invalident le mois : le passage au niveau suivant n’est pas validé et, pour continuer, le mois doit être payé de nouveau.', '<strong>Cycle complet :</strong> sans cette sanction, mais les heures perdues ne sont ni rattrapées ni remboursées.'],
+        link: 'Voir les règles d’assiduité dans les conditions'
+      },
       conditions: 'Consulter les conditions d’inscription'
     },
     outcome: {
       tag: 'Votre résultat', title: 'Le parcours se termine<br> par un niveau démontré.<span class="title-soft">Pas par un calendrier<br> épuisé.</span>',
-      text: 'Un accompagnement flexible, centré sur vos progrès réels, pour atteindre votre objectif avec confiance et une preuve concrète de votre niveau.',
-      benefits: ['Une méthode qui vous fait avancer, sans pression inutile.', 'Un rythme qui s’adapte à votre vie.', 'Une préparation pour démontrer votre niveau à un examen officiel TEF ou TCF.'],
-      cta: 'Évaluer mon niveau', example: 'Exemple', sheet: 'Bilan de niveau', name: 'Nom', person: 'Alex <span>(exemple)</span>', date: 'Date', dateValue: '12 juin 2026',
-      language: 'Langue', french: 'Français', global: 'Niveau global', balance: 'Bilan des compétences', motto: 'Un vrai parcours. Un niveau atteint.',
-      caption: 'Exemple de bilan pédagogique Pathway.<br> Ce n’est pas une attestation officielle TEF ou TCF.'
+      text: 'Un accompagnement flexible, centré sur vos progrès réels, pour atteindre votre objectif avec confiance et démontrer votre niveau à l’examen officiel.',
+      benefits: ['Une méthode qui vous fait avancer, sans pression inutile.', 'Un rythme qui s’adapte à votre vie.', 'Une préparation pour démontrer votre niveau à l’examen officiel TEF Canada ou TCF Canada.'],
+      cta: 'Évaluer mon niveau',
+      campus: {
+        label: 'Aperçu du Campus Pathway, exemple', name: 'Campus Pathway', example: 'Exemple', progress: 'Progression du niveau B1', percent: '38 %',
+        items: [['check', 'Exercices de l’unité 23', '10 sur 10 · corrigés'], ['clipboard', 'Exercices de l’unité 24', '6 sur 10 · en cours'], ['map', 'Manuel en ligne', 'L’unité 25 s’ouvre après votre prochain cours'], ['play', 'Enregistrement de votre cours de lundi', 'Disponible'], ['calendar', 'Examen blanc TEF / TCF Canada', 'À la fin du B2']]
+      },
+      caption: 'Exemple de suivi dans le Campus Pathway.<br> Pathway ne délivre pas de certificat : votre niveau se démontre à l’examen officiel.'
     },
     faq: {
       tag: 'Des questions ?', title: 'Tout ce qu’il faut<br> savoir pour commencer<br> sereinement.', lead: 'Nous répondons aux questions les plus fréquentes pour que vous fassiez le premier pas en confiance.',
       items: [
         ['Quel rythme me convient ?', '<p>Cela dépend de votre niveau, de vos disponibilités et de vos objectifs. L’évaluation initiale vous aide à choisir le rythme le plus adapté.</p>'],
-        ['Les cours sont-ils vraiment privés ?', '<p>Oui. Les cours sont individuels, en direct, avec un professeur qui connaît votre parcours. Les ateliers offrent d’autres occasions de pratiquer, sans remplacer vos cours privés.</p>'],
-        ['Comment fonctionne l’évaluation initiale ?', '<p>Un test progressif évalue votre compréhension écrite, votre compréhension orale, ainsi que votre grammaire et votre vocabulaire. L’expression orale est confirmée avec un professeur. À partir de ces résultats et de vos disponibilités, nous définissons votre point de départ.</p><a class="source-link" href="{test}">Faire l’évaluation initiale →</a>'],
-        ['Préparez-vous au TEF et au TCF ?', '<p>Oui, le parcours est centré sur le TEF et le TCF Canada. Nous travaillons les quatre compétences et incluons deux examens blancs complets. L’examen officiel se passe auprès de l’organisme certificateur, pas chez Pathway.</p>'],
+        ['Les cours sont-ils vraiment particuliers ?', '<p>Oui. Chaque cours est individuel, en direct sur Zoom, avec un professeur qui connaît votre parcours. Entre les cours, le Campus Pathway vous donne des exercices par unité, votre manuel en ligne qui s’ouvre au fil des cours, des examens blancs TEF et TCF Canada, et les enregistrements de vos cours.</p>'],
+        ['Comment fonctionne l’évaluation initiale ?', '<p>Un test progressif évalue votre compréhension écrite, votre compréhension orale, ainsi que votre grammaire et votre vocabulaire ; il dure de 12 à 30 minutes selon la version choisie. L’expression orale est confirmée avec votre professeur au premier cours. À partir de ces résultats et de vos disponibilités, nous définissons votre point de départ.</p><a class="source-link" href="{test}">Faire l’évaluation initiale →</a>'],
+        ['Proposez-vous une préparation au TEF Canada et au TCF Canada ?', '<p>Oui, le parcours est centré sur le TEF Canada et le TCF Canada. Nous travaillons les quatre compétences et incluons deux examens blancs complets. L’examen officiel se passe auprès de l’organisme certificateur, pas chez Pathway.</p>'],
         ['Comment m’inscrire ?', '<p>Évaluez votre niveau, puis demandez un horaire en indiquant le rythme et vos disponibilités. Nous confirmons l’horaire et le prix final avant tout paiement.</p><a class="source-link" href="{inscription}">Demander un horaire →</a>']
       ],
-      inviteTitle: 'Prêt à avancer<br> vers votre objectif ?', inviteText: 'Évaluez votre niveau et recevez une recommandation<br> adaptée à votre point de départ.', inviteSmall: 'Sans engagement · Quelques minutes suffisent.'
+      inviteTitle: 'Prêt à avancer<br> vers votre objectif ?', inviteText: 'Évaluez votre niveau et recevez une recommandation<br> adaptée à votre point de départ.', inviteSmall: 'Sans engagement · Le test dure de 12 à 30 minutes.'
     },
     nclc: {
       tag: 'Objectif NCLC 7', title: 'Pourquoi viser<br> <span class="title-muted">le NCLC 7 ?</span>',
-      text: ['Pour la catégorie de compétence linguistique en français d’Express Entry, il faut un NCLC 7 ou plus dans les quatre compétences et remplir les conditions de l’un des programmes d’Express Entry.', 'Atteindre ce seuil ne garantit pas une invitation. Le profil, le score CRS et les rondes publiées par IRCC comptent aussi.'],
+      text: ['Pour la catégorie de compétence linguistique en français d’Entrée express, il faut un NCLC 7 ou plus dans les quatre compétences et remplir les conditions de l’un des programmes d’Entrée express.', 'Atteindre ce seuil ne garantit pas une invitation. Le profil, le score CRS et les rondes publiées par IRCC comptent aussi.'],
       link: 'Comprendre l’objectif NCLC 7', panel: 'NCLC 7 : le seuil francophone', intro: 'Catégorie de compétence linguistique en français',
       skills: ['Compréhension orale', 'Compréhension écrite', 'Expression orale', 'Expression écrite'], note: 'NCLC 7 ou plus dans chaque compétence.<br> Ne garantit pas une invitation.', source: 'Source officielle : IRCC'
     },
     crs: {
-      tag: 'Votre projet Express Entry', title: 'Comprendre votre<br> score CRS.',
-      text: ['Le CRS classe les profils Express Entry selon plusieurs facteurs : âge, études, langues et expérience, entre autres.', 'Le calculateur officiel vous donne une estimation à partir de votre situation. Ce n’est ni une invitation ni une décision d’immigration.'],
-      cta: 'Calculer mon score CRS', panel: 'Qu’est-ce qui influence votre score ?',
+      tag: 'Votre projet Entrée express', title: 'Comprendre votre<br> score CRS.',
+      text: ['Le CRS classe les profils d’Entrée express selon plusieurs facteurs : âge, études, langues et expérience, entre autres.', 'Le calculateur officiel d’IRCC vous donne une estimation à partir de votre situation. Ce n’est ni une invitation ni une décision d’immigration.'],
+      cta: 'Calculateur officiel d’IRCC', panel: 'Qu’est-ce qui influence votre score ?',
       factors: [['Âge', 'Votre tranche d’âge.'], ['Études', 'Vos diplômes.'], ['Langues officielles', 'Vos résultats en français et en anglais.'], ['Expérience de travail au Canada', 'Votre expérience professionnelle canadienne.']],
       note: 'D’autres critères peuvent aussi compter selon votre profil.', source: 'Source officielle : critères CRS d’IRCC'
     },
     rounds: {
-      tag: 'Lire les rondes d’Express Entry', title: 'Les seuils changent<br> d’une ronde à l’autre.',
-      text: ['IRCC publie les résultats de chaque ronde d’invitations. Vous pouvez consulter ici les dernières rondes disponibles pour la catégorie francophone et la Canadian Experience Class.', 'Ce sont des données historiques, pas une prévision ni une garantie pour votre profil.'],
+      tag: 'Lire les rondes d’Entrée express', title: 'Les seuils changent<br> d’une ronde à l’autre.',
+      text: ['IRCC publie les résultats de chaque ronde d’invitations. Vous pouvez consulter ici les dernières rondes disponibles pour la catégorie francophone et la catégorie de l’expérience canadienne.', 'Ce sont des données historiques, pas une prévision ni une garantie pour votre profil.'],
       cta: 'Consulter les rondes officielles', panel: 'Rondes publiées par IRCC', intro: 'Dernière ronde disponible dans chaque catégorie.',
-      french: 'Compétence linguistique en français', date: 'Date de la ronde', score: 'CRS minimum', loading: 'Consultation…', official: 'Rondes officielles',
+      french: 'Compétence linguistique en français', date: 'Date de la ronde', score: 'CRS minimum', cec: 'Catégorie de l’expérience canadienne', loading: 'Consultation…', official: 'Rondes officielles',
       note: 'Ce sont des catégories distinctes. Ces seuils ne permettent pas de calculer votre probabilité individuelle de recevoir une invitation.',
       status: 'Consultation des publications officielles d’IRCC…', source: 'Source officielle : IRCC', noscript: 'Les chiffres en direct nécessitent JavaScript. Consultez les rondes sur la source officielle.'
     },
@@ -172,7 +202,7 @@ const T = {
     },
     final: {
       tag: 'Votre première étape · Sans engagement', title: 'Votre objectif<br> mérite<br> <span>un parcours<br> clair.</span>',
-      text: 'En vingt minutes, nous situons votre point de départ, votre échéance et le rythme qui s’intègre vraiment à votre vie.', cta: 'Évaluer mon niveau', whatsapp: 'Je préfère écrire sur WhatsApp'
+      text: 'Un test de 12 à 30 minutes situe votre point de départ ; nous définissons ensuite avec vous votre échéance et le rythme qui s’intègre vraiment à votre vie.', cta: 'Évaluer mon niveau', whatsapp: 'Je préfère écrire sur WhatsApp'
     },
     footer: {
       home: 'Pathway Language Solutions, accueil', motto: 'Un vrai accompagnement<br> pour aller plus loin en français.',
@@ -190,7 +220,7 @@ const T = {
       resultsTag: 'Official results', resultsTitle: 'Real results,<br> not promises.',
       resultsText: 'Screenshots from the official TCF portal, shared by our students when they received their results.',
       resultsNote: 'The official exam is taken with the exam provider, not with Pathway.',
-      session: 'Session of', levelScale: 'CEFR level',
+      and: ' and ', session: 'Session of', levelScale: 'CEFR level',
       skills: { co: 'Listening', ce: 'Reading', eo: 'Speaking', ee: 'Writing' },
       reviewsTitle: 'What they write on Superprof', reviewsText: n => `${n} public recommendations, summarized and translated from Spanish.`, reviewsLink: 'See the recommendations on Superprof'
     },
@@ -198,29 +228,37 @@ const T = {
       tag: 'Program overview', title: 'Three paces.<br> The same support.',
       lead: 'The initial assessment shows the pace that fits your level and your deadline, even when the answer is that there isn’t enough time.',
       billingTitle: 'Two ways to enrol',
-      billing: '<strong>Month to month with no commitment, or a full cycle** with a 15% discount.</strong><p>If you start with one month and then continue with a full cycle, the discount on the cycle is 10%.</p><p>* Reference hours and prices: the exact pace is confirmed after the initial assessment, according to your needs.</p><p>** The full cycle is a reduced rate in exchange for your commitment to attend class for the whole cycle: it is non-refundable. Hours lost to unjustified absences are not made up, and there is no refund if you do not reach the level by the end of the cycle.</p>',
-      switchLabel: 'Enrolment option', monthly: 'Monthly enrolment', cycle: 'Cycle* <span>SAVE 15%</span>',
-      notes: ['All prices are in CAD. One-time registration fee of <strong>15 CAD</strong>, added to the first payment once your schedule is confirmed.', 'A cycle covers one CEFR level. Durations are references from A1 and are confirmed after the initial assessment.', 'The 15% discount applies when you enrol directly for the full cycle. If you start with one month and then choose the cycle, the discount is 10%.'],
+      billing: '<strong>Month to month with no minimum term, or a full cycle** with a 15% discount.</strong><p>If you start with one month and then continue with a full cycle, the discount on the cycle is 10%.</p><p>* Reference hours and prices: the exact pace is confirmed after the initial assessment, according to your needs.</p><p>** The full cycle is a reduced rate in exchange for your commitment to attend class for the whole cycle: it is non-refundable. Hours lost to unjustified absences are not made up, and there is no refund if you do not reach the level by the end of the cycle.</p>',
+      switchLabel: 'Enrolment option', monthly: 'Monthly enrolment', cycle: 'Full cycle <span>SAVE 15%</span>',
+      notes: ['All prices are in CAD: 92.50 CAD a month for each weekly hour (2 h: 185 · 3 h: 277.50 · 4 h: 370 · 5 h: 462.50 · 6 h: 555 CAD/month), whatever your level. One-time enrolment fee of <strong>15 CAD</strong>, added to the first payment once your schedule is confirmed.', 'A full cycle covers one CEFR level, with a fixed reference length: a 6-month cycle on Essential (2 h/week), 5 months on Accelerated (3 or 4 h/week) and 4 months on Intensive (5 or 6 h/week). The exact pace is confirmed after the initial assessment.', 'The 15% discount applies when you enrol directly for the full cycle. If you start with one month and then choose the cycle, the discount is 10%.'],
+      attendance: {
+        title: 'Attendance',
+        items: ['If you give at least 48 hours’ notice, or justify your absence within the following 72 hours, we make up the lesson. Without notice or a valid reason, the hour is lost and cannot be made up.', '<strong>Monthly enrolment (4 weeks):</strong> 3 unjustified absences within the same 4 weeks void the month: progression to the next level is not validated and, to continue, the month must be paid again.', '<strong>Full cycle:</strong> no such penalty, but missed hours are neither made up nor refunded.'],
+        link: 'See the attendance rules in the conditions'
+      },
       conditions: 'Read the enrolment conditions'
     },
     outcome: {
       tag: 'Your result', title: 'The path ends<br> with a proven level.<span class="title-soft">Not with a used-up<br> calendar.</span>',
-      text: 'Flexible support, focused on your real progress, so you reach your goal with confidence and concrete proof of your level.',
-      benefits: ['A method that moves you forward, without needless pressure.', 'A pace that fits your life.', 'Preparation to prove your level in an official TEF or TCF exam.'],
-      cta: 'Assess my level', example: 'Example', sheet: 'Level report', name: 'Name', person: 'Alex <span>(example)</span>', date: 'Date', dateValue: 'Jun 12, 2026',
-      language: 'Language', french: 'French', global: 'Overall level', balance: 'Skills breakdown', motto: 'A real path. A level reached.',
-      caption: 'Example of a Pathway progress report.<br> Not an official TEF or TCF certificate.'
+      text: 'Flexible support, focused on your real progress, so you reach your goal with confidence and prove your level in the official exam.',
+      benefits: ['A method that moves you forward, without needless pressure.', 'A pace that fits your life.', 'Preparation to prove your level in the official TEF Canada or TCF Canada exam.'],
+      cta: 'Assess my level',
+      campus: {
+        label: 'Pathway Campus preview, example', name: 'Pathway Campus', example: 'Example', progress: 'B1 level progress', percent: '38%',
+        items: [['check', 'Unit 23 exercises', '10 of 10 · corrected'], ['clipboard', 'Unit 24 exercises', '6 of 10 · in progress'], ['map', 'Online manual', 'Unit 25 opens after your next lesson'], ['play', 'Recording of your Monday lesson', 'Available'], ['calendar', 'TEF / TCF Canada mock exam', 'At the end of B2']]
+      },
+      caption: 'Example of progress tracking in the Pathway Campus.<br> Pathway does not issue certificates: you prove your level in the official exam.'
     },
     faq: {
       tag: 'Questions?', title: 'Everything you need<br> to know to start<br> with peace of mind.', lead: 'We answer the most common questions so you can take the first step with confidence.',
       items: [
         ['Which pace is right for me?', '<p>It depends on your level, your availability and your goals. The initial assessment helps you choose the most suitable pace.</p>'],
-        ['Are the lessons really private?', '<p>Yes. Lessons are one-to-one and live, with a teacher who knows your path. Workshops give you other chances to practise, without replacing your private lessons.</p>'],
-        ['How does the initial assessment work?', '<p>A progressive test assesses your reading, your listening, and your grammar and vocabulary. Speaking is confirmed with a teacher. With these results and your availability, we set your starting point.</p><a class="source-link" href="{test}">Take the initial assessment →</a>'],
-        ['Do you prepare for the TEF and TCF?', '<p>Yes, the path focuses on the TEF and TCF Canada. We work on all four skills and include two full mock exams. The official exam is taken with the exam provider, not with Pathway.</p>'],
+        ['Are the lessons really one-to-one?', '<p>Yes. Every lesson is one-to-one and live on Zoom, with a teacher who knows your path. Between lessons, the Pathway Campus gives you exercises for each unit, your online manual that opens lesson by lesson, TEF and TCF Canada mock exams, and the recordings of your lessons.</p>'],
+        ['How does the initial assessment work?', '<p>A progressive test assesses your reading, your listening, and your grammar and vocabulary; it takes 12 to 30 minutes, depending on the version you choose. Speaking is confirmed with your teacher in the first lesson. With these results and your availability, we set your starting point.</p><a class="source-link" href="{test}">Take the initial assessment →</a>'],
+        ['Do you prepare students for the TEF Canada and TCF Canada?', '<p>Yes, the path focuses on the TEF Canada and the TCF Canada. We work on all four skills and include two full mock exams. The official exam is taken with the exam provider, not with Pathway.</p>'],
         ['How do I enrol?', '<p>Assess your level, then request a schedule with your preferred pace and availability. We confirm the schedule and the final price before any payment.</p><a class="source-link" href="{inscription}">Request a schedule →</a>']
       ],
-      inviteTitle: 'Ready to move<br> towards your goal?', inviteText: 'Assess your level and get a recommendation<br> suited to your starting point.', inviteSmall: 'No commitment · It only takes a few minutes.'
+      inviteTitle: 'Ready to move<br> towards your goal?', inviteText: 'Assess your level and get a recommendation<br> suited to your starting point.', inviteSmall: 'No commitment · The test takes 12 to 30 minutes.'
     },
     nclc: {
       tag: 'NCLC 7 goal', title: 'Why aim<br> <span class="title-muted">for NCLC 7?</span>',
@@ -230,8 +268,8 @@ const T = {
     },
     crs: {
       tag: 'Your Express Entry plan', title: 'Understand your<br> CRS score.',
-      text: ['The CRS ranks Express Entry profiles on several factors: age, education, languages and experience, among others.', 'The official calculator gives you an estimate based on your situation. It is neither an invitation nor an immigration decision.'],
-      cta: 'Calculate my CRS score', panel: 'What affects your score?',
+      text: ['The CRS ranks Express Entry profiles on several factors: age, education, languages and experience, among others.', 'IRCC’s official calculator gives you an estimate based on your situation. It is neither an invitation nor an immigration decision.'],
+      cta: 'IRCC’s official calculator', panel: 'What affects your score?',
       factors: [['Age', 'Your age range.'], ['Education', 'Your academic credentials.'], ['Official languages', 'Your results in French and English.'], ['Canadian work experience', 'Your work experience in Canada.']],
       note: 'Other criteria may also count depending on your profile.', source: 'Official source: IRCC CRS criteria'
     },
@@ -239,7 +277,7 @@ const T = {
       tag: 'Reading Express Entry rounds', title: 'Cut-offs change<br> from round to round.',
       text: ['IRCC publishes the results of every round of invitations. Here you can see the latest rounds available for the French category and the Canadian Experience Class.', 'These are historical figures, not a forecast or a guarantee for your profile.'],
       cta: 'See the official rounds', panel: 'Rounds published by IRCC', intro: 'Latest round available in each category.',
-      french: 'French-language proficiency', date: 'Round date', score: 'Minimum CRS', loading: 'Checking…', official: 'Official rounds',
+      french: 'French-language proficiency', date: 'Round date', score: 'Minimum CRS', cec: 'Canadian Experience Class', loading: 'Checking…', official: 'Official rounds',
       note: 'These are separate categories. These cut-offs can’t be used to calculate your own chance of receiving an invitation.',
       status: 'Checking IRCC’s official publications…', source: 'Official source: IRCC', noscript: 'Live figures need JavaScript. See the rounds at the official source.'
     },
@@ -252,7 +290,7 @@ const T = {
     },
     final: {
       tag: 'Your first step · No commitment', title: 'Your goal<br> deserves<br> <span>a clear<br> path.</span>',
-      text: 'In twenty minutes, we pin down your starting point, your deadline and the pace that truly fits your life.', cta: 'Assess my level', whatsapp: 'I’d rather talk on WhatsApp'
+      text: 'A 12- to 30-minute test pins down your starting point; then we set your deadline with you and the pace that truly fits your life.', cta: 'Assess my level', whatsapp: 'I’d rather talk on WhatsApp'
     },
     footer: {
       home: 'Pathway Language Solutions, home', motto: 'Real support<br> to go further in French.',
@@ -270,7 +308,7 @@ const T = {
       resultsTag: 'Offizielle Ergebnisse', resultsTitle: 'Echte Ergebnisse,<br> keine Versprechen.',
       resultsText: 'Screenshots aus dem offiziellen TCF-Portal, geteilt von unseren Lernenden, als sie ihre Ergebnisse erhielten.',
       resultsNote: 'Die offizielle Prüfung wird bei der Prüfungsstelle abgelegt, nicht bei Pathway.',
-      session: 'Prüfung vom', levelScale: 'GER-Niveau',
+      and: ' und ', session: 'Prüfung vom', levelScale: 'GER-Niveau',
       skills: { co: 'Hörverstehen', ce: 'Leseverstehen', eo: 'Mündlicher Ausdruck', ee: 'Schriftlicher Ausdruck' },
       reviewsTitle: 'Was sie auf Superprof schreiben', reviewsText: n => `${n} öffentliche Empfehlungen, zusammengefasst und aus dem Spanischen übersetzt.`, reviewsLink: 'Empfehlungen auf Superprof ansehen'
     },
@@ -279,28 +317,36 @@ const T = {
       lead: 'Die Ersteinstufung zeigt das Tempo, das zu Ihrem Niveau und Ihrem Termin passt, auch wenn die Antwort lautet, dass die Zeit nicht reicht.',
       billingTitle: 'Zwei Wege zur Anmeldung',
       billing: '<strong>Monatlich ohne Mindestlaufzeit oder ein ganzer Zyklus** mit 15 % Rabatt.</strong><p>Wenn Sie mit einem Monat beginnen und danach einen ganzen Zyklus buchen, beträgt der Rabatt auf den Zyklus 10 %.</p><p>* Stundenumfang und Preise sind Richtwerte: Das genaue Tempo wird nach der Ersteinstufung und nach Ihrem Bedarf bestätigt.</p><p>** Der ganze Zyklus ist ein reduzierter Tarif im Gegenzug für Ihre Verpflichtung, während des gesamten Zyklus am Unterricht teilzunehmen: Er wird nicht erstattet. Durch unentschuldigte Abwesenheiten verlorene Stunden werden nicht nachgeholt, und es gibt keine Erstattung, wenn Sie das Niveau am Ende des Zyklus nicht erreichen.</p>',
-      switchLabel: 'Anmeldeform', monthly: 'Monatliche Anmeldung', cycle: 'Zyklus* <span>15 % SPAREN</span>',
-      notes: ['Alle Preise in CAD. Einmalige Anmeldegebühr von <strong>15 CAD</strong>, die nach Bestätigung des Stundenplans zur ersten Zahlung hinzukommt.', 'Ein Zyklus entspricht einem GER-Niveau. Die Dauern sind Richtwerte ab A1 und werden nach der Ersteinstufung bestätigt.', 'Der Rabatt von 15 % gilt bei direkter Anmeldung für den ganzen Zyklus. Wenn Sie mit einem Monat beginnen und danach den Zyklus wählen, beträgt der Rabatt 10 %.'],
+      switchLabel: 'Anmeldeform', monthly: 'Monatliche Anmeldung', cycle: 'Ganzer Zyklus <span>15 % SPAREN</span>',
+      notes: ['Alle Preise in CAD: 92,50 CAD im Monat pro Wochenstunde (2 Std.: 185 · 3 Std.: 277,50 · 4 Std.: 370 · 5 Std.: 462,50 · 6 Std.: 555 CAD/Monat), unabhängig von Ihrem Niveau. Einmalige Anmeldegebühr von <strong>15 CAD</strong>, die nach Bestätigung des Stundenplans zur ersten Zahlung hinzukommt.', 'Ein ganzer Zyklus entspricht einem GER-Niveau und hat eine feste Richtdauer: 6 Monate im Tempo Basis (2 Std./Woche), 5 Monate in Beschleunigt (3 oder 4 Std./Woche) und 4 Monate in Intensiv (5 oder 6 Std./Woche). Das genaue Tempo wird nach der Ersteinstufung bestätigt.', 'Der Rabatt von 15 % gilt bei direkter Anmeldung für den ganzen Zyklus. Wenn Sie mit einem Monat beginnen und danach den Zyklus wählen, beträgt der Rabatt 10 %.'],
+      attendance: {
+        title: 'Anwesenheit',
+        items: ['Wenn Sie mindestens 48 Stunden vorher absagen oder Ihr Fehlen innerhalb der folgenden 72 Stunden begründen, holen wir die Stunde nach. Ohne Absage oder triftigen Grund verfällt die Stunde und wird nicht nachgeholt.', '<strong>Monatliche Anmeldung (4 Wochen):</strong> 3 unentschuldigte Fehlzeiten innerhalb derselben 4 Wochen machen den Monat ungültig: Der Übergang zum nächsten Niveau wird nicht bestätigt, und um weiterzumachen, muss der Monat erneut bezahlt werden.', '<strong>Ganzer Zyklus:</strong> ohne diese Sanktion, aber versäumte Stunden werden weder nachgeholt noch erstattet.'],
+        link: 'Anwesenheitsregeln in den Bedingungen lesen'
+      },
       conditions: 'Anmeldebedingungen lesen'
     },
     outcome: {
       tag: 'Ihr Ergebnis', title: 'Der Weg endet<br> mit einem nachgewiesenen Niveau.<span class="title-soft">Nicht mit einem<br> abgelaufenen Kalender.</span>',
-      text: 'Eine flexible Begleitung, ausgerichtet auf Ihre echten Fortschritte, damit Sie Ihr Ziel mit Zuversicht und einem konkreten Nachweis Ihres Niveaus erreichen.',
-      benefits: ['Eine Methode, die Sie voranbringt, ohne unnötigen Druck.', 'Ein Tempo, das sich Ihrem Leben anpasst.', 'Vorbereitung, um Ihr Niveau in einer offiziellen TEF- oder TCF-Prüfung nachzuweisen.'],
-      cta: 'Mein Niveau einstufen', example: 'Beispiel', sheet: 'Niveaubericht', name: 'Name', person: 'Alex <span>(Beispiel)</span>', date: 'Datum', dateValue: '12. Juni 2026',
-      language: 'Sprache', french: 'Französisch', global: 'Gesamtniveau', balance: 'Kompetenzbilanz', motto: 'Ein echter Weg. Ein erreichtes Niveau.',
-      caption: 'Beispiel eines pädagogischen Berichts von Pathway.<br> Kein offizielles TEF- oder TCF-Zertifikat.'
+      text: 'Eine flexible Begleitung, ausgerichtet auf Ihre echten Fortschritte, damit Sie Ihr Ziel mit Zuversicht erreichen und Ihr Niveau in der offiziellen Prüfung nachweisen.',
+      benefits: ['Eine Methode, die Sie voranbringt, ohne unnötigen Druck.', 'Ein Tempo, das sich Ihrem Leben anpasst.', 'Vorbereitung, um Ihr Niveau in der offiziellen Prüfung TEF Canada oder TCF Canada nachzuweisen.'],
+      cta: 'Mein Niveau bestimmen',
+      campus: {
+        label: 'Einblick in den Pathway Campus, Beispiel', name: 'Pathway Campus', example: 'Beispiel', progress: 'Fortschritt im Niveau B1', percent: '38 %',
+        items: [['check', 'Übungen zu Einheit 23', '10 von 10 · korrigiert'], ['clipboard', 'Übungen zu Einheit 24', '6 von 10 · in Bearbeitung'], ['map', 'Online-Lehrbuch', 'Einheit 25 wird nach Ihrer nächsten Stunde freigeschaltet'], ['play', 'Aufzeichnung Ihrer Stunde vom Montag', 'Verfügbar'], ['calendar', 'Probeprüfung TEF / TCF Canada', 'Am Ende von B2']]
+      },
+      caption: 'Beispiel für die Lernbegleitung im Pathway Campus.<br> Pathway stellt keine Zertifikate aus: Ihr Niveau weisen Sie in der offiziellen Prüfung nach.'
     },
     faq: {
       tag: 'Fragen?', title: 'Alles, was Sie wissen<br> müssen, um entspannt<br> zu beginnen.', lead: 'Wir beantworten die häufigsten Fragen, damit Sie den ersten Schritt mit Zuversicht gehen.',
       items: [
         ['Welches Tempo passt zu mir?', '<p>Das hängt von Ihrem Niveau, Ihrer Verfügbarkeit und Ihren Zielen ab. Die Ersteinstufung hilft Ihnen, das passende Tempo zu wählen.</p>'],
-        ['Ist der Unterricht wirklich privat?', '<p>Ja. Der Unterricht ist einzeln und live, mit einer Lehrkraft, die Ihren Weg kennt. Die Workshops bieten zusätzliche Übungsmöglichkeiten, ersetzen aber Ihren Einzelunterricht nicht.</p>'],
-        ['Wie funktioniert die Ersteinstufung?', '<p>Ein progressiver Test prüft Ihr Leseverstehen, Ihr Hörverstehen sowie Grammatik und Wortschatz. Der mündliche Ausdruck wird mit einer Lehrkraft bestätigt. Anhand dieser Ergebnisse und Ihrer Verfügbarkeit legen wir Ihren Ausgangspunkt fest.</p><a class="source-link" href="{test}">Ersteinstufung machen →</a>'],
-        ['Bereiten Sie auf TEF und TCF vor?', '<p>Ja, der Weg ist auf TEF und TCF Canada ausgerichtet. Wir trainieren alle vier Kompetenzen und bieten zwei vollständige Probeprüfungen. Die offizielle Prüfung wird bei der Prüfungsstelle abgelegt, nicht bei Pathway.</p>'],
+        ['Ist der Unterricht wirklich Einzelunterricht?', '<p>Ja. Jede Stunde ist Einzelunterricht, live über Zoom, mit einer Lehrkraft, die Ihren Weg kennt. Zwischen den Stunden bietet Ihnen der Pathway Campus Übungen zu jeder Einheit, Ihr Online-Lehrbuch, das sich Stunde für Stunde öffnet, Probeprüfungen für TEF und TCF Canada sowie die Aufzeichnungen Ihrer Stunden.</p>'],
+        ['Wie funktioniert die Ersteinstufung?', '<p>Ein progressiver Test prüft Ihr Leseverstehen, Ihr Hörverstehen sowie Grammatik und Wortschatz; er dauert je nach Version 12 bis 30 Minuten. Der mündliche Ausdruck wird in der ersten Stunde mit Ihrer Lehrkraft bestätigt. Anhand dieser Ergebnisse und Ihrer Verfügbarkeit legen wir Ihren Ausgangspunkt fest.</p><a class="source-link" href="{test}">Ersteinstufung machen →</a>'],
+        ['Bereitet Pathway auf den TEF Canada und den TCF Canada vor?', '<p>Ja, der Weg ist auf den TEF Canada und den TCF Canada ausgerichtet. Wir trainieren alle vier Kompetenzen und bieten zwei vollständige Probeprüfungen. Die offizielle Prüfung wird bei der Prüfungsstelle abgelegt, nicht bei Pathway.</p>'],
         ['Wie melde ich mich an?', '<p>Stufen Sie Ihr Niveau ein und fragen Sie einen Stundenplan an, mit Tempo und Verfügbarkeit. Wir bestätigen Stundenplan und Endpreis vor jeder Zahlung.</p><a class="source-link" href="{inscription}">Stundenplan anfragen →</a>']
       ],
-      inviteTitle: 'Bereit, Ihrem Ziel<br> näherzukommen?', inviteText: 'Stufen Sie Ihr Niveau ein und erhalten Sie eine Empfehlung<br> passend zu Ihrem Ausgangspunkt.', inviteSmall: 'Unverbindlich · Dauert nur wenige Minuten.'
+      inviteTitle: 'Bereit, Ihrem Ziel<br> näherzukommen?', inviteText: 'Stufen Sie Ihr Niveau ein und erhalten Sie eine Empfehlung<br> passend zu Ihrem Ausgangspunkt.', inviteSmall: 'Unverbindlich · Der Test dauert 12 bis 30 Minuten.'
     },
     nclc: {
       tag: 'Ziel NCLC 7', title: 'Warum<br> <span class="title-muted">NCLC 7 anstreben?</span>',
@@ -310,8 +356,8 @@ const T = {
     },
     crs: {
       tag: 'Ihr Express-Entry-Vorhaben', title: 'Ihren CRS-Punktwert<br> verstehen.',
-      text: ['Das CRS ordnet Express-Entry-Profile nach mehreren Faktoren: unter anderem Alter, Ausbildung, Sprachen und Berufserfahrung.', 'Der offizielle Rechner liefert eine Schätzung anhand Ihrer Situation. Er ist weder eine Einladung noch eine Einwanderungsentscheidung.'],
-      cta: 'Meinen CRS-Punktwert berechnen', panel: 'Was beeinflusst Ihren Punktwert?',
+      text: ['Das CRS ordnet Express-Entry-Profile nach mehreren Faktoren: unter anderem Alter, Ausbildung, Sprachen und Berufserfahrung.', 'Der offizielle Rechner von IRCC liefert eine Schätzung anhand Ihrer Situation. Er ist weder eine Einladung noch eine Einwanderungsentscheidung.'],
+      cta: 'Offizieller Rechner von IRCC', panel: 'Was beeinflusst Ihren Punktwert?',
       factors: [['Alter', 'Ihre Altersgruppe.'], ['Ausbildung', 'Ihre Abschlüsse.'], ['Amtssprachen', 'Ihre Ergebnisse in Französisch und Englisch.'], ['Berufserfahrung in Kanada', 'Ihre kanadische Arbeitserfahrung.']],
       note: 'Je nach Profil können weitere Kriterien zählen.', source: 'Offizielle Quelle: CRS-Kriterien von IRCC'
     },
@@ -319,7 +365,7 @@ const T = {
       tag: 'Express-Entry-Runden lesen', title: 'Die Grenzwerte ändern sich<br> von Runde zu Runde.',
       text: ['IRCC veröffentlicht die Ergebnisse jeder Einladungsrunde. Hier sehen Sie die neuesten verfügbaren Runden für die französische Kategorie und die Canadian Experience Class.', 'Das sind historische Daten, keine Prognose und keine Garantie für Ihr Profil.'],
       cta: 'Offizielle Runden ansehen', panel: 'Von IRCC veröffentlichte Runden', intro: 'Neueste verfügbare Runde je Kategorie.',
-      french: 'Französische Sprachkompetenz', date: 'Datum der Runde', score: 'Mindest-CRS', loading: 'Wird abgerufen…', official: 'Offizielle Runden',
+      french: 'Französische Sprachkompetenz', date: 'Datum der Runde', score: 'Mindest-CRS', cec: 'Canadian Experience Class', loading: 'Wird abgerufen…', official: 'Offizielle Runden',
       note: 'Das sind getrennte Kategorien. Aus diesen Grenzwerten lässt sich Ihre persönliche Chance auf eine Einladung nicht berechnen.',
       status: 'Offizielle Veröffentlichungen von IRCC werden abgerufen…', source: 'Offizielle Quelle: IRCC', noscript: 'Die Live-Zahlen benötigen JavaScript. Sehen Sie die Runden in der offiziellen Quelle.'
     },
@@ -332,7 +378,7 @@ const T = {
     },
     final: {
       tag: 'Ihr erster Schritt · Unverbindlich', title: 'Ihr Ziel<br> verdient<br> <span>einen klaren<br> Weg.</span>',
-      text: 'In zwanzig Minuten bestimmen wir Ihren Ausgangspunkt, Ihren Termin und das Tempo, das wirklich in Ihr Leben passt.', cta: 'Mein Niveau einstufen', whatsapp: 'Lieber per WhatsApp schreiben'
+      text: 'Ein Test von 12 bis 30 Minuten bestimmt Ihren Ausgangspunkt; danach legen wir mit Ihnen Ihren Termin und das Tempo fest, das wirklich in Ihr Leben passt.', cta: 'Mein Niveau bestimmen', whatsapp: 'Lieber per WhatsApp schreiben'
     },
     footer: {
       home: 'Pathway Language Solutions, Startseite', motto: 'Echte Begleitung,<br> um im Französischen weiterzukommen.',
@@ -352,7 +398,10 @@ const LEGAL = {
 };
 
 const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-const formatDate = (iso, locale) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`)).replace(/\.(?= \d)|(?<=[a-zé])\.(?= )/g, '');
+// Abbreviations keep their full stop (FR « 3 sept. 2026 », DE « 3. Sept. 2026 »).
+const formatDate = (iso, locale) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`));
+// Opening and closing quotation marks of the reviews in each language.
+const QUOTES = { es: ['“', '”'], fr: [`«${NNBSP}`, `${NNBSP}»`], en: ['“', '”'], de: ['„', '“'] };
 const SKILL_ORDER = ['co', 'ce', 'eo', 'ee'];
 const initials = name => name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
 
@@ -375,13 +424,13 @@ function resultCard(result, s, lang) {
   const r = runtime(lang).stories;
   const locale = runtime(lang).locale;
   const videoIndex = result.video ? VIDEO_TESTIMONIALS.findIndex(video => video.name === result.video) : -1;
-  // Always the four tests in the same order, so the cards line up; a test the
-  // screenshot does not show stays as an empty row.
-  const rows = SKILL_ORDER.map(key => {
-    const skill = result.skills.find(item => item.skill === key);
-    if (!skill) return `<li class="is-missing" title="${esc(r.missing)}"><span class="rs-skill">${esc(s.skills[key])}<span class="sr-only"> · ${esc(r.missing)}</span></span><span class="rs-score">—</span><b class="rs-level">—</b></li>`;
-    return `<li><span class="rs-skill">${esc(s.skills[key])}</span><span class="rs-score">${skill.score}<small>/${skill.max}</small></span><b class="rs-level level-${skill.level.toLowerCase()}">${esc(skill.level)}</b></li>`;
-  }).join('');
+  // The tests the screenshot shows, always in the same order; a partial
+  // screenshot says which tests it shows instead of empty rows.
+  const present = SKILL_ORDER.map(key => result.skills.find(item => item.skill === key)).filter(Boolean);
+  const rows = present.map(skill => `<li><span class="rs-skill">${esc(s.skills[skill.skill])}</span><span class="rs-score">${skill.score}<small>/${skill.max}</small></span><b class="rs-level level-${skill.level.toLowerCase()}">${esc(skill.level)}</b></li>`).join('');
+  const lower = text => (lang === 'de' ? text : text.charAt(0).toLowerCase() + text.slice(1));
+  const partial = present.length < SKILL_ORDER.length
+    ? `<p class="rs-partial">${esc(r.partial(present.map(skill => lower(s.skills[skill.skill])).join(s.and)))}</p>` : '';
   const meta = result.session ? formatDate(result.session, locale) : r.noDate;
   const links = [
     videoIndex >= 0 ? `<button class="text-link" type="button" data-story-open="${videoIndex}"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>${esc(r.watch(result.name))}</button>` : '',
@@ -390,13 +439,14 @@ function resultCard(result, s, lang) {
   return `<article class="result-card">
             <header><span class="rs-avatar" aria-hidden="true">${esc(initials(result.name))}</span><div><h4>${esc(result.name)}</h4><p>${esc(meta)}</p></div><span class="rs-exam">${esc(result.exam)}</span></header>
             <ul class="rs-skills" aria-label="${esc(s.levelScale)}">${rows}</ul>
-            ${reachesNclc7(result) ? `<p class="rs-goal"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${esc(r.nclc7)}</p>` : ''}
+            ${reachesNclc7(result) ? `<p class="rs-goal"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${esc(r.nclc7)}</p>` : ''}${partial}
             <footer>${links}</footer>
           </article>`;
 }
 
-function reviewCard(review, quote, r) {
-  return `<li><figure class="quote-card"><blockquote>“${esc(quote)}”</blockquote><figcaption><span class="rs-avatar" aria-hidden="true">${esc(initials(review.name))}</span><span><strong>${esc(review.name)}</strong><small>${esc(r.reviewSource)}</small></span></figcaption></figure></li>`;
+function reviewCard(review, quote, r, lang) {
+  const [open, close] = QUOTES[lang];
+  return `<li><figure class="quote-card"><blockquote>${open}${esc(quote)}${close}</blockquote><figcaption><span class="rs-avatar" aria-hidden="true">${esc(initials(review.name))}</span><span><strong>${esc(review.name)}</strong><small>${esc(r.reviewSource)}</small></span></figcaption></figure></li>`;
 }
 
 function stories(lang) {
@@ -405,7 +455,7 @@ function stories(lang) {
   const quotes = lang === 'es' ? WRITTEN_TESTIMONIALS.map(review => review.quote) : REVIEW_QUOTES[lang];
   if (quotes.length !== WRITTEN_TESTIMONIALS.length) throw new Error(`home-tail: ${lang} needs ${WRITTEN_TESTIMONIALS.length} review translations`);
   const half = Math.ceil(WRITTEN_TESTIMONIALS.length / 2);
-  const row = (from, to) => WRITTEN_TESTIMONIALS.slice(from, to).map((review, i) => reviewCard(review, quotes[from + i], r)).join('');
+  const row = (from, to) => WRITTEN_TESTIMONIALS.slice(from, to).map((review, i) => reviewCard(review, quotes[from + i], r, lang)).join('');
   const lane = (from, to, reverse) => `<div class="quote-lane${reverse ? ' is-reverse' : ''}"><ul class="quote-track">${row(from, to)}</ul><ul class="quote-track" aria-hidden="true">${row(from, to)}</ul></div>`;
   const stats = s.stats({ videos: VIDEO_TESTIMONIALS.length, reviews: WRITTEN_TESTIMONIALS.length, results: EXAM_RESULTS.length });
   return `<section class="v4-section stories-v4" id="historias" aria-labelledby="stories-title">
@@ -459,16 +509,29 @@ function pricing(lang) {
         <div class="pricing-grid" data-pricing-cards>${renderPricing('monthly', lang)}</div>
         <div class="pricing-notes">
           ${p.notes.map(note => `<p>${note}</p>`).join('\n          ')}
-          <a class="source-link" href="${pages(lang).conditions}">${p.conditions} <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="attendance-note" id="asistencia-resumen">
+          <h3>${p.attendance.title}</h3>
+          <ul>${p.attendance.items.map(item => `<li>${item}</li>`).join('')}</ul>
+          <p><a class="source-link" href="${pages(lang).conditions}#asistencia">${p.attendance.link} <span aria-hidden="true">→</span></a><a class="source-link" href="${pages(lang).conditions}">${p.conditions} <span aria-hidden="true">→</span></a></p>
         </div>
       </div>
     </section>`;
 }
 
+// A Campus screen in HTML and CSS: the follow-up of a level, never a
+// certificate (no name, date, logo or overall level).
+function campusPreview(c) {
+  const state = ['is-done', 'is-now', '', '', ''];
+  return `<div class="campus-screen" role="group" aria-label="${esc(c.label)}">
+            <header class="campus-top"><span class="campus-brand"><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg>${c.name}</span><span class="example-label">${c.example}</span></header>
+            <div class="campus-progress"><p><span>${c.progress}</span><strong>${c.percent}</strong></p><span class="campus-bar" aria-hidden="true"><i></i></span></div>
+            <ul class="campus-items">${c.items.map(([icon, title, meta], i) => `<li${state[i] ? ` class="${state[i]}"` : ''}><span class="campus-icon"><svg class="icon" aria-hidden="true"><use href="#i-${icon}"/></svg></span><span><strong>${title}</strong><small>${meta}</small></span></li>`).join('')}</ul>
+          </div>`;
+}
+
 function outcome(lang) {
   const o = T[lang].outcome;
-  const skills = T[lang].nclc.skills;
-  const levels = ['b2', 'b2', 'b1', 'b2'];
   return `<section class="v4-section outcome-v4" id="resultado" aria-labelledby="outcome-title">
       <div class="container outcome-grid">
         <div class="v4-copy">
@@ -478,17 +541,8 @@ function outcome(lang) {
           <ul class="result-benefits">${o.benefits.map(item => `<li>${item}</li>`).join('')}</ul>
           <a class="button button-terra" href="${pages(lang).test}" data-cta="v4-result-evaluation">${o.cta} ${arrow}</a>
         </div>
-        <figure class="result-scene">
-          <div class="result-folder" aria-hidden="true"></div>
-          <div class="result-sheet">
-            <header><img src="/v4/assets/pathway-logo.svg" width="180" height="42" alt="Pathway Language Solutions" loading="lazy"><span class="example-label">${o.example}</span></header>
-            <h3>${o.sheet}</h3>
-            <dl class="result-person"><div><dt>${o.name}</dt><dd>${o.person}</dd></div><div><dt>${o.date}</dt><dd>${o.dateValue}</dd></div><div><dt>${o.language}</dt><dd>${o.french}</dd></div></dl>
-            <div class="result-global"><span>${o.global}</span><strong>B2</strong></div>
-            <h4>${o.balance}</h4>
-            <div class="result-skills">${skills.map((label, i) => `<div><span>${label}</span><b>${levels[i].toUpperCase()}</b><i class="level-${levels[i]}"></i></div>`).join('')}</div>
-            <p class="result-motto">${o.motto}</p>
-          </div>
+        <figure class="result-scene campus-preview">
+          ${campusPreview(o.campus)}
           <figcaption>${o.caption}</figcaption>
         </figure>
       </div>
@@ -513,28 +567,29 @@ function faq(lang) {
 
 function information(lang) {
   const { nclc: n, crs: c, rounds: r, commitment: m } = T[lang];
-  const category = (key, title) => `<article class="round-category" data-ircc-category="${key}"><h4>${title}</h4><dl><div><dt>${r.date}</dt><dd data-round-date>${r.loading}</dd></div><div><dt>${r.score}</dt><dd data-round-score></dd></div></dl><a class="source-link" data-round-source href="${IRCC_ROUNDS}" target="_blank" rel="noopener noreferrer">${r.official}</a></article>`;
+  const links = ircc(lang);
+  const category = (key, title) => `<article class="round-category" data-ircc-category="${key}"><h4>${title}</h4><dl><div><dt>${r.date}</dt><dd data-round-date>${r.loading}</dd></div><div><dt>${r.score}</dt><dd data-round-score></dd></div></dl><a class="source-link" data-round-source href="${links.rounds}" target="_blank" rel="noopener noreferrer">${r.official}</a></article>`;
   return `<section class="v4-section information-v4" id="objetivo-nclc7" aria-labelledby="nclc-title">
       <div class="container information-grid">
         <div class="v4-copy"><p class="section-tag">${n.tag}</p><h2 id="nclc-title">${n.title}</h2>${n.text.map(p => `<p>${p}</p>`).join('')}<a class="text-link" href="${pages(lang).nclc}">${n.link} ${arrow}</a></div>
-        <div class="information-panel nclc-panel"><h3>${n.panel}</h3><p class="panel-intro">${n.intro}</p><dl class="nclc-skills">${n.skills.map(skill => `<div><dt>${skill}</dt><dd>NCLC 7+</dd></div>`).join('')}</dl><p class="panel-note terra-note">${n.note}</p><a class="source-link" href="${IRCC_CATEGORY}" target="_blank" rel="noopener noreferrer">${n.source} ${out}</a></div>
+        <div class="information-panel nclc-panel"><h3>${n.panel}</h3><p class="panel-intro">${n.intro}</p><dl class="nclc-skills">${n.skills.map(skill => `<div><dt>${skill}</dt><dd>NCLC 7+</dd></div>`).join('')}</dl><p class="panel-note terra-note">${n.note}</p><a class="source-link" href="${links.category}" target="_blank" rel="noopener noreferrer">${n.source} ${out}</a></div>
       </div>
     </section>
 
     <section class="v4-section information-v4" id="crs" aria-labelledby="crs-title">
       <div class="container information-grid">
-        <div class="v4-copy"><p class="section-tag">${c.tag}</p><h2 id="crs-title">${c.title}</h2>${c.text.map(p => `<p>${p}</p>`).join('')}<a class="button button-primary" data-ircc-calculator href="${IRCC_CALCULATOR}" target="_blank" rel="noopener noreferrer">${c.cta} ${out}</a></div>
-        <div class="information-panel crs-panel"><h3>${c.panel}</h3><ol class="factor-list">${c.factors.map(([title, text], i) => `<li><span>0${i + 1}</span><div><h4>${title}</h4><p>${text}</p></div></li>`).join('')}</ol><p class="panel-note">${c.note}</p><a class="source-link" data-ircc-criteria href="${IRCC_CRITERIA}" target="_blank" rel="noopener noreferrer">${c.source} ${out}</a></div>
+        <div class="v4-copy"><p class="section-tag">${c.tag}</p><h2 id="crs-title">${c.title}</h2>${c.text.map(p => `<p>${p}</p>`).join('')}<a class="button button-outline" data-ircc-calculator href="${links.calculator}" target="_blank" rel="noopener noreferrer">${c.cta} ${out}</a></div>
+        <div class="information-panel crs-panel"><h3>${c.panel}</h3><ol class="factor-list">${c.factors.map(([title, text], i) => `<li><span>0${i + 1}</span><div><h4>${title}</h4><p>${text}</p></div></li>`).join('')}</ol><p class="panel-note">${c.note}</p><a class="source-link" data-ircc-criteria href="${links.criteria}" target="_blank" rel="noopener noreferrer">${c.source} ${out}</a></div>
       </div>
     </section>
 
     <section class="v4-section information-v4 rounds-v4" id="rondas-ircc" aria-labelledby="rounds-title">
       <div class="container information-grid">
-        <div class="v4-copy"><p class="section-tag">${r.tag}</p><h2 id="rounds-title">${r.title}</h2>${r.text.map(p => `<p>${p}</p>`).join('')}<a class="button button-primary" href="${IRCC_ROUNDS}" target="_blank" rel="noopener noreferrer">${r.cta} ${out}</a></div>
+        <div class="v4-copy"><p class="section-tag">${r.tag}</p><h2 id="rounds-title">${r.title}</h2>${r.text.map(p => `<p>${p}</p>`).join('')}<a class="button button-outline" href="${links.rounds}" target="_blank" rel="noopener noreferrer">${r.cta} ${out}</a></div>
         <div class="information-panel rounds-panel" data-ircc-rounds aria-busy="true"><h3>${r.panel}</h3><p class="panel-intro">${r.intro}</p>
           ${category('french', r.french)}
-          ${category('cec', 'Canadian Experience Class')}
-          <p class="panel-note">${r.note}</p><p class="rounds-status" data-ircc-status role="status">${r.status}</p><p class="rounds-updated" data-ircc-updated></p><a class="source-link" data-ircc-rounds-page href="${IRCC_ROUNDS}" target="_blank" rel="noopener noreferrer">${r.source} ${out}</a>
+          ${category('cec', r.cec)}
+          <p class="panel-note">${r.note}</p><p class="rounds-status" data-ircc-status role="status">${r.status}</p><p class="rounds-updated" data-ircc-updated></p><a class="source-link" href="${links.rounds}" target="_blank" rel="noopener noreferrer">${r.source} ${out}</a>
           <noscript><p>${r.noscript}</p></noscript>
         </div>
       </div>
@@ -542,7 +597,7 @@ function information(lang) {
 
     <section class="v4-section information-v4 commitment-v4" id="compromiso" aria-labelledby="commitment-title">
       <div class="container information-grid">
-        <div class="v4-copy"><p class="section-tag">${m.tag}</p><h2 id="commitment-title">${m.title}</h2>${m.text.map(p => `<p>${p}</p>`).join('')}<a class="button button-primary" href="${pages(lang).conditions}#compromiso-nclc7" data-cta="v4-commitment-conditions">${m.cta} ${arrow}</a></div>
+        <div class="v4-copy"><p class="section-tag">${m.tag}</p><h2 id="commitment-title">${m.title}</h2>${m.text.map(p => `<p>${p}</p>`).join('')}<a class="button button-outline" href="${pages(lang).conditions}#compromiso-nclc7" data-cta="v4-commitment-conditions">${m.cta} ${arrow}</a></div>
         <div class="information-panel commitment-panel"><ol class="commitment-steps">${m.steps.map(([title, text], i) => `<li><span>0${i + 1}</span><div><h3>${title}</h3><p>${text}</p></div></li>`).join('')}</ol><p class="panel-note">${m.note}</p></div>
       </div>
     </section>`;
@@ -575,7 +630,8 @@ function closing(lang) {
 /** Markup that replaces HOME_TAIL_MARKER (from the stories to the end of the footer). */
 export function homeTail(lang) {
   if (!T[lang]) throw new Error(`home-tail: unknown language ${lang}`);
-  return [stories(lang), pricing(lang), outcome(lang), faq(lang), information(lang), closing(lang)].join('\n\n    ');
+  const markup = [stories(lang), pricing(lang), outcome(lang), faq(lang), information(lang), closing(lang)].join('\n\n    ');
+  return lang === 'fr' ? frenchTypography(markup) : markup;
 }
 
 export const LEGAL_PATHS = LEGAL;

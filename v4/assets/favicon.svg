@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title"><title id="title">Pathway</title><path fill="#122B26" d="M48 8 64 22H32Z M35 25h26v16H35Z M31 43h34v5H31Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title"><title id="title">Pathway</title><rect width="96" height="96" rx="20" fill="#FFFAF2"/>
+    <g transform="translate(6.72 4.8) scale(.86)"><path fill="#122B26" d="M48 8 64 22H32Z M35 25h26v16H35Z M31 43h34v5H31Z"/>
     <path fill="#122B26" fill-rule="evenodd" d="M37 50H59L64 80H32Z M44 67a4 4 0 0 1 8 0v13h-8Z"/>
-    <path fill="#122B26" d="M41 29h14v8H41Z"/>
-    <path d="M17 88Q48 74 79 88" fill="none" stroke="#122B26" stroke-width="4" stroke-linecap="round"/></svg>
+    <path fill="#C76F56" d="M41 29h14v8H41Z"/>
+    <path d="M17 88Q48 74 79 88" fill="none" stroke="#122B26" stroke-width="4" stroke-linecap="round"/></g></svg>

@@ -25,7 +25,7 @@ function setupPricing() {
   cards.addEventListener('click', event => {
     const link = event.target.closest('[data-chosen-plan]');
     if (!link) return;
-    try { sessionStorage.setItem('pathwayV4Selection', JSON.stringify({ plan: link.dataset.chosenPlan, billing: link.dataset.chosenBilling })); } catch { /* URL parameters preserve the choice without storage. */ }
+    try { sessionStorage.setItem('pathwayV4Selection', JSON.stringify({ plan: link.dataset.chosenPlan, billing: link.dataset.chosenBilling, hours: Number(link.dataset.chosenHours) })); } catch { /* URL parameters preserve the choice without storage. */ }
   });
   select('monthly', false);
 }

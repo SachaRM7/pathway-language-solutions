@@ -23,8 +23,8 @@ const translations = {
     resumeAnimation: 'Reprendre l’animation',
     skills: { reading: 'compréhension écrite', listening: 'compréhension orale', grammarVocabulary: 'grammaire et vocabulaire' },
     yourResult: 'Votre résultat',
-    estimatedLevel: level => `Votre niveau estimé : ${level}.`,
-    firstCyclePriority: skill => `Priorité du premier cycle : ${skill}.`
+    estimatedLevel: level => `Votre niveau estimé : ${level}.`,
+    firstCyclePriority: skill => `Priorité du premier cycle : ${skill}.`
   },
   en: {
     menuOpen: 'Open menu',
@@ -33,7 +33,7 @@ const translations = {
     of: 'of',
     pauseAnimation: 'Pause animation',
     resumeAnimation: 'Resume animation',
-    skills: { reading: 'written comprehension', listening: 'listening comprehension', grammarVocabulary: 'grammar and vocabulary' },
+    skills: { reading: 'reading', listening: 'listening', grammarVocabulary: 'grammar and vocabulary' },
     yourResult: 'Your result',
     estimatedLevel: level => `Your estimated level: ${level}.`,
     firstCyclePriority: skill => `First-cycle priority: ${skill}.`
@@ -58,7 +58,7 @@ function setupNavigation() {
   const toggle = document.querySelector('[data-menu-toggle]');
   const menu = document.querySelector('[data-menu]');
   const menuLabel = toggle.querySelector('[data-menu-label]');
-  const desktop = window.matchMedia('(min-width: 1024px)');
+  const desktop = window.matchMedia('(min-width: 1200px)');
 
   function setOpen(open, returnFocus = false) {
     toggle.setAttribute('aria-expanded', String(open));
