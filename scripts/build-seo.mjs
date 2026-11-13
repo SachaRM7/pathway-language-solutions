@@ -310,9 +310,10 @@ function landscapePicture(markup) {
 
 async function monthlyPrices(rootDir) {
   const content = await readFile(join(rootDir, 'v4', 'content.js'), 'utf8');
-  const block = (content.match(/MONTHLY_AMOUNTS\s*=\s*Object\.freeze\(\{([^}]*)\}\)/) || [])[1] || '';
+  // Monthly price = price per weekly hour × hours of the plan's reference intensity (2, 4, 6 h).
+  const rate = Number((content.match(/PRICE_PER_WEEKLY_HOUR\s*=\s*([\d.]+)/) || [])[1]);
   const prices = {};
-  for (const [, key, value] of block.matchAll(/(\w+)\s*:\s*([\d.]+)/g)) prices[key] = Number(value);
+  for (const plan of PLANS) prices[plan.key] = Math.round(rate * plan.hours * 100) / 100;
   for (const plan of PLANS) if (!(prices[plan.key] > 0)) throw new Error(`v4/content.js: no monthly price for ${plan.key}.`);
   return prices;
 }
