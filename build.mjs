@@ -7,6 +7,8 @@ import { buildV4Programs } from './scripts/build-v4-programs.mjs';
 import { makeV4Default } from './scripts/build-v4-default.mjs';
 import { buildV4Pages } from './scripts/build-v4-pages.mjs';
 import { buildCampus } from './scripts/build-campus.mjs';
+import { finalizeSite } from './scripts/build-seo.mjs';
+import { verifySite } from './scripts/verify-site.mjs';
 
 const root = process.cwd();
 const dist = resolve(root, 'dist');
@@ -55,7 +57,8 @@ const assets = [
   'privacidad.html', 'politique-confidentialite.html', 'condiciones.html', 'conditions-nclc7.html',
   'preparacion-tef-canada.html', 'recursos.html', 'nclc-7.html', 'tefaq-quebec.html',
   'pathway-mark.svg', 'theme.css', 'guide.css', 'theme.js', 'site-config.js', 'analytics.js',
-  'og-pathway.png', 'robots.txt', 'sitemap.xml', 'crs-engine.js', 'ircc-data.js',
+  'og-pathway.png', 'og-pathway-es.jpg', 'og-pathway-fr.jpg', 'og-pathway-en.jpg', 'og-pathway-de.jpg',
+  'favicon.ico', 'apple-touch-icon.png', 'pathway-logo-512.png', '404.html', 'robots.txt', 'crs-engine.js', 'ircc-data.js',
   'pathway-v2.css', 'pathway-page-shell.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
   'placement-test.css', 'test.css', 'placement-test.js', 'test.js', 'placement-scoring.js',
   'inscription.html', 'inscription.js', 'inscription.css', 'resource.css', 'resource.js',
@@ -151,8 +154,14 @@ await buildV4Pages({ outDir: client, rootDir: root });
 const v4Default = await makeV4Default({ outDir: client });
 // The student and teacher campus is a separate app under /campus/ (noindex, invitation only).
 const campus = await buildCampus({ outDir: client, rootDir: root });
+// Redirects, share tags, hreflang, JSON-LD, sitemap and hosting headers, then
+// a check of the result (scripts/verify-site.mjs).
+const site = await finalizeSite({ outDir: client, rootDir: root, v4Destinations: v4Default.destinations });
+const report = await verifySite({ outDir: client });
 
 const generated = assets.length + 2 + Object.keys(LOCALES).length * pageNames.length;
 console.log(`Built ${generated} static assets plus ${Object.keys(LOCALES).length} locale trees and the public program pages for Pathway.`);
 console.log(`Campus published at /campus/ and linked from ${campus.linked} page headers.`);
+console.log(`Sitemap: ${site.indexable.length} indexable pages (lastmod ${site.lastmod}); ${site.redirects.size} old addresses redirect; ${site.removed.length} unused files left out.`);
+for (const warning of report.warnings) console.warn(`warning: ${warning}`);
 console.log(`V4 design served at the root: ${v4Default.promoted.length} pages; ${v4Default.redirects.length} unfinished V4 pages keep the current-site page${v4Default.redirects.length ? ` (${v4Default.redirects.join(", ")})` : ""}.`);

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#F5EFE4">
+  <title>Página no encontrada | Pathway</title>
+  <link rel="icon" type="image/svg+xml" href="/v4/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <style>
+    @font-face { font-family: Outfit; src: url('/v4/assets/fonts/Outfit-variable.ttf') format('truetype'); font-weight: 100 900; font-display: swap; }
+    @font-face { font-family: 'DM Sans'; src: url('/v4/assets/fonts/DM-Sans-variable.ttf') format('truetype'); font-weight: 100 1000; font-display: swap; }
+    :root {
+      --cream: #f5efe4; --paper: #fffaf2; --ink: #122b26; --sage: #cad8c3; --terracotta: #c76f56;
+      --action: #a34e3b; --muted: #50625c; --line: color-mix(in srgb, var(--ink) 15%, var(--paper));
+      --gutter: clamp(16px, 4.7vw, 64px);
+      color-scheme: light; font-family: 'DM Sans', Arial, sans-serif; color: var(--ink); background: var(--cream);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-size: 16px; line-height: 1.6; background: var(--cream); }
+    a { color: inherit; text-underline-offset: 5px; }
+    a:focus-visible { outline: 3px solid var(--action); outline-offset: 4px; }
+    h1, h2, p, ul { margin: 0; }
+    h1, h2 { font-family: Outfit, Arial, sans-serif; font-weight: 600; letter-spacing: -.035em; text-wrap: pretty; }
+    .container { width: min(1040px, calc(100% - var(--gutter) * 2)); margin-inline: auto; }
+    header { background: var(--paper); border-bottom: 1px solid var(--line); }
+    header .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 88px; }
+    .brand img { display: block; width: 200px; height: auto; }
+    .langs { display: flex; gap: 4px; list-style: none; padding: 0; font-weight: 600; font-size: 14px; }
+    .langs a { display: inline-block; padding: 8px 10px; border-radius: 999px; text-decoration: none; }
+    .langs a:hover { background: var(--cream); }
+    main { flex: 1; padding-block: clamp(40px, 8vw, 96px); }
+    .code { font-family: Outfit, Arial, sans-serif; font-weight: 600; font-size: 15px; letter-spacing: .14em; color: var(--action); text-transform: uppercase; }
+    .lead h1 { margin-top: 12px; font-size: clamp(38px, 5vw, 58px); line-height: 1.05; font-weight: 700; }
+    .lead p { margin-top: 18px; max-width: 620px; color: var(--muted); font-size: 18px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; padding: 0; list-style: none; }
+    .actions a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font-weight: 600; text-decoration: none; }
+    .actions li:first-child a { background: var(--action); border-color: var(--action); color: #fff; }
+    .actions a:hover { border-color: var(--ink); }
+    .actions li:first-child a:hover { background: #8d4232; }
+    .others { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: clamp(48px, 8vw, 80px); }
+    .others section { padding: 20px 22px; border-radius: 20px; background: var(--paper); border: 1px solid var(--line); }
+    .others .code { font-size: 12px; }
+    .others h2 { margin-top: 6px; font-size: 21px; line-height: 1.2; }
+    .others p { margin-top: 8px; color: var(--muted); font-size: 15px; }
+    .others .actions { margin-top: 12px; gap: 8px; }
+    .others .actions a { min-height: 40px; padding: 0 16px; font-size: 14px; }
+    footer { padding-block: 28px; background: var(--ink); color: var(--paper); font-size: 14px; }
+    footer .container { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+    @media (max-width: 767px) {
+      header .container { min-height: 72px; }
+      .brand img { width: 150px; }
+      .langs a { padding: 6px 7px; }
+      .others { grid-template-columns: 1fr; }
+      .actions a { width: 100%; justify-content: center; }
+      .actions li { flex: 1 1 100%; }
+      .others .actions li { flex: 0 0 auto; }
+      .others .actions a { width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a class="brand" href="/" aria-label="Pathway Language Solutions"><img src="/v4/assets/pathway-logo.svg" alt="Pathway Language Solutions" width="405" height="112"></a>
+      <ul class="langs" aria-label="Idioma · Langue · Language · Sprache">
+        <li><a href="/" lang="es" hreflang="es">ES</a></li>
+        <li><a href="/fr/" lang="fr" hreflang="fr">FR</a></li>
+        <li><a href="/en/" lang="en" hreflang="en">EN</a></li>
+        <li><a href="/de/" lang="de" hreflang="de">DE</a></li>
+      </ul>
+    </div>
+  </header>
+  <main class="container">
+    <div data-pages>
+      <section class="lead" lang="es" data-lang="es">
+        <p class="code">Error 404</p>
+        <h1>Esta página no existe</h1>
+        <p>La dirección puede haber cambiado o tener un error de escritura. Desde aquí puedes retomar tu ruta.</p>
+        <ul class="actions">
+          <li><a href="/">Ir al inicio</a></li>
+          <li><a href="/test-placement.html">Test de nivel gratis</a></li>
+          <li><a href="/#planes">Planes y precios</a></li>
+          <li><a href="/calculador.html">Calculadora CRS</a></li>
+        </ul>
+      </section>
+      <div class="others">
+        <section lang="fr" data-lang="fr">
+          <p class="code">Erreur 404</p>
+          <h2>Cette page n’existe pas</h2>
+          <p>L’adresse a peut-être changé ou contient une faute de frappe. Vous pouvez reprendre votre parcours ici.</p>
+          <ul class="actions">
+            <li><a href="/fr/">Accueil</a></li>
+            <li><a href="/fr/test.html">Test de niveau</a></li>
+            <li><a href="/fr/calculateur-crs.html">Calculateur CRS</a></li>
+          </ul>
+        </section>
+        <section lang="en" data-lang="en">
+          <p class="code">Error 404</p>
+          <h2>This page doesn’t exist</h2>
+          <p>The address may have changed or contain a typo. You can pick up your path from here.</p>
+          <ul class="actions">
+            <li><a href="/en/">Home</a></li>
+            <li><a href="/en/test.html">Placement test</a></li>
+            <li><a href="/en/calculateur-crs.html">CRS calculator</a></li>
+          </ul>
+        </section>
+        <section lang="de" data-lang="de">
+          <p class="code">Fehler 404</p>
+          <h2>Diese Seite gibt es nicht</h2>
+          <p>Die Adresse hat sich vielleicht geändert oder enthält einen Tippfehler. Von hier aus geht es weiter.</p>
+          <ul class="actions">
+            <li><a href="/de/">Startseite</a></li>
+            <li><a href="/de/test.html">Einstufungstest</a></li>
+            <li><a href="/de/calculateur-crs.html">CRS-Rechner</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="container">
+      <span>Pathway Language Solutions</span>
+      <span><a data-contact href="mailto:contacto@pathway-languages.com">contacto@pathway-languages.com</a></span>
+    </div>
+  </footer>
+  <script>
+    // The page language follows the address (/fr/…, /en/…, /de/…): its block becomes the main one.
+    (() => {
+      const lang = (location.pathname.match(/^\/(fr|en|de)(\/|$)/) || [])[1];
+      if (!lang) return;
+      const lead = document.querySelector('.lead');
+      const other = document.querySelector(`.others [data-lang="${lang}"]`);
+      const titles = { fr: 'Page introuvable | Pathway', en: 'Page not found | Pathway', de: 'Seite nicht gefunden | Pathway' };
+      const retag = (node, level) => {
+        const old = node.querySelector('h1, h2');
+        const fresh = document.createElement(level);
+        fresh.textContent = old.textContent;
+        old.replaceWith(fresh);
+        return node;
+      };
+      const parked = retag(lead.cloneNode(true), 'h2');
+      const promoted = retag(other.cloneNode(true), 'h1');
+      parked.removeAttribute('class');
+      promoted.className = 'lead';
+      lead.replaceWith(promoted);
+      other.replaceWith(parked);
+      document.documentElement.lang = lang;
+      document.title = titles[lang];
+      const mail = document.querySelector('[data-contact]');
+      mail.href = 'mailto:contact@pathway-languages.com';
+      mail.textContent = 'contact@pathway-languages.com';
+      document.querySelector('.brand').href = `/${lang}/`;
+    })();
+  </script>
+</body>
+</html>

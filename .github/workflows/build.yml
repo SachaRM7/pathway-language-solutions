@@ -1,0 +1,25 @@
+# Builds the site on every pull request and push to main: build.mjs and its
+# checks (scripts/verify-site.mjs: sitemap, share tags, hreflang, JSON-LD,
+# redirects, 404 page) must pass before Cloudflare deploys it.
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run build
+      - run: node scripts/verify-v4-ircc.mjs
+      - run: node scripts/verify-v4-routes.mjs

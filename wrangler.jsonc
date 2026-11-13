@@ -13,8 +13,11 @@
     // index.html from the Worker (see worker/index.js).
     "html_handling": "none",
     "not_found_handling": "none",
-    // The IRCC rounds file is served by the Worker (live from canada.ca, cached 4 h).
-    "run_worker_first": ["/v4/data/ircc-rounds.json"]
+    // The Worker runs first for: the IRCC rounds file (live from canada.ca, cached 4 h);
+    // every page, for the https/www and old-address redirects and the security headers;
+    // audio and video, for byte-range (206) answers. Other files are served directly,
+    // with the headers of dist/client/_headers. See worker/index.js.
+    "run_worker_first": ["/*.html", "/assets/videos/*", "/assets/audio/*", "/v4/data/ircc-rounds.json"]
   },
   // v4/ircc-rounds.js builds its browser snapshot URL from import.meta.url at load time.
   "define": {
