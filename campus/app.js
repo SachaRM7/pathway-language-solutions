@@ -640,7 +640,7 @@ function viewInicio() {
         <div><p class="big num">${tx}<span style="font-size:18px;color:var(--lilac-ink)"> / ${p.daily_goal} XP</span></p><p style="margin-top:8px;font-weight:600;color:color-mix(in srgb,var(--lilac-ink) 70%,var(--ink))">Nivel ${li.lvl} · ${fmt(p.xp_total)} XP</p></div></div>
     </article>
     <article class="tile c-8">
-      <div class="tile-head"><h2>Camino al NCLC 7</h2><a class="pill ghost" href="https://pathway-languages.com/calculador.html" target="_blank" rel="noopener">Calculador CRS ${icon('arrow-up')}</a></div>
+      <div class="tile-head"><h2>Camino al NCLC 7</h2><a class="pill ghost" href="https://pathway-languages.com/calculador.html" target="_blank" rel="noopener">Calculadora CRS ${icon('arrow-up')}</a></div>
       <div class="levels">${LEVELS.map((l, i) => {
         const n = A.units.filter(u => u.level === l && done.has(u.id)).length;
         const pct = i < lvIdx ? 100 : n / 64 * 100;
