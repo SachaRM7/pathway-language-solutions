@@ -3,17 +3,21 @@
 // (conditions, privacy) are not here: their text is read from the current
 // pages at build time so it can never drift from the published terms.
 
+// File name of each page per language: Spanish at the root, French under
+// /fr/, English and German pages under /en/ and /de/ with English and German
+// names (their former French or Spanish names redirect: RENAMED in
+// scripts/build-seo.mjs). The program folders are in build-v4-programs.mjs.
 export const ROUTES = {
   nclc: { es: 'nclc-7.html', fr: 'nclc-7.html', en: 'nclc-7.html', de: 'nclc-7.html' },
-  tef: { es: 'preparacion-tef-canada.html', fr: 'preparacion-tef-canada.html', en: 'preparacion-tef-canada.html', de: 'preparacion-tef-canada.html' },
-  conditions: { es: 'condiciones.html', fr: 'conditions-nclc7.html', en: 'conditions-nclc7.html', de: 'conditions-nclc7.html' },
-  privacy: { es: 'privacidad.html', fr: 'politique-confidentialite.html', en: 'politique-confidentialite.html', de: 'politique-confidentialite.html' },
+  tef: { es: 'preparacion-tef-canada.html', fr: 'preparacion-tef-canada.html', en: 'tef-canada-preparation.html', de: 'tef-canada-vorbereitung.html' },
+  conditions: { es: 'condiciones.html', fr: 'conditions-nclc7.html', en: 'terms.html', de: 'bedingungen.html' },
+  privacy: { es: 'privacidad.html', fr: 'politique-confidentialite.html', en: 'privacy-policy.html', de: 'datenschutz.html' },
   cookies: { es: 'cookies.html', fr: 'cookies.html', en: 'cookies.html', de: 'cookies.html' },
   legal: { es: 'aviso-legal.html', fr: 'mentions-legales.html', en: 'legal-notice.html', de: 'rechtliche-hinweise.html' },
   test: { es: 'test-placement.html', fr: 'test.html', en: 'test.html', de: 'test.html' },
-  calculator: { es: 'calculador.html', fr: 'calculateur-crs.html', en: 'calculateur-crs.html', de: 'calculateur-crs.html' },
+  calculator: { es: 'calculador.html', fr: 'calculateur-crs.html', en: 'crs-calculator.html', de: 'crs-rechner.html' },
   inscription: { es: 'inscription.html', fr: 'inscription.html', en: 'inscription.html', de: 'inscription.html' },
-  resources: { es: 'recursos.html', fr: 'ressources.html', en: 'ressources.html', de: 'ressources.html' },
+  resources: { es: 'recursos.html', fr: 'ressources.html', en: 'resources.html', de: 'ressourcen.html' },
   tefaq: { es: 'tefaq-quebec.html', fr: 'tefaq-quebec.html', en: 'tefaq-quebec.html', de: 'tefaq-quebec.html' }
 };
 
@@ -290,8 +294,9 @@ GUIDES.tefaq = {
   }
 };
 
-// Resources hub (/recursos.html, /<lang>/ressources.html): guides, tools,
-// programs and official sources in one place. It no longer repeats the TEF
+// Resources hub (/recursos.html, /fr/ressources.html, /en/resources.html,
+// /de/ressourcen.html): guides, tools, programs and official sources in one
+// place. It no longer repeats the TEF
 // Canada guide. `href` is a page key of ROUTES, 'program:<level>', or an
 // official IRCC page (IRCC.<name>).
 export const RESOURCES = {

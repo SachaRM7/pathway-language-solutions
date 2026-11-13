@@ -9,10 +9,13 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { icon } from '../v4/icons.js';
 import { esc, prefix } from './build-v4-programs.mjs';
-import { UI } from './v4-pages-content.mjs';
+import { ROUTES, UI } from './v4-pages-content.mjs';
+import { localeFile } from '../i18n/locale-pages.mjs';
 
 const VERSION = 'flows-1';
 
+// Source page of each flow: `es` in the repository, `locale` the page key of
+// i18n/locale-pages.mjs (its file name in each language is localeFile()).
 export const FLOWS = {
   test: { es: 'test-placement.html', locale: 'test.html' },
   calculator: { es: 'calculador.html', locale: 'calculateur-crs.html' },
@@ -74,11 +77,11 @@ function absolutize(html, base) {
 function toV4(html, lang) {
   const local = lang === 'es' ? '' : `${lang}/`;
   const map = {
-    [`/${local}test.html`]: `${prefix(lang)}${lang === 'es' ? 'test-placement.html' : 'test.html'}`,
+    [`/${local}test.html`]: `${prefix(lang)}${ROUTES.test[lang]}`,
     '/test-placement.html': `${prefix('es')}test-placement.html`,
     [`/${local}inscription.html`]: `${prefix(lang)}inscription.html`,
     '/privacidad.html': '/v4/privacidad.html',
-    [`/${local}politique-confidentialite.html`]: `${prefix(lang)}politique-confidentialite.html`,
+    [`/${local}${ROUTES.privacy[lang]}`]: `${prefix(lang)}${ROUTES.privacy[lang]}`,
     [`/${local}`]: prefix(lang),
     '/index-v2.html': '/v4/'
   };
@@ -181,7 +184,7 @@ function inscriptionMain(lang, main) {
 
 export async function renderFlow({ flow, lang, outDir, rootDir, homeMarkup }) {
   const { shell } = await import('./build-v4-pages.mjs');
-  const name = lang === 'es' ? FLOWS[flow].es : FLOWS[flow].locale;
+  const name = lang === 'es' ? FLOWS[flow].es : localeFile(lang, FLOWS[flow].locale);
   // Spanish sources are the repository pages (the enrollment page is the V4
   // route page, which already carries the plan/billing preselection adapter);
   // other languages are the locale pages written earlier in this build.

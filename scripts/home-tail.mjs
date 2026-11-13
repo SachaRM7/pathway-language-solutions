@@ -393,8 +393,8 @@ const T = {
 const LEGAL = {
   es: { legal: '/v4/aviso-legal.html', privacy: '/v4/privacidad.html', conditions: '/v4/condiciones.html', cookies: '/v4/cookies.html' },
   fr: { legal: '/v4/fr/mentions-legales.html', privacy: '/v4/fr/politique-confidentialite.html', conditions: '/v4/fr/conditions-nclc7.html', cookies: '/v4/fr/cookies.html' },
-  en: { legal: '/v4/en/legal-notice.html', privacy: '/v4/en/politique-confidentialite.html', conditions: '/v4/en/conditions-nclc7.html', cookies: '/v4/en/cookies.html' },
-  de: { legal: '/v4/de/rechtliche-hinweise.html', privacy: '/v4/de/politique-confidentialite.html', conditions: '/v4/de/conditions-nclc7.html', cookies: '/v4/de/cookies.html' }
+  en: { legal: '/v4/en/legal-notice.html', privacy: '/v4/en/privacy-policy.html', conditions: '/v4/en/terms.html', cookies: '/v4/en/cookies.html' },
+  de: { legal: '/v4/de/rechtliche-hinweise.html', privacy: '/v4/de/datenschutz.html', conditions: '/v4/de/bedingungen.html', cookies: '/v4/de/cookies.html' }
 };
 
 const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
