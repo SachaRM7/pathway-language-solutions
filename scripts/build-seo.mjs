@@ -18,7 +18,7 @@
 // Integration: build.mjs calls finalizeSite({ outDir, rootDir, v4Destinations }) last.
 
 import { execFileSync } from 'node:child_process';
-import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { redirectPage } from './build-v4-default.mjs';
 
@@ -41,10 +41,41 @@ const LEGACY_UNLESS_V4 = {
   '/recursos.html': '/preparacion-tef-canada.html',
   '/tefaq-quebec.html': '/preparacion-tef-canada.html',
   '/fr/ressources.html': '/fr/preparacion-tef-canada.html',
-  '/en/ressources.html': '/en/preparacion-tef-canada.html',
-  '/de/ressources.html': '/de/preparacion-tef-canada.html'
+  '/en/resources.html': '/en/tef-canada-preparation.html',
+  '/de/ressourcen.html': '/de/tef-canada-vorbereitung.html'
 };
-const THANK_YOU = ['/gracias.html', '/fr/merci.html', '/en/merci.html', '/de/merci.html'];
+// English and German pages renamed from their French or Spanish file names
+// (site review trad-64). Always redirected, with the /v4/… working copies of
+// the old names, whether or not a file is left at the old address.
+const RENAMED_PAGES = {
+  en: {
+    'preparacion-tef-canada.html': 'tef-canada-preparation.html',
+    'calculateur-crs.html': 'crs-calculator.html',
+    'politique-confidentialite.html': 'privacy-policy.html',
+    'conditions-nclc7.html': 'terms.html',
+    'ressources.html': 'resources.html',
+    'merci.html': 'thank-you.html',
+    'programas/a1/': 'programs/a1/',
+    'programas/a2/': 'programs/a2/',
+    'programas/b1/': 'programs/b1/',
+    'programas/b2/': 'programs/b2/'
+  },
+  de: {
+    'preparacion-tef-canada.html': 'tef-canada-vorbereitung.html',
+    'calculateur-crs.html': 'crs-rechner.html',
+    'politique-confidentialite.html': 'datenschutz.html',
+    'conditions-nclc7.html': 'bedingungen.html',
+    'ressources.html': 'ressourcen.html',
+    'merci.html': 'danke.html',
+    'programas/a1/': 'programme/a1/',
+    'programas/a2/': 'programme/a2/',
+    'programas/b1/': 'programme/b1/',
+    'programas/b2/': 'programme/b2/'
+  }
+};
+const RENAMED = Object.fromEntries(Object.entries(RENAMED_PAGES).flatMap(([lang, names]) => Object.entries(names)
+  .flatMap(([from, to]) => [[`/${lang}/${from}`, `/${lang}/${to}`], [`/v4/${lang}/${from}`, `/${lang}/${to}`]])));
+const THANK_YOU = ['/gracias.html', '/fr/merci.html', '/en/thank-you.html', '/de/danke.html'];
 
 const OG_LOCALE = { es: 'es_419', fr: 'fr_CA', en: 'en_CA', de: 'de_DE' };
 const OG_IMAGE_ALT = {
@@ -131,6 +162,7 @@ async function buildRedirects(outDir, pages, v4Destinations) {
     if (from.endsWith('/')) map.set(`${from}index.html`, to);
   };
   for (const [from, to] of Object.entries(LEGACY)) if (pages.has(from)) add(from, to);
+  for (const [from, to] of Object.entries(RENAMED)) add(from, to);
   for (const [from, to] of Object.entries(LEGACY_UNLESS_V4)) {
     const page = pages.get(from);
     if (page && !isV4(page.markup)) add(from, to);
@@ -140,7 +172,8 @@ async function buildRedirects(outDir, pages, v4Destinations) {
     const target = route.replace(/^\/v3/, '') || '/';
     add(route, pages.has(target) ? target : '/');
   }
-  for (const [from, to] of v4Destinations || []) add(from, to);
+  // The /v4/… working copies follow their page, except a renamed page's old name.
+  for (const [from, to] of v4Destinations || []) if (!RENAMED[from]) add(from, to);
   // Resolve chains (a V4 placeholder may point to a page that is itself redirected).
   for (const [from] of map) {
     let target = map.get(from);
@@ -267,7 +300,7 @@ function structuredData(markup, route, lang, prices) {
       ]
     };
   }
-  const program = route.match(/^\/(?:(fr|en|de)\/)?programas\/(a1|a2|b1|b2)\/$/);
+  const program = route.match(/^\/(?:(fr|en|de)\/)?(?:programas|programs|programme)\/(a1|a2|b1|b2)\/$/);
   if (program) {
     const level = program[2].toUpperCase();
     data = {
@@ -390,10 +423,16 @@ export async function finalizeSite({ outDir, rootDir, v4Destinations }) {
   const redirects = await buildRedirects(outDir, pages, v4Destinations);
   for (const [from, to] of redirects) {
     const page = pages.get(from);
-    if (!page) continue;
     const lang = (from.match(/^\/(?:v[34]\/)?(fr|en|de)\//) || [])[1] || 'es';
-    await writeFile(page.file, redirectPage(to, lang), 'utf8');
-    pages.delete(from);
+    if (page) {
+      await writeFile(page.file, redirectPage(to, lang), 'utf8');
+      pages.delete(from);
+    } else if (from.endsWith('.html') && (RENAMED[from] || RENAMED[from.replace(/index\.html$/, '')])) {
+      // A relay page at the old address of a renamed page, for hosts without the Worker.
+      const file = fileFor(outDir, from);
+      await mkdir(dirname(file), { recursive: true });
+      await writeFile(file, redirectPage(to, lang), 'utf8');
+    }
   }
 
   // Thank-you pages: reached after a form, not from a search engine.

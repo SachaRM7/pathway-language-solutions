@@ -29,7 +29,7 @@ export async function verifySite({ outDir }) {
     if (seen.has(route)) errors.push(`sitemap lists ${route} twice`);
     seen.add(route);
   }
-  for (const required of ['/', '/fr/', '/en/', '/de/', '/test-placement.html', '/inscription.html', '/nclc-7.html', '/preparacion-tef-canada.html']) {
+  for (const required of ['/', '/fr/', '/en/', '/de/', '/test-placement.html', '/inscription.html', '/nclc-7.html', '/preparacion-tef-canada.html', '/en/tef-canada-preparation.html', '/de/tef-canada-vorbereitung.html', '/en/programs/a2/', '/de/programme/a2/']) {
     if (!seen.has(required)) errors.push(`sitemap is missing ${required}`);
   }
   for (const route of routes) {
@@ -93,6 +93,13 @@ export async function verifySite({ outDir }) {
   }
   for (const legacy of ['/test.html', '/index-v2.html', '/couleurs.html', '/merci.html', '/politique-confidentialite.html', '/v3/', '/v4/', '/v4/inscription.html']) {
     if (!redirects[legacy]) errors.push(`${legacy} has no redirect`);
+  }
+  // English and German pages that had French or Spanish names (trad-64): one hop to the new name.
+  for (const [legacy, target] of [['/en/preparacion-tef-canada.html', '/en/tef-canada-preparation.html'], ['/de/programas/a2/', '/de/programme/a2/'], ['/v4/en/calculateur-crs.html', '/en/crs-calculator.html'], ['/de/merci.html', '/de/danke.html']]) {
+    if (redirects[legacy] !== target) errors.push(`${legacy} must redirect to ${target}, not ${redirects[legacy] || 'nowhere'}`);
+  }
+  for (const [from, to] of Object.entries(redirects)) {
+    if (redirects[to.split(/[?#]/)[0]]) errors.push(`redirect ${from} -> ${to} takes more than one hop`);
   }
 
   const notFound = await read(join(outDir, '404.html'));

@@ -21,7 +21,11 @@ const READER_VERSION = 'reader-10';
 const SITE_ORIGIN = 'https://pathway-languages.com';
 
 export const prefix = lang => (lang === 'es' ? '/v4/' : `/v4/${lang}/`);
-export const programPath = (lang, level) => `${prefix(lang)}programas/${level}/`;
+// Program folder per language: /programas/<level>/ in Spanish and French,
+// /en/programs/<level>/ and /de/programme/<level>/ (the former
+// /en/programas/… and /de/programas/… addresses redirect).
+export const PROGRAM_DIRS = { es: 'programas', fr: 'programas', en: 'programs', de: 'programme' };
+export const programPath = (lang, level) => `${prefix(lang)}${PROGRAM_DIRS[lang]}/${level}/`;
 
 const UI = {
   es: {

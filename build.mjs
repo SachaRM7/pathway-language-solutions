@@ -1,6 +1,6 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { LOCALES, pageNames, renderLocalePage } from './i18n/locale-pages.mjs';
+import { LOCALES, localeFile, pageNames, renderLocalePage } from './i18n/locale-pages.mjs';
 import { homeTail, HOME_TAIL_MARKER } from './scripts/home-tail.mjs';
 import { buildV4Routes } from './scripts/build-v4-routes.mjs';
 import { buildV4Programs } from './scripts/build-v4-programs.mjs';
@@ -143,7 +143,7 @@ for (const locale of Object.keys(LOCALES)) {
       assertMobileExperience(markup, `${locale}/${page}`, true);
     }
     else if (page !== 'inscription.html') assertSharedShell(markup, `${locale}/${page}`);
-    await writeFile(resolve(localeDir, page), markup, 'utf8');
+    await writeFile(resolve(localeDir, localeFile(locale, page)), markup, 'utf8');
   }
 }
 

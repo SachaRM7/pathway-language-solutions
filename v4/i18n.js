@@ -16,8 +16,8 @@ export const pageLang = () => {
 const PAGES = {
   es: { home: '/', test: '/test-placement.html', inscription: '/inscription.html', conditions: '/condiciones.html', nclc: '/nclc-7.html' },
   fr: { home: '/fr/', test: '/fr/test.html', inscription: '/fr/inscription.html', conditions: '/fr/conditions-nclc7.html', nclc: '/fr/nclc-7.html' },
-  en: { home: '/en/', test: '/en/test.html', inscription: '/en/inscription.html', conditions: '/en/conditions-nclc7.html', nclc: '/en/nclc-7.html' },
-  de: { home: '/de/', test: '/de/test.html', inscription: '/de/inscription.html', conditions: '/de/conditions-nclc7.html', nclc: '/de/nclc-7.html' }
+  en: { home: '/en/', test: '/en/test.html', inscription: '/en/inscription.html', conditions: '/en/terms.html', nclc: '/en/nclc-7.html' },
+  de: { home: '/de/', test: '/de/test.html', inscription: '/de/inscription.html', conditions: '/de/bedingungen.html', nclc: '/de/nclc-7.html' }
 };
 export const pages = lang => PAGES[lang] || PAGES.es;
 

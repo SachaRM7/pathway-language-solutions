@@ -4,7 +4,7 @@
 // media, root form preserved. inscription-v4.js preselects plan/hours/billing
 // from ?plan=&hours=&billing= (query wins) or the `pathwayV4Selection` session
 // key, in the four languages (the FR/EN/DE pages load it too). It also writes
-// the V4 thank-you pages (gracias / merci).
+// the V4 thank-you pages (gracias / merci / thank-you / danke).
 //
 // Integration: build.mjs calls buildV4Routes({ outDir, rootDir }) after copying
 // the v4 directory, so these pages replace the plain placeholders.
@@ -196,12 +196,12 @@ function transformPage(sourceHtml, page) {
   return rebaseHtml(html);
 }
 
-// --- Thank-you pages (gracias / merci) in the V4 layout ---------------------
+// --- Thank-you pages (gracias / merci / thank-you / danke) in the V4 layout -
 // Landing page after the enrollment form and the CRS calculator contact form.
 // They follow the current pathway (test → schedule → written confirmation),
 // are not indexed and can reopen the prepared WhatsApp message.
 
-const THANKS_PAGES = { es: 'gracias.html', fr: 'merci.html', en: 'merci.html', de: 'merci.html' };
+const THANKS_PAGES = { es: 'gracias.html', fr: 'merci.html', en: 'thank-you.html', de: 'danke.html' };
 
 export const THANKS_COPY = {
   es: {
