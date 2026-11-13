@@ -29,18 +29,20 @@ const UI = {
     title: level => `Programa ${level} · El manual Pathway`,
     eyebrow: level => `Programa de francés · nivel ${level}`,
     openManual: 'Abrir el manual', evaluate: 'Evaluar mi nivel', levelsLabel: 'Otros niveles',
-    facts: ['unidades', 'segmentos', 'balances internos', 'exámenes de práctica'],
+    facts: ['unidades', 'segmentos', 'evaluaciones de segmento', 'exámenes de práctica'],
     yourManual: 'Tu manual de francés', download: 'Descargar los extractos',
     goTo: 'Ir a', zoom: 'Ampliar página', zoomLabel: 'Ampliar la página actual', fullscreen: 'Pantalla completa', exit: 'Salir',
     openFullscreen: 'Abrir el manual en pantalla completa', closeFullscreen: 'Salir de la pantalla completa',
     bookLabel: level => `Manual ${level}. Usa las flechas del teclado para pasar las páginas.`,
     prev: 'Página anterior', next: 'Página siguiente', openBook: level => `Abrir el manual ${level}`, openCta: 'Abrir el manual →',
-    opening: 'Abriendo el manual…', hint: 'Desliza o toca el borde para pasar la página', backCover: 'Volver a la portada',
+    opening: 'Abriendo el manual…', hint: 'Desliza o toca el borde para pasar la página', hintPointer: 'Usa las flechas o haz clic en el borde de la página', backCover: 'Volver a la portada',
     readAll: 'Ver lo que incluye', zoomed: 'Página ampliada', close: 'Cerrar ✕', closeZoom: 'Cerrar la página ampliada',
-    chapters: { 'table-matieres': 'Tabla de contenidos', sommaire: 'Índice detallado', 'unite-1': 'Unidad 1', 'examen-a': 'Balance del segmento A', autoevaluation: 'Autoevaluación' },
+    chapters: { 'table-matieres': 'Tabla de contenidos', sommaire: 'Índice detallado', 'unite-1': 'Unidad 1', 'examen-a': 'Evaluación del segmento A', autoevaluation: 'Autoevaluación' },
     page: 'página', pages: 'páginas', manualWord: 'manual',
+    manualTitle: L => ['Manual de francés,', `nivel ${L}`],
+    cover: L => ({ kicker: `Manual de francés · ${L}`, excerpt: 'Extractos del manual original.', units: '64 unidades · 4 segmentos' }),
     inc: {
-      eyebrow: 'Incluido en este programa', lead: 'Todo lo que recibes al empezar el nivel. Aquí puedes ver una página de ejemplo de cada documento.', soon: 'Próximamente',
+      eyebrow: 'Incluido en este programa', lead: 'Todo lo que recibes al empezar el nivel. Aquí puedes ver una página de ejemplo de cada documento.', original: 'Título original:',
       sample: 'Ver un ejemplo', next: 'Hojea el extracto del manual a continuación', close: 'Cerrar ✕',
       items: {
         manual: ['Manual del alumno', '64 unidades en 4 segmentos, con la misma progresión.'],
@@ -50,8 +52,8 @@ const UI = {
         diagnostic: ['Diagnóstico de entrada', '15 minutos para comprobar tus bases al empezar.'],
         assessments: ['4 evaluaciones de segmento', 'Una por segmento, sobre 100 puntos, en las 4 competencias.'],
         complementary: ['2 exámenes de lengua y vocabulario', 'Gramática y vocabulario, unidades 1\u2060–\u206032 y 33\u2060–\u206064.'],
-        tcf: ['Simulacro de examen TCF Canadá', 'Las 4 pruebas en el formato del TCF Canadá.'],
-        campus: ['Acceso al Campus Pathway', 'Ejercicios interactivos, repaso y seguimiento de tu profesor.']
+        tcf: ['Simulacro TEF Canada o TCF Canada', 'Las 4 pruebas en el formato de tu examen.'],
+        campus: ['Campus Pathway', 'Ejercicios por unidad, tu manual en línea que se abre clase a clase, simulacros TEF y TCF Canada, y las grabaciones de tus clases.']
       }
     },
     ctaTitle: 'Encuentra tu punto de partida.', ctaEyebrow: '¿Listo para empezar?', ctaText: 'Un profesor confirma tu nivel y las prioridades del recorrido durante la evaluación inicial.'
@@ -61,18 +63,20 @@ const UI = {
     title: level => `Programme ${level} · Le manuel Pathway`,
     eyebrow: level => `Programme de français · niveau ${level}`,
     openManual: 'Ouvrir le manuel', evaluate: 'Évaluer mon niveau', levelsLabel: 'Autres niveaux',
-    facts: ['unités', 'segments', 'bilans internes', 'examens d’entraînement'],
+    facts: ['unités', 'segments', 'évaluations de segment', 'examens d’entraînement'],
     yourManual: 'Votre manuel de français', download: 'Télécharger les extraits',
     goTo: 'Aller à', zoom: 'Agrandir la page', zoomLabel: 'Agrandir la page actuelle', fullscreen: 'Plein écran', exit: 'Quitter',
     openFullscreen: 'Ouvrir le manuel en plein écran', closeFullscreen: 'Quitter le plein écran',
     bookLabel: level => `Manuel ${level}. Utilisez les flèches du clavier pour tourner les pages.`,
     prev: 'Page précédente', next: 'Page suivante', openBook: level => `Ouvrir le manuel ${level}`, openCta: 'Ouvrir le manuel →',
-    opening: 'Ouverture du manuel…', hint: 'Faites glisser ou touchez le bord pour tourner la page', backCover: 'Revenir à la couverture',
+    opening: 'Ouverture du manuel…', hint: 'Faites glisser ou touchez le bord pour tourner la page', hintPointer: 'Utilisez les flèches ou cliquez sur le bord de la page', backCover: 'Revenir à la couverture',
     readAll: 'Voir ce qui est inclus', zoomed: 'Page agrandie', close: 'Fermer ✕', closeZoom: 'Fermer la page agrandie',
-    chapters: { 'table-matieres': 'Table des matières', sommaire: 'Sommaire détaillé', 'unite-1': 'Unité 1', 'examen-a': 'Bilan du segment A', autoevaluation: 'Auto-évaluation' },
+    chapters: { 'table-matieres': 'Table des matières', sommaire: 'Sommaire détaillé', 'unite-1': 'Unité 1', 'examen-a': 'Évaluation du segment A', autoevaluation: 'Auto-évaluation' },
     page: 'page', pages: 'pages', manualWord: 'manuel',
+    manualTitle: L => ['Manuel de français,', `niveau ${L}`],
+    cover: L => ({ kicker: `Manuel de français · ${L}`, excerpt: 'Extraits du manuel original.', units: '64 unités · 4 segments' }),
     inc: {
-      eyebrow: 'Inclus dans ce programme', lead: 'Tout ce que vous recevez en commençant le niveau. Voici une page d’exemple de chaque document.', soon: 'Bientôt',
+      eyebrow: 'Inclus dans ce programme', lead: 'Tout ce que vous recevez en commençant le niveau. Voici une page d’exemple de chaque document.', original: 'Titre original :',
       sample: 'Voir un exemple', next: 'Feuilletez l’extrait du manuel ci-dessous', close: 'Fermer ✕',
       items: {
         manual: ['Manuel de l’élève', '64 unités en 4 segments, avec la même progression.'],
@@ -82,8 +86,8 @@ const UI = {
         diagnostic: ['Diagnostic d’entrée', '15 minutes pour vérifier vos bases au départ.'],
         assessments: ['4 évaluations de segment', 'Une par segment, sur 100 points, dans les 4 compétences.'],
         complementary: ['2 examens de langue et de vocabulaire', 'Grammaire et vocabulaire, unités 1\u2060–\u206032 et 33\u2060–\u206064.'],
-        tcf: ['Examen blanc TCF Canada', 'Les 4 épreuves au format du TCF Canada.'],
-        campus: ['Accès au Campus Pathway', 'Exercices interactifs, révision et suivi de votre enseignant.']
+        tcf: ['Examen blanc TEF Canada ou TCF Canada', 'Les 4 épreuves au format de votre examen.'],
+        campus: ['Campus Pathway', 'Des exercices par unité, votre manuel en ligne qui s’ouvre cours après cours, des examens blancs TEF et TCF Canada, et les enregistrements de vos cours.']
       }
     },
     ctaTitle: 'Trouvez votre point de départ.', ctaEyebrow: 'Prêt à commencer ?', ctaText: 'Un enseignant confirme votre niveau et les priorités du parcours lors de l’évaluation initiale.'
@@ -93,18 +97,20 @@ const UI = {
     title: level => `${level} program · The Pathway textbook`,
     eyebrow: level => `French program · level ${level}`,
     openManual: 'Open the textbook', evaluate: 'Assess my level', levelsLabel: 'Other levels',
-    facts: ['units', 'segments', 'internal assessments', 'practice exams'],
+    facts: ['units', 'segments', 'segment assessments', 'practice exams'],
     yourManual: 'Your French textbook', download: 'Download the excerpts',
     goTo: 'Go to', zoom: 'Enlarge page', zoomLabel: 'Enlarge the current page', fullscreen: 'Full screen', exit: 'Exit',
     openFullscreen: 'Open the textbook in full screen', closeFullscreen: 'Exit full screen',
     bookLabel: level => `${level} textbook. Use the arrow keys to turn the pages.`,
     prev: 'Previous page', next: 'Next page', openBook: level => `Open the ${level} textbook`, openCta: 'Open the textbook →',
-    opening: 'Opening the textbook…', hint: 'Swipe or tap the edge to turn the page', backCover: 'Back to the cover',
+    opening: 'Opening the textbook…', hint: 'Swipe or tap the edge to turn the page', hintPointer: 'Use the arrow keys or click the edge of the page', backCover: 'Back to the cover',
     readAll: 'See what is included', zoomed: 'Enlarged page', close: 'Close ✕', closeZoom: 'Close the enlarged page',
-    chapters: { 'table-matieres': 'Table of contents', sommaire: 'Detailed index', 'unite-1': 'Unit 1', 'examen-a': 'Segment A assessment', autoevaluation: 'Self-assessment' },
+    chapters: { 'table-matieres': 'Table of contents', sommaire: 'Detailed contents', 'unite-1': 'Unit 1', 'examen-a': 'Segment A assessment', autoevaluation: 'Self-assessment' },
     page: 'page', pages: 'pages', manualWord: 'textbook',
+    manualTitle: L => ['French textbook,', `level ${L}`],
+    cover: L => ({ kicker: `French textbook · ${L}`, excerpt: 'Excerpts from the original textbook.', units: '64 units · 4 segments' }),
     inc: {
-      eyebrow: 'Included in this program', lead: 'Everything you receive when you start the level. Here is a sample page of each document.', soon: 'Coming soon',
+      eyebrow: 'Included in this program', lead: 'Everything you receive when you start the level. Here is a sample page of each document.', original: 'Original title:',
       sample: 'See a sample', next: 'Browse the textbook excerpt below', close: 'Close ✕',
       items: {
         manual: ['Student textbook', '64 units in 4 segments, all with the same progression.'],
@@ -114,8 +120,8 @@ const UI = {
         diagnostic: ['Entry diagnostic', '15 minutes to check your foundations at the start.'],
         assessments: ['4 segment assessments', 'One per segment, out of 100, across all 4 skills.'],
         complementary: ['2 language and vocabulary exams', 'Grammar and vocabulary, units 1\u2060–\u206032 and 33\u2060–\u206064.'],
-        tcf: ['TCF Canada mock exam', 'All 4 tests in the TCF Canada format.'],
-        campus: ['Pathway Campus access', 'Interactive exercises, review and follow-up from your teacher.']
+        tcf: ['TEF Canada or TCF Canada mock exam', 'All 4 tests in the format of your exam.'],
+        campus: ['Pathway Campus', 'Exercises for every unit, your online textbook that opens class by class, TEF and TCF Canada mock exams, and the recordings of your classes.']
       }
     },
     ctaTitle: 'Find your starting point.', ctaEyebrow: 'Ready to start?', ctaText: 'A teacher confirms your level and the priorities of your path during the initial assessment.'
@@ -125,18 +131,20 @@ const UI = {
     title: level => `${level}-Programm · Das Pathway-Lehrbuch`,
     eyebrow: level => `Französischprogramm · Niveau ${level}`,
     openManual: 'Lehrbuch öffnen', evaluate: 'Mein Niveau einstufen', levelsLabel: 'Weitere Niveaus',
-    facts: ['Einheiten', 'Segmente', 'interne Bilanzen', 'Übungsprüfungen'],
+    facts: ['Einheiten', 'Segmente', 'Lernstandskontrollen', 'Übungsprüfungen'],
     yourManual: 'Ihr Französischlehrbuch', download: 'Auszüge herunterladen',
     goTo: 'Gehe zu', zoom: 'Seite vergrößern', zoomLabel: 'Aktuelle Seite vergrößern', fullscreen: 'Vollbild', exit: 'Beenden',
     openFullscreen: 'Lehrbuch im Vollbild öffnen', closeFullscreen: 'Vollbild beenden',
     bookLabel: level => `Lehrbuch ${level}. Mit den Pfeiltasten blättern Sie die Seiten um.`,
     prev: 'Vorherige Seite', next: 'Nächste Seite', openBook: level => `Lehrbuch ${level} öffnen`, openCta: 'Lehrbuch öffnen →',
-    opening: 'Lehrbuch wird geöffnet…', hint: 'Wischen oder den Rand antippen, um umzublättern', backCover: 'Zurück zum Umschlag',
+    opening: 'Lehrbuch wird geöffnet…', hint: 'Wischen oder den Rand antippen, um umzublättern', hintPointer: 'Mit den Pfeiltasten oder per Klick auf den Seitenrand blättern', backCover: 'Zurück zum Umschlag',
     readAll: 'Was enthalten ist', zoomed: 'Vergrößerte Seite', close: 'Schließen ✕', closeZoom: 'Vergrößerte Seite schließen',
-    chapters: { 'table-matieres': 'Inhaltsverzeichnis', sommaire: 'Ausführliche Übersicht', 'unite-1': 'Einheit 1', 'examen-a': 'Bilanz von Segment A', autoevaluation: 'Selbsteinschätzung' },
+    chapters: { 'table-matieres': 'Inhaltsverzeichnis', sommaire: 'Ausführliche Übersicht', 'unite-1': 'Einheit 1', 'examen-a': 'Lernstandskontrolle Segment A', autoevaluation: 'Selbsteinschätzung' },
     page: 'Seite', pages: 'Seiten', manualWord: 'Lehrbuch',
+    manualTitle: L => ['Französischlehrbuch,', `Niveau ${L}`],
+    cover: L => ({ kicker: `Französischlehrbuch · ${L}`, excerpt: 'Auszüge aus dem Originallehrbuch.', units: '64 Einheiten · 4 Segmente' }),
     inc: {
-      eyebrow: 'In diesem Programm enthalten', lead: 'Alles, was Sie zu Beginn des Niveaus erhalten. Hier sehen Sie von jedem Dokument eine Beispielseite.', soon: 'Demnächst',
+      eyebrow: 'In diesem Programm enthalten', lead: 'Alles, was Sie zu Beginn des Niveaus erhalten. Hier sehen Sie von jedem Dokument eine Beispielseite.', original: 'Originaltitel:',
       sample: 'Beispiel ansehen', next: 'Blättern Sie unten im Auszug aus dem Lehrbuch', close: 'Schließen ✕',
       items: {
         manual: ['Lehrbuch für Lernende', '64 Einheiten in 4 Segmenten, alle mit demselben Aufbau.'],
@@ -144,10 +152,10 @@ const UI = {
         comprehension: ['Lese- und Hörverstehen', 'Ein Text und ein Hörtext mit Fragen in jeder Einheit.'],
         vocabulary: ['Schlüsselwortschatz', 'Rund zehn Schlüsselwörter am Ende jeder Einheit.'],
         diagnostic: ['Eingangsdiagnose', '15 Minuten, um Ihre Grundlagen zu Beginn zu prüfen.'],
-        assessments: ['4 Segmentbewertungen', 'Eine pro Segment, mit 100 Punkten, in allen 4 Kompetenzen.'],
+        assessments: ['4 Lernstandskontrollen', 'Eine pro Segment, auf 100 Punkte, in allen 4 Kompetenzen.'],
         complementary: ['2 Sprach- und Wortschatzprüfungen', 'Grammatik und Wortschatz, Einheiten 1\u2060–\u206032 und 33\u2060–\u206064.'],
-        tcf: ['TCF-Canada-Probeprüfung', 'Alle 4 Prüfungsteile im Format des TCF Canada.'],
-        campus: ['Pathway-Campus', 'Interaktive Übungen, Wiederholung und Feedback der Lehrkraft.']
+        tcf: ['Probeprüfung TEF Canada oder TCF Canada', 'Alle 4 Prüfungsteile im Format Ihrer Prüfung.'],
+        campus: ['Pathway-Campus', 'Übungen zu jeder Einheit, Ihr Online-Lehrbuch, das sich Stunde für Stunde öffnet, Probeprüfungen für TEF und TCF Canada und die Aufzeichnungen Ihrer Stunden.']
       }
     },
     ctaTitle: 'Finden Sie Ihren Ausgangspunkt.', ctaEyebrow: 'Bereit loszulegen?', ctaText: 'Eine Lehrkraft bestätigt bei der Ersteinstufung Ihr Niveau und die Schwerpunkte Ihres Weges.'
@@ -169,18 +177,37 @@ const COPY = {
     de: ['Ihr nächster Schritt', 'auf Französisch.', 'Vom Alltag zu Ihren eigenen Ideen: Entdecken Sie das A2-Lehrbuch und alles, was das Programm umfasst.', 'Verben auf -er konjugieren, über den eigenen Alltag sprechen und Subjektpronomen verwenden.']
   },
   b1: {
-    es: ['Exprésate con independencia', 'en francés.', 'De dar tu opinión a argumentar con matices, con preparación al TCF Canadá: explora el manual B1 y todo lo que incluye el programa.', 'Reactiva los cuatro tiempos básicos del A2 y sitúa una acción en el presente, el pasado o el futuro. La unidad empieza con un diagnóstico de entrada de 15 minutos.'],
-    fr: ['Exprimez-vous en autonomie', 'en français.', 'De l’opinion à l’argumentation nuancée, avec préparation au TCF Canada : explorez le manuel B1 et tout ce que comprend le programme.', 'Réactiver les quatre temps de base de l’A2 et situer une action dans le présent, le passé ou l’avenir. L’unité s’ouvre sur un diagnostic d’entrée de 15 minutes.'],
-    en: ['Express yourself independently', 'in French.', 'From giving your opinion to nuanced argument, with TCF Canada preparation: explore the B1 textbook and everything the program includes.', 'Reactivate the four core A2 tenses and place an action in the present, past or future. The unit opens with a 15-minute entry diagnostic.'],
-    de: ['Drücken Sie sich selbstständig aus', 'auf Französisch.', 'Von der eigenen Meinung zur differenzierten Argumentation, mit Vorbereitung auf den TCF Canada: Entdecken Sie das B1-Lehrbuch und alles, was das Programm umfasst.', 'Die vier Grundzeiten des A2 reaktivieren und eine Handlung in Gegenwart, Vergangenheit oder Zukunft verorten. Die Einheit beginnt mit einer 15-minütigen Eingangsdiagnose.']
+    es: ['Exprésate con independencia', 'en francés.', 'De dar tu opinión a argumentar con matices, con preparación al TEF Canada y al TCF Canada: explora el manual B1 y todo lo que incluye el programa.', 'Reactiva los cuatro tiempos básicos del A2 y sitúa una acción en el presente, el pasado o el futuro. La unidad empieza con un diagnóstico de entrada de 15 minutos.'],
+    fr: ['Exprimez-vous en autonomie', 'en français.', 'De l’opinion à l’argumentation nuancée, avec préparation au TEF Canada et au TCF Canada : explorez le manuel B1 et tout ce que comprend le programme.', 'Réactiver les quatre temps de base de l’A2 et situer une action dans le présent, le passé ou l’avenir. L’unité s’ouvre sur un diagnostic d’entrée de 15 minutes.'],
+    en: ['Express yourself independently', 'in French.', 'From giving your opinion to nuanced argument, with TEF Canada and TCF Canada preparation: explore the B1 textbook and everything the program includes.', 'Reactivate the four core A2 tenses and place an action in the present, past or future. The unit opens with a 15-minute entry diagnostic.'],
+    de: ['Drücken Sie sich selbstständig aus', 'auf Französisch.', 'Von der Meinung zur differenzierten Argumentation, mit Vorbereitung auf TEF und TCF Canada: Entdecken Sie das B1-Lehrbuch und das ganze Programm.', 'Die vier Grundzeiten des A2 reaktivieren und eine Handlung in Gegenwart, Vergangenheit oder Zukunft verorten. Die Einheit beginnt mit einer 15-minütigen Eingangsdiagnose.']
   },
   b2: {
-    es: ['Argumenta con matices', 'en francés.', 'Del matiz al discurso complejo, con preparación al TCF Canadá: explora el manual B2 y todo lo que incluye el programa.', 'Consolida el sistema de tiempos del B1 y encadena tus ideas con conectores complejos. La unidad empieza con un diagnóstico de entrada al B2 de 15 minutos.'],
-    fr: ['Argumentez avec nuance', 'en français.', 'De la nuance au discours complexe, avec préparation au TCF Canada : explorez le manuel B2 et tout ce que comprend le programme.', 'Consolider le système des temps du B1 et enchaîner ses idées avec des connecteurs complexes. L’unité s’ouvre sur un diagnostic d’entrée en B2 de 15 minutes.'],
-    en: ['Argue with nuance', 'in French.', 'From nuance to complex discourse, with TCF Canada preparation: explore the B2 textbook and everything the program includes.', 'Consolidate the B1 tense system and link your ideas with complex connectors. The unit opens with a 15-minute B2 entry diagnostic.'],
-    de: ['Argumentieren Sie differenziert', 'auf Französisch.', 'Von der Nuance zum komplexen Diskurs, mit Vorbereitung auf den TCF Canada: Entdecken Sie das B2-Lehrbuch und alles, was das Programm umfasst.', 'Das Zeitensystem des B1 festigen und Gedanken mit komplexen Konnektoren verknüpfen. Die Einheit beginnt mit einer 15-minütigen Eingangsdiagnose für B2.']
+    es: ['Argumenta con matices', 'en francés.', 'Del matiz al discurso complejo, con preparación al TEF Canada y al TCF Canada: explora el manual B2 y todo lo que incluye el programa.', 'Consolida el sistema de tiempos del B1 y encadena tus ideas con conectores complejos. La unidad empieza con un diagnóstico de entrada al B2 de 15 minutos.'],
+    fr: ['Argumentez avec nuance', 'en français.', 'De la nuance au discours complexe, avec préparation au TEF Canada et au TCF Canada : explorez le manuel B2 et tout ce que comprend le programme.', 'Consolider le système des temps du B1 et enchaîner ses idées avec des connecteurs complexes. L’unité s’ouvre sur un diagnostic d’entrée en B2 de 15 minutes.'],
+    en: ['Argue with nuance', 'in French.', 'From nuance to complex discourse, with TEF Canada and TCF Canada preparation: explore the B2 textbook and everything the program includes.', 'Consolidate the B1 tense system and link your ideas with complex connectors. The unit opens with a 15-minute B2 entry diagnostic.'],
+    de: ['Argumentieren Sie differenziert', 'auf Französisch.', 'Von der Nuance zum komplexen Diskurs, mit Vorbereitung auf TEF Canada und TCF Canada: Entdecken Sie das B2-Lehrbuch und alles, was das Programm umfasst.', 'Das Zeitensystem des B1 festigen und Gedanken mit komplexen Konnektoren verknüpfen. Die Einheit beginnt mit einer 15-minütigen Eingangsdiagnose für B2.']
   }
 };
+
+// French typography: narrow no-break space (U+202F) before ; ! ? and inside
+// « », no-break space (U+00A0) before : and %. Applied to French text only,
+// never inside tags, scripts or styles.
+const NNBSP = '\u202F', NBSP = '\u00A0';
+export const typoText = (lang, text) => (lang !== 'fr' ? text : String(text)
+  .replace(/[ \u00A0\u202F]+([;!?])/g, `${NNBSP}$1`)
+  .replace(/[ \u202F]+:/g, `${NBSP}:`)
+  .replace(/«[ \u00A0\u202F]*/g, `«${NNBSP}`)
+  .replace(/[ \u00A0\u202F]*»/g, `${NNBSP}»`)
+  .replace(/(\d)[ \u202F]%/g, `$1${NBSP}%`));
+// In every language, "NCLC 7" never breaks between its two parts.
+export const typo = (lang, html) => html
+  .split(/(<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>)/)
+  .map((part, index) => (index % 2 ? part : typoText(lang, part).replace(/NCLC (\d)/g, `NCLC${NBSP}$1`)))
+  .join('');
+const typoDeep = (lang, value) => (typeof value === 'string' ? typoText(lang, value)
+  : Array.isArray(value) ? value.map(item => typoDeep(lang, item))
+    : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, typoDeep(lang, item)])) : value);
 
 export const esc = value => String(value)
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -230,8 +257,6 @@ const INCLUDED = {
   b1: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-6', vocabulary: 'reader/unite-1-7', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', tcf: 'samples/tcf', campus: 'campus' },
   b2: { manual: 'reader/table-matieres-1', exercises: 'reader/unite-1-3', comprehension: 'reader/unite-1-7', vocabulary: 'reader/unite-1-8', diagnostic: 'reader/unite-1-1', assessments: 'reader/examen-a-1', complementary: 'samples/complementaire', tcf: 'samples/tcf', campus: 'campus' }
 };
-// Not available yet: the Campus opens to students once all levels are ready.
-const COMING_SOON = new Set(['campus']);
 const INCLUDED_ICONS = { manual: 'i-book', exercises: 'i-pen', comprehension: 'i-headphones', vocabulary: 'i-cards', diagnostic: 'i-target', assessments: 'i-clipboard', complementary: 'i-check', tcf: 'i-maple', campus: 'i-laptop' };
 export const CAMPUS_SAMPLE = '/v4/assets/campus-apercu.webp';
 
@@ -241,11 +266,11 @@ export const CAMPUS_SAMPLE = '/v4/assets/campus-apercu.webp';
 const TOUR = {
   es: {
     label: 'Visita guiada', next: 'Siguiente', prev: 'Anterior', done: 'Terminar', close: 'Cerrar', chaptersLabel: 'Capítulos del extracto',
-    tabs: { contents: 'Contenido', unit: 'Unidad 1', exam: 'Balance', after: 'Y después…' },
-    lockedTitle: 'Y 63 unidades más', lockedText: L => `Tu programa ${L} continúa hasta la unidad 64, con 3 segmentos más y su balance final.`,
+    tabs: { contents: 'Contenido', unit: 'Unidad 1', exam: 'Evaluación', after: 'Después' },
+    lockedTitle: 'Y 63 unidades más', lockedText: L => `Tu programa ${L} continúa hasta la unidad 64, con 3 segmentos más y su evaluación final.`,
     ctaKicker: 'Tu próximo paso', ctaTitle: 'Empieza con un profesor Pathway.', ctaText: 'Un profesor evalúa tu nivel y te dice por dónde empezar.',
     spots: {
-      segments: ['4 segmentos, 64 unidades', 'El programa avanza en 4 etapas de 16 unidades. Cada una termina con un balance.'],
+      segments: ['4 segmentos, 64 unidades', 'El programa avanza en 4 etapas de 16 unidades. Cada una termina con una evaluación.'],
       objectives: ['Objetivos claros', 'Cada unidad empieza diciendo qué vas a aprender y qué necesitas saber antes.'],
       diagnostic: ['Diagnóstico de entrada', '15 minutos para comprobar tus bases del nivel anterior. Si algo falla, tu profesor te dice qué repasar.'],
       situation: ['A · Situación', 'Una ilustración y un texto presentan el tema de la unidad en una situación real.'],
@@ -259,16 +284,16 @@ const TOUR = {
       reading: ['H · Comprensión escrita', 'Un texto con preguntas, como en el TEF y el TCF.'],
       listening: ['I · Comprensión oral', 'Tu profesor lee un documento y respondes: entrenas el oído desde el principio.'],
       vocabulary: ['J · Vocabulario clave', 'Unas diez palabras para retener al final de cada unidad.'],
-      assessment: ['Balance del segmento', 'Al final de cada segmento: 100 puntos en las 4 competencias del TEF y del TCF.']
+      assessment: ['Evaluación del segmento', 'Al final de cada segmento: 100 puntos en las 4 competencias del TEF y del TCF.']
     }
   },
   fr: {
     label: 'Visite guidée', next: 'Suivant', prev: 'Précédent', done: 'Terminer', close: 'Fermer', chaptersLabel: 'Chapitres de l’extrait',
-    tabs: { contents: 'Sommaire', unit: 'Unité 1', exam: 'Bilan', after: 'Et ensuite…' },
-    lockedTitle: 'Et 63 unités de plus', lockedText: L => `Votre programme ${L} continue jusqu’à l’unité 64 : 3 segments de plus et le bilan final.`,
+    tabs: { contents: 'Sommaire', unit: 'Unité 1', exam: 'Évaluation', after: 'Ensuite' },
+    lockedTitle: 'Et 63 unités de plus', lockedText: L => `Votre programme ${L} continue jusqu’à l’unité 64 : 3 segments de plus et l’évaluation finale.`,
     ctaKicker: 'Votre prochaine étape', ctaTitle: 'Commencez avec un enseignant Pathway.', ctaText: 'Un enseignant évalue votre niveau et vous dit par où commencer.',
     spots: {
-      segments: ['4 segments, 64 unités', 'Le programme avance en 4 étapes de 16 unités. Chacune se termine par un bilan.'],
+      segments: ['4 segments, 64 unités', 'Le programme avance en 4 étapes de 16 unités. Chacune se termine par une évaluation.'],
       objectives: ['Des objectifs clairs', 'Chaque unité commence par ce que vous allez apprendre et ce qu’il faut savoir avant.'],
       diagnostic: ['Diagnostic d’entrée', '15 minutes pour vérifier vos bases du niveau précédent. En cas de lacune, votre enseignant vous dit quoi revoir.'],
       situation: ['A · Mise en situation', 'Une illustration et un texte présentent le thème de l’unité dans une situation réelle.'],
@@ -282,12 +307,12 @@ const TOUR = {
       reading: ['H · Compréhension écrite', 'Un texte avec des questions, comme au TEF et au TCF.'],
       listening: ['I · Compréhension orale', 'Votre enseignant lit un document et vous répondez : l’oreille s’entraîne dès le début.'],
       vocabulary: ['J · Vocabulaire clé', 'Une dizaine de mots à retenir à la fin de chaque unité.'],
-      assessment: ['Bilan du segment', 'À la fin de chaque segment : 100 points dans les 4 compétences du TEF et du TCF.']
+      assessment: ['Évaluation du segment', 'À la fin de chaque segment : 100 points dans les 4 compétences du TEF et du TCF.']
     }
   },
   en: {
     label: 'Guided tour', next: 'Next', prev: 'Back', done: 'Finish', close: 'Close', chaptersLabel: 'Excerpt chapters',
-    tabs: { contents: 'Contents', unit: 'Unit 1', exam: 'Assessment', after: 'What’s next…' },
+    tabs: { contents: 'Contents', unit: 'Unit 1', exam: 'Assessment', after: 'What’s next' },
     lockedTitle: 'And 63 more units', lockedText: L => `Your ${L} program continues up to unit 64: 3 more segments and the final assessment.`,
     ctaKicker: 'Your next step', ctaTitle: 'Start with a Pathway teacher.', ctaText: 'A teacher assesses your level and tells you where to start.',
     spots: {
@@ -310,11 +335,11 @@ const TOUR = {
   },
   de: {
     label: 'Geführte Tour', next: 'Weiter', prev: 'Zurück', done: 'Beenden', close: 'Schließen', chaptersLabel: 'Kapitel des Auszugs',
-    tabs: { contents: 'Inhalt', unit: 'Einheit 1', exam: 'Bilanz', after: 'Und danach…' },
-    lockedTitle: 'Und 63 weitere Einheiten', lockedText: L => `Ihr ${L}-Programm geht bis Einheit 64 weiter: 3 weitere Segmente und die Abschlussbilanz.`,
+    tabs: { contents: 'Inhalt', unit: 'Einheit 1', exam: 'Kontrolle', after: 'Danach' },
+    lockedTitle: 'Und 63 weitere Einheiten', lockedText: L => `Ihr ${L}-Programm geht bis Einheit 64 weiter: 3 weitere Segmente und die Abschlusskontrolle.`,
     ctaKicker: 'Ihr nächster Schritt', ctaTitle: 'Starten Sie mit einer Pathway-Lehrkraft.', ctaText: 'Eine Lehrkraft stuft Ihr Niveau ein und sagt Ihnen, wo Sie beginnen.',
     spots: {
-      segments: ['4 Segmente, 64 Einheiten', 'Das Programm verläuft in 4 Etappen zu je 16 Einheiten. Jede endet mit einer Bilanz.'],
+      segments: ['4 Segmente, 64 Einheiten', 'Das Programm verläuft in 4 Etappen zu je 16 Einheiten. Jede endet mit einer Lernstandskontrolle.'],
       objectives: ['Klare Ziele', 'Jede Einheit beginnt damit, was Sie lernen und was Sie vorher wissen sollten.'],
       diagnostic: ['Eingangsdiagnose', '15 Minuten, um Ihre Grundlagen aus dem vorherigen Niveau zu prüfen. Bei Lücken sagt Ihnen Ihre Lehrkraft, was Sie wiederholen sollten.'],
       situation: ['A · Situation', 'Eine Illustration und ein Text führen das Thema der Einheit in einer echten Situation ein.'],
@@ -328,7 +353,7 @@ const TOUR = {
       reading: ['H · Leseverstehen', 'Ein Text mit Fragen, wie im TEF und TCF.'],
       listening: ['I · Hörverstehen', 'Ihre Lehrkraft liest einen Text vor und Sie antworten: Ihr Gehör trainiert von Anfang an.'],
       vocabulary: ['J · Schlüsselwortschatz', 'Rund zehn Wörter zum Merken am Ende jeder Einheit.'],
-      assessment: ['Segmentbilanz', 'Am Ende jedes Segments: 100 Punkte in den 4 Kompetenzen von TEF und TCF.']
+      assessment: ['Lernstandskontrolle', 'Am Ende jedes Segments: 100 Punkte in den 4 Kompetenzen von TEF und TCF.']
     }
   }
 };
@@ -354,14 +379,13 @@ function included(t, level) {
   const card = ([key, sample]) => {
     const [name, text] = t.inc.items[key];
     const src = sample === 'campus' ? CAMPUS_SAMPLE : sample && `/assets/manual-${level}/${sample}.webp`;
-    const soon = COMING_SOON.has(key) ? `<span class="inc-soon">${t.inc.soon}</span>` : '';
     const button = src ? `<button type="button" class="inc-sample" data-sample="${src}" data-title="${esc(`${name} · Pathway ${L}`)}"><svg class="icon" aria-hidden="true"><use href="#i-zoom"/></svg>${t.inc.sample}</button>` : '';
-    return `<li class="inc-item"><span class="inc-icon"><svg class="icon" aria-hidden="true"><use href="#${INCLUDED_ICONS[key]}"/></svg></span><div>${soon}<h3>${esc(name)}</h3><p>${esc(text)}</p>${button}</div></li>`;
+    return `<li class="inc-item"><span class="inc-icon"><svg class="icon" aria-hidden="true"><use href="#${INCLUDED_ICONS[key]}"/></svg></span><div><h3>${esc(name)}</h3><p>${esc(text)}</p>${button}</div></li>`;
   };
   const cards = entries.map(entry => card(entry)).join('');
   return `<section id="incluido" class="pgm-included" aria-labelledby="included-title">
       <div class="container inc-layout">
-        <div class="inc-head"><p class="eyebrow">${t.inc.eyebrow}</p><h2 id="included-title" lang="fr">Manuel de français, <span>niveau ${L}</span></h2><p>${esc(t.inc.lead)}</p></div>
+        <div class="inc-head"><p class="eyebrow">${t.inc.eyebrow}</p><h2 id="included-title">${esc(t.manualTitle(L)[0])} <span>${esc(t.manualTitle(L)[1])}</span></h2><p class="inc-original">${esc(t.inc.original)} <span lang="fr">Manuel de français · niveau ${L}</span></p><p>${esc(t.inc.lead)}</p></div>
         <ul class="inc-grid">${cards}</ul>
         <div class="inc-flow"></div>
         <a class="inc-next" href="#manual">${t.inc.next} <span aria-hidden="true">↓</span></a>
@@ -383,7 +407,10 @@ export function renderProgramPage({ lang, level, data, pages, tour, homeMarkup }
   const options = Object.keys(starts).map(key => `<option value="${starts[key]}">${esc(chapterNames[key] || key)}</option>`).join('');
   const i18n = {
     page: t.page, manual: t.manualWord, cta: `${t.evaluate} →`, ctaHref: test, fullscreen: t.fullscreen, exit: t.exit,
-    openFullscreen: t.openFullscreen, closeFullscreen: t.closeFullscreen, chapters: chapterNames
+    openFullscreen: t.openFullscreen, closeFullscreen: t.closeFullscreen, chapters: chapterNames,
+    cover: t.cover(L), hintTouch: t.hint, hintPointer: t.hintPointer,
+    // 120 px thumbnails for the strip under the book (programas/<level>/thumbs/).
+    thumbs: `/programas/${level}/thumbs/`
   };
   const levels = LEVELS.map(code => `<a href="${programPath(lang, code)}"${code === level ? ' aria-current="page"' : ''}>${code.toUpperCase()}</a>`).join('');
   const canonical = `${SITE_ORIGIN}${programPath(lang, level)}`;
@@ -438,8 +465,8 @@ export function renderProgramPage({ lang, level, data, pages, tour, homeMarkup }
 
     <section id="manual" class="reader-shell" aria-label="${esc(t.yourManual)} ${L}">
       <div class="reader-toolbar"><label for="chapter">${t.goTo} <select id="chapter">${options}</select></label><div class="reader-toolbar-actions"><button type="button" id="zoom-open" aria-label="${esc(t.zoomLabel)}">${t.zoom}</button><button type="button" id="fullscreen-open" class="reader-fullscreen-trigger" aria-pressed="false" aria-label="${esc(t.openFullscreen)}"><span id="fullscreen-label">${t.fullscreen}</span><span id="fullscreen-icon" aria-hidden="true">↗</span></button></div></div>
-      <div class="book-desk"><div class="book is-closed" id="book" data-level="${L}" data-i18n="${esc(JSON.stringify(i18n))}" tabindex="0" role="region" aria-label="${esc(t.bookLabel(L))}"><div class="book-page left-page" id="left-page"></div><div class="book-page right-page" id="right-page"></div><div class="book-spine" aria-hidden="true"></div><div class="turning-leaf" id="leaf" aria-hidden="true"><div class="leaf-front"></div><div class="leaf-back"></div></div><button type="button" class="page-edge edge-left" id="edge-prev" aria-label="${t.prev}"><span>‹</span></button><button type="button" class="page-edge edge-right" id="edge-next" aria-label="${t.next}"><span>›</span></button><button type="button" class="book-cover" id="cover" aria-label="${esc(t.openBook(L))}"><img src="/assets/manual-${level}/cover.webp" alt="Manuel de français — niveau ${L}" fetchpriority="high"><span>${t.openCta}</span></button></div></div>
-      <div class="reader-controls"><button id="previous" type="button" aria-label="${t.prev}">←</button><div><p id="page-label" aria-live="polite" aria-atomic="true">${t.opening}</p><span id="reader-hint">${t.hint}</span></div><button id="next" type="button" aria-label="${t.next}">→</button></div><div class="reader-progress" aria-hidden="true"><span id="progress"></span></div>
+      <div class="book-desk"><div class="book is-closed" id="book" data-level="${L}" data-i18n="${esc(JSON.stringify(i18n))}" tabindex="0" role="region" aria-label="${esc(t.bookLabel(L))}"><div class="book-page left-page" id="left-page"></div><div class="book-page right-page" id="right-page"></div><div class="book-spine" aria-hidden="true"></div><div class="turning-leaf" id="leaf" aria-hidden="true"><div class="leaf-front"></div><div class="leaf-back"></div></div><button type="button" class="page-edge edge-left" id="edge-prev" aria-label="${t.prev}"><span>‹</span></button><button type="button" class="page-edge edge-right" id="edge-next" aria-label="${t.next}"><span>›</span></button><button type="button" class="book-cover" id="cover" aria-label="${esc(t.openBook(L))}"><img src="/assets/manual-${level}/cover.webp" alt="Manuel de français — niveau ${L}" width="1191" height="1684" fetchpriority="high"><span>${t.openCta}</span></button></div></div>
+      <div class="reader-controls"><button id="previous" type="button" aria-label="${t.prev}">←</button><div><p id="page-label" aria-live="polite" aria-atomic="true">${esc(t.cover(L).kicker)}</p><span id="reader-hint">${t.hint}</span></div><button id="next" type="button" aria-label="${t.next}">→</button></div><div class="reader-progress" aria-hidden="true"><span id="progress"></span></div>
       <div class="reader-bottom"><button type="button" id="close-book">${t.backCover}</button><a href="#incluido">${t.readAll}</a><a href="/assets/manual-${level}/reader/manuel-${level}-extraits.pdf" download>${t.download} · PDF ↓</a></div>
     </section>
     <dialog id="page-zoom" aria-label="${esc(t.zoomed)}"><header><span id="zoom-label">Manuel ${L}</span><button id="zoom-close" type="button" aria-label="${esc(t.closeZoom)}">${t.close}</button></header><div id="zoom-content"></div></dialog>
@@ -450,7 +477,7 @@ export function renderProgramPage({ lang, level, data, pages, tour, homeMarkup }
   </main>
   ${footer}
   <script src="/assets/manual-${level}/reader/pages.js?v=${READER_VERSION}"></script>
-  <script>window.PathwayTour = ${inlineJson(tourData(lang, level, tour))};</script>
+  <script>window.PathwayTour = ${inlineJson(typoDeep(lang, tourData(lang, level, tour)))};</script>
   <script src="/v4/reader.js?v=${READER_VERSION}"></script>
   <script src="/v4/programa-docs.js?v=${READER_VERSION}" defer></script>
 </body>
@@ -466,9 +493,18 @@ export async function buildV4Programs({ outDir, rootDir }) {
       const data = JSON.parse(await readFile(join(rootDir, 'v4', 'data', 'manuals', `${level}.json`), 'utf8'));
       const tour = JSON.parse(await readFile(join(rootDir, 'v4', 'data', 'tours', `${level}.json`), 'utf8'));
       const pages = readerManifest(await readFile(join(rootDir, 'assets', `manual-${level}`, 'reader', 'pages.js'), 'utf8'));
+      // Every page of the excerpt needs its small thumbnail (programas/<level>/thumbs/).
+      for (const page of pages) {
+        const name = page.src.split('/').pop().replace(/\?.*$/, '');
+        await readFile(join(rootDir, 'programas', level, 'thumbs', name)).catch(() => { throw new Error(`Missing thumbnail programas/${level}/thumbs/${name}`); });
+      }
       const target = join(outDir, programPath(lang, level), 'index.html');
       await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, renderProgramPage({ lang, level, data, pages, tour, homeMarkup }), 'utf8');
+      const markup = renderProgramPage({ lang, level, data, pages, tour, homeMarkup });
+      // French typography in the page body and the head's title and description.
+      const body = markup.indexOf('<main'), bodyEnd = markup.indexOf('</main>');
+      const head = markup.slice(0, body).replace(/(<title>|<meta name="description" content=")([^<"]*)/g, (m, open, text) => open + typoText(lang, text));
+      await writeFile(target, head + typo(lang, markup.slice(body, bodyEnd)) + markup.slice(bodyEnd), 'utf8');
       written.push(target);
     }
   }
