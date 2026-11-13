@@ -8,9 +8,14 @@ Fait : `pathway-languages.com` est servi par le Worker Cloudflare (DNS chez Clou
 
 ## 2. Réception automatique des formulaires
 
-Renseigner `leadWebhook` dans `site-config.js` avec l’URL HTTPS du CRM ou de l’automatisation. Tant que cette valeur est vide, le parcours reste volontairement transparent : il prépare un message WhatsApp et le visiteur doit l’envoyer lui-même.
+Le test de niveau et le formulaire d’inscription enregistrent leurs envois dans Supabase, sans compte et sans e-mail envoyé :
 
-Le webhook doit accepter du JSON et répondre avec un statut HTTP 2xx. Il faut tester la destination avant de basculer le site public.
+- le test : `submit_placement` (`campus/db/019_test_nivel.sql`) ; l’équipe retrouve le niveau en invitant l’élève au Campus ;
+- l’inscription : `submit_enrollment` (`campus/db/021_solicitudes.sql`) ; les demandes apparaissent dans le Campus, « Cuentas » → « Solicitudes de inscripción », avec la cloche et « Inicio → Por revisar ».
+
+Les deux sont limités par adresse e-mail et par connexion (`campus/db/022_limite_ip.sql`). Un échec réseau ne bloque jamais le visiteur : WhatsApp s’ouvre quand même avec le message prérempli.
+
+`leadWebhook` dans `site-config.js` reste facultatif : il sert seulement à envoyer aussi chaque demande vers un CRM externe (JSON, réponse HTTP 2xx attendue).
 
 ## 3. Mesure des conversions
 
