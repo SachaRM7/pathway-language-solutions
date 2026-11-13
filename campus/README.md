@@ -57,13 +57,13 @@ Avant d'inviter des élèves, brancher un service d'envoi : Supabase → **Authe
 
 ### 4. Créer les comptes
 
-Une fois `003_invitations.sql` exécuté et la fonction `invite-student` déployée (voir `db/SQL_A_COPIER.md`), tout se fait depuis le Campus : **Mi grupo** → **Invitar a un alumno** (correo, nombre, nivel, profesor). L'admin peut aussi inviter un professeur (« Tipo de cuenta : Profesor »). La personne reçoit un e-mail ; à son arrivée, son nom, son niveau et son professeur sont déjà configurés, et l'onboarding les reprend.
+Une fois `003_invitations.sql` exécuté et la fonction `invite-student` déployée (voir `db/SQL_A_COPIER.md`), tout se fait depuis le Campus : onglet **Cuentas** → **Invitar a un alumno** (correo, nombre, nivel, profesor). L'admin peut aussi inviter un professeur (« Tipo de cuenta : Profesor »). La personne reçoit un e-mail ; à son arrivée, son nom, son niveau et son professeur sont déjà configurés, et l'onboarding les reprend.
 
 Un professeur invite uniquement pour lui-même ; l'admin choisit le professeur. Si l'adresse a déjà un compte, le profil est mis à jour immédiatement. Une invitation non acceptée peut être renvoyée ou annulée depuis la liste « Invitaciones ».
 
 Sans la fonction, l'invitation est quand même enregistrée : on peut envoyer l'e-mail depuis Supabase → **Authentication** → **Users** → **Add user** → **Send invitation**, et le profil sera configuré pareil.
 
-Pour modifier ou supprimer un compte ensuite, l'admin utilise la carte **Miembros** de Mi grupo (après `004_admin_members.sql`) : plus besoin de passer par Supabase.
+Pour modifier ou supprimer un compte ensuite, l'admin utilise la carte **Miembros** de l'onglet Cuentas (après `004_admin_members.sql`) : plus besoin de passer par Supabase.
 
 Le premier administrateur se crée une fois pour toutes en SQL :
 
@@ -71,6 +71,18 @@ Le premier administrateur se crée une fois pour toutes en SQL :
 update public.profiles set role = 'admin', full_name = 'Sacha'
 where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
 ```
+
+## Espace professeur et admin
+
+En vue « Profesor », un onglet par usage :
+
+- **Inicio** : le rapport de fin de cours (unités vues, qui s'ouvrent pour l'élève : `db/018_informe_clase.sql`), les chiffres de la semaine, les élèves à relancer et « Por revisar » (ce qui attend une décision, avec un lien vers l'onglet concerné).
+- **Alumnos** : l'avance de chaque élève, ses absences (justificatifs à accepter, rattrapages à programmer, mois non validés : `db/017_reglas_clases.sql`) et la validation de fin de niveau.
+- **Tareas** : assigner une unité et noter une erreur entendue en cours.
+- **Horarios** : les groupes, leurs cours et les changements d'horaire.
+- **Contenido** : les unités, un niveau et un segment à la fois, et les documents du programme (lus dans le Campus ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`). Amélioration possible : aujourd'hui le navigateur reçoit le PDF entier et le Campus n'affiche que les pages ouvertes ; pour un blocage strict, servir les pages unité par unité.
+- **Cuentas** : inviter des élèves et des profs ; l'admin y gère aussi tous les comptes.
+- **Ajustes** (admin) : les règles d'assistance, le rappel avant les cours, le contrat de l'élève (`db/015_contrato.sql`) et les e-mails de test.
 
 ## Publier une unité
 

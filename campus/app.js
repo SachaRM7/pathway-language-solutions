@@ -84,6 +84,7 @@ async function boot() {
   try { await loadAll(); } catch (e) { fail(e, 'No pudimos cargar tu campus. Revisa tu conexión.'); }
   $('#login').hidden = true;
   if (A.profile.role === 'student' && !A.profile.onboarded_at) return openOnboarding(true);
+  if (contractRequired()) return openContract({ mode: 'sign' });
   showApp();
 }
 sb.auth.onAuthStateChange((event, session) => {
@@ -251,9 +252,20 @@ async function loadAll() {
   A.badges = badges.data;
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
+  // Their own placement test (db/019_test_nivel.sql), shown in the onboarding.
+  if (!isStaff()) { const pt = await sb.rpc('my_placement'); A.placement = pt.error ? null : (pt.data || null); }
+  // Units seen in class (db/018_informe_clase.sql): with the setting on, a unit opens once seen.
+  if (!isStaff()) {
+    const [tu, pg] = await Promise.all([sb.from('taught_units').select('unit_id'), sb.rpc('progression_settings')]);
+    A.taught = tu.error ? null : new Set((tu.data || []).map(x => x.unit_id));
+    A.gate = !pg.error && !!(pg.data && pg.data.taught_gate) && !!A.taught;
+    const tn = await sb.from('taught_numbers').select('level,number').eq('level', A.profile.level);
+    A.taughtNums = tn.error ? null : (tn.data || []).map(x => x.number); // needs db/020_manual.sql
+  }
   await loadSchedule();
   await loadWeekly();
   await loadResumable();
+  await loadContract();
   if (isStaff()) await loadStaff();
 }
 // The account follows the device's time zone (classes, reminders and streaks are shown in it):
@@ -268,11 +280,13 @@ function syncTimezone() {
 // Group, fixed timetable and level documents (campus/db/008_horarios.sql). Without the
 // migration A.schedule and A.docs stay null and the campus works as before.
 async function loadSchedule() {
-  const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('id,level,title,path,position').order('position'), sb.rpc('my_recordings')]);
+  const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('*').order('position'), sb.rpc('my_recordings')]);
   A.schedule = sch.error ? null : (sch.data || null);
   A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
   const att = await sb.rpc('my_attendance');
   A.attendance = att.error ? null : (att.data || []); // needs db/013_asistencia.sql
+  const ma = isStaff() ? { error: true } : await sb.rpc('my_absences');
+  A.myAbs = ma.error ? null : (ma.data || null); // needs db/017_reglas_clases.sql
   const val = await sb.from('level_validations').select('*').eq('student_id', A.session.user.id);
   A.levelVal = val.error ? null : (val.data || []); // needs db/012_fin_nivel.sql
   A.docs = docs.error ? null : (docs.data || []);
@@ -317,12 +331,20 @@ async function loadStaff() {
   const [cfg, sat] = await Promise.all([sb.rpc('get_campus_settings'), sb.rpc('staff_attendance')]);
   A.staff.settings = cfg.error ? null : (cfg.data || null); // needs db/013_asistencia.sql
   A.staff.attendance = sat.error ? {} : (sat.data || {});
+  const abs = await sb.rpc('staff_absences');
+  A.staff.absences = abs.error ? null : (abs.data || []); // needs db/016_avisos.sql
+  const rep = await sb.rpc('staff_session_reports');
+  A.staff.reports = rep.error ? null : (rep.data || []); // needs db/018_informe_clase.sql
+  const cts = await sb.rpc('staff_contracts');
+  A.staff.contracts = cts.error ? null : (cts.data || {}); // needs db/015_contrato.sql
   const lv = await sb.rpc('staff_level_status');
   A.staff.levels = lv.error ? null : (lv.data || []); // needs db/012_fin_nivel.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
   A.staff.log = log.error ? null : (log.data || { groups: {}, unmatched: [] }); // needs db/009_zoom.sql
   A.staff.changes = chg.error ? [] : (chg.data || []);
   if (A.profile.role === 'admin') {
+    const pl = await sb.from('profiles').select('id,plan,plan_start').eq('role', 'student');
+    A.staff.plans = pl.error ? null : Object.fromEntries((pl.data || []).map(x => [x.id, x])); // needs db/017_reglas_clases.sql
     const mem = await sb.rpc('admin_members');
     A.staff.members = mem.error ? null : (mem.data || []);
   }
@@ -357,8 +379,9 @@ function unitState(u) {
   if (u.is_final) { const lv = finalStatus(u.level); return { unlocked: lv.unitsDone && lv.teacher, passed, retryAt, prev: null, final: lv }; }
   const prev = A.units.filter(x => x.level === u.level && x.number < u.number && playable(x) && !x.is_final).sort((a, b) => b.number - a.number)[0] || null;
   const assigned = A.assignments.some(a => a.unit_id === u.id);
-  const unlocked = !prev || A.runs.some(r => r.unit_id === prev.id && runPassed(r)) || assigned;
-  return { unlocked, passed, retryAt, prev };
+  const taught = !A.gate || passed || assigned || A.taught.has(u.id);
+  const unlocked = taught && (!prev || A.runs.some(r => r.unit_id === prev.id && runPassed(r)) || assigned);
+  return { unlocked, passed, retryAt, prev, taught };
 }
 // End of level (db/012_fin_nivel.sql): teacher's exam, then the Campus final exam.
 function finalStatus(level) {
@@ -395,18 +418,26 @@ const SNAV = [
   { id: 'repasar', label: 'Repasar', icon: 'cards', count: () => A.due },
   { id: 'simulacros', label: 'Simulacros', icon: 'timer' },
   { id: 'logros', label: 'Logros', icon: 'trophy' },
-  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) }
+  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) || (A.contract && A.contract.signed) }
 ];
+// Staff space: one tab per job, like the student side (Inicio first, settings last).
+const isAdmin = () => !!(A.profile && A.profile.role === 'admin');
 const TNAV = [
-  { id: 'grupo', label: 'Mi grupo', icon: 'users' },
-  { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null },
-  { id: 'contenido', label: 'Contenido', icon: 'book' }
+  { id: 'panel', label: 'Inicio', icon: 'home' },
+  { id: 'alumnos', label: 'Alumnos', icon: 'users' },
+  { id: 'tareas', label: 'Tareas', icon: 'pen' },
+  { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null, count: () => isAdmin() ? A.staff.changes.filter(c => c.status === 'pending').length : 0 },
+  { id: 'contenido', label: 'Contenido', icon: 'book' },
+  { id: 'cuentas', label: 'Cuentas', icon: 'user-plus', when: () => A.staff.invitesReady || (isAdmin() && !!A.staff.members) },
+  { id: 'ajustes', label: 'Ajustes', icon: 'settings', when: () => isAdmin() && !!A.staff.settings }
 ];
 const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
-const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, grupo: viewGrupo, horarios: viewHorarios, contenido: viewContenido };
+const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
+// Old links (#grupo) keep working.
+const ALIASES = { grupo: 'panel' };
 
 function currentView() {
-  const id = location.hash.slice(1);
+  const raw = location.hash.slice(1), id = ALIASES[raw] || raw;
   return navItems().some(n => n.id === id) ? id : navItems()[0].id;
 }
 function renderNav(cur) {
@@ -439,8 +470,8 @@ function notifications() {
   if (teacherMode()) {
     const inactive = A.staff.overview.filter(s => s.onboarded && (daysSince(s.last_activity) == null || daysSince(s.last_activity) >= 4)).length;
     const fresh = A.staff.overview.filter(s => !s.onboarded).length;
-    if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#grupo' });
-    if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#grupo' });
+    if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#alumnos' });
+    if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#alumnos' });
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
     if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
@@ -530,7 +561,7 @@ function toggleMenu() {
 }
 
 /* ───────────── Student views ───────────── */
-const EXAMS = { tef: 'TEF Canada', tcf: 'TCF Canada', ambos: 'TEF y TCF Canada', nose: 'Examen por definir' };
+const EXAMS = { tef: 'TEF Canada', tcf: 'TCF Canada', ambos: 'TEF y TCF Canada', tefaq: 'TEFAQ (Quebec)', nose: 'Examen por definir' };
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const MONTHS_L = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const fechaLabel = v => { if (!v || v === 'nose') return 'Por definir'; const [y, m] = v.split('-'); return `${MONTHS_L[+m - 1]} de ${y}`; };
@@ -641,6 +672,7 @@ function viewRuta() {
       if (st.passed) { cls = 'done'; inner = icon('check'); label = `Unidad ${n}, superada`; action = `data-start="${u.id}"`; }
       else if (st.retryAt) { cls = 'cur'; inner = icon('timer'); label = `Unidad ${n}, nuevo intento ${retryLabel(st.retryAt)}`; action = `data-toast="Necesitas 75 % para pasar. Nuevo intento: ${esc(retryLabel(st.retryAt))}."`; }
       else if (st.unlocked) { cls = 'cur'; label = `Unidad ${n}, disponible`; action = `data-start="${u.id}"`; }
+      else if (!st.taught) { cls = 'locked'; inner = icon('lock'); label = `Unidad ${n}, se abre cuando la veas en clase`; action = `data-toast="La unidad ${n} se abre cuando la veas en clase con tu profesor."`; }
       else { cls = 'locked'; inner = icon('lock'); label = `Unidad ${n}, bloqueada`; action = `data-toast="Supera antes la unidad ${st.prev ? st.prev.number : n - 1} con al menos 75 %."`; }
     }
     cells.push(`<button class="u ${cls}" ${action} aria-label="${label}">${inner}</button>`);
@@ -719,7 +751,7 @@ async function rate(g) {
 
 function viewSimulacros() {
   const e = A.profile.exam;
-  const choices = e === 'tef' ? ['tef'] : e === 'tcf' ? ['tcf'] : ['tef', 'tcf'];
+  const choices = e === 'tef' || e === 'tefaq' ? ['tef'] : e === 'tcf' ? ['tcf'] : ['tcf', 'tef'];
   if (!choices.includes(A.simExam)) A.simExam = choices[0];
   const dur = A.simExam === 'tcf' ? ['35 min', '60 min', '60 min', '12 min'] : ['40 min', '60 min', '60 min', '15 min'];
   const sk = [['Compréhension orale', 'speaker', 'sky'], ['Compréhension écrite', 'book', 'lilac'], ['Expression écrite', 'pen', 'peach'], ['Expression orale', 'mic', 'butter']];
@@ -756,13 +788,9 @@ function viewLogros() {
 
 /* ───────────── Staff views ───────────── */
 const daysSince = d => d ? Math.floor((Date.now() - new Date(d).getTime()) / 864e5) : null;
-function viewGrupo() {
-  const ov = A.staff.overview;
-  const active = ov.filter(s => s.week_xp > 0).length;
-  const open = ov.reduce((a, s) => a + s.homework_open, 0);
-  const acc = ov.filter(s => s.week_accuracy != null);
-  const avgAcc = acc.length ? Math.round(acc.reduce((a, s) => a + s.week_accuracy, 0) / acc.length) : null;
-  const alerts = [];
+// Students who need a word before the next class (shared by Inicio and the notifications).
+function staffAlerts() {
+  const ov = A.staff.overview, alerts = [];
   for (const s of ov) {
     const ds = daysSince(s.last_activity);
     if (!s.onboarded) alerts.push({ s, kind: 'warn', text: 'Todavía no completó la bienvenida del campus.' });
@@ -773,53 +801,248 @@ function viewGrupo() {
     const s = ov.find(x => x.id === f.student_id), u = unitById(f.unit_id);
     if (s) alerts.push({ s, kind: 'warn', text: `Salió ${f.focus_lost} ${f.focus_lost === 1 ? 'vez' : 'veces'} de la pestaña durante la unidad ${u ? u.number : ''} (${Math.round(100 * f.first_try_correct / Math.max(1, f.total))} %, ${fmtDate(new Date(f.finished_at), { weekday: 'long', day: 'numeric' })}).` });
   }
-  const units = A.units.filter(u => (A.unitInfo[u.id]?.validated || 0) > 0);
-  const studentOpts = ov.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('');
+  return alerts;
+}
+const assignable = () => A.units.filter(u => (A.unitInfo[u.id]?.validated || 0) > 0);
+const noStudentsTile = () => `<article class="tile empty"><h2>Todavía no tienes alumnos</h2><p class="muted">${A.staff.invitesReady ? 'Invita a tu primer alumno en «Cuentas»: aparecerá aquí con su progreso en cuanto entre al campus.' : 'Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.'}</p>${A.staff.invitesReady ? `<a class="btn btn-dark" style="margin-top:14px" href="#cuentas">${icon('user-plus')}Invitar a un alumno</a>` : ''}</article>`;
+
+// What waits for a decision, each line with a link to the tab where it is handled.
+function todoItems() {
+  const out = [], admin = isAdmin();
+  const pending = A.staff.changes.filter(c => c.status === 'pending').length;
+  if (admin && pending) out.push({ ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar`, href: '#horarios' });
+  if (admin && A.staff.groups && A.staff.members) {
+    const inGroup = new Set(A.staff.groups.flatMap(g => g.members.map(m => m.id)));
+    const n = A.staff.members.filter(m => m.role === 'student' && !inGroup.has(m.id)).length;
+    if (n) out.push({ ic: 'users', text: `${n} alumno${n > 1 ? 's' : ''} sin grupo, sin horario`, href: '#horarios' });
+  }
+  const noZoom = (A.staff.groups || []).filter(g => !g.zoom_link).length;
+  if (noZoom) out.push({ ic: 'video', text: `${noZoom} grupo${noZoom > 1 ? 's' : ''} sin enlace de Zoom`, href: '#horarios' });
+  const lost = (A.staff.log && A.staff.log.unmatched || []).length;
+  if (lost) out.push({ ic: 'video', text: `${lost} reunión${lost > 1 ? 'es' : ''} de Zoom sin grupo`, href: '#horarios' });
+  const ready = (A.staff.levels || []).filter(x => x.units_done && !x.teacher_passed_at).length;
+  if (ready) out.push({ ic: 'trophy', text: `${ready} alumno${ready > 1 ? 's' : ''} con el nivel terminado: validar el examen`, href: '#alumnos' });
+  if (A.staff.invitesReady) {
+    const joined = new Set((A.staff.members || []).filter(m => m.onboarded).map(m => String(m.email).toLowerCase()));
+    const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
+    if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
+  }
+  const noReport = (A.staff.reports || []).filter(x => !x.report).length;
+  if (noReport) out.push({ ic: 'pen', text: `${noReport} clase${noReport > 1 ? 's' : ''} sin informe`, href: '#panel' });
+  const abs = A.staff.absences || [];
+  const toReview = abs.reduce((n, s) => n + s.record.filter(r => !r.reason && r.request && r.request.status === 'pending').length + (s.requests || []).filter(q => q.status === 'pending').length, 0);
+  if (toReview) out.push({ ic: 'pen', text: `${toReview} justificativo${toReview > 1 ? 's' : ''} por revisar`, href: '#alumnos' });
+  const toMake = abs.reduce((n, s) => n + s.record.filter(r => r.reason && !r.makeup).length, 0);
+  if (toMake) out.push({ ic: 'calendar', text: `${toMake} clase${toMake > 1 ? 's' : ''} por recuperar`, href: '#alumnos' });
+  for (const s of abs) if (s.month && s.month.failed) out.push({ ic: 'users', text: `${s.name}: mes no validado`, href: '#alumnos' });
+  if (isAdmin() && A.staff.plans) {
+    const n = Object.values(A.staff.plans).filter(p => !p.plan).length;
+    if (n) out.push({ ic: 'user-plus', text: `${n} alumno${n > 1 ? 's' : ''} sin fórmula (mensual o ciclo)`, href: '#cuentas' });
+  }
+  if (contractOn() && A.staff.contracts) {
+    const n = A.staff.overview.filter(s => contractState(s.id) !== 'ok').length;
+    if (n) out.push({ ic: 'pen', text: `${n} alumno${n > 1 ? 's' : ''} sin el contrato firmado`, href: '#alumnos' });
+  }
+  const drafts = A.units.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated < inf.count; }).length;
+  if (admin && drafts) out.push({ ic: 'book', text: `${drafts} unidad${drafts > 1 ? 'es' : ''} en borrador`, href: '#contenido' });
+  return out;
+}
+
+function viewPanel() {
+  const ov = A.staff.overview;
+  const active = ov.filter(s => s.week_xp > 0).length;
+  const open = ov.reduce((a, s) => a + s.homework_open, 0);
+  const acc = ov.filter(s => s.week_accuracy != null);
+  const avgAcc = acc.length ? Math.round(acc.reduce((a, s) => a + s.week_accuracy, 0) / acc.length) : null;
+  const alerts = staffAlerts(), todo = todoItems(), canAssign = assignable().length > 0;
+  const upcoming = (A.staff.groups || []).flatMap(g => g.upcoming.filter(x => x.status !== 'cancelled' && new Date(x.at) > Date.now()).map(x => ({ g, x })))
+    .sort((a, b) => new Date(a.x.at) - new Date(b.x.at)).slice(0, 5);
+  return `<section class="view" aria-labelledby="h-panel">
+  ${topBar('h-panel', 'Inicio', 'Lo que pasó entre clases, antes de la próxima')}
+  <div class="bento staff">
+    ${reportTile()}
+    ${ov.length ? `<article class="tile sky c-4 kpi"><p class="label" style="color:var(--sky-ink)">Activos esta semana</p><p class="big num">${active}<span style="font-size:20px;color:var(--sky-ink)"> / ${ov.length}</span></p></article>
+    <article class="tile mint c-4 kpi"><p class="label" style="color:var(--mint-ink)">Tareas pendientes</p><p class="big num">${open}</p></article>
+    <article class="tile peach c-4 kpi"><p class="label" style="color:var(--peach-ink)">Aciertos a la primera</p><p class="big num">${avgAcc == null ? '—' : avgAcc + '%'}</p></article>
+    <article class="tile c-7"><div class="tile-head"><h2>Necesitan atención</h2>${alerts.length ? `<span class="pill ghost num">${alerts.length}</span>` : ''}</div>
+      ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert"><span class="ava">${esc(initials(a.s.full_name))}</span><p><b>${esc(a.s.full_name)}</b><br>${a.text}</p>${canAssign ? `<button class="btn btn-dark btn-sm" type="button" data-hw-student="${a.s.id}">Asignar tarea</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">Todo el grupo está al día.</p>'}</article>` : noStudentsTile()}
+    <article class="tile ${ov.length ? 'c-5' : 'c-6'}"><div class="tile-head"><h2>Por revisar</h2>${todo.length ? `<span class="pill ghost num">${todo.length}</span>` : ''}</div>
+      ${todo.length ? `<div class="todo">${todo.map(t => `<a class="todo-row" href="${t.href}">${icon(t.ic)}<span>${t.text}</span>${icon('arrow')}</a>`).join('')}</div>` : '<p class="muted">Nada pendiente por ahora.</p>'}</article>
+    ${A.staff.groups !== null ? `<article class="tile c-6"><div class="tile-head"><h2>Próximas clases</h2><a class="pill ghost" href="#horarios">Horarios</a></div>
+      ${upcoming.length ? upcoming.map(({ g, x }) => `<div class="err-row"><span><b>${esc(cap(sessionLabel(x.at)))}</b><br><span class="muted" style="font-size:13px">${esc(g.name)}${g.teacher ? ' · ' + esc(g.teacher) : ''}</span></span>${x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : ''}</div>`).join('') : '<p class="muted">Sin clases próximas.</p>'}</article>` : ''}
+    ${ov.length ? `<article class="tile c-6"><div class="tile-head"><h2>Errores frecuentes</h2><span class="pill ghost">30 días</span></div>
+      ${A.staff.errors.length ? A.staff.errors.map(e => { const c = reviewCard({ id: e.exercise_id, type: e.type, ...e.payload }); return `<div class="err-row"><span><s>${esc(c.front)}</s> → <b>${esc(c.back)}</b></span><span class="pill ghost num">${e.students} alumno${e.students === 1 ? '' : 's'}</span></div>`; }).join('') : '<p class="muted">Aún no hay errores registrados.</p>'}</article>` : ''}
+  </div></section>`;
+}
+
+// End-of-class report (db/018_informe_clase.sql): the units seen today open for the student.
+function reportTile() {
+  const list = A.staff.reports;
+  if (!list || !list.length) return '';
+  const due = list.filter(x => !x.report), done = list.filter(x => x.report).slice(0, 4);
+  const k = x => `${x.group_id}|${x.scheduled_at}`;
+  const who = x => esc(x.students.map(p => p.name).join(', ') || x.group);
+  const numsOf = r => r ? (r.unit_numbers && r.unit_numbers.length ? r.unit_numbers : (r.unit_ids || []).map(id => (unitById(id) || {}).number).filter(Boolean)) : [];
+  const form = x => {
+    const sel = new Set(A.staff.reportSel || numsOf(x.report));
+    const name = n => { const u = A.units.find(v => v.level === x.level && v.number === n && !v.is_final); return u ? u.title : ''; };
+    const chosen = [...sel].sort((a, b) => a - b);
+    return `<form class="form report-form" data-report-form="${esc(k(x))}" data-level="${esc(x.level)}">
+      <p style="font-size:14px"><b>${who(x)}</b> · ${esc(cap(sessionLabel(x.at)))}</p>
+      <div class="field">Unidades vistas hoy (nivel ${esc(x.level)})${'ABCD'.split('').map((g, i) => `<div class="unit-seg"><span>Segmento ${g}</span><div class="unit-picks" role="group" aria-label="Segmento ${g}">${Array.from({ length: 16 }, (_, j) => i * 16 + j + 1).map(n => `<button type="button" class="u-pick" data-pick="${n}" aria-pressed="${sel.has(n)}" title="${esc(name(n) || 'Unidad ' + n)}">${n}</button>`).join('')}</div></div>`).join('')}</div>
+      <p class="muted" style="font-size:13px">${chosen.length ? chosen.map(n => `${n}${name(n) ? '. ' + esc(name(n)) : ''}`).join(' · ') : 'Toca los números de las unidades que viste o repasaste en clase: sus páginas del manual y sus ejercicios se abren para el alumno.'}</p>
+      <label class="field" for="rpNote">Nota (opcional)<input id="rpNote" maxlength="500" value="${esc((x.report && x.report.note) || '')}" placeholder="Lo que trabajaron, lo que falta…"></label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar el informe</button><button class="btn btn-light btn-sm" type="button" data-report-cancel>Cancelar</button></div></form>`;
+  };
+  const row = x => A.staff.reportFor === k(x) ? form(x) : `<div class="err-row"><span><b>${who(x)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(x.at)))}${x.report ? ` · unidades ${numsOf(x.report).sort((a, b) => a - b).join(', ') || '—'}` : ''}</span></span>
+      <span class="row-act">${x.report ? '<span class="status">Informado</span>' : '<span class="status warn">Sin informe</span>'}<button class="btn ${x.report ? 'btn-light' : 'btn-dark'} btn-sm" type="button" data-report="${esc(k(x))}">${x.report ? 'Editar' : 'Informar'}</button></span></div>`;
+  return `<article class="tile"><div class="tile-head"><h2>Informe de clase</h2>${due.length ? `<span class="pill warn num">${due.length} por informar</span>` : '<span class="pill ghost">Al día</span>'}</div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Al terminar cada clase, marca las unidades que vieron: ${A.staff.settings && A.staff.settings.progression && A.staff.settings.progression.taught_gate ? 'se abren para el alumno, que debe superar sus ejercicios en orden.' : 'quedan anotadas (la apertura por informe se activa en «Ajustes»).'}</p>
+    ${due.map(row).join('')}${done.length ? `<p class="label" style="margin-top:12px">Últimos informes</p>${done.map(row).join('')}` : ''}</article>`;
+}
+
+function viewAlumnos() {
+  const ov = A.staff.overview;
+  const showCt = A.staff.contracts != null && (contractOn() || Object.keys(A.staff.contracts).length > 0);
   const rows = ov.map(s => {
     const ds = daysSince(s.last_activity);
     const st = !s.onboarded ? '<span class="status warn">Sin empezar</span>' : ds == null || ds >= 4 ? '<span class="status bad">Inactivo</span>' : s.week_accuracy != null && s.week_accuracy < 60 ? '<span class="status warn">Dificultad</span>' : '<span class="status">Al día</span>';
-    return `<tr><td><span class="who"><span class="ava sm">${esc(initials(s.full_name))}</span>${esc(s.full_name)}</span></td><td>${s.level}</td><td class="num">${s.streak ? `${s.streak} día${s.streak === 1 ? '' : 's'}` : '<span class="faint">—</span>'}</td><td>${ds == null ? '<span class="faint">Nunca</span>' : ds === 0 ? 'Hoy' : ds === 1 ? 'Ayer' : `Hace ${ds} días`}</td><td class="num">${s.homework_done} / ${s.homework_done + s.homework_open}</td><td>${st}</td></tr>`;
+    return `<tr><td><span class="who"><span class="ava sm">${esc(initials(s.full_name))}</span>${esc(s.full_name)}</span></td><td>${s.level}</td><td class="num">${s.streak ? `${s.streak} día${s.streak === 1 ? '' : 's'}` : '<span class="faint">—</span>'}</td><td>${ds == null ? '<span class="faint">Nunca</span>' : ds === 0 ? 'Hoy' : ds === 1 ? 'Ayer' : `Hace ${ds} días`}</td><td class="num">${s.week_accuracy == null ? '<span class="faint">—</span>' : s.week_accuracy + ' %'}</td><td class="num">${s.homework_done} / ${s.homework_done + s.homework_open}</td>${showCt ? `<td>${contractCell(s)}</td>` : ''}<td>${st}</td></tr>`;
   }).join('');
+  return `<section class="view" aria-labelledby="h-alumnos">
+  ${topBar('h-alumnos', 'Alumnos', `${ov.length} alumno${ov.length === 1 ? '' : 's'} · su avance y el paso de nivel`)}
+  <div class="bento staff">
+    ${ov.length ? `<article class="tile"><div class="tile-head"><h2>Avance</h2><span class="pill ghost">Esta semana</span></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Aciertos</th><th>Tareas</th>${showCt ? '<th>Contrato</th>' : ''}<th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
+    ${absencesTile()}
+    ${levelTile()}` : noStudentsTile()}
+  </div></section>`;
+}
+
+// Absences that count toward the exclusion (db/016_avisos.sql); the teacher can justify one.
+function absencesTile() {
+  const list = A.staff.absences;
+  if (!list || !list.length) return '';
+  const motives = ((A.contract && A.contract.contract && A.contract.contract.motives) || []).filter(Boolean);
+  const keyOf = (s, r) => `${s.student_id}|${r.group_id}|${r.scheduled_at}`;
+  const day = d => fmtDate(new Date(d), { day: 'numeric', month: 'short' }).replace('.', '');
+  const reqBtns = q => `<button class="btn btn-dark btn-sm" type="button" data-req="${q.id}" data-ok="1">Aceptar</button><button class="btn btn-light btn-sm" type="button" data-req="${q.id}" data-ok="0">Rechazar</button>`;
+  const row = (s, r) => {
+    const k = keyOf(s, r), q = r.request, deadline = Date.parse(r.at) + 72 * 3600e3;
+    const sub = [r.clicked_at ? `Entró a las ${fmtDate(new Date(r.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entró por el campus'];
+    if (r.reason) sub.push(`justificada: ${esc(r.reason)}`);
+    else if (q && q.status === 'pending') sub.push(`${q.kind === 'aviso' ? 'avisó' : 'justificativo'}: ${esc(q.reason)}${q.note ? ` («${esc(q.note)}»)` : ''}`);
+    else if (Date.now() < deadline) sub.push(`puede justificarla hasta el ${esc(shortWhen(deadline))}`);
+    if (r.makeup) sub.push(`recuperación el ${esc(shortWhen(r.makeup.at))}`);
+    const when = `<b>${esc(cap(sessionLabel(r.at)))}</b><br><span class="muted" style="font-size:13px">${sub.join(' · ')}</span>`;
+    if (A.staff.excusing === k) return `<form class="form excuse-form" data-excuse-form="${esc(k)}">
+        <p style="font-size:14px">${when}</p>
+        <label class="field" for="exReason">Motivo<select id="exReason">${motives.map(m => `<option>${esc(m)}</option>`).join('')}<option value="__otro">Otro motivo…</option></select></label>
+        <label class="field" for="exNote">Nota (comprobante, detalle)<input id="exNote" maxlength="300" placeholder="Certificado médico recibido el…"></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Justificar</button><button class="btn btn-light btn-sm" type="button" data-excuse-cancel>Cancelar</button></div></form>`;
+    if (A.staff.makeupFor === k) {
+      const d = new Date(Date.now() + 2 * 864e5), v = r.makeup ? new Date(r.makeup.at) : d, local = `${v.getFullYear()}-${pad2(v.getMonth() + 1)}-${pad2(v.getDate())}T${r.makeup ? pad2(v.getHours()) + ':' + pad2(v.getMinutes()) : '19:00'}`;
+      return `<form class="form excuse-form" data-makeup-form="${esc(k)}">
+        <p style="font-size:14px">${when}</p>
+        <div class="form-2"><label class="field" for="mkAt">Recuperación (tu hora local)<input id="mkAt" type="datetime-local" required value="${local}"></label>
+          <label class="field" for="mkDur">Duración (min)<input id="mkDur" type="number" min="15" max="240" step="15" value="${(r.makeup && r.makeup.duration_min) || r.duration_min || 60}"></label></div>
+        <p class="muted" style="font-size:13px">La clase aparece en el horario del alumno, con su recordatorio, y cuenta para la asistencia.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Programar</button><button class="btn btn-light btn-sm" type="button" data-makeup-cancel>Cancelar</button></div></form>`;
+    }
+    let tag, acts = '';
+    if (r.reason) {
+      tag = r.makeup ? '<span class="status">Por recuperar · programada</span>' : '<span class="status warn">Por recuperar</span>';
+      acts = `<button class="btn ${r.makeup ? 'btn-light' : 'btn-dark'} btn-sm" type="button" data-makeup="${esc(k)}">${r.makeup ? 'Cambiar' : 'Programar la recuperación'}</button>${r.makeup ? `<button class="btn btn-light btn-sm" type="button" data-makeup-del="${esc(k)}">Quitar</button>` : ''}<button class="btn btn-light btn-sm" type="button" data-unexcuse="${esc(k)}" title="La ausencia vuelve a contar">Quitar la justificación</button>`;
+    } else if (q && q.status === 'pending') {
+      tag = '<span class="status warn">Por revisar</span>';
+      acts = `${q.file_path ? `<button class="btn btn-light btn-sm" type="button" data-proof="${esc(q.file_path)}">Ver el comprobante</button>` : ''}${reqBtns(q)}`;
+    } else {
+      tag = r.status === 'late' ? '<span class="status warn">Tarde</span>' : `<span class="status bad">${Date.now() < deadline ? 'Ausente' : 'Hora perdida'}</span>`;
+      acts = `${q && q.status === 'rejected' ? '<span class="muted" style="font-size:12px">rechazado</span>' : ''}<button class="btn btn-light btn-sm" type="button" data-excuse="${esc(k)}">Justificar</button>`;
+    }
+    return `<div class="err-row${r.reason ? ' excused' : ''}"><span>${when}</span><span class="row-act">${tag}${acts}</span></div>`;
+  };
+  const block = s => {
+    const plan = s.plan === 'mensual' ? `<span class="pill ghost">Mensual · desde el ${esc(day(s.plan_start))}</span>` : s.plan === 'ciclo' ? '<span class="pill ghost">Ciclo</span>' : `<a class="pill warn" href="#cuentas">Sin fórmula</a>`;
+    const m = s.month;
+    const month = !m ? '' : m.failed
+      ? `<p class="abs-alert">Mes no validado (del ${esc(day(m.failed_from))} al ${esc(day(Date.parse(m.failed_to) - 1000))}): ${m.max} ausencias sin justificar. No pasa de nivel; para seguir, paga de nuevo el mes y rehace sus horas.${isAdmin() ? ` <button class="btn btn-dark btn-sm" type="button" data-month-reset="${s.student_id}">Mes pagado de nuevo</button>` : ''}</p>`
+      : `<p class="muted" style="font-size:13px;margin:2px 0 4px"><b class="${m.total >= m.max - 1 && m.total ? 'warn-text' : ''}">${m.total} / ${m.max}</b> ausencias sin justificar en sus 4 semanas (del ${esc(day(m.from))} al ${esc(day(Date.parse(m.to) - 1000))}).</p>`;
+    const upcoming = (s.requests || []).filter(q => Date.parse(q.scheduled_at) > Date.now() - 864e5).map(q => `<div class="err-row"><span><b>${esc(cap(sessionLabel(q.scheduled_at)))}</b><br><span class="muted" style="font-size:13px">Avisó que no vendrá: ${esc(q.reason)}${q.note ? ` («${esc(q.note)}»)` : ''}</span></span><span class="row-act">${q.status === 'approved' ? '<span class="status">Avisó a tiempo · por recuperar</span>' : q.status === 'rejected' ? '<span class="status bad">Rechazado</span>' : `<span class="status warn">Aviso tardío</span>${reqBtns(q)}`}</span></div>`).join('');
+    return `<div class="abs-student"><div class="abs-head"><b>${esc(s.name)}</b>${plan}</div>
+      ${month}${s.lost_minutes ? `<p class="muted" style="font-size:13px;margin:0 0 4px">Horas perdidas: <b>${hoursText(s.lost_minutes)}</b> (no se recuperan).</p>` : ''}
+      ${upcoming}
+      ${s.record.length ? s.record.map(r => row(s, r)).join('') : '<p class="muted" style="font-size:14px">Ninguna ausencia ni retraso.</p>'}</div>`;
+  };
+  return `<article class="tile"><div class="tile-head"><h2>Ausencias</h2></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">El alumno avisa desde el campus (48 h antes: se justifica sola) o envía su comprobante en las 72 h siguientes: acéptalo o recházalo aquí. Una ausencia justificada se recupera: programa la clase. Sin justificar, la hora se pierde.</p>
+    ${list.map(block).join('')}</article>`;
+}
+
+function viewTareas() {
+  const ov = A.staff.overview, units = assignable();
+  const studentOpts = ov.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('');
+  const pick = A.staff.hwPick;
   const now = new Date(Date.now() + 2 * 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T18:00`;
-  return `<section class="view" aria-labelledby="h-grupo">
-  ${topBar('h-grupo', 'Mi grupo', 'Lo que pasó entre clases, antes de la próxima')}
-  ${!ov.length ? `<div class="bento"><article class="tile empty"><h2>Todavía no tienes alumnos</h2><p class="muted">${A.staff.invitesReady ? 'Invita a tu primer alumno: aparecerá aquí con su progreso en cuanto entre al campus.' : 'Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.'}</p></article>${inviteTile()}${membersTile()}</div>` : `
-  <div class="bento">
-    <article class="tile sky c-4 kpi"><p class="label" style="color:var(--sky-ink)">Activos esta semana</p><p class="big num">${active}<span style="font-size:20px;color:var(--sky-ink)"> / ${ov.length}</span></p></article>
-    <article class="tile mint c-4 kpi"><p class="label" style="color:var(--mint-ink)">Tareas pendientes</p><p class="big num">${open}</p></article>
-    <article class="tile peach c-4 kpi"><p class="label" style="color:var(--peach-ink)">Aciertos a la primera</p><p class="big num">${avgAcc == null ? '—' : avgAcc + '%'}</p></article>
-    <article class="tile c-7"><div class="tile-head"><h2>Necesitan atención</h2></div>
-      ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert"><span class="ava">${esc(initials(a.s.full_name))}</span><p><b>${esc(a.s.full_name)}</b><br>${a.text}</p>${units.length ? `<button class="btn btn-dark btn-sm" type="button" data-hw-student="${a.s.id}">Asignar tarea</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">Todo el grupo está al día.</p>'}</article>
-    <article class="tile c-5"><div class="tile-head"><h2>Errores frecuentes</h2><span class="pill ghost">30 días</span></div>
-      ${A.staff.errors.length ? A.staff.errors.map(e => { const c = reviewCard({ id: e.exercise_id, type: e.type, ...e.payload }); return `<div class="err-row"><span><s>${esc(c.front)}</s> → <b>${esc(c.back)}</b></span><span class="pill ghost num">${e.students} alumno${e.students === 1 ? '' : 's'}</span></div>`; }).join('') : '<p class="muted">Aún no hay errores registrados.</p>'}</article>
-    <article class="tile"><div class="tile-head"><h2>Alumnos</h2></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Tareas</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
+  return `<section class="view" aria-labelledby="h-tareas">
+  ${topBar('h-tareas', 'Tareas', 'Lo que el alumno practica entre dos clases')}
+  <div class="bento staff">
+    ${!ov.length ? noStudentsTile() : `<article class="tile c-6"><div class="tile-head"><h2>Asignar una tarea</h2></div>
+      <p class="muted" style="font-size:14px;margin:-6px 0 16px">El alumno la ve en su inicio y en sus avisos.</p>
+      ${units.length ? `<form id="hwForm" class="form">
+        <label class="field" for="hwUnit">Unidad<select id="hwUnit" required>${units.map(u => `<option value="${u.id}">${u.level} · Unidad ${u.number} · ${esc(u.title)}</option>`).join('')}</select></label>
+        <label class="field" for="hwDate">Para el<input id="hwDate" type="date"></label>
+        <div class="field">Alumnos<div class="chips">${ov.map((s, i) => `<label for="hw${i}"><input type="checkbox" id="hw${i}" value="${s.id}" ${pick === s.id ? 'checked' : ''}><span>${esc(s.full_name)}</span></label>`).join('')}</div></div>
+        <button class="btn btn-dark" type="submit">Asignar</button>
+      </form>` : '<p class="muted">Publica al menos una unidad en «Contenido» para poder asignarla.</p>'}</article>
     <article class="tile c-6"><div class="tile-head"><h2>Anotar un error de la clase</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">Se convierte en una tarjeta de repaso del alumno.</p>
       <form id="errForm" class="form">
         <label class="field" for="errStudent">Alumno<select id="errStudent" required>${studentOpts}</select></label>
-        <div class="form-2"><label class="field" for="errWrong">Lo que dijo<input id="errWrong" required maxlength="300" placeholder="J'ai allé au cinéma."></label><label class="field" for="errRight">Corrección<input id="errRight" required maxlength="300" placeholder="Je suis allé au cinéma."></label></div>
+        <label class="field" for="errWrong">Lo que dijo<input id="errWrong" required maxlength="300" placeholder="J'ai allé au cinéma."></label>
+        <label class="field" for="errRight">Corrección<input id="errRight" required maxlength="300" placeholder="Je suis allé au cinéma."></label>
         <label class="field" for="errWhy">Explicación<input id="errWhy" maxlength="500" placeholder="Aller forma el passé composé con être."></label>
         <button class="btn btn-dark" type="submit">${icon('plus')}Añadir al repaso</button>
       </form></article>
-    <article class="tile c-6"><div class="tile-head"><h2>Asignar una tarea</h2></div>
-      ${units.length ? `<form id="hwForm" class="form">
-        <div class="form-2"><label class="field" for="hwUnit">Unidad<select id="hwUnit" required>${units.map(u => `<option value="${u.id}">${u.level} · Unidad ${u.number} · ${esc(u.title)}</option>`).join('')}</select></label>
-          <label class="field" for="hwDate">Para el<input id="hwDate" type="date"></label></div>
-        <div class="field">Alumnos<div class="chips">${ov.map((s, i) => `<label for="hw${i}"><input type="checkbox" id="hw${i}" value="${s.id}"><span>${esc(s.full_name)}</span></label>`).join('')}</div></div>
-        <button class="btn btn-dark" type="submit">Asignar</button>
-      </form>` : '<p class="muted">Publica al menos una unidad en «Contenido» para poder asignarla.</p>'}</article>
     ${A.staff.groups !== null ? '' : `<article class="tile c-6"><div class="tile-head"><h2>Programar la próxima clase</h2></div>
       <form id="classForm" class="form">
         <label class="field" for="clStudent">Alumno<select id="clStudent" required>${studentOpts}</select></label>
         <div class="form-2"><label class="field" for="clAt">Fecha y hora (tu hora local)<input id="clAt" type="datetime-local" required value="${localDefault}"></label>
           <label class="field" for="clLink">Enlace de la clase<input id="clLink" type="url" placeholder="https://zoom.us/j/…"></label></div>
         <button class="btn btn-dark" type="submit">Guardar</button>
-      </form></article>`}
-    ${levelTile()}
-    ${inviteTile()}
-    ${membersTile()}
-  </div>`}
-  </section>`;
+      </form></article>`}`}
+  </div></section>`;
+}
+
+function viewCuentas() {
+  const admin = isAdmin();
+  return `<section class="view" aria-labelledby="h-cuentas">
+  ${topBar('h-cuentas', 'Cuentas', admin ? 'Invitar a alumnos y profesores, y gestionar sus cuentas' : 'Invitar a tus alumnos al campus')}
+  <div class="bento staff">${inviteTile()}${membersTile()}</div></section>`;
+}
+
+function progressionTile() {
+  const st = A.staff.settings;
+  if (!st || !st.progression || !isAdmin()) return '';
+  const on = !!st.progression.taught_gate;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Apertura de las unidades</h2><span class="pill ghost">${on ? 'Según el informe' : 'Libre'}</span></div>
+    <form id="pgForm" class="form">
+      <label class="check-row" for="pgGate"><input id="pgGate" type="checkbox" ${on ? 'checked' : ''}>Abrir cada unidad (sus ejercicios y sus páginas del manual) solo cuando el profesor la marca en su informe de clase</label>
+      <p class="muted" style="font-size:13px">Para los ejercicios, el alumno debe además superar las unidades en orden (75 %). Las unidades ya superadas o dadas como tarea siguen abiertas. Sin esta opción, el manual se lee entero y cada unidad se abre al superar la anterior.</p>
+      <button class="btn btn-dark" type="submit">Guardar</button>
+    </form></article>`;
+}
+function viewAjustes() {
+  return `<section class="view" aria-labelledby="h-ajustes">
+  ${topBar('h-ajustes', 'Ajustes', 'Asistencia, recordatorios y correos automáticos')}
+  <div class="bento staff">${rulesTile()}${contractTile()}${progressionTile()}
+    <article class="tile c-6"><div class="tile-head"><h2>Correos automáticos</h2></div>
+      <div class="err-row"><span><b>Informe del lunes</b><br><span class="muted" style="font-size:13px">Cada lunes a las 8:00 (hora de Lima), en francés, a las cuentas de administración: clases dadas, grabaciones, retrasos, cambios y alumnos sin actividad.</span></span></div>
+      <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia sin justificar: puede justificarla en 72 h, si no la hora se pierde; en la fórmula mensual, dónde está respecto a las ausencias que invalidan el mes. Se activa con la asistencia y el contrato.</span></span></div>
+      <div class="err-row"><span><b>Recordatorio de clase</b><br><span class="muted" style="font-size:13px">A cada alumno, antes de cada clase, en su hora local. Se activa en «Reglas de asistencia».</span></span></div>
+      <div class="err-row"><span><b>Acceso al campus</b><br><span class="muted" style="font-size:13px">El código de 6 cifras para entrar, enviado por Supabase.</span></span></div>
+      <button class="btn btn-light" style="margin-top:14px" type="button" data-mail-test>Enviarme los correos de prueba</button>
+      <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes, un recordatorio de clase y un aviso de ausencia de ejemplo.</p></article>
+  </div></section>`;
 }
 
 // End of level (db/012_fin_nivel.sql): step 1 is validated here by the teacher.
@@ -851,6 +1074,7 @@ function inviteTile() {
   return `<article class="tile c-6"><div class="tile-head"><h2>Invitar a un alumno</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">Recibe un correo para entrar al campus. Su nombre, su nivel y su profesor ya quedan configurados.</p>
       <form id="invForm" class="form" novalidate>
+        <p class="muted" id="invTest" style="font-size:13px;margin:0 0 10px" hidden></p>
         <div class="form-2"><label class="field" for="invEmail">Correo<input id="invEmail" type="email" inputmode="email" autocomplete="off" required placeholder="alumno@correo.com"></label>
           <label class="field" for="invName">Nombre y apellido<input id="invName" required maxlength="120" placeholder="Valentina Rojas"></label></div>
         <div class="form-2"><label class="field" for="invLevel">Nivel<select id="invLevel">${LEVELS.map(l => `<option ${l === 'A2' ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -871,13 +1095,16 @@ function membersTile() {
   const teachers = A.staff.teachers;
   const row = m => {
     const last = daysSince(m.last_activity);
-    const meta = `${esc(m.email)} · ${m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
+    const pl = A.staff.plans && A.staff.plans[m.id];
+    const meta = `${esc(m.email)} · ${m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}${pl ? ` · ${pl.plan === 'mensual' ? `mensual desde el ${esc(fmtDate(new Date(pl.plan_start + 'T12:00:00Z'), { day: 'numeric', month: 'short' }, 'UTC'))}` : pl.plan === 'ciclo' ? 'ciclo' : 'sin fórmula'}` : ''}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
     if (A.staff.editing === m.id) {
       return `<form class="member-edit form" data-member-form="${m.id}">
         <div class="form-2"><label class="field" for="mName">Nombre<input id="mName" required maxlength="120" value="${esc(m.full_name)}"></label>
           <label class="field" for="mRole">Tipo de cuenta<select id="mRole"><option value="student" ${m.role === 'student' ? 'selected' : ''}>Alumno</option><option value="teacher" ${m.role === 'teacher' ? 'selected' : ''}>Profesor</option></select></label></div>
         <div class="form-2"><label class="field" for="mLevel">Nivel<select id="mLevel">${LEVELS.map(l => `<option ${l === m.level ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
           <label class="field" for="mTeacher">Profesor<select id="mTeacher"><option value="">Sin profesor</option>${teachers.filter(t => t.id !== m.id).map(t => `<option value="${t.id}" ${t.id === m.teacher_id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label></div>
+        ${m.role === 'student' && A.staff.plans ? (() => { const pl = A.staff.plans[m.id] || {}; return `<div class="form-2"><label class="field" for="mPlan">Fórmula<select id="mPlan"><option value="">Sin definir</option><option value="mensual" ${pl.plan === 'mensual' ? 'selected' : ''}>Mensual (4 semanas)</option><option value="ciclo" ${pl.plan === 'ciclo' ? 'selected' : ''}>Ciclo completo</option></select></label>
+          <label class="field" for="mPlanStart">Inicio<input id="mPlanStart" type="date" value="${esc(pl.plan_start || '')}"></label></div>`; })() : ''}
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Guardar</button><button class="btn btn-light btn-sm" type="button" data-member-cancel>Cancelar</button></div>
       </form>`;
     }
@@ -900,7 +1127,7 @@ const tzName = tz => (TIMEZONES.find(t => t[0] === tz) || [tz, tz])[1];
 const sessionLabel = at => { const d = new Date(at); return `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '')} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}`; };
 const slotsText = g => g.slots.length ? g.slots.map(s => `${WEEKDAYS[s.weekday].slice(0, 3)} ${s.start_time}`).join(' · ') + ` · ${g.slots[0].duration_min} min (hora de ${tzName(g.timezone)})` : 'Sin horario';
 const sessionRow = x => {
-  const st = x.status === 'cancelled' ? '<span class="status bad">Cancelada</span>' : x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : '';
+  const st = x.status === 'cancelled' ? '<span class="status bad">Cancelada</span>' : x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : x.status === 'makeup' ? '<span class="status">Recuperación</span>' : '';
   return `<div class="err-row"><span>${x.status === 'cancelled' ? `<s>${esc(cap(sessionLabel(x.scheduled_at)))}</s>` : `<b>${esc(cap(sessionLabel(x.at)))}</b>`}${x.status === 'moved' ? `<br><span class="muted" style="font-size:13px">Antes: ${esc(sessionLabel(x.scheduled_at))}</span>` : ''}</span>${st}</div>`;
 };
 
@@ -911,14 +1138,17 @@ function viewCurso() {
   ${topBar('h-curso', 'Mi curso', `Nivel ${esc(A.profile.level)} · tus clases y los documentos de tu programa`)}
   <div class="bento">
     <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2>${s ? `<span class="pill ghost">${esc(s.group.name)}</span>` : ''}</div>
-      ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(sessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
+      ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(studentSessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
         <p class="muted" style="font-size:13px;margin-top:12px">Horario fijo de tu grupo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
         ${next ? `<button class="btn btn-dark" style="margin-top:14px" type="button" data-join>${icon('video')}Entrar a la clase</button>${attendanceOn() ? `<p class="muted" style="font-size:13px;margin-top:10px">El enlace se abre ${esc(minutesText(s.attendance.open_min))} antes de la clase. Entra siempre por aquí: tu asistencia se registra con tu clic, y después de ${s.attendance.absent_after_min} minutos de clase cuenta como ausencia.</p>` : ''}` : ''}`
         : '<p class="muted">Pathway te asignará pronto a un grupo con su horario.</p>'}</article>
     <article class="tile c-6"><div class="tile-head"><h2>Tu programa</h2><span class="pill ghost">${esc(A.profile.level)}</span></div>
-      ${docs.length ? docs.map(d => `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b></span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button></div>`).join('')
+      ${docs.length ? docs.map(d => { const open = manualOpenNums(d); const n = d.unit_pages ? d.unit_pages.filter(Boolean).length : 0; return `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b>${open && n ? `<br><span class="muted" style="font-size:13px">${[...open].filter(x => d.unit_pages[x - 1]).length} de ${n} unidades abiertas · se abren al verlas en clase</span>` : ''}</span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Leer</button></div>`; }).join('')
         : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
     ${attendanceTile()}
+    ${A.contract && A.contract.signed ? `<article class="tile c-6"><div class="tile-head"><h2>Tu compromiso</h2><span class="pill ghost">${contractSignedNow() ? 'Firmado' : 'Versión anterior'}</span></div>
+      <p class="muted" style="font-size:14px">Las reglas de asistencia de tu curso, firmadas el ${esc(longDate(A.contract.signed.signed_at))}.</p>
+      <button class="btn btn-light" style="margin-top:14px" type="button" data-ct-mine>${icon('pen')}Ver mi compromiso</button></article>` : ''}
     ${A.recordings ? `<article class="tile c-6"><div class="tile-head"><h2>Tus clases grabadas</h2><span class="pill ghost num">${A.recordings.length}</span></div>
       ${A.recordings.length ? A.recordings.slice(0, 12).map(r => `<div class="err-row"><span>${icon('video')} <b>${esc(cap(sessionLabel(r.at)))}</b>${r.minutes ? `<br><span class="muted" style="font-size:13px">${r.minutes} min</span>` : ''}</span><a class="btn btn-light btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener">Ver</a></div>`).join('')
         : '<p class="muted">Cada clase aparece aquí, grabada, poco después de terminar.</p>'}</article>` : ''}
@@ -946,16 +1176,17 @@ function viewHorarios() {
       ${g.zoom_link ? '' : '<p class="form-error" style="margin-top:8px">Falta el enlace de Zoom.</p>'}
       ${admin ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-group-edit="${g.id}">Editar</button>` : ''}</article>`;
   const askable = groups.map(g => [g, g.upcoming.filter(x => x.status === 'planned' && new Date(x.at) > Date.now())]).filter(([, l]) => l.length);
+  // Shown on top when someone is missing a group; otherwise a quiet confirmation after the groups.
+  const noGroupTile = admin && A.staff.members ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
+      ${noGroup.length ? `<p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}` : '<p class="muted">Todos los alumnos tienen un grupo.</p>'}</article>` : '';
   const now = new Date(Date.now() + 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T19:00`;
   return `<section class="view" aria-labelledby="h-horarios">
   ${topBar('h-horarios', 'Horarios', admin ? 'Grupos, horarios fijos y cambios por validar' : 'Tus grupos y sus horarios fijos')}
-  <div class="bento">
-    ${changes.length || admin ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
-      ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('') || '<p class="muted">Ningún cambio por validar.</p>'}</article>` : ''}
-    ${rulesTile()}
+  <div class="bento staff">
+    ${(admin ? pending.length : changes.length) ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
+      ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('')}</article>` : ''}
     ${unmatchedTile()}
-    ${noGroup.length ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
-      <p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}</article>` : ''}
+    ${noGroup.length ? noGroupTile : ''}
     ${askable.length ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Mover o cancelar una clase' : 'Solicitar un cambio'}</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">${admin ? 'Como admin, el cambio se aplica directamente.' : 'El horario es fijo: el cambio se aplica cuando Pathway lo aprueba.'}</p>
       <form id="chgForm" class="form">
@@ -966,6 +1197,7 @@ function viewHorarios() {
         <button class="btn btn-dark" type="submit">${admin ? 'Aplicar el cambio' : 'Enviar la solicitud'}</button>
       </form></article>` : ''}
     ${groups.map(groupTile).join('')}
+    ${noGroup.length ? '' : noGroupTile}
     ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Nuevo grupo</h2><p class="muted">Un grupo por horario: una clase privada es un grupo de un alumno.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Crear un grupo</button></article>`) : ''}
     ${!groups.length && !admin ? '<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">Pathway crea los grupos con su horario fijo; aparecerán aquí.</p></article>' : ''}
   </div></section>`;
@@ -1002,10 +1234,62 @@ const minutesText = m => (m % 60 === 0 ? `${m / 60} h` : `${m} min`);
 const ATT = { present: ['Presente', ''], late: ['Tarde', 'warn'], absent: ['Ausente', 'bad'] };
 function attendanceTile() {
   if (!attendanceOn() || !A.attendance) return '';
-  const n = k => A.attendance.filter(a => a.status === k).length;
+  const n = k => A.attendance.filter(a => a.status === k && !a.excused).length, nEx = A.attendance.filter(a => a.excused && a.status !== 'present').length;
   return `<article class="tile c-6"><div class="tile-head"><h2>Tu asistencia</h2><span class="pill ghost">60 días</span></div>
-    <div class="chips"><span class="pill ghost num">${n('present')} presente${n('present') === 1 ? '' : 's'}</span>${n('late') ? `<span class="pill ghost num">${n('late')} tarde</span>` : ''}<span class="pill ghost num">${n('absent')} ausencia${n('absent') === 1 ? '' : 's'}</span></div>
-    ${A.attendance.slice(0, 8).map(a => `<div class="err-row"><span><b>${esc(cap(sessionLabel(a.at)))}</b><br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}</span></span><span class="status ${ATT[a.status][1]}">${ATT[a.status][0]}</span></div>`).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
+    ${myAbsenceSummary()}
+    <div class="chips"><span class="pill ghost num">${n('present')} presente${n('present') === 1 ? '' : 's'}</span>${n('late') ? `<span class="pill ghost num">${n('late')} tarde</span>` : ''}<span class="pill ghost num">${n('absent')} ausencia${n('absent') === 1 ? '' : 's'}</span>${nEx ? `<span class="pill ghost num">${nEx} justificada${nEx === 1 ? '' : 's'}</span>` : ''}</div>
+    ${A.attendance.slice(0, 10).map(attendanceRow).join('') || '<p class="muted">Tus clases aparecerán aquí.</p>'}</article>`;
+}
+
+/* ───────────── Ausencias: avisar 48 h antes, justificar 72 h después (db/017_reglas_clases.sql) ───────────── */
+const sameAt = (a, b) => Date.parse(a) === Date.parse(b);
+const myMotives = () => ((A.myAbs && A.myAbs.motives) || (A.contract && A.contract.contract && A.contract.contract.motives) || []).filter(Boolean);
+const myRequest = at => ((A.myAbs && A.myAbs.requests) || []).find(r => sameAt(r.scheduled_at, at));
+const hoursText = min => min % 60 === 0 ? `${min / 60} h` : `${Math.floor(min / 60) ? Math.floor(min / 60) + ' h ' : ''}${min % 60} min`;
+const shortWhen = at => fmtDate(new Date(at), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(/\./g, '');
+function motiveFields(p, motives) {
+  return `<label class="field" for="${p}Reason">Motivo<select id="${p}Reason">${motives.map(m => `<option>${esc(m)}</option>`).join('')}<option value="__otro">Otro motivo…</option></select></label>
+    <label class="field" for="${p}Note">Detalle<input id="${p}Note" maxlength="300" placeholder="Lo que tu profesor debe saber"></label>`;
+}
+// Upcoming class, for the student: « No podré asistir » (justified by itself 48 h ahead).
+function studentSessionRow(x) {
+  const row = sessionRow(x);
+  if (!A.myAbs || x.status === 'cancelled' || new Date(x.at) <= Date.now()) return row;
+  const r = myRequest(x.scheduled_at);
+  const tag = r ? (r.status === 'approved' ? '<span class="status">Avisaste · se reprograma</span>' : r.status === 'pending' ? '<span class="status warn">Aviso enviado · tu profesor decide</span>' : '<span class="status bad">Aviso rechazado</span>') : '';
+  const early = new Date(x.at) - Date.now() >= 48 * 3600e3;
+  if (A.notifyFor && sameAt(A.notifyFor, x.scheduled_at)) return row + `<form class="form excuse-form" data-notify-form="${esc(x.scheduled_at)}">
+      ${motiveFields('nt', myMotives())}
+      <p class="muted" style="font-size:13px">${early ? 'Avisas con más de 48 h: tu hora se reprogramará, sin comprobante.' : 'Faltan menos de 48 h: tu profesor decidirá. Si es por un motivo válido, después podrás enviar el comprobante.'}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Avisar a mi profesor</button><button class="btn btn-light btn-sm" type="button" data-notify-cancel>Cancelar</button></div></form>`;
+  return row.replace(/<\/div>$/, '') + `<span class="row-act">${tag || `<button class="btn btn-light btn-sm" type="button" data-notify="${esc(x.scheduled_at)}">No podré asistir</button>`}</span></div>`;
+}
+function myAbsenceSummary() {
+  const m = A.myAbs; if (!m) return '';
+  const out = [];
+  const mo = m.plan === 'mensual' && m.month;
+  if (mo && mo.failed) out.push(`<p class="abs-mine near"><b>Mes no validado</b><span>${mo.max} ausencias sin justificar en 4 semanas: no pasas al nivel siguiente. Para seguir, paga de nuevo el mes y rehaz sus horas.</span></p>`);
+  else if (mo) out.push(`<p class="abs-mine ${mo.total >= mo.max - 1 && mo.total ? 'near' : ''}"><b class="num">${mo.total} / ${mo.max}</b><span>ausencias sin justificar en tus 4 semanas (del ${fmtDate(new Date(mo.from), { day: 'numeric', month: 'short' })} al ${fmtDate(new Date(Date.parse(mo.to) - 1000), { day: 'numeric', month: 'short' })}). A la ${mo.max}.ª, tu mes no se valida.</span></p>`);
+  if (m.lost_minutes) out.push(`<p class="abs-mine"><b class="num">${hoursText(m.lost_minutes)}</b><span>perdidas por ausencias sin justificar. No se recuperan.</span></p>`);
+  if (m.to_makeup) out.push(`<p class="muted" style="font-size:13px;margin:-6px 0 12px">${m.to_makeup === 1 ? 'Tienes 1 clase por recuperar' : `Tienes ${m.to_makeup} clases por recuperar`}: tu profesor te propondrá una fecha.</p>`);
+  return out.join('');
+}
+function attendanceRow(a) {
+  const when = `<b>${esc(cap(sessionLabel(a.at)))}</b>${a.makeup ? ' <span class="muted">· recuperación</span>' : ''}<br><span class="muted" style="font-size:13px">${a.clicked_at ? `Entraste a las ${fmtDate(new Date(a.clicked_at), { hour: '2-digit', minute: '2-digit' })}` : 'No entraste por el campus'}${a.excused && a.status !== 'present' ? ` · ${esc(a.excused)}` : ''}</span>`;
+  if (a.status === 'present') return `<div class="err-row"><span>${when}</span><span class="status">Presente</span></div>`;
+  if (a.excused) return `<div class="err-row"><span>${when}</span><span class="status">Justificada</span></div>`;
+  const r = A.myAbs && myRequest(a.scheduled_at), deadline = Date.parse(a.at) + 72 * 3600e3, open = A.myAbs && Date.now() < deadline;
+  if (A.justifyFor && sameAt(A.justifyFor, a.scheduled_at)) return `<form class="form excuse-form" data-justify-form="${esc(a.scheduled_at)}">
+      <p style="font-size:14px">${when}</p>
+      ${motiveFields('js', myMotives())}
+      <label class="field" for="jsFile">Comprobante (PDF o foto)<input id="jsFile" type="file" accept="application/pdf,image/*" required></label>
+      <p class="muted" style="font-size:13px">Tu profesor lo revisa. Si lo acepta, tu hora se reprograma.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark btn-sm" type="submit">Enviar el justificativo</button><button class="btn btn-light btn-sm" type="button" data-justify-cancel>Cancelar</button></div></form>`;
+  let tag;
+  if (r && r.status === 'pending') tag = '<span class="status warn">Comprobante enviado</span>';
+  else if (open) tag = `${r && r.status === 'rejected' ? '<span class="status bad">Rechazado</span>' : `<span class="status ${a.status === 'late' ? 'warn' : 'bad'}">${a.status === 'late' ? 'Tarde' : 'Ausente'}</span>`}<button class="btn btn-light btn-sm" type="button" data-justify="${esc(a.scheduled_at)}" title="Hasta el ${esc(shortWhen(deadline))}">Justificar</button>`;
+  else tag = a.status === 'late' ? '<span class="status warn">Tarde</span>' : `<span class="status bad">${A.myAbs ? 'Hora perdida' : 'Ausente'}</span>`;
+  return `<div class="err-row"><span>${when}${open && !r ? `<br><span class="muted" style="font-size:12px">Puedes justificarla hasta el ${esc(shortWhen(deadline))}</span>` : ''}</span><span class="row-act">${tag}</span></div>`;
 }
 function groupAttendance(g) {
   const cfg = A.staff.settings && A.staff.settings.attendance;
@@ -1027,8 +1311,7 @@ function rulesTile() {
       <label class="check-row" for="rrOn"><input id="rrOn" type="checkbox" ${r.enabled ? 'checked' : ''}>Enviar un correo de recordatorio a cada alumno</label>
       <label class="field" for="rrBefore">Recordatorio (min antes de la clase)<input id="rrBefore" type="number" min="15" max="1440" step="5" value="${r.before_min ?? 60}"></label>
       <p class="muted" style="font-size:13px">La asistencia solo cuenta desde su activación. El recordatorio va por correo, en español, con el botón para entrar por el campus.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar las reglas</button><button class="btn btn-light" type="button" data-mail-test>Enviar correos de prueba</button></div>
-      <p class="muted" style="font-size:13px">La prueba te envía solo a ti el informe del lunes (en francés) y un recordatorio de clase de ejemplo.</p>
+      <button class="btn btn-dark" type="submit">Guardar las reglas</button>
     </form></article>`;
 }
 async function joinClass() {
@@ -1069,8 +1352,8 @@ function groupForm(g) {
 function docsTile() {
   if (A.profile.role !== 'admin' || A.docs === null) return '';
   return `<article class="tile"><div class="tile-head"><h2>Documentos del programa</h2><span class="pill ghost num">${A.docs.length}</span></div>
-    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada alumno ve los documentos de su nivel en «Mi curso» desde su primer día. Nadie tiene que enviarlos.</p>
-    ${LEVELS.map(l => { const list = A.docs.filter(d => d.level === l); return `<p class="label" style="margin-top:12px">${l}</p>${list.map(d => `<div class="err-row"><span>${esc(d.title)}</span><span style="display:flex;gap:6px"><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button><button class="btn btn-light btn-sm" type="button" data-doc-delete="${d.id}" data-doc-path="${esc(d.path)}">Quitar</button></span></div>`).join('') || '<p class="muted" style="font-size:14px">Ningún documento.</p>'}`; }).join('')}
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Cada alumno lee los documentos de su nivel en «Mi curso», dentro del campus, sin descargarlos. En un manual, el campus encuentra solo la primera página de cada unidad: con «Apertura de las unidades» activada, el alumno lee solo las unidades vistas en clase.</p>
+    ${LEVELS.map(l => { const list = A.docs.filter(d => d.level === l); return `<p class="label" style="margin-top:12px">${l}</p>${list.map(d => `<div class="err-row"><span>${esc(d.title)}<br><span class="muted" style="font-size:13px">${d.unit_pages ? `Manual · ${d.unit_pages.filter(Boolean).length} unidades · se abre al ritmo de las clases` : 'page_count' in d && d.page_count ? 'Se lee entero' : 'Sin analizar'}</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${'page_count' in d && !d.unit_pages ? `<button class="btn btn-light btn-sm" type="button" data-doc-scan="${d.id}">Detectar las unidades</button>` : ''}<button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Abrir</button><button class="btn btn-light btn-sm" type="button" data-doc-delete="${d.id}" data-doc-path="${esc(d.path)}">Quitar</button></span></div>`).join('') || '<p class="muted" style="font-size:14px">Ningún documento.</p>'}`; }).join('')}
     <form id="docForm" class="form" style="margin-top:18px">
       <div class="form-2"><label class="field" for="docLevel">Nivel<select id="docLevel">${LEVELS.map(l => `<option>${l}</option>`).join('')}</select></label>
         <label class="field" for="docTitle">Título<input id="docTitle" required maxlength="120" placeholder="Manual del alumno A2"></label></div>
@@ -1087,9 +1370,162 @@ async function openDoc(path) {
 }
 
 function bindSchedule(id) {
-  $$('[data-doc]').forEach(b => b.onclick = () => openDoc(b.dataset.doc));
+  $$('[data-report]').forEach(b => b.onclick = () => { A.staff.reportFor = b.dataset.report; A.staff.reportSel = null; render(); });
+  $$('[data-report-cancel]').forEach(b => b.onclick = () => { A.staff.reportFor = null; A.staff.reportSel = null; render(); });
+  $$('[data-pick]').forEach(b => b.onclick = () => {
+    const x = (A.staff.reports || []).find(r => `${r.group_id}|${r.scheduled_at}` === A.staff.reportFor);
+    const n = +b.dataset.pick;
+    const sel = new Set(A.staff.reportSel || (x && x.report ? (x.report.unit_numbers && x.report.unit_numbers.length ? x.report.unit_numbers : (x.report.unit_ids || []).map(id => (unitById(id) || {}).number).filter(Boolean)) : []));
+    if (sel.has(n)) sel.delete(n); else sel.add(n);
+    A.staff.reportSel = [...sel]; const note = $('#rpNote') ? $('#rpNote').value : ''; render(); if ($('#rpNote')) $('#rpNote').value = note;
+    $(`[data-pick="${b.dataset.pick}"]`)?.focus();
+  });
+  const rpf = $('[data-report-form]');
+  if (rpf) rpf.onsubmit = async e => {
+    e.preventDefault();
+    const [group, at] = rpf.dataset.reportForm.split('|');
+    const x = (A.staff.reports || []).find(r => `${r.group_id}|${r.scheduled_at}` === rpf.dataset.reportForm);
+    const nums = A.staff.reportSel || (x && x.report ? (x.report.unit_numbers && x.report.unit_numbers.length ? x.report.unit_numbers : (x.report.unit_ids || []).map(id => (unitById(id) || {}).number).filter(Boolean)) : []);
+    if (!nums.length && !$('#rpNote').value.trim()) return toast('Marca al menos una unidad.');
+    const btn = rpf.querySelector('button[type=submit]'); btn.disabled = true;
+    let { error } = await sb.rpc('save_class_report', { p_group: group, p_scheduled: at, p_numbers: nums, p_note: $('#rpNote').value.trim() });
+    if (error && /save_class_report|PGRST202|function/i.test(error.message || '')) {
+      // Without db/020_manual.sql: units with exercises only.
+      const ids = A.units.filter(u => u.level === rpf.dataset.level && !u.is_final && nums.includes(u.number)).map(u => u.id);
+      ({ error } = await sb.rpc('save_session_report', { p_group: group, p_scheduled: at, p_units: ids, p_note: $('#rpNote').value.trim() }));
+    }
+    if (error) { btn.disabled = false; return fail(error, 'No se pudo guardar el informe.'); }
+    A.staff.reportFor = null; A.staff.reportSel = null; toast('Informe guardado.'); await refresh(); render();
+  };
+  const pgf = $('#pgForm');
+  if (pgf) pgf.onsubmit = async e => {
+    e.preventDefault();
+    const { error } = await sb.rpc('set_campus_setting', { p_key: 'progression', p_value: { taught_gate: $('#pgGate').checked } });
+    if (error) return fail(error);
+    toast('Guardado.'); await refresh(); render();
+  };
+  // Student: tell ahead, justify after.
+  $$('[data-notify]').forEach(b => b.onclick = () => { A.notifyFor = b.dataset.notify; render(); $('#ntReason')?.focus(); });
+  $$('[data-notify-cancel]').forEach(b => b.onclick = () => { A.notifyFor = null; render(); });
+  $$('[data-justify]').forEach(b => b.onclick = () => { A.justifyFor = b.dataset.justify; render(); $('#jsReason')?.focus(); });
+  $$('[data-justify-cancel]').forEach(b => b.onclick = () => { A.justifyFor = null; render(); });
+  const reasonOf = (p) => { const sel = $(`#${p}Reason`), note = $(`#${p}Note`); const other = sel.value === '__otro'; return { reason: other ? note.value.trim() : sel.value, note: other ? '' : note.value.trim() }; };
+  const ntf = $('[data-notify-form]');
+  if (ntf) ntf.onsubmit = async e => {
+    e.preventDefault();
+    const { reason, note } = reasonOf('nt');
+    if (reason.length < 2) return toast('Escribe el motivo en «Detalle».');
+    const btn = ntf.querySelector('button[type=submit]'); btn.disabled = true;
+    const { data, error } = await sb.rpc('notify_absence', { p_scheduled: ntf.dataset.notifyForm, p_reason: reason, p_note: note });
+    if (error) { btn.disabled = false; return fail(error, 'No se pudo enviar el aviso.'); }
+    A.notifyFor = null; toast(data === 'approved' ? 'Aviso enviado: tu clase se reprogramará.' : 'Aviso enviado: tu profesor decidirá.'); await refresh(); render();
+  };
+  const jsf = $('[data-justify-form]');
+  if (jsf) jsf.onsubmit = async e => {
+    e.preventDefault();
+    const { reason, note } = reasonOf('js');
+    if (reason.length < 2) return toast('Escribe el motivo en «Detalle».');
+    const file = $('#jsFile').files[0];
+    if (!file) return toast('Adjunta el comprobante.');
+    if (file.size > 8 * 1024 * 1024) return toast('El archivo pesa más de 8 MB.');
+    const btn = jsf.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Enviando…';
+    const path = `${A.session.user.id}/${Date.now()}-${file.name.normalize('NFD').replace(/[^\w.-]+/g, '_').slice(-60)}`;
+    const up = await sb.storage.from('justificantes').upload(path, file, { contentType: file.type || 'application/octet-stream' });
+    if (up.error) { btn.disabled = false; btn.textContent = 'Enviar el justificativo'; return fail(up.error, 'No se pudo subir el comprobante.'); }
+    const { error } = await sb.rpc('justify_absence', { p_scheduled: jsf.dataset.justifyForm, p_reason: reason, p_note: note, p_file: path });
+    if (error) { btn.disabled = false; btn.textContent = 'Enviar el justificativo'; return fail(error, /deadline/.test(error.message || '') ? 'Pasaron las 72 h: ya no se puede justificar.' : 'No se pudo enviar el justificativo.'); }
+    A.justifyFor = null; toast('Justificativo enviado: tu profesor lo revisará.'); await refresh(); render();
+  };
+  // Staff: decide, see the proof, make up the class, reset a month.
+  $$('[data-req]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const ok = b.dataset.ok === '1';
+    const { error } = await sb.rpc('decide_absence_request', { p_id: b.dataset.req, p_ok: ok });
+    if (error) { b.disabled = false; return fail(error); }
+    toast(ok ? 'Aceptado: la clase queda por recuperar.' : 'Rechazado: la hora se pierde.'); await refresh(); render();
+  });
+  $$('[data-proof]').forEach(b => b.onclick = async () => {
+    const win = window.open('', '_blank');
+    const { data, error } = await sb.storage.from('justificantes').createSignedUrl(b.dataset.proof, 600);
+    if (error || !data) { if (win) win.close(); return fail(error, 'No se pudo abrir el comprobante.'); }
+    if (win) win.location = data.signedUrl; else location.href = data.signedUrl;
+  });
+  $$('[data-makeup]').forEach(b => b.onclick = () => { A.staff.makeupFor = b.dataset.makeup; render(); $('#mkAt')?.focus(); });
+  $$('[data-makeup-cancel]').forEach(b => b.onclick = () => { A.staff.makeupFor = null; render(); });
+  $$('[data-makeup-del]').forEach(b => b.onclick = async () => {
+    const [student, group, at] = b.dataset.makeupDel.split('|');
+    b.disabled = true;
+    const { error } = await sb.rpc('cancel_makeup', { p_student: student, p_group: group, p_replaces: at });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('Recuperación quitada.'); await refresh(); render();
+  });
+  const mkf = $('[data-makeup-form]');
+  if (mkf) mkf.onsubmit = async e => {
+    e.preventDefault();
+    const [student, group, at] = mkf.dataset.makeupForm.split('|');
+    const when = new Date($('#mkAt').value);
+    if (isNaN(when)) return toast('Elige la fecha y la hora.');
+    const { error } = await sb.rpc('schedule_makeup', { p_student: student, p_group: group, p_replaces: at, p_at: when.toISOString(), p_duration: parseInt($('#mkDur').value, 10) || 60 });
+    if (error) return fail(error, 'No se pudo programar la recuperación.');
+    A.staff.makeupFor = null; toast('Recuperación programada: el alumno la ve en su horario.'); await refresh(); render();
+  };
+  $$('[data-month-reset]').forEach(b => b.onclick = async () => {
+    if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar: sus 4 semanas empiezan hoy'; return; }
+    b.disabled = true;
+    const now = new Date(), today = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+    const { error } = await sb.rpc('set_student_plan', { p_user: b.dataset.monthReset, p_plan: 'mensual', p_start: today });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('Mes pagado de nuevo: sus 4 semanas empiezan hoy.'); await refresh(); render();
+  });
+  $$('[data-excuse]').forEach(b => b.onclick = () => { A.staff.excusing = b.dataset.excuse; render(); $('#exReason')?.focus(); });
+  $$('[data-excuse-cancel]').forEach(b => b.onclick = () => { A.staff.excusing = null; render(); });
+  $$('[data-unexcuse]').forEach(b => b.onclick = async () => {
+    const [student, group, at] = b.dataset.unexcuse.split('|');
+    b.disabled = true;
+    const { error } = await sb.rpc('unexcuse_absence', { p_student: student, p_group: group, p_scheduled: at });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('La ausencia vuelve a contar.'); await refresh(); render();
+  });
+  const exf = $('[data-excuse-form]');
+  if (exf) {
+    const sel = $('#exReason'), note = $('#exNote');
+    sel.onchange = () => { note.placeholder = sel.value === '__otro' ? 'Escribe el motivo' : 'Certificado médico recibido el…'; note.required = sel.value === '__otro'; };
+    exf.onsubmit = async e => {
+      e.preventDefault();
+      const [student, group, at] = exf.dataset.excuseForm.split('|');
+      const other = sel.value === '__otro', reason = other ? note.value.trim() : sel.value;
+      if (reason.length < 2) return toast('Escribe el motivo.');
+      const btn = exf.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Guardando…';
+      const { error } = await sb.rpc('excuse_absence', { p_student: student, p_group: group, p_scheduled: at, p_reason: reason, p_note: other ? '' : note.value.trim() });
+      if (error) { btn.disabled = false; btn.textContent = 'Justificar'; return fail(error, 'No se pudo justificar la ausencia.'); }
+      A.staff.excusing = null; toast('Ausencia justificada: ya no cuenta.'); await refresh(); render();
+    };
+  }
+  $$('[data-ct-view]').forEach(b => b.onclick = () => viewStudentContract(b.dataset.ctView));
+  $$('[data-ct-mine]').forEach(b => b.onclick = () => openContract({ mode: 'view', doc: A.contract.signed }));
+  $$('[data-ct-preview]').forEach(b => b.onclick = () => openContract({ mode: 'preview', who: { name: 'Nombre del alumno', email: 'alumno@correo.com', level: 'A2' } }));
+  const ctf = $('#ctForm');
+  if (ctf) ctf.onsubmit = async e => {
+    e.preventDefault();
+    const n = (sel, d) => Math.max(1, Math.min(20, parseInt($(sel).value, 10) || d));
+    const { error } = await sb.rpc('set_campus_setting', { p_key: 'contract', p_value: { enabled: $('#ctOn').checked, max_absences: n('#ctMax', 3), lates_per_absence: n('#ctLates', 3), ...($('#ctMotives') ? { motives: $('#ctMotives').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 12) } : {}) } });
+    if (error) return fail(error, 'No se pudo guardar el contrato.');
+    toast('Contrato guardado.'); await refresh(); render();
+  };
+  $$('[data-doc]').forEach(b => b.onclick = () => { const d = (A.docs || []).find(x => x.path === b.dataset.doc); if (d) openReader(d); });
+  $$('[data-doc-scan]').forEach(b => b.onclick = async () => {
+    const d = (A.docs || []).find(x => x.id === b.dataset.docScan); if (!d) return;
+    b.disabled = true;
+    try {
+      const signed = await sb.storage.from('programa').createSignedUrl(d.path, 3600);
+      if (signed.error) throw signed.error;
+      const n = await scanDocument(d, { url: signed.data.signedUrl }, b);
+      toast(n ? `${n} unidades encontradas en «${d.title}».` : `No hay unidades en «${d.title}»: se leerá entero.`);
+    } catch (e) { b.disabled = false; b.textContent = 'Detectar las unidades'; return fail(e, 'No se pudo analizar el documento.'); }
+    await refresh(); render();
+  });
   $$('[data-join]').forEach(b => b.onclick = () => joinClass());
-  if (id === 'contenido') {
+  {
     $$('[data-doc-delete]').forEach(b => b.onclick = async () => {
       b.disabled = true;
       await sb.storage.from('programa').remove([b.dataset.docPath]);
@@ -1109,7 +1545,12 @@ function bindSchedule(id) {
       if (up.error) { btn.disabled = false; return fail(up.error, 'No se pudo subir el archivo.'); }
       const { error } = await sb.from('level_documents').insert({ level, title, path, position: A.docs.filter(d => d.level === level).length });
       if (error) { btn.disabled = false; return fail(error); }
-      toast(`«${title}» añadido al programa ${level}.`); await refresh(); render();
+      let found = 0;
+      try {
+        const row = await sb.from('level_documents').select('id').eq('path', path).single();
+        if (row.data) found = await scanDocument({ id: row.data.id }, { data: new Uint8Array(await file.arrayBuffer()) }, btn);
+      } catch (e) { console.error(e); }
+      toast(`«${title}» añadido al programa ${level}${found ? ` · ${found} unidades encontradas` : ''}.`); await refresh(); render();
     };
   }
   $$('[data-final-create]').forEach(b => b.onclick = async () => {
@@ -1126,7 +1567,6 @@ function bindSchedule(id) {
     toast(data.promoted ? `${b.dataset.name} pasa al nivel siguiente.` : `Examen validado. ${b.dataset.name} podrá hacer el examen final del campus${data.needs_final ? ' cuando termine sus unidades' : ''}.`);
     await refresh(); render();
   });
-  if (id !== 'horarios') return;
   $$('[data-group-edit]').forEach(b => b.onclick = () => { A.staff.groupEditing = b.dataset.groupEdit; render(); });
   $$('[data-group-cancel]').forEach(b => b.onclick = () => { A.staff.groupEditing = null; render(); });
   $$('[data-group-delete]').forEach(b => b.onclick = async () => {
@@ -1197,25 +1637,40 @@ async function sendInvite(email) {
 
 function viewContenido() {
   if (A.ed.unit) return viewEditor();
-  const levels = [...new Set(A.units.map(u => u.level))];
+  const docsOn = isAdmin() && A.docs !== null;
+  if (!A.contTab || (A.contTab === 'docs' && !docsOn)) A.contTab = (LEVELS.find(l => A.units.some(u => u.level === l && !u.is_final)) || 'A2');
+  const tab = A.contTab, levels = tab === 'docs' ? [] : [tab];
+  // A level has 64 units: show one segment (16 units) at a time; the final exam stays visible.
+  const seg = A.contSeg || 'A', segOf = u => 'ABCD'[Math.min(3, Math.floor((u.number - 1) / 16))];
+  const inSeg = u => u.is_final || segOf(u) === seg;
+  const segChips = l => `<div class="seg-chips" role="group" aria-label="Segmento">${'ABCD'.split('').map(x => { const n = A.units.filter(u => u.level === l && !u.is_final && segOf(u) === x).length; return `<button type="button" data-cont-seg="${x}" aria-pressed="${x === seg}">${x}<small>${n}</small></button>`; }).join('')}</div>`;
+  const stat = l => { const list = A.units.filter(u => u.level === l); const live = list.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated === inf.count; }).length; return { n: list.length, live }; };
+  const tabs = `<div class="seg-tabs" role="group" aria-label="Nivel">${LEVELS.map(l => { const st = stat(l); return `<button type="button" data-cont="${l}" aria-pressed="${tab === l}"><b>${l}</b>${st.n ? `${st.live} / ${st.n} publicadas` : 'Sin unidades'}</button>`; }).join('')}${docsOn ? `<button type="button" data-cont="docs" aria-pressed="${tab === 'docs'}"><b>${icon('book')}</b>Documentos</button>` : ''}</div>`;
+  if (tab === 'docs') return `<section class="view" aria-labelledby="h-cont">
+  ${topBar('h-cont', 'Contenido', 'Los documentos del programa que cada alumno ve en «Mi curso».')}
+  ${tabs}
+  ${docsTile()}
+  </section>`;
   return `<section class="view" aria-labelledby="h-cont">
-  ${topBar('h-cont', 'Contenido', 'Prueba cada unidad y publícala cuando esté validada. Los alumnos solo ven las unidades publicadas.')}
-  ${levels.map(l => `<article class="tile"><div class="tile-head"><h2>Nivel ${l}</h2></div>
-    ${A.units.filter(u => u.level === l).map(u => { const inf = A.unitInfo[u.id] || { count: 0, validated: 0 }; const live = inf.count && inf.validated === inf.count;
+  ${topBar('h-cont', 'Contenido', 'Los alumnos solo ven las unidades publicadas')}
+  ${tabs}
+  ${levels.map(l => `<article class="tile"><div class="tile-head"><h2>Nivel ${l} · segmento ${seg}</h2>${segChips(l)}</div>
+    ${A.units.some(u => u.level === l) ? '' : `<p class="muted">Todavía no hay unidades ${l}. Créalas abajo.</p>`}
+    ${A.units.some(u => u.level === l && !u.is_final && inSeg(u)) ? '' : A.units.some(u => u.level === l) ? `<p class="muted">Todavía no hay unidades en el segmento ${seg}.</p>` : ''}
+    ${A.units.filter(u => u.level === l && inSeg(u)).map(u => { const inf = A.unitInfo[u.id] || { count: 0, validated: 0 }; const live = inf.count && inf.validated === inf.count;
       return `<div class="unit-row"><span class="no">${u.is_final ? icon('trophy') : pad2(u.number)}</span><div class="meta"><b>${esc(u.title)}</b><span>${inf.count} ejercicio${inf.count === 1 ? '' : 's'}${u.manual_time ? ' · manual: ' + esc(u.manual_time) : ''}</span></div>
         <span class="state-chip ${live ? 'live' : 'draft'}">${live ? 'Publicada' : 'Borrador'}</span>
         <button class="btn btn-light btn-sm" data-edit-unit="${u.id}">Editar</button>
         ${inf.count ? `<button class="btn btn-light btn-sm" data-preview="${u.id}">Probar</button><button class="btn ${live ? 'btn-light' : 'btn-dark'} btn-sm" data-publish="${u.id}" data-status="${live ? 'draft' : 'validated'}">${live ? 'Volver a borrador' : 'Publicar'}</button>` : ''}</div>`; }).join('')}
     ${'is_final' in (A.units[0] || {}) && !A.units.some(u => u.level === l && u.is_final) ? `<div class="unit-row"><span class="no">${icon('trophy')}</span><div class="meta"><b>Examen final ${l}</b><span>Unos 15 minutos en el campus, tras el examen con el profesor. Sin él, la validación del profesor basta para pasar de nivel.</span></div><button class="btn btn-dark btn-sm" type="button" data-final-create="${l}">Crear el examen final</button></div>` : ''}
-  </article>`).join('') || '<article class="tile"><p class="muted">Todavía no hay unidades.</p></article>'}
+  </article>`).join('')}
   <article class="tile"><div class="tile-head"><h2>Nueva unidad</h2></div>
     <form id="newUnitForm" class="form" novalidate>
-      <div class="form-2"><label class="field" for="nuLevel">Nivel<select id="nuLevel">${LEVELS.map(l => `<option ${l === 'A2' ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <div class="form-2"><label class="field" for="nuLevel">Nivel<select id="nuLevel">${LEVELS.map(l => `<option ${l === tab ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
         <label class="field" for="nuNumber">Número (1 a 64)<input id="nuNumber" type="number" inputmode="numeric" min="1" max="64" required></label></div>
       <label class="field" for="nuTitle">Título<input id="nuTitle" maxlength="160" required placeholder="Le présent des verbes en -ir"></label>
       <button class="btn btn-dark" type="submit">${icon('plus')}Crear la unidad</button>
     </form></article>
-    ${docsTile()}
   </section>`;
 }
 
@@ -1358,8 +1813,26 @@ function bindEditor() {
 function bindView(id) {
   bindSchedule(id);
   if (id === 'contenido') bindEditor();
-  if (id === 'grupo') {
+  {
     const inf = $('#invForm');
+    if (inf && $('#invEmail')) {
+      let last = '';
+      const lookup = async () => {
+        const email = $('#invEmail').value.trim().toLowerCase();
+        if (email === last) return; last = email;
+        const note = $('#invTest');
+        if (!/^\S+@\S+\.\S+$/.test(email)) { note.hidden = true; return; }
+        const { data, error } = await sb.rpc('placement_for_email', { p_email: email });
+        if (error || $('#invEmail').value.trim().toLowerCase() !== email) return;
+        if (data && data.level) {
+          $('#invLevel').value = data.level;
+          note.innerHTML = `${icon('check')} Test de nivel del ${esc(fmtDate(new Date(data.created_at), { day: 'numeric', month: 'short', year: 'numeric' }))}: <b>${esc(data.level)}</b>${data.overall != null ? ` (${data.overall}/100)` : ''}. Nivel completado.`;
+        } else note.textContent = 'Este correo no hizo el test de nivel del sitio: elige el nivel a mano.';
+        note.hidden = false;
+      };
+      $('#invEmail').addEventListener('input', () => { clearTimeout(inf._t); inf._t = setTimeout(lookup, 450); });
+      $('#invEmail').addEventListener('blur', lookup);
+    }
     if (inf) inf.onsubmit = async e => {
       e.preventDefault();
       const email = $('#invEmail').value.trim().toLowerCase(), name = $('#invName').value.trim();
@@ -1403,6 +1876,10 @@ function bindView(id) {
         if (!name) return toast('Escribe un nombre.');
         const { error } = await sb.rpc('admin_update_member', { p_user: mf.dataset.memberForm, p_full_name: name, p_level: $('#mLevel').value, p_teacher: $('#mTeacher').value || null, p_role: $('#mRole').value });
         if (error) return fail(error, 'No se pudieron guardar los cambios.');
+        if ($('#mPlan') && $('#mRole').value === 'student') {
+          const r = await sb.rpc('set_student_plan', { p_user: mf.dataset.memberForm, p_plan: $('#mPlan').value || null, p_start: $('#mPlanStart').value || null });
+          if (r.error) return fail(r.error, 'No se pudo guardar la fórmula.');
+        }
         A.staff.editing = null; toast('Cambios guardados.'); await refresh(); render();
       };
     }
@@ -1447,7 +1924,7 @@ function bindView(id) {
 }
 
 document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],[data-edit-unit],[data-ed-back],[data-ed-open],[data-ed-new],[data-ed-close],[data-ed-ask],[data-ed-delete],[data-ed-move],#flash');
+  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-cont],[data-cont-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],[data-edit-unit],[data-ed-back],[data-ed-open],[data-ed-new],[data-ed-close],[data-ed-ask],[data-ed-delete],[data-ed-move],#flash');
   if (!e.target.closest('.menu-wrap')) closeMenus();
   if (!t) return;
   if (t.matches('[data-mode]')) {
@@ -1455,8 +1932,9 @@ document.addEventListener('click', async e => {
     location.hash = navItems()[0].id; render(); return;
   }
   if (t.matches('[data-hw-student]')) {
-    const box = $(`#hwForm input[value="${t.dataset.hwStudent}"]`);
-    if (box) { box.checked = true; $('#hwForm').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); setTimeout(() => $('#hwUnit')?.focus({ preventScroll: true }), 300); }
+    A.staff.hwPick = t.dataset.hwStudent;
+    if (location.hash === '#tareas') render(); else location.hash = 'tareas';
+    setTimeout(() => $('#hwUnit')?.focus(), 50);
     return;
   }
   if (t.matches('[data-say]')) { e.stopPropagation(); if (!speak(t.dataset.say, .9, t)) toast('Este navegador no tiene voz francesa.'); return; }
@@ -1483,6 +1961,8 @@ document.addEventListener('click', async e => {
   }
   if (t.matches('[data-toast]')) return toast(t.dataset.toast);
   if (t.matches('[data-seg]')) { A.seg = +t.dataset.seg; render(); return; }
+  if (t.matches('[data-cont]')) { A.contTab = t.dataset.cont; render(); return; }
+  if (t.matches('[data-cont-seg]')) { A.contSeg = t.dataset.contSeg; render(); return; }
   if (t.matches('[data-exam]')) { A.simExam = t.dataset.exam; render(); return; }
   if (t.matches('[data-rate]')) return rate(+t.dataset.rate);
   if (t.id === 'flash') return flip();
@@ -1503,7 +1983,7 @@ document.addEventListener('input', e => { if (e.target.id === 'campusSearch') ru
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (!$('#lesson').hidden) return lessonKeys(e, tag);
-  if (!$('#ob').hidden) return;
+  if (!$('#ob').hidden || !$('#contract').hidden) return;
   if (e.key === 'Escape') closeMenus();
   if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
@@ -1520,10 +2000,10 @@ const OB = [
   { id: 'hola', c: 'peach', word: 'Bonjour' },
   { id: 'motivo', c: 'lilac', word: 'Pourquoi ?', st: [['Express Entry', 'NCLC 7'], ['Québec', 'PEQ, PSTQ']], key: 'motive', title: '¿Para qué aprendes francés?', sub: 'Elegimos los temas y los ejemplos según tu proyecto.',
     opts: [{ v: 'rp', t: 'Residencia permanente', d: 'Express Entry y programas provinciales', ic: 'target' }, { v: 'estudios', t: 'Estudiar en Canadá', d: 'Universidad, college o cégep', ic: 'book' }, { v: 'trabajo', t: 'Trabajar en francés', d: 'Entrevistas, correos y reuniones', ic: 'users' }, { v: 'otro', t: 'Otro proyecto', d: 'Familia, viajes o gusto personal', ic: 'sparkle' }] },
-  { id: 'examen', c: 'sky', word: 'TEF · TCF', st: [['TEF Canada', '4 pruebas'], ['TCF Canada', '4 pruebas']], key: 'exam', title: '¿Qué examen vas a presentar?', sub: 'IRCC acepta los dos. Tus simulacros seguirán el formato que elijas, y puedes cambiarlo después.',
-    opts: [{ v: 'ambos', t: 'Los dos', d: 'Lo que hace la mayoría de nuestros alumnos', ic: 'cards', rec: true }, { v: 'tef', t: 'TEF Canada', d: 'Simulacros con el formato del TEF', ic: 'timer' }, { v: 'tcf', t: 'TCF Canada', d: 'Simulacros con el formato del TCF', ic: 'timer' }, { v: 'nose', t: 'Aún no lo sé', d: 'Lo decides con tu profesor', ic: 'users' }] },
+  { id: 'examen', c: 'sky', word: 'TCF · TEF', st: [['TCF Canada', 'recomendado'], ['TEF Canada', '4 pruebas']], key: 'exam', title: '¿Qué examen vas a presentar?', sub: 'IRCC acepta el TCF Canada y el TEF Canada; el TEFAQ sirve para los programas de Quebec. Tus simulacros seguirán el formato que elijas, y puedes cambiarlo después.',
+    opts: [{ v: 'tcf', t: 'TCF Canada', d: 'El que recomendamos · simulacros con el formato del TCF', ic: 'timer', rec: true }, { v: 'tef', t: 'TEF Canada', d: 'Simulacros con el formato del TEF', ic: 'timer' }, { v: 'ambos', t: 'Los dos', d: 'Simulacros de los dos formatos', ic: 'cards' }, { v: 'tefaq', t: 'TEFAQ', d: 'Para Quebec · simulacros con el formato del TEF', ic: 'target' }, { v: 'nose', t: 'Aún no lo sé', d: 'Lo decides con tu profesor', ic: 'users' }] },
   { id: 'fecha', c: 'butter', word: String(new Date().getFullYear() + 1), st: [['Fecha objetivo', 'aproximada']], key: 'target_month', title: '¿Cuándo quieres presentarlo?', sub: 'Una fecha aproximada basta para organizar tu ritmo.' },
-  { id: 'nivel', c: 'mint', word: 'A2', st: [['Nivel de partida', 'según tu test']], key: 'level', title: 'Tu nivel de partida', sub: 'El que indicó tu test de nivel o tu profesor. Corrígelo si hace falta.' },
+  { id: 'nivel', c: 'mint', word: 'A2', st: [['Nivel de partida', 'según tu test']], key: 'level', title: 'Tu nivel de partida' },
   { id: 'ritmo', c: 'peach', word: '15 min', st: [['Meta diaria', 'tu racha']], key: 'daily_goal', title: '¿Cuánto tiempo al día?', sub: 'Tu meta diaria. Cumplirla mantiene tu racha.',
     opts: [{ v: 30, t: '10 min al día', d: 'Tranquilo · 30 XP', ic: 'timer' }, { v: 50, t: '15 min al día', d: 'Regular · 50 XP', ic: 'timer', rec: true }, { v: 80, t: '25 min al día', d: 'Intenso · 80 XP', ic: 'flame' }] },
   { id: 'plan', c: 'lilac', word: 'NCLC 7', st: [['Tu plan', 'listo']] }
@@ -1541,6 +2021,7 @@ function obWord(step) {
   if (step.id === 'ritmo' && ob.p.daily_goal) return RITMOS[ob.p.daily_goal].replace(' al día', '');
   if (step.id === 'examen' && ob.p.exam === 'tef') return 'TEF';
   if (step.id === 'examen' && ob.p.exam === 'tcf') return 'TCF';
+  if (step.id === 'examen' && ob.p.exam === 'tefaq') return 'TEFAQ';
   return step.word;
 }
 const obReady = step => !step.key || ob.p[step.key] != null;
@@ -1569,8 +2050,10 @@ function renderOb() {
     h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="months">${monthList().map(m => `<button type="button" class="month" data-ob="target_month" data-v="${m.v}" aria-pressed="${ob.p.target_month === m.v}">${MONTHS[m.m]}<small>${m.y}</small></button>`).join('')}
       <button type="button" class="month wide" data-ob="target_month" data-v="nose" aria-pressed="${ob.p.target_month === 'nose'}">Aún no tengo fecha</button></div>`;
   } else if (step.id === 'nivel') {
-    h = `<h1>${step.title}</h1><p class="sub">${step.sub}</p><div class="lvl-pick">${LEVELS.map(l => `<button type="button" data-ob="level" data-v="${l}" aria-pressed="${ob.p.level === l}">${l}<small>${{ A1: 'Principiante', A2: 'Elemental', B1: 'Intermedio', B2: 'Avanzado' }[l]}</small></button>`).join('')}</div>
-      <a class="ob-link" href="https://pathway-languages.com/test-placement.html" target="_blank" rel="noopener">Hacer el test de nivel</a>`;
+    const pt = A.placement;
+    const why = pt ? `Según tu test de nivel del ${fmtDate(new Date(pt.created_at), { day: 'numeric', month: 'long' })}${pt.overall != null ? ` (${pt.overall}/100)` : ''}.` : (A.teacher ? `Según la evaluación de ${esc(firstName(A.teacher.full_name))}.` : 'Según tu evaluación inicial.');
+    h = `<h1>${step.title}</h1><p class="sub">${why} Empiezas aquí: tus unidades y tu manual son los de este nivel.</p><div class="lvl-pick locked">${LEVELS.map(l => `<button type="button" aria-pressed="${ob.p.level === l}" ${ob.p.level === l ? 'aria-current="true"' : 'disabled'}>${l}<small>${{ A1: 'Principiante', A2: 'Elemental', B1: 'Intermedio', B2: 'Avanzado' }[l]}</small></button>`).join('')}</div>
+      <p class="ob-link" style="text-decoration:none">¿Crees que no es tu nivel? Coméntalo con tu profesor en tu primera clase.</p>`;
   } else if (step.id === 'plan') {
     const q = ob.p;
     h = `<h1>Tu plan está listo</h1><p class="sub">${A.teacher ? esc(firstName(A.teacher.full_name)) + ' lo verá antes de tu próxima clase. ' : ''}Puedes cambiarlo cuando quieras desde «Mi cuenta».</p>
@@ -1602,6 +2085,7 @@ async function obNext() {
   if (error) { renderOb(); return fail(error, 'No pudimos guardar tu plan. Inténtalo de nuevo.'); }
   Object.assign(A.profile, patch);
   $('#ob').hidden = true;
+  if (ob.first && contractRequired()) return openContract({ mode: 'sign', first: true });
   if (ob.first) { location.hash = 'inicio'; showApp(); confetti(); toast(`Bienvenido al campus, ${firstName(A.profile.full_name)}.`); }
   else { showApp(); toast('Plan actualizado.'); }
 }
@@ -1615,6 +2099,372 @@ $('#ob').addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if ($('#ob').hidden) return;
   if (e.key === 'Enter' && !(e.target.closest && e.target.closest('[data-ob],a,button,input'))) { e.preventDefault(); obNext(); }
+});
+
+/* ───────────── Contrato del alumno (db/015_contrato.sql) ───────────── */
+// The student signs once the onboarding is done (or at the next login), then again whenever the
+// text changes: the rules come from « Ajustes » and the attendance rules, so a change there is a
+// new version. What is signed is the exact text below, kept with the signature as proof.
+const CT = { mode: 'sign', strokes: [], drawing: false, keys: new Set(), name: '', busy: false, first: false, done: false };
+const SIG_W = 600, SIG_H = 200;
+async function sha256(t) {
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { return null; }
+}
+const contractOn = () => !!(A.contract && A.contract.contract && A.contract.contract.enabled);
+function contractClauses() {
+  const c = (A.contract && A.contract.contract) || {}, a = (A.contract && A.contract.attendance) || {};
+  const open = minutesText(a.open_min ?? 60), absent = a.absent_after_min ?? 10, late = a.late_after_min;
+  const max = c.max_absences ?? 3, lates = c.lates_per_absence ?? 3;
+  const motives = (Array.isArray(c.motives) ? c.motives : []).map(m => String(m).trim()).filter(Boolean);
+  const lateWhen = late ? `más de ${late} minutos después del inicio` : 'después de la hora de inicio';
+  return [
+    { title: 'Tu curso', text: 'Pathway Language Solutions («Pathway») te acompaña en tu curso de francés: clases particulares en vivo con tu profesor, en tu horario fijo, y práctica en el campus entre clases. Este compromiso fija las reglas de asistencia que aceptas al empezar.' },
+    { key: true, title: 'Puntualidad y asistencia', text: `Entras a cada clase con el botón «Entrar a la clase» del campus, que se abre ${open} antes del inicio. Cuenta la hora de tu primer clic: si entras ${lateWhen}, es un retraso; si entras más de ${absent} minutos después del inicio, o si no entras, es una ausencia.` },
+    { title: 'Retrasos', text: lates === 1 ? 'Cada retraso cuenta como una ausencia sin justificar.' : `Cada ${lates} retrasos cuentan como una ausencia sin justificar.` },
+    { key: true, title: 'Avisar o justificar una ausencia', text: `Si sabes que no podrás venir, avisa desde el campus al menos 48 horas antes: tu hora se reprograma. Si no pudiste avisar, justifica tu ausencia desde el campus en las 72 horas siguientes al inicio de la clase, con un comprobante.${motives.length ? ` Los únicos motivos válidos son: ${motives.join('; ')}.` : ''} Una ausencia justificada se recupera en otra clase.` },
+    { key: true, title: 'Ausencias sin justificar', text: 'Una ausencia que no se avisa ni se justifica a tiempo es una hora perdida: no se recupera ni se reembolsa. Después de cada una, recibes un correo.' },
+    { key: true, title: 'Fórmula mensual', text: `Un mes son 4 semanas desde tu fecha de inicio. ${max === 1 ? 'Con una ausencia sin justificar' : `Con ${max} ausencias sin justificar en las mismas 4 semanas`}, tu mes no se valida: no pasas al nivel siguiente y, para seguir, pagas de nuevo el mes y rehaces todas sus horas, aunque hayas tenido buena nota.` },
+    { key: true, title: 'Ciclo completo', text: 'Si te inscribiste por un ciclo completo, pagaste una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo. No es reembolsable: las horas perdidas no se recuperan, y no hay reembolso si al final del ciclo no alcanzas el nivel.' },
+    { title: 'Clases movidas o canceladas', text: 'Una clase que Pathway mueve o cancela nunca cuenta como ausencia.' },
+    { title: 'Trabajo personal', text: 'Los ejercicios y los exámenes del campus son personales: no compartes tu cuenta ni tus respuestas. El campus registra si sales de la pestaña durante una unidad, y tu profesor lo ve.' },
+    { title: 'Grabaciones y documentos', text: 'Las clases grabadas y los documentos del programa son para tu uso personal: no se comparten ni se publican.' },
+    { title: 'Firma electrónica', text: 'Firmas este compromiso de forma electrónica. Pathway guarda el texto firmado, tu firma, la fecha y los datos técnicos de la conexión. Puedes volver a leerlo cuando quieras en «Mi curso».' }
+  ];
+}
+const CT_HEAD = 'COMPROMISO DEL ALUMNO · PATHWAY LANGUAGE SOLUTIONS';
+const contractBody = () => [CT_HEAD, ...contractClauses().map((c, i) => `${i + 1}. ${c.title}\n${c.text}`)].join('\n\n');
+const parseBody = body => String(body || '').split('\n\n').slice(1).map(p => { const [t, ...rest] = p.split('\n'); return { title: t.replace(/^\d+\.\s*/, ''), text: rest.join(' ') }; });
+// Signed for the current text?
+const contractSignedNow = () => !!(A.contract && A.contract.signed && A.contract.signed.body === contractBody());
+const contractRequired = () => !!(A.profile && A.profile.role === 'student' && contractOn() && !contractSignedNow());
+async function loadContract() {
+  const r = await sb.rpc('contract_status');
+  A.contract = r.error ? null : (r.data || null); // needs db/015_contrato.sql
+  A.contractHash = A.contract ? await sha256(contractBody()) : null;
+}
+
+const sigPath = () => CT.strokes.map(s => (s.length === 1 ? [s[0], [s[0][0] + 0.5, s[0][1]]] : s).map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('')).join('');
+const sigSvg = d => /^[MLQ0-9 .,-]+$/.test(d || '') ? `<svg class="sig" viewBox="0 0 ${SIG_W} ${SIG_H}" role="img" aria-label="Firma"><path d="${d}"/></svg>` : '';
+const inkOk = () => { const pts = CT.strokes.flat(); if (pts.length < 12) return false; const xs = pts.map(p => p[0]); return Math.max(...xs) - Math.min(...xs) > 60; };
+const longDate = d => fmtDate(new Date(d), { day: 'numeric', month: 'long', year: 'numeric' });
+const shortDate = d => fmtDate(new Date(d), { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
+function stampSvg(at) {
+  const d = new Date(at || Date.now());
+  return `<svg class="stamp" viewBox="0 0 200 200" role="img" aria-label="Sello: compromiso firmado">
+    <defs><path id="stampRing" d="M100,100 m-73,0 a73,73 0 1,1 146,0 a73,73 0 1,1 -146,0"/>
+      <filter id="stampInk" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></defs>
+    <g filter="url(#stampInk)">
+      <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" stroke-width="5"/>
+      <circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="100" cy="100" r="61" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text font-size="12.5" font-weight="700" fill="currentColor"><textPath href="#stampRing" startOffset="4" textLength="438" lengthAdjust="spacing">PATHWAY LANGUAGE SOLUTIONS • COMPROMISO •</textPath></text>
+      <text x="100" y="101" text-anchor="middle" font-size="25" font-weight="800" fill="currentColor" letter-spacing="1.5">FIRMADO</text>
+      <text x="100" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" letter-spacing="1.5">${pad2(d.getDate())} · ${pad2(d.getMonth() + 1)} · ${d.getFullYear()}</text>
+    </g></svg>`;
+}
+
+// mode: 'sign' (the student), 'preview' (staff, nothing saved), 'view' (a signed copy).
+function openContract(opts) {
+  Object.assign(CT, { mode: opts.mode, first: !!opts.first, doc: opts.doc || null, who: opts.who || { name: A.profile.full_name, email: A.session.user.email, level: A.profile.level }, strokes: [], keys: new Set(), name: '', busy: false, done: false });
+  $('#app').hidden = true; $('#tabbar').hidden = true; closeMenus();
+  const el = $('#contract');
+  el.hidden = false; document.body.classList.add('no-scroll');
+  renderContract();
+  el.scrollTop = 0;
+}
+function closeContract() { $('#contract').hidden = true; $('#contract').innerHTML = ''; document.body.classList.remove('no-scroll'); }
+function renderContract() {
+  const sign = CT.mode !== 'view', who = CT.who;
+  const clauses = sign ? contractClauses() : parseBody(CT.doc.body);
+  const keyIdx = clauses.map((c, i) => c.key ? i : -1).filter(i => i >= 0);
+  const renewing = CT.mode === 'sign' && A.contract && A.contract.signed;
+  const label = CT.mode === 'preview' ? 'Vista previa · no se guarda nada' : CT.mode === 'view' ? 'Copia firmada' : renewing ? 'Nueva versión' : 'Último paso';
+  const when = shortDate(sign ? Date.now() : CT.doc.signed_at);
+  $('#contract').innerHTML = `<div class="ct-top"><span class="ob-logo"><span class="logo-mark"><svg class="icon"><use href="#i-route"/></svg></span>Pathway</span>
+      <span class="ct-step">${label}</span>
+      ${CT.mode === 'sign' ? '' : `<button type="button" class="round ct-close" data-ct="close" aria-label="Cerrar">${icon('x')}</button>`}</div>
+    <div class="ct-stage">
+      ${CT.mode === 'sign' ? `<div class="ct-intro"><h1>${renewing ? 'Tu compromiso cambió' : 'Tu compromiso con Pathway'}</h1><p>${renewing ? 'Las reglas de tu curso se actualizaron. Léelas y firma la nueva versión para seguir.' : 'Antes de empezar, lee las reglas de tu curso. Marca las reglas clave y firma con el dedo o el ratón.'}</p></div>` : ''}
+      <div class="paper-wrap" id="ctWrap">
+        <article class="paper" id="ctPaper">
+          <header class="pp-head"><p class="pp-org">Pathway Language Solutions</p><h2 class="pp-title">Compromiso del alumno</h2>
+            <dl class="pp-meta"><div><dt>Alumno</dt><dd>${esc(who.name || '—')}</dd></div><div><dt>Nivel</dt><dd>${esc(who.level || '—')}</dd></div><div><dt>Correo</dt><dd>${esc(who.email || '—')}</dd></div></dl></header>
+          <ol class="pp-clauses">${clauses.map((c, i) => `<li class="${c.key ? 'key' : ''}"><h3><span class="pp-n">${i + 1}</span>${esc(c.title)}</h3><p>${esc(c.text)}</p>
+            ${sign && c.key ? `<label class="pp-ack" for="ctAck${i}"><input type="checkbox" id="ctAck${i}" data-ack="${i}"><span>Lo entiendo y lo acepto</span></label>` : ''}</li>`).join('')}</ol>
+          <section class="pp-sign" aria-label="Firma">
+            <div class="pp-field"><span class="pp-label">Fecha</span><span class="pp-value">${esc(when)}</span></div>
+            <div class="pp-field pp-sigbox"><span class="pp-label">Firma del alumno</span>
+              ${sign ? `<div class="pad" id="ctPadBox"><canvas id="ctPad" aria-label="Firma aquí con el dedo o el ratón"></canvas><span class="pad-x" aria-hidden="true">×</span><span class="pad-hint" id="ctHint">Firma aquí</span><button type="button" class="pad-clear" data-ct="clear">Borrar</button></div>
+                <label class="pp-name" for="ctName"><span class="pp-label">Nombre completo</span><input id="ctName" autocomplete="name" maxlength="120" placeholder="${esc(who.name || 'Tu nombre y apellido')}"></label>`
+                : `<div class="pad done">${sigSvg(CT.doc.signature)}<span class="pad-x" aria-hidden="true">×</span></div><p class="pp-signed">${esc(CT.doc.signed_name)}</p>`}
+            </div>
+            <div class="stamp-slot" id="ctStamp">${CT.mode === 'view' ? stampSvg(CT.doc.signed_at) : ''}</div>
+          </section>
+          ${CT.mode === 'view' ? `<p class="pp-proof">Firmado electrónicamente el ${esc(fmtDate(new Date(CT.doc.signed_at), { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }))}${CT.doc.ip ? ` · IP ${esc(CT.doc.ip)}` : ''}${CT.doc.user_agent ? ` · ${esc(CT.doc.user_agent)}` : ''}</p>` : ''}
+        </article>
+        <span class="fold fold-tr" aria-hidden="true"></span><span class="fold fold-bl" aria-hidden="true"></span>
+      </div>
+    </div>
+    ${sign ? `<div class="ct-foot" id="ctFoot"><p class="ct-need" id="ctNeed" aria-live="polite"></p><button type="button" class="btn btn-coral" id="ctSign" disabled>${icon('pen')}Firmar el compromiso</button></div>` : ''}`;
+  CT.keyIdx = keyIdx;
+  if (sign) { setupPad(); $('#ctName').oninput = e => { CT.name = e.target.value; updateContract(); }; $('#ctSign').onclick = signContract; updateContract(); }
+}
+function updateContract() {
+  const missing = CT.keyIdx.filter(i => !CT.keys.has(i)).length, named = CT.name.trim().length >= 3, inked = inkOk();
+  const need = [];
+  if (missing) need.push(`marcar ${missing === 1 ? '1 regla clave' : `${missing} reglas clave`}`);
+  if (!named) need.push('escribir tu nombre');
+  if (!inked) need.push('firmar');
+  const n = $('#ctNeed'); if (n) n.textContent = need.length ? `Falta ${need.join(', ')}.` : 'Todo listo.';
+  const b = $('#ctSign'); if (b && !CT.busy && !CT.done) b.disabled = need.length > 0;
+  const h = $('#ctHint'); if (h) h.hidden = CT.strokes.length > 0;
+}
+function setupPad() {
+  const cv = $('#ctPad'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const draw = () => {
+    const r = cv.getBoundingClientRect(), sx = r.width / SIG_W, sy = r.height / SIG_H;
+    ctx.clearRect(0, 0, r.width, r.height);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1d2b53'; ctx.lineWidth = 2.6;
+    for (const s of CT.strokes) {
+      ctx.beginPath(); ctx.moveTo(s[0][0] * sx, s[0][1] * sy);
+      if (s.length === 1) ctx.lineTo(s[0][0] * sx + 0.5, s[0][1] * sy);
+      for (let i = 1; i < s.length - 1; i++) { const mx = (s[i][0] + s[i + 1][0]) / 2, my = (s[i][1] + s[i + 1][1]) / 2; ctx.quadraticCurveTo(s[i][0] * sx, s[i][1] * sy, mx * sx, my * sy); }
+      if (s.length > 1) ctx.lineTo(s[s.length - 1][0] * sx, s[s.length - 1][1] * sy);
+      ctx.stroke();
+    }
+  };
+  const fit = () => { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); draw(); };
+  const pt = e => { const r = cv.getBoundingClientRect(); return [Math.max(0, Math.min(SIG_W, (e.clientX - r.left) / r.width * SIG_W)), Math.max(0, Math.min(SIG_H, (e.clientY - r.top) / r.height * SIG_H))]; };
+  cv.onpointerdown = e => { if (CT.done) return; e.preventDefault(); cv.setPointerCapture(e.pointerId); CT.drawing = true; CT.strokes.push([pt(e)]); draw(); updateContract(); };
+  cv.onpointermove = e => {
+    if (!CT.drawing) return;
+    const s = CT.strokes[CT.strokes.length - 1];
+    for (const ev of (e.getCoalescedEvents ? e.getCoalescedEvents() : [e])) s.push(pt(ev));
+    if (s.length > 1500) s.splice(1, s.length - 1500);
+    draw();
+  };
+  cv.onpointerup = cv.onpointercancel = () => { if (CT.drawing) { CT.drawing = false; updateContract(); } };
+  CT.redraw = draw;
+  fit();
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(cv);
+}
+async function signContract() {
+  if (CT.busy || CT.done) return;
+  CT.busy = true;
+  const btn = $('#ctSign'); btn.disabled = true; btn.innerHTML = 'Firmando…';
+  if (CT.mode === 'sign') {
+    const { error } = await sb.rpc('sign_contract', { p_body: contractBody(), p_name: CT.name.trim(), p_signature: sigPath() });
+    if (error) { CT.busy = false; btn.innerHTML = `${icon('pen')}Firmar el compromiso`; updateContract(); return fail(error, 'No se pudo guardar tu firma. Inténtalo de nuevo.'); }
+    await loadContract();
+  }
+  CT.busy = false; CT.done = true;
+  $('#ctPaper').classList.add('signed');
+  $$('#contract [data-ack], #ctName').forEach(x => { x.disabled = true; });
+  const slot = $('#ctStamp'); slot.innerHTML = `<span class="stamp-shadow"></span>${stampSvg()}<span class="stamp-ink"></span>`;
+  slot.classList.add('drop');
+  setTimeout(() => $('#ctWrap')?.classList.add('thud'), reduced ? 0 : 430);
+  setTimeout(() => {
+    const f = $('#ctFoot'); if (!f) return;
+    f.classList.add('done');
+    f.innerHTML = `<p class="ct-ok">${icon('check')}<span><b>${CT.mode === 'preview' ? 'Así lo verá el alumno' : 'Compromiso firmado'}</b>${CT.mode === 'preview' ? 'No se guardó nada.' : 'Puedes releerlo cuando quieras en «Mi curso».'}</span></p>
+      <button type="button" class="btn ct-enter" data-ct="enter">${CT.mode === 'preview' ? 'Volver a Ajustes' : 'Entrar al campus'}${icon('arrow')}</button>`;
+    f.querySelector('[data-ct="enter"]').focus();
+  }, reduced ? 200 : 1350);
+}
+$('#contract').addEventListener('click', e => {
+  const b = e.target.closest('[data-ct],[data-ack]'); if (!b) return;
+  if (b.matches('[data-ack]')) { const i = +b.dataset.ack; if (b.checked) CT.keys.add(i); else CT.keys.delete(i); return updateContract(); }
+  const act = b.dataset.ct;
+  if (act === 'clear') { CT.strokes = []; CT.redraw && CT.redraw(); return updateContract(); }
+  if (act === 'close') { closeContract(); return showApp(); }
+  if (act === 'enter') {
+    const first = CT.first, preview = CT.mode === 'preview';
+    closeContract();
+    if (first) { location.hash = 'inicio'; showApp(); confetti(); toast(`Bienvenido al campus, ${firstName(A.profile.full_name)}.`); }
+    else { showApp(); if (!preview) toast('Compromiso firmado.'); }
+  }
+});
+async function viewStudentContract(id) {
+  const { data, error } = await sb.rpc('staff_contract', { p_student: id });
+  if (error || !data) return fail(error, 'No se pudo abrir el contrato.');
+  const s = A.staff.overview.find(x => x.id === id) || {}, m = (A.staff.members || []).find(x => x.id === id) || {};
+  openContract({ mode: 'view', doc: data, who: { name: s.full_name || m.full_name, email: m.email || '', level: s.level || m.level } });
+}
+// Staff: where each student stands with the current text.
+function contractState(id) {
+  const c = A.staff.contracts && A.staff.contracts[id];
+  if (!c) return 'none';
+  return c.body_sha256 === A.contractHash ? 'ok' : 'old';
+}
+function contractCell(s) {
+  const st = contractState(s.id);
+  if (st === 'ok') return `<button type="button" class="status link" data-ct-view="${s.id}">Firmado</button>`;
+  if (st === 'old') return `<button type="button" class="status warn link" data-ct-view="${s.id}">Versión anterior</button>`;
+  return contractOn() ? '<span class="status warn">Pendiente</span>' : '<span class="faint">—</span>';
+}
+function contractTile() {
+  const st = A.staff.settings, c = (A.contract && A.contract.contract) || (st && st.contract);
+  if (!c || A.profile.role !== 'admin' || A.staff.contracts == null) return '';
+  const ov = A.staff.overview, signed = ov.filter(s => contractState(s.id) === 'ok').length;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Contrato del alumno</h2><span class="pill ghost">${c.enabled ? 'Activo' : 'Desactivado'}</span></div>
+    <form id="ctForm" class="form">
+      <label class="check-row" for="ctOn"><input id="ctOn" type="checkbox" ${c.enabled ? 'checked' : ''}>Pedir la firma al terminar la bienvenida (los alumnos ya inscritos firman en su próxima conexión)</label>
+      <div class="form-2"><label class="field" for="ctMax">Ausencias sin justificar que invalidan el mes<input id="ctMax" type="number" min="1" max="20" value="${c.max_absences ?? 3}"></label>
+        <label class="field" for="ctLates">Retrasos que valen una ausencia<input id="ctLates" type="number" min="1" max="20" value="${c.lates_per_absence ?? 3}"></label></div>
+      ${'motives' in c ? `<label class="field" for="ctMotives">Motivos de ausencia justificada (uno por línea)<textarea id="ctMotives" rows="4" maxlength="1200">${esc((c.motives || []).join('\n'))}</textarea></label>` : ''}
+      <p class="muted" style="font-size:13px">El contrato también cita las reglas de asistencia (apertura del enlace, retraso, ausencia). Si cambias una regla, cada alumno firma la nueva versión en su próxima conexión.</p>
+      <p style="font-weight:600;font-size:14px">${signed} de ${ov.length} alumno${ov.length === 1 ? '' : 's'} firmaron la versión actual.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-ct-preview>Ver el contrato</button></div>
+    </form></article>`;
+}
+
+/* ───────────── Lector del programa (db/020_manual.sql) ───────────── */
+// Documents are read inside the Campus (no download button). For a manual, the first page of
+// each unit is found when it is uploaded; with « Apertura de las unidades » on, the student only
+// sees the pages of the units seen in class, plus the opening pages of the book.
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+let pdfjsReady = null;
+function loadPdfjs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (!pdfjsReady) pdfjsReady = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = PDFJS + 'pdf.min.js';
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; resolve(window.pdfjsLib); };
+    s.onerror = () => { pdfjsReady = null; reject(new Error('No se pudo cargar el lector.')); };
+    document.head.appendChild(s);
+  });
+  return pdfjsReady;
+}
+// « SEGMENT A · UNITÉ 1 » opens each unit of the Pathway manuals (letter-spaced in the PDF:
+// « S E G M E N T A · U N I T É 1 »), so the spaces are removed before matching.
+const UNIT_RE = /SEGMENT[A-D][·•.\-–]UNIT[ÉE](\d{1,2})(?!\d)/i;
+const unitOnPage = items => {
+  for (const it of items) { const m = String(it.str || '').replace(/\s+/g, '').match(UNIT_RE); if (m) return +m[1]; }
+  return null;
+};
+async function scanUnits(pdf, onProgress) {
+  const starts = Array(64).fill(null);
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    const n = unitOnPage(tc.items);
+    if (n && n >= 1 && n <= 64 && !starts[n - 1]) starts[n - 1] = i;
+    page.cleanup();
+    if (onProgress && (i % 8 === 0 || i === pdf.numPages)) onProgress(i, pdf.numPages);
+  }
+  return starts.filter(Boolean).length >= 4 ? starts : null;
+}
+async function scanDocument(doc, source, label) {
+  const lib = await loadPdfjs();
+  const pdf = await lib.getDocument(source).promise;
+  const starts = await scanUnits(pdf, (i, n) => { if (label) label.textContent = `Analizando… ${i} / ${n}`; });
+  const { error } = await sb.rpc('set_document_pages', { p_id: doc.id, p_unit_pages: starts, p_page_count: pdf.numPages });
+  pdf.destroy();
+  if (error) throw error;
+  return starts ? starts.filter(Boolean).length : 0;
+}
+// Unit numbers the student may read (null = everything).
+function manualOpenNums(doc) {
+  if (isStaff() || !A.gate || !doc.unit_pages) return null;
+  const set = new Set(A.taughtNums || []);
+  for (const u of A.units) {
+    if (u.level !== doc.level || u.is_final) continue;
+    if ((A.taught && A.taught.has(u.id)) || A.runs.some(r => r.unit_id === u.id && runPassed(r)) || A.assignments.some(a => a.unit_id === u.id)) set.add(u.number);
+  }
+  return set;
+}
+const RD = { doc: null, pdf: null, io: null, token: 0 };
+function closeReader() {
+  RD.token++;
+  if (RD.io) RD.io.disconnect();
+  if (RD.pdf) RD.pdf.destroy();
+  Object.assign(RD, { doc: null, pdf: null, io: null });
+  $('#reader').hidden = true; $('#reader').innerHTML = '';
+  document.body.classList.remove('no-scroll');
+}
+async function openReader(doc) {
+  const token = ++RD.token;
+  RD.doc = doc;
+  const el = $('#reader');
+  el.hidden = false; document.body.classList.add('no-scroll');
+  el.innerHTML = `<div class="rd-top"><button type="button" class="round" data-rd="close" aria-label="Cerrar">${icon('x')}</button><div class="rd-title"><b>${esc(doc.title)}</b><span id="rdInfo">Abriendo…</span></div><label class="rd-jump" for="rdJump" hidden><span class="sr">Ir a</span><select id="rdJump"></select></label></div>
+    <div class="rd-scroll" id="rdScroll"><div class="rd-pages" id="rdPages"><p class="rd-loading">Abriendo el documento…</p></div></div>`;
+  try {
+    const [lib, signed] = await Promise.all([loadPdfjs(), sb.storage.from('programa').createSignedUrl(doc.path, 3600)]);
+    if (signed.error || !signed.data) throw signed.error || new Error('url');
+    const pdf = await lib.getDocument({ url: signed.data.signedUrl, disableAutoFetch: true, disableStream: true }).promise;
+    if (token !== RD.token) { pdf.destroy(); return; }
+    RD.pdf = pdf;
+    const first = await pdf.getPage(1), vp = first.getViewport({ scale: 1 });
+    const ratio = vp.height / vp.width;
+    const open = manualOpenNums(doc), total = pdf.numPages;
+    // Ranges: opening pages, then each unit (open or locked).
+    const starts = (doc.unit_pages || []).map((p, i) => ({ n: i + 1, p })).filter(x => x.p && x.p <= total).sort((a, b) => a.p - b.p);
+    const blocks = [];
+    if (!starts.length) blocks.push({ kind: 'pages', from: 1, to: total });
+    else {
+      if (starts[0].p > 1) blocks.push({ kind: 'pages', from: 1, to: starts[0].p - 1, label: 'Presentación' });
+      starts.forEach((s, i) => {
+        const to = i + 1 < starts.length ? starts[i + 1].p - 1 : total;
+        const ok = !open || open.has(s.n);
+        const last = blocks[blocks.length - 1];
+        if (!ok && last && last.kind === 'locked') { last.toUnit = s.n; last.pages += to - s.p + 1; }
+        else if (!ok) blocks.push({ kind: 'locked', fromUnit: s.n, toUnit: s.n, pages: to - s.p + 1 });
+        else blocks.push({ kind: 'pages', from: s.p, to, unit: s.n });
+      });
+    }
+    const title = n => { const u = A.units.find(x => x.level === doc.level && x.number === n && !x.is_final); return u ? ` · ${esc(u.title)}` : ''; };
+    const readable = blocks.filter(b => b.kind === 'pages').reduce((a, b) => a + b.to - b.from + 1, 0);
+    const openUnits = starts.length ? blocks.filter(b => b.unit).length : 0;
+    $('#rdInfo').textContent = open ? `${openUnits} de ${starts.length} unidades abiertas · ${readable} de ${total} páginas` : `${total} páginas`;
+    let html = '';
+    for (const b of blocks) {
+      if (b.kind === 'locked') {
+        html += `<section class="rd-locked" id="rd-u${b.fromUnit}"><span class="rd-lock">${icon('lock')}</span><b>${b.fromUnit === b.toUnit ? `Unidad ${b.fromUnit}` : `Unidades ${b.fromUnit} a ${b.toUnit}`}</b><p>${b.pages} página${b.pages === 1 ? '' : 's'} · ${b.fromUnit === b.toUnit ? 'se abre cuando la veas' : 'se abren cuando las veas'} en clase con tu profesor.</p></section>`;
+        continue;
+      }
+      if (b.unit) html += `<h2 class="rd-unit" id="rd-u${b.unit}">Unidad ${b.unit}${title(b.unit)}</h2>`;
+      else if (b.label) html += `<h2 class="rd-unit" id="rd-intro">${b.label}</h2>`;
+      for (let p = b.from; p <= b.to; p++) html += `<div class="rd-page" data-p="${p}" style="aspect-ratio:1/${ratio.toFixed(4)}"><span class="rd-pn">${p}</span></div>`;
+    }
+    $('#rdPages').innerHTML = html;
+    const jump = blocks.filter(b => b.kind === 'pages' && (b.unit || b.label));
+    if (jump.length > 1) {
+      $('#rdJump').innerHTML = jump.map(b => `<option value="${b.unit ? 'rd-u' + b.unit : 'rd-intro'}">${b.unit ? `Unidad ${b.unit}` : b.label}</option>`).join('');
+      $('#rdJump').closest('label').hidden = false;
+      $('#rdJump').onchange = e => document.getElementById(e.target.value)?.scrollIntoView({ block: 'start' });
+    }
+    const draw = async box => {
+      if (box.dataset.done) return; box.dataset.done = '1';
+      try {
+        const page = await pdf.getPage(+box.dataset.p);
+        if (token !== RD.token) return;
+        const w = box.clientWidth, d = Math.min(2, window.devicePixelRatio || 1);
+        const v = page.getViewport({ scale: (w * d) / page.getViewport({ scale: 1 }).width });
+        const c = document.createElement('canvas'); c.width = Math.round(v.width); c.height = Math.round(v.height);
+        await page.render({ canvasContext: c.getContext('2d'), viewport: v }).promise;
+        if (token !== RD.token) return;
+        box.prepend(c); box.classList.add('ready'); page.cleanup();
+      } catch (e) { box.dataset.done = ''; }
+    };
+    RD.io = new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting) draw(en.target); }), { root: $('#rdScroll'), rootMargin: '900px 0px' });
+    $$('#rdPages .rd-page').forEach(b => RD.io.observe(b));
+  } catch (e) {
+    if (token !== RD.token) return;
+    console.error(e);
+    $('#rdPages').innerHTML = '<p class="rd-loading">No se pudo abrir el documento. Revisa tu conexión e inténtalo de nuevo.</p>';
+    $('#rdInfo').textContent = '';
+  }
+}
+$('#reader').addEventListener('click', e => { if (e.target.closest('[data-rd="close"]')) { closeReader(); render(); } });
+$('#reader').addEventListener('contextmenu', e => e.preventDefault());
+$('#reader').addEventListener('dragstart', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if ($('#reader').hidden) return;
+  if (e.key === 'Escape') { closeReader(); render(); }
+  if ((e.ctrlKey || e.metaKey) && /^[sp]$/i.test(e.key)) e.preventDefault();
 });
 
 /* ───────────── Lesson player ───────────── */
@@ -1637,6 +2487,7 @@ async function startLesson(unitId, preview) {
   if (!preview) {
     const st = unitState(unit);
     if (st.retryAt) return toast(`Necesitas 75 % para pasar esta unidad. Nuevo intento: ${retryLabel(st.retryAt)}.`);
+    if (!st.taught) return toast('Esta unidad se abre cuando la veas en clase con tu profesor.');
     if (!st.unlocked) return toast(`Supera antes la unidad ${st.prev ? st.prev.number : ''} con al menos 75 %.`);
   }
   let q = sb.from('exercises').select('id,type,kind,payload,position,status').eq('unit_id', unitId).order('position');
