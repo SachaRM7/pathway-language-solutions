@@ -11,7 +11,7 @@
     levelSuffix: '· estimado', byConfirm: 'Por confirmar',
     headLevel: 'Nivel {L} estimado', headLevelUnknown: 'Nivel por confirmar',
     urgentEyebrow: 'Tu fecha primero', urgentTitle: 'Dinos cuándo puedes estudiar y tu fecha objetivo.',
-    urgentIntro: 'Compararemos tu fecha, tu nivel y tus disponibilidades para recomendarte un ritmo realista antes de cualquier pago.',
+    urgentIntro: 'Compararemos tu fecha, tu nivel y tu disponibilidad para recomendarte un ritmo realista antes de cualquier pago.',
     noResults: 'Sin resultados',
     urgentPlan: 'A recomendar según tu fecha', urgentBilling: 'A elegir tras la recomendación', urgentPrice: 'Después de confirmar el ritmo',
     cycleReduction: '{c} · descuento directo 15 %', daysTbd: 'Días por definir', slotTbd: 'franja por definir', toComplete: 'Por completar',
@@ -29,7 +29,7 @@
     colon: ':',
     lblName: 'Nombre completo', lblEmail: 'Correo', lblWa: 'WhatsApp', lblObj: 'Objetivo', lblLevel: 'Nivel estimado',
     lblRhythm: 'Ritmo de referencia', lblEnroll: 'Inscripción', lblPrice: 'Precio de referencia', lblFee: 'Cuota de inscripción: 15 CAD (una sola vez)',
-    lblTz: 'Zona horaria', lblStart: 'Inicio ideal', lblDays: 'Días posibles', lblSlots: 'Franjas posibles', lblExam: 'Fecha prevista TEF / TCF Canada', lblNotes: 'Precisiones'
+    lblTz: 'Zona horaria', lblStart: 'Inicio ideal', lblDays: 'Días posibles', lblSlots: 'Franjas posibles', lblExam: 'Fecha prevista TEF / TCF Canada', lblNotes: 'Comentarios'
   }, window.PATHWAY_ENROLL || {});
   const fmt = (str, map) => String(str).replace(/\{(\w+)\}/g, (_, k) => (map && map[k] != null ? map[k] : ''));
   const line = (label, value) => `${label}${L.colon} ${value}`;

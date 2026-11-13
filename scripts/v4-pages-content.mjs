@@ -38,7 +38,7 @@ export const UI = {
   },
   de: {
     home: 'Startseite', guides: 'Ratgeber', legal: 'Rechtliches', onThisPage: 'Auf dieser Seite', keepGoing: 'Weiterlesen',
-    evaluate: 'Mein Niveau einstufen', evaluateStart: 'Meinen Ausgangspunkt messen', whatsapp: 'Lieber per WhatsApp schreiben', open: 'Öffnen',
+    evaluate: 'Mein Niveau bestimmen', evaluateStart: 'Meinen Ausgangspunkt messen', whatsapp: 'Lieber per WhatsApp schreiben', open: 'Öffnen',
     ctaEyebrow: 'Ihr erster Schritt · unverbindlich', officialSource: 'Offizielle IRCC-Quelle', summary: 'Kurz gesagt', skip: 'Zum Inhalt springen',
     updated: 'Zuletzt geprüft: November 2026'
   }
@@ -286,7 +286,7 @@ GUIDES.tefaq = {
       ['pathway', 'Was Pathway vorbereiten kann', ['Pathway arbeitet an allgemeinem Französisch und an Prüfungen wie DELF, DALF, TCF und TEF. Sobald das Projekt geklärt ist, lässt sich der Unterricht auf den TEFAQ oder den TCF Québec ausrichten: Format, Kompetenzen, Sprechpraxis, Korrekturen und Probeprüfungen.', 'Wenn Ihr Ziel ein Bundesprogramm ist, lesen Sie den Ratgeber zur <a href="{tef}">Vorbereitung auf den TEF Canada</a>. Für Québec verhindert ein kurzes Gespräch, dass Ihr Lernplan mit der falschen Prüfung beginnt.']]
     ],
     related: { eyebrow: 'Weiterlesen', title: 'Wählen Sie die passende Ressource.', links: [['nclc', 'Ratgeber', 'NCLC 7 verstehen'], ['tef', 'Ratgeber', 'Auf den TEF Canada vorbereiten'], ['resources', 'Ressourcen', 'Alle Ressourcen']] },
-    cta: { title: 'Klären wir den Weg vor dem Tempo.', text: 'Erzählen Sie uns, welches Projekt Sie vorbereiten. Wir zeigen Ihnen die passende Sprachvorbereitung, ohne daraus eine Einwanderungsberatung zu machen.', primary: [quebecWhatsApp('Hallo Pathway, mein Projekt betrifft Québec und ich möchte die passende Vorbereitung finden.'), 'Mit Pathway sprechen'], secondary: ['test', 'Mein Niveau einstufen'] }
+    cta: { title: 'Klären wir den Weg vor dem Tempo.', text: 'Erzählen Sie uns, welches Projekt Sie vorbereiten. Wir zeigen Ihnen die passende Sprachvorbereitung, ohne daraus eine Einwanderungsberatung zu machen.', primary: [quebecWhatsApp('Hallo Pathway, mein Projekt betrifft Québec und ich möchte die passende Vorbereitung finden.'), 'Mit Pathway sprechen'], secondary: ['test', 'Mein Niveau bestimmen'] }
   }
 };
 

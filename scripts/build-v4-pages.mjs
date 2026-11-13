@@ -59,8 +59,8 @@ export function shell({ lang, key, title, description, main, homeMarkup, bodyCla
   <link rel="canonical" href="${canonical}">
   ${alternates}
   <link rel="icon" type="image/svg+xml" href="/v4/assets/favicon.svg">
-  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/Outfit-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/v4/assets/fonts/DM-Sans-variable.woff2" as="font" type="font/woff2" crossorigin>
   ${head}
   <link rel="stylesheet" href="/v4/home.css">
   <link rel="stylesheet" href="/v4/continuation.css">
