@@ -70,9 +70,9 @@
       <nav id="main-navigation" class="main-navigation" aria-label="Main navigation" data-menu>
         <div class="nav-links">
           <a href="#recorrido">How it works</a>
-          <a href="#programa">Program overview</a>
-          <a href="#profesores">Teachers</a>
-          <a href="#experiencia">The experience</a>
+          <a href="#tu-semana">Your week</a>
+          <a href="#historias">Testimonials</a>
+          <a href="#planes">Prices</a>
         </div>
         <a class="button button-primary nav-cta" href="/v4/en/test.html" data-cta="v4-header-evaluation">Assess my level</a>
         <div class="language-switcher" role="group" aria-label="Language">
@@ -91,14 +91,14 @@
         <div class="hero-copy">
           <p class="objective-label"><svg class="icon maple" aria-hidden="true"><use href="#i-maple"/></svg> NCLC 7 goal · TEF and TCF Canada</p>
           <h1 id="hero-title">Your path to NCLC 7<br> starts with<br> <span>a plan that truly fits<br class="desktop-break"> your life.</span></h1>
-          <p class="hero-lead">We assess your level, set the pace your deadline requires and build a weekly path with you until you reach the skills your goal demands.</p>
+          <p class="hero-lead">We assess your level, set the pace your exam date requires and support you every week.</p>
           <div class="hero-actions">
             <a class="button button-terra" href="/v4/en/test.html" data-cta="v4-hero-evaluation">Assess my starting point <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-            <a class="text-link" href="#en-la-practica" data-cta="v4-hero-route">See what my path could look like</a>
+            <a class="text-link" href="#recorrido" data-cta="v4-hero-route">See what my path could look like</a>
           </div>
         </div>
 
-        <section class="program-carousel" data-program-carousel tabindex="0" aria-label="Your French path, from A1 to NCLC 7" aria-roledescription="carrusel">
+        <section class="program-carousel" id="programa" data-program-carousel tabindex="0" aria-label="Your French path, from A1 to NCLC 7" aria-roledescription="carrusel">
           <img class="program-landscape" src="/v4/assets/parcours-canada.png" alt="" width="1254" height="1254" fetchpriority="high">
           <div class="program-intro">
             <div class="program-copy" data-program-copy>
@@ -156,19 +156,20 @@
       </div>
     </section>
 
-    <section class="section practice-section" id="en-la-practica" aria-labelledby="practice-title">
+    <section class="v4-section steps-v4" id="recorrido" aria-labelledby="method-title">
       <div class="container">
-        <header class="practice-heading section-heading">
-          <div><p class="eyebrow">Pathway in practice</p><h2 id="practice-title">See what<br> that means<br> in practice.</h2></div>
-          <p>Three concrete things before you decide: where you start,<br class="desktop-break"> what you will work on and how it fits into your week.</p>
+        <header class="home-head">
+          <p class="home-pill">How it works</p>
+          <h2 id="method-title">You always know<br> <span>what comes next.</span></h2>
+          <p>Four stages, one path: from your level today to exam day.</p>
         </header>
-        <div class="diagnostic-grid">
-          <div class="diagnostic-copy">
-            <span class="section-number">01</span>
-            <h3>Your starting point</h3>
-            <p>You do not start with a generic program.<br> A progressive test measures each skill separately and shows what is holding you back today.</p>
-            <a class="text-link" href="/v4/en/test.html" data-cta="v4-diagnostic-test">Take the placement test <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          </div>
+        <div class="steps-layout">
+          <ol class="steps-list" aria-label="The four stages of the path">
+          <li class="step-card is-first"><span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg></span><div><h3><span class="step-number">01</span> Assess</h3><p>A test measures each skill and shows which one holds you back.</p></div></li>
+          <li class="step-card"><span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><div><h3><span class="step-number">02</span> Plan</h3><p>We build your calendar backwards from your exam date.</p></div></li>
+          <li class="step-card"><span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg></span><div><h3><span class="step-number">03</span> Practice</h3><p>Live one-to-one lessons and Campus exercises between them.</p></div></li>
+          <li class="step-card"><span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg></span><div><h3><span class="step-number">04</span> Demonstrate</h3><p>Two mock exams confirm that all four skills are ready.</p></div></li>
+          </ol>
           <article class="skill-report" aria-label="Placement test result" data-skill-report>
             <header><h4>Test result</h4><span class="example-label" data-result-label>Example</span></header>
             <dl class="skill-list">
@@ -180,44 +181,20 @@
             <p class="report-summary"><strong data-result-summary>Estimated level: B1 · independent.</strong><span data-result-priority>First-cycle priority: listening.</span></p>
           </article>
         </div>
+        <p class="home-foot">The test is free and takes 12 to 30 minutes. <a href="/v4/en/test.html" data-cta="v4-diagnostic-test">Take the placement test <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
       </div>
     </section>
 
-    <section class="section method-section" id="recorrido" aria-labelledby="method-title">
+    <section class="v4-section week-v4" id="tu-semana" aria-labelledby="week-title">
       <div class="container">
-        <p class="eyebrow">The Pathway method</p>
-        <h2 id="method-title">You always know<br> <span>what comes next.</span></h2>
-        <p class="method-intro">One path connects your level, availability, lessons, progress and exam.<br class="desktop-break"> No endless modules or unclear priorities.</p>
-        <ol class="method-steps">
-          <li class="method-step"><span class="method-number">01</span><span class="method-icon"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg></span><h3>Assess</h3><p>We measure listening, reading, grammar and vocabulary, along with the time you have; your speaking is confirmed in the first lesson.</p></li>
-          <li class="method-step"><span class="method-number">02</span><span class="method-icon"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><h3>Plan</h3><p>We build your calendar backwards from your exam date.</p></li>
-          <li class="method-step"><span class="method-number">03</span><span class="method-icon"><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg></span><h3>Practice</h3><p>You work in one-to-one lessons and continue between sessions with the Campus exercises.</p></li>
-          <li class="method-step"><span class="method-number">04</span><span class="method-icon"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg></span><h3>Demonstrate</h3><p>Two mock exams check whether all four skills are ready for the TEF or TCF.</p></li>
-        </ol>
-        <div class="results-strip" role="group" aria-label="Pathway results and focus">
-          <div class="results-intro"><strong>Results that speak</strong><p>Every number represents a story.</p></div>
-          <div class="result-item"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg><p><strong>+50</strong><span>students on their path to Canada</span></p></div>
-          <div class="result-item"><svg class="icon maple" aria-hidden="true"><use href="#i-maple"/></svg><p><strong>100% focus</strong><span>TEF and TCF Canada</span></p></div>
-          <div class="result-item"><svg class="icon" aria-hidden="true"><use href="#i-bars"/></svg><p><strong>Results</strong><span>that open doors</span></p></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section week-section" id="tu-semana" aria-labelledby="week-title">
-      <div class="container week-grid">
-        <div class="week-copy">
-          <p class="eyebrow">The Pathway experience</p>
-          <h2 id="week-title">This is what your path feels like.</h2>
-          <p class="section-lead">A real plan, live lessons and consistent follow-up, all in one place.</p>
-          <ul class="experience-list">
-            <li><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><div><h3>A calendar built around you</h3><p>We organize your lessons around your availability<br class="desktop-break"> and your exam date.</p></div></li>
-            <li><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg><div><h3>Live one-to-one lessons</h3><p>Practise with expert teachers, with a 100% TEF and TCF Canada focus.</p></div></li>
-            <li><svg class="icon" aria-hidden="true"><use href="#i-route"/></svg><div><h3>Consistent follow-up</h3><p>We assess your progress and adjust your plan<br class="desktop-break"> so you keep moving forward.</p></div></li>
-          </ul>
-          <a class="button button-outline" href="#experiencia" data-cta="v4-week-experience">Discover the experience <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        </div>
-        <div class="week-preview">
-          <header><h3>My week</h3><span>Example · Accelerated pace</span></header>
+        <header class="home-head">
+          <p class="home-pill">Your week</p>
+          <h2 id="week-title">What a week with<br> Pathway looks like.</h2>
+          <p>Your lessons fit into your schedule, and the Campus keeps you going in between.</p>
+        </header>
+        <div class="week-visuals">
+          <div class="week-preview">
+            <header><h3>My week</h3><span>Example · Accelerated pace</span></header>
           <div class="calendar-scroll" tabindex="0" role="region" aria-label="Sample week, Monday to Friday">
             <table class="week-calendar">
               <caption class="sr-only">Sample week on the Accelerated pace: 4 one-hour one-to-one lessons and exercises on the Campus. Times are illustrative.</caption>
@@ -236,35 +213,27 @@
             </table>
           </div>
           <ol class="week-list" aria-label="Sample week on the Accelerated pace: 4 one-hour one-to-one lessons and exercises on the Campus. Times are illustrative."><li class="is-lesson"><span class="week-list-day">Mon 11 May</span><span class="week-list-time">10:00 – 11:00</span><strong>One-to-one lesson</strong><span>Listening</span></li><li class="is-task"><span class="week-list-day">Mon 11 May</span><span class="week-list-time">15:00 – 16:00</span><strong>Campus</strong><span>Lesson recording</span></li><li class="is-lesson"><span class="week-list-day">Tue 12 May</span><span class="week-list-time">15:00 – 16:00</span><strong>One-to-one lesson</strong><span>Grammar and vocabulary</span></li><li class="is-task"><span class="week-list-day">Wed 13 May</span><span class="week-list-time">11:00 – 12:00</span><strong>Campus</strong><span>Exercises</span></li><li class="is-lesson"><span class="week-list-day">Thu 14 May</span><span class="week-list-time">15:00 – 16:00</span><strong>One-to-one lesson</strong><span>Writing</span></li><li class="is-lesson"><span class="week-list-day">Fri 15 May</span><span class="week-list-time">10:00 – 11:00</span><strong>One-to-one lesson</strong><span>Speaking</span></li></ol>
-        </div>
-      </div>
-    </section>
-
-    <section class="section progress-section" id="programa" aria-labelledby="progress-title">
-      <div class="container">
-        <div class="progress-grid">
-          <article class="progress-preview" aria-label="Example of a learner path status">
-            <header><h3>Path status</h3><span class="example-label">Example</span></header>
-            <div class="progress-table" role="table" aria-label="Example path cycles">
-              <div class="progress-table-head" role="row"><span role="columnheader">Cycle</span><span role="columnheader">Status</span><span role="columnheader">In this cycle</span></div>
-              <div class="progress-row is-done" role="row"><span role="cell"><b class="cycle-level">A2</b></span><strong role="cell">Completed <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></strong><p role="cell">Solid foundations across all four skills.</p></div>
-              <div class="progress-row is-current" role="row"><span role="cell"><b class="cycle-level">B1</b></span><strong role="cell">In progress</strong><div role="cell"><p>Focus on listening,<br> with correction in every lesson.</p><span class="now-label">Now</span></div></div>
-              <div class="progress-row" role="row"><span role="cell"><b class="cycle-level">B2</b></span><strong role="cell">NCLC&nbsp;7 goal</strong><p role="cell">Full TEF mock exams<br class="desktop-break"> or TCF Canada.</p></div>
-            </div>
-          </article>
-          <div class="progress-copy">
-            <p class="eyebrow">Pathway in practice</p>
-            <h2 id="progress-title">Your progress,<br> stage by stage.</h2>
-            <p>Each cycle corresponds to a full CEFR level and uses our own materials across all four skills. You know which level you are completing and what comes next.</p>
-            <a class="text-link" href="/v4/en/programs/a1/" data-cta="v4-full-program">See the programs by level <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+          <div class="campus-screen" role="group" aria-label="Pathway Campus preview, example">
+            <header class="campus-top"><span class="campus-brand"><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg>Pathway Campus</span><span class="example-label">Example</span></header>
+            <div class="campus-progress"><p><span>B1 level progress</span><strong>38%</strong></p><span class="campus-bar" aria-hidden="true"><i></i></span></div>
+            <ul class="campus-items"><li class="is-done"><span class="campus-icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span><span><strong>Unit 23 exercises</strong><small>10 of 10 · corrected</small></span></li><li class="is-now"><span class="campus-icon"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg></span><span><strong>Unit 24 exercises</strong><small>6 of 10 · in progress</small></span></li><li><span class="campus-icon"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><span><strong>Online manual</strong><small>Unit 25 opens after your next lesson</small></span></li><li><span class="campus-icon"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></span><span><strong>Recording of your Monday lesson</strong><small>Available</small></span></li><li><span class="campus-icon"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></span><span><strong>TEF / TCF Canada mock exam</strong><small>At the end of B2</small></span></li></ul>
           </div>
         </div>
-        <div class="progress-foot"><strong>A2 / B1 / B2 → NCLC 7</strong><p>Each cycle corresponds to a complete CEFR level.</p></div>
+        <div class="week-band">
+          <img class="lesson-photo" src="/v4/assets/cours-prive-en-ligne.webp" width="1600" height="900" loading="lazy" decoding="async" alt="A learner takes notes at a laptop during a one-to-one online lesson.">
+          <ul class="week-points"><li><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg><div><h3>One-to-one lessons on Zoom</h3><p>Live, with your teacher, at times you choose.</p></div></li><li><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg><div><h3>The Campus between lessons</h3><p>Exercises, your online manual and recordings.</p></div></li><li><svg class="icon" aria-hidden="true"><use href="#i-route"/></svg><div><h3>Consistent follow-up</h3><p>We review your progress and adjust the plan with you.</p></div></li></ul>
+        </div>
       </div>
     </section>
 
-    <section class="section teachers-section" id="profesores" aria-labelledby="teachers-title">
-      <div class="container teachers-grid">
+    <section class="v4-section teachers-v4" id="profesores" aria-labelledby="teachers-title">
+      <div class="container teachers-layout">
+        <header class="home-head home-head-left">
+          <p class="home-pill">Teachers</p>
+          <h2 id="teachers-title">Your teacher knows you<br> from the very first lesson.</h2>
+          <p>They follow your path from start to finish: your mistakes, your goal and your time.</p>
+        </header>
         <div class="teacher-stage" data-teacher-stage data-front="second" role="group" aria-label="Pathway's two teachers">
           <span class="teacher-backdrop" aria-hidden="true"></span>
           <span class="teacher-accent" aria-hidden="true"></span>
@@ -272,32 +241,9 @@
           <figure class="teacher-card teacher-second"><img src="/v4/assets/profesor-02-800.webp" srcset="/v4/assets/profesor-02-480.webp 480w, /v4/assets/profesor-02-800.webp 800w" sizes="(max-width: 767px) 62vw, 400px" width="800" height="1000" loading="lazy" decoding="async" alt="Pathway teacher with a long beard, wearing a green polo with the lighthouse emblem"></figure>
           <button class="teacher-pause" type="button" disabled data-teacher-pause aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span>Pause animation</span></button>
         </div>
-        <div class="teachers-copy">
-          <p class="eyebrow">The team behind your progress</p>
-          <h2 id="teachers-title">Your teacher knows you<br> from the very first<br> lesson.</h2>
-          <p>You are not buying access to an anonymous platform. Your teacher follows your path from start to finish and knows your recurring mistakes, your goal and the time you can dedicate each week.</p>
-        </div>
       </div>
     </section>
 
-    <section class="section continuity-section" id="experiencia" aria-labelledby="continuity-title">
-      <div class="container">
-        <header class="continuity-heading section-heading">
-          <div><p class="section-tag">Inside the program</p><h2 id="continuity-title">You are not buying hours.<br> You build continuity.</h2></div>
-          <p>The experience is organized around what you do between one lesson and the next, not around an endless content library.</p>
-        </header>
-        <div class="continuity-grid">
-          <article class="continuity-card continuity-main">
-            <div><span class="card-number">01</span><h3>Private lessons with a teacher<br class="desktop-break"> who knows your path.</h3><p>The session revolves around your mistakes and your goal.<br class="desktop-break"> You speak, receive corrections and leave with one clear priority.</p></div>
-            <img class="lesson-photo" src="/v4/assets/cours-prive-en-ligne.webp" width="1600" height="900" loading="lazy" decoding="async" alt="A learner takes notes at a laptop during a one-to-one online lesson.">
-          </article>
-          <article class="continuity-card continuity-notebook"><span class="card-number">02</span><h3>Living notebook</h3><p>Corrections, resources and next tasks<br class="desktop-break"> in one place.</p></article>
-          <article class="continuity-card continuity-feedback"><span class="card-number">03</span><h3>Useful feedback</h3><p>You know what to repeat, why<br class="desktop-break"> and how to improve it.</p></article>
-          <article class="continuity-card continuity-campus"><span class="card-number">04</span><h3>Pathway Campus</h3><p>Exercises for each unit, your online manual that opens lesson by lesson, TEF and TCF Canada mock exams, and the recordings of your lessons.</p></article>
-          <article class="continuity-card continuity-exams"><span class="card-number">05</span><h3>Full mock exams</h3><p>All 4 skills under<br class="desktop-break"> exam conditions.</p></article>
-        </div>
-      </div>
-    </section>
     <!-- home-tail -->
 </body>
 </html>
