@@ -11,11 +11,16 @@ function setupPricing() {
   const cards = document.querySelector('[data-pricing-cards]');
   const options = [...document.querySelectorAll('[data-billing]')];
   const status = document.querySelector('[data-pricing-status]');
+  const hint = document.querySelector('[data-billing-hint]');
   if (!cards) return;
-  function select(mode, announce = true) {
-    cards.innerHTML = renderPricing(mode, lang);
-    cards.dataset.billing = mode;
+  const hours = {};
+  let mode = 'monthly';
+  function render() { cards.innerHTML = renderPricing(mode, lang, hours); cards.dataset.billing = mode; }
+  function select(next, announce = true) {
+    mode = next;
+    render();
     options.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.billing === mode)));
+    if (hint) hint.textContent = mode === 'cycle' ? hint.dataset.hintCycle : hint.dataset.hintMonthly;
     if (announce) status.textContent = mode === 'cycle' ? copy.pricing.statusCycle : copy.pricing.statusMonthly;
   }
   options.forEach(button => {
@@ -23,6 +28,13 @@ function setupPricing() {
     button.addEventListener('click', () => select(button.dataset.billing));
   });
   cards.addEventListener('click', event => {
+    const chip = event.target.closest('[data-plan-hours]');
+    if (chip) {
+      hours[chip.dataset.planHours] = Number(chip.dataset.h);
+      render();
+      cards.querySelector(`[data-plan-hours="${chip.dataset.planHours}"][data-h="${chip.dataset.h}"]`)?.focus();
+      return;
+    }
     const link = event.target.closest('[data-chosen-plan]');
     if (!link) return;
     try { sessionStorage.setItem('pathwayV4Selection', JSON.stringify({ plan: link.dataset.chosenPlan, billing: link.dataset.chosenBilling, hours: Number(link.dataset.chosenHours) })); } catch { /* URL parameters preserve the choice without storage. */ }

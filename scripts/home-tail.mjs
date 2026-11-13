@@ -49,18 +49,14 @@ const T = {
       reviewsTitle: 'Lo que escriben en Superprof', reviewsText: n => `${n} recomendaciones públicas, resumidas aquí.`, reviewsLink: 'Ver las recomendaciones en Superprof'
     },
     pricing: {
-      tag: 'Vista del programa', title: 'Tres ritmos.<br> El mismo acompañamiento.',
-      lead: 'La evaluación inicial indica el ritmo coherente con tu nivel y tu fecha, incluso si la respuesta es que el tiempo no alcanza.',
-      billingTitle: 'Dos formas de inscribirte',
-      billing: '<strong>Mes a mes sin contrato mínimo, o un ciclo completo** con 15 % de descuento.</strong><p>Si empiezas con un mes y continúas después con un ciclo completo, el descuento aplicado al ciclo es del 10 %.</p><p>* Carga horaria y precios de referencia: el ritmo exacto se confirma después de la evaluación inicial y según tus necesidades.</p><p>** El ciclo completo es una tarifa reducida a cambio de tu compromiso de asistir a clase durante todo el ciclo: no es reembolsable. Las horas perdidas por ausencias sin justificar no se recuperan, y no hay reembolso si al final del ciclo no alcanzas el nivel.</p>',
-      switchLabel: 'Forma de inscripción', monthly: 'Inscripción mensual', cycle: 'Ciclo completo <span>AHORRA 15 %</span>',
-      notes: ['Todos los precios están en CAD: 92,50 CAD al mes por cada hora semanal (2 h: 185 · 3 h: 277,50 · 4 h: 370 · 5 h: 462,50 · 6 h: 555 CAD/mes), sin variación según tu nivel. Cuota de inscripción única de <strong>15 CAD</strong>, añadida al primer pago tras confirmar el horario.', 'Un ciclo completo corresponde a un nivel del CECRL, con una duración de referencia fija: ciclo de 6 meses en Esencial (2 h/semana), de 5 meses en Acelerado (3 o 4 h/semana) y de 4 meses en Intensivo (5 o 6 h/semana). El ritmo exacto se confirma después de la evaluación inicial.', 'El descuento del 15 % se aplica a la inscripción directa por el ciclo completo. Si empiezas con un mes y después eliges el ciclo, el descuento es del 10 %.'],
-      attendance: {
-        title: 'Asistencia',
-        items: ['Si avisas con al menos 48 h de anticipación, o justificas tu ausencia dentro de las 72 h siguientes, recuperamos la clase. Sin aviso ni justificación válida, la hora se pierde y no se recupera.', '<strong>Inscripción mensual (4 semanas):</strong> 3 ausencias sin justificar en las mismas 4 semanas invalidan el mes: no se valida el paso al nivel siguiente y, para continuar, el mes debe pagarse de nuevo.', '<strong>Ciclo completo:</strong> sin esta sanción, pero las horas perdidas no se recuperan ni se reembolsan.'],
-        link: 'Ver las reglas de asistencia en las condiciones'
-      },
-      conditions: 'Consultar las condiciones de inscripción'
+      tag: 'Precios', title: 'Un precio por hora.<br> Igual en todos los niveles.',
+      lead: 'Eliges cuántas horas de clase quieres por semana. Pagas mes a mes, sin contrato mínimo, o un ciclo completo con descuento.',
+      switchLabel: 'Forma de pago', monthly: 'Mes a mes', cycle: 'Ciclo completo <span>−15 %</span>',
+      hintMonthly: 'Sin contrato mínimo: continúas mes a mes.',
+      hintCycle: 'Un ciclo = un nivel completo (A1, A2, B1 o B2), pagado de una vez.',
+      included: { title: 'Incluido en todos los ritmos', text: '¿No sabes cuántas horas necesitas? La evaluación inicial es gratis y te recomienda el ritmo según tu nivel y tu fecha de examen.', cta: 'Evaluar mi nivel',
+        items: ['Clases individuales en vivo por Zoom', 'Un profesor que sigue todo tu recorrido', 'Campus Pathway: ejercicios, manual y grabaciones', 'Seguimiento de tu progreso', '2 simulacros TEF / TCF Canada', 'Recuperas la clase si avisas 48 h antes'] },
+      foot: 'Precios en CAD · 92,50 CAD al mes por hora semanal · Cuota de inscripción única de 15 CAD', conditions: 'Condiciones de inscripción'
     },
     outcome: {
       tag: 'Tu resultado', title: 'El recorrido termina<br> con un nivel demostrado.<span class="title-soft">No con un calendario<br> agotado.</span>',
@@ -137,18 +133,14 @@ const T = {
       reviewsTitle: 'Ce qu’ils écrivent sur Superprof', reviewsText: n => `${n} recommandations publiques, résumées et traduites de l’espagnol.`, reviewsLink: 'Voir les recommandations sur Superprof'
     },
     pricing: {
-      tag: 'Aperçu du programme', title: 'Trois rythmes.<br> Le même accompagnement.',
-      lead: 'L’évaluation initiale indique le rythme cohérent avec votre niveau et votre échéance, même si la réponse est que le temps ne suffit pas.',
-      billingTitle: 'Deux façons de vous inscrire',
-      billing: '<strong>Mois par mois sans engagement minimum, ou un cycle complet** avec 15 % de remise.</strong><p>Si vous commencez par un mois et poursuivez ensuite avec un cycle complet, la remise appliquée au cycle est de 10 %.</p><p>* Volume horaire et prix de référence : le rythme exact est confirmé après l’évaluation initiale, selon vos besoins.</p><p>** Le cycle complet est un tarif réduit en échange de votre engagement à assister aux cours pendant tout le cycle : il n’est pas remboursable. Les heures perdues par absence non justifiée ne sont pas rattrapées, et aucun remboursement n’est possible si vous n’atteignez pas le niveau à la fin du cycle.</p>',
-      switchLabel: 'Mode d’inscription', monthly: 'Inscription mensuelle', cycle: 'Cycle complet <span>−15 %</span>',
-      notes: ['Tous les prix sont en CAD : 92,50 CAD par mois pour chaque heure hebdomadaire (2 h : 185 · 3 h : 277,50 · 4 h : 370 · 5 h : 462,50 · 6 h : 555 CAD/mois), quel que soit votre niveau. Frais d’inscription uniques de <strong>15 CAD</strong>, ajoutés au premier paiement après confirmation de l’horaire.', 'Un cycle complet correspond à un niveau du CECRL, avec une durée de référence fixe : cycle de 6 mois en Essentiel (2 h/semaine), de 5 mois en Accéléré (3 ou 4 h/semaine) et de 4 mois en Intensif (5 ou 6 h/semaine). Le rythme exact est confirmé après l’évaluation initiale.', 'La remise de 15 % s’applique à l’inscription directe pour le cycle complet. Si vous commencez par un mois puis choisissez le cycle, la remise est de 10 %.'],
-      attendance: {
-        title: 'Assiduité',
-        items: ['Si vous prévenez au moins 48 h à l’avance, ou justifiez votre absence dans les 72 h qui suivent, nous rattrapons le cours. Sans préavis ni justification valable, l’heure est perdue et n’est pas rattrapée.', '<strong>Inscription mensuelle (4 semaines) :</strong> 3 absences non justifiées sur les mêmes 4 semaines invalident le mois : le passage au niveau suivant n’est pas validé et, pour continuer, le mois doit être payé de nouveau.', '<strong>Cycle complet :</strong> sans cette sanction, mais les heures perdues ne sont ni rattrapées ni remboursées.'],
-        link: 'Voir les règles d’assiduité dans les conditions'
-      },
-      conditions: 'Consulter les conditions d’inscription'
+      tag: 'Tarifs', title: 'Un prix par heure.<br> Le même à tous les niveaux.',
+      lead: 'Vous choisissez combien d’heures de cours par semaine. Vous payez au mois, sans engagement, ou un cycle complet avec remise.',
+      switchLabel: 'Formule de paiement', monthly: 'Au mois', cycle: 'Cycle complet <span>−15 %</span>',
+      hintMonthly: 'Sans engagement : vous continuez mois par mois.',
+      hintCycle: 'Un cycle = un niveau complet (A1, A2, B1 ou B2), payé en une fois.',
+      included: { title: 'Inclus dans tous les rythmes', text: 'Vous ne savez pas combien d’heures il vous faut ? L’évaluation initiale est gratuite et vous recommande un rythme selon votre niveau et votre date d’examen.', cta: 'Évaluer mon niveau',
+        items: ['Cours particuliers en direct sur Zoom', 'Un professeur qui suit tout votre parcours', 'Campus Pathway : exercices, manuel et enregistrements', 'Suivi de vos progrès', '2 examens blancs TEF / TCF Canada', 'Cours rattrapé si vous prévenez 48 h avant'] },
+      foot: 'Prix en CAD · 92,50 CAD par mois et par heure hebdomadaire · Frais d’inscription uniques de 15 CAD', conditions: 'Conditions d’inscription'
     },
     outcome: {
       tag: 'Votre résultat', title: 'Le parcours se termine<br> par un niveau démontré.<span class="title-soft">Pas par un calendrier<br> épuisé.</span>',
@@ -225,18 +217,14 @@ const T = {
       reviewsTitle: 'What they write on Superprof', reviewsText: n => `${n} public recommendations, summarized and translated from Spanish.`, reviewsLink: 'See the recommendations on Superprof'
     },
     pricing: {
-      tag: 'Program overview', title: 'Three paces.<br> The same support.',
-      lead: 'The initial assessment shows the pace that fits your level and your deadline, even when the answer is that there isn’t enough time.',
-      billingTitle: 'Two ways to enrol',
-      billing: '<strong>Month to month with no minimum term, or a full cycle** with a 15% discount.</strong><p>If you start with one month and then continue with a full cycle, the discount on the cycle is 10%.</p><p>* Reference hours and prices: the exact pace is confirmed after the initial assessment, according to your needs.</p><p>** The full cycle is a reduced rate in exchange for your commitment to attend class for the whole cycle: it is non-refundable. Hours lost to unjustified absences are not made up, and there is no refund if you do not reach the level by the end of the cycle.</p>',
-      switchLabel: 'Enrolment option', monthly: 'Monthly enrolment', cycle: 'Full cycle <span>SAVE 15%</span>',
-      notes: ['All prices are in CAD: 92.50 CAD a month for each weekly hour (2 h: 185 · 3 h: 277.50 · 4 h: 370 · 5 h: 462.50 · 6 h: 555 CAD/month), whatever your level. One-time enrolment fee of <strong>15 CAD</strong>, added to the first payment once your schedule is confirmed.', 'A full cycle covers one CEFR level, with a fixed reference length: a 6-month cycle on Essential (2 h/week), 5 months on Accelerated (3 or 4 h/week) and 4 months on Intensive (5 or 6 h/week). The exact pace is confirmed after the initial assessment.', 'The 15% discount applies when you enrol directly for the full cycle. If you start with one month and then choose the cycle, the discount is 10%.'],
-      attendance: {
-        title: 'Attendance',
-        items: ['If you give at least 48 hours’ notice, or justify your absence within the following 72 hours, we make up the lesson. Without notice or a valid reason, the hour is lost and cannot be made up.', '<strong>Monthly enrolment (4 weeks):</strong> 3 unjustified absences within the same 4 weeks void the month: progression to the next level is not validated and, to continue, the month must be paid again.', '<strong>Full cycle:</strong> no such penalty, but missed hours are neither made up nor refunded.'],
-        link: 'See the attendance rules in the conditions'
-      },
-      conditions: 'Read the enrolment conditions'
+      tag: 'Pricing', title: 'One price per hour.<br> The same at every level.',
+      lead: 'You choose how many hours of class you want each week. Pay month by month with no minimum term, or a full cycle at a discount.',
+      switchLabel: 'Payment option', monthly: 'Monthly', cycle: 'Full cycle <span>−15%</span>',
+      hintMonthly: 'No minimum term: you continue month by month.',
+      hintCycle: 'One cycle = one full level (A1, A2, B1 or B2), paid at once.',
+      included: { title: 'Included in every pace', text: 'Not sure how many hours you need? The initial assessment is free and recommends a pace based on your level and your exam date.', cta: 'Assess my level',
+        items: ['Live one-to-one lessons on Zoom', 'One teacher who follows your whole path', 'Pathway Campus: exercises, textbook and recordings', 'Progress tracking', '2 TEF / TCF Canada mock exams', 'Lesson made up if you tell us 48 h ahead'] },
+      foot: 'Prices in CAD · 92.50 CAD a month per weekly hour · One-time enrolment fee of 15 CAD', conditions: 'Enrolment terms'
     },
     outcome: {
       tag: 'Your result', title: 'The path ends<br> with a proven level.<span class="title-soft">Not with a used-up<br> calendar.</span>',
@@ -313,18 +301,14 @@ const T = {
       reviewsTitle: 'Was sie auf Superprof schreiben', reviewsText: n => `${n} öffentliche Empfehlungen, zusammengefasst und aus dem Spanischen übersetzt.`, reviewsLink: 'Empfehlungen auf Superprof ansehen'
     },
     pricing: {
-      tag: 'Programmübersicht', title: 'Drei Lerntempos.<br> Dieselbe Begleitung.',
-      lead: 'Die Ersteinstufung zeigt das Tempo, das zu Ihrem Niveau und Ihrem Termin passt, auch wenn die Antwort lautet, dass die Zeit nicht reicht.',
-      billingTitle: 'Zwei Wege zur Anmeldung',
-      billing: '<strong>Monatlich ohne Mindestlaufzeit oder ein ganzer Zyklus** mit 15 % Rabatt.</strong><p>Wenn Sie mit einem Monat beginnen und danach einen ganzen Zyklus buchen, beträgt der Rabatt auf den Zyklus 10 %.</p><p>* Stundenumfang und Preise sind Richtwerte: Das genaue Tempo wird nach der Ersteinstufung und nach Ihrem Bedarf bestätigt.</p><p>** Der ganze Zyklus ist ein reduzierter Tarif im Gegenzug für Ihre Verpflichtung, während des gesamten Zyklus am Unterricht teilzunehmen: Er wird nicht erstattet. Durch unentschuldigte Abwesenheiten verlorene Stunden werden nicht nachgeholt, und es gibt keine Erstattung, wenn Sie das Niveau am Ende des Zyklus nicht erreichen.</p>',
-      switchLabel: 'Anmeldeform', monthly: 'Monatliche Anmeldung', cycle: 'Ganzer Zyklus <span>15 % SPAREN</span>',
-      notes: ['Alle Preise in CAD: 92,50 CAD im Monat pro Wochenstunde (2 Std.: 185 · 3 Std.: 277,50 · 4 Std.: 370 · 5 Std.: 462,50 · 6 Std.: 555 CAD/Monat), unabhängig von Ihrem Niveau. Einmalige Anmeldegebühr von <strong>15 CAD</strong>, die nach Bestätigung des Stundenplans zur ersten Zahlung hinzukommt.', 'Ein ganzer Zyklus entspricht einem GER-Niveau und hat eine feste Richtdauer: 6 Monate im Tempo Basis (2 Std./Woche), 5 Monate in Beschleunigt (3 oder 4 Std./Woche) und 4 Monate in Intensiv (5 oder 6 Std./Woche). Das genaue Tempo wird nach der Ersteinstufung bestätigt.', 'Der Rabatt von 15 % gilt bei direkter Anmeldung für den ganzen Zyklus. Wenn Sie mit einem Monat beginnen und danach den Zyklus wählen, beträgt der Rabatt 10 %.'],
-      attendance: {
-        title: 'Anwesenheit',
-        items: ['Wenn Sie mindestens 48 Stunden vorher absagen oder Ihr Fehlen innerhalb der folgenden 72 Stunden begründen, holen wir die Stunde nach. Ohne Absage oder triftigen Grund verfällt die Stunde und wird nicht nachgeholt.', '<strong>Monatliche Anmeldung (4 Wochen):</strong> 3 unentschuldigte Fehlzeiten innerhalb derselben 4 Wochen machen den Monat ungültig: Der Übergang zum nächsten Niveau wird nicht bestätigt, und um weiterzumachen, muss der Monat erneut bezahlt werden.', '<strong>Ganzer Zyklus:</strong> ohne diese Sanktion, aber versäumte Stunden werden weder nachgeholt noch erstattet.'],
-        link: 'Anwesenheitsregeln in den Bedingungen lesen'
-      },
-      conditions: 'Anmeldebedingungen lesen'
+      tag: 'Preise', title: 'Ein Preis pro Stunde.<br> Gleich auf jedem Niveau.',
+      lead: 'Sie wählen, wie viele Unterrichtsstunden pro Woche Sie möchten. Sie zahlen monatlich ohne Mindestlaufzeit oder einen ganzen Zyklus mit Rabatt.',
+      switchLabel: 'Zahlungsart', monthly: 'Monatlich', cycle: 'Ganzer Zyklus <span>−15 %</span>',
+      hintMonthly: 'Ohne Mindestlaufzeit: Sie verlängern Monat für Monat.',
+      hintCycle: 'Ein Zyklus = ein ganzes Niveau (A1, A2, B1 oder B2), auf einmal bezahlt.',
+      included: { title: 'In jedem Tempo enthalten', text: 'Sie wissen nicht, wie viele Stunden Sie brauchen? Die Ersteinstufung ist kostenlos und empfiehlt ein Tempo nach Ihrem Niveau und Ihrem Prüfungstermin.', cta: 'Mein Niveau bestimmen',
+        items: ['Live-Einzelunterricht über Zoom', 'Eine Lehrkraft, die Ihren ganzen Weg begleitet', 'Pathway Campus: Übungen, Lehrbuch und Aufzeichnungen', 'Verfolgung Ihrer Fortschritte', '2 Probeprüfungen TEF / TCF Canada', 'Stunde wird nachgeholt, wenn Sie 48 Std. vorher absagen'] },
+      foot: 'Preise in CAD · 92,50 CAD pro Monat und Wochenstunde · Einmalige Anmeldegebühr von 15 CAD', conditions: 'Anmeldebedingungen'
     },
     outcome: {
       tag: 'Ihr Ergebnis', title: 'Der Weg endet<br> mit einem nachgewiesenen Niveau.<span class="title-soft">Nicht mit einem<br> abgelaufenen Kalender.</span>',
@@ -494,27 +478,29 @@ function stories(lang) {
 
 function pricing(lang) {
   const p = T[lang].pricing;
+  const check = '<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>';
   return `<section class="v4-section pricing-v4" id="planes" aria-labelledby="pricing-title">
       <div class="container">
-        <header class="v4-split-heading">
-          <div><p class="section-tag">${p.tag}</p><h2 id="pricing-title">${p.title}</h2></div>
+        <header class="plans-head">
+          <p class="plans-pill">${p.tag}</p>
+          <h2 id="pricing-title">${p.title}</h2>
           <p>${p.lead}</p>
         </header>
-        <div class="billing-bar">
-          <h3>${p.billingTitle}</h3>
-          <div class="billing-copy">${p.billing}</div>
-          <div class="billing-switch" role="group" aria-label="${esc(p.switchLabel)}"><button type="button" data-billing="monthly" aria-pressed="true">${p.monthly}</button><button type="button" data-billing="cycle" aria-pressed="false">${p.cycle}</button></div>
+        <div class="plans-billing">
+          <div class="plans-switch" role="group" aria-label="${esc(p.switchLabel)}"><button type="button" data-billing="monthly" aria-pressed="true">${p.monthly}</button><button type="button" data-billing="cycle" aria-pressed="false">${p.cycle}</button></div>
+          <p class="plans-hint" data-billing-hint data-hint-monthly="${esc(p.hintMonthly)}" data-hint-cycle="${esc(p.hintCycle)}">${p.hintMonthly}</p>
         </div>
         <p class="sr-only" data-pricing-status aria-live="polite">${esc(runtime(lang).pricing.statusMonthly)}</p>
         <div class="pricing-grid" data-pricing-cards>${renderPricing('monthly', lang)}</div>
-        <div class="pricing-notes">
-          ${p.notes.map(note => `<p>${note}</p>`).join('\n          ')}
+        <div class="plans-included">
+          <div>
+            <h3>${p.included.title}</h3>
+            <p>${p.included.text}</p>
+            <a class="button button-primary" href="${pages(lang).test}" data-cta="v4-pricing-test">${p.included.cta} <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+          <ul>${p.included.items.map(item => `<li>${check}<span>${item}</span></li>`).join('')}</ul>
         </div>
-        <div class="attendance-note" id="asistencia-resumen">
-          <h3>${p.attendance.title}</h3>
-          <ul>${p.attendance.items.map(item => `<li>${item}</li>`).join('')}</ul>
-          <p><a class="source-link" href="${pages(lang).conditions}#asistencia">${p.attendance.link} <span aria-hidden="true">→</span></a><a class="source-link" href="${pages(lang).conditions}">${p.conditions} <span aria-hidden="true">→</span></a></p>
-        </div>
+        <p class="plans-foot">${p.foot} · <a href="${pages(lang).conditions}">${p.conditions}</a></p>
       </div>
     </section>`;
 }
