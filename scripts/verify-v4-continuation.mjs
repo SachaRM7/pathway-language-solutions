@@ -29,7 +29,7 @@ const home = () => {
 
 home();
 command('set', 'viewport', '1440', '1024');
-for (const [name, selector] of [['08-testimonials', '#historias'], ['10-monthly', '#planes'], ['11-result', '#resultado'], ['12-faq', '#preguntas'], ['13-nclc', '#objetivo-nclc7'], ['14-crs', '#crs'], ['15-rounds', '#rondas-ircc'], ['16-commitment', '#compromiso'], ['17-final', '.final-cta-v4'], ['17-footer', '.footer-v4']]) capture(name, selector);
+for (const [name, selector] of [['08-testimonials', '#historias'], ['10-monthly', '#planes'], ['12-faq', '#preguntas'], ['17-final', '.final-cta-v4'], ['17-footer', '.footer-v4']]) capture(name, selector);
 command('click', '[data-billing="cycle"]');
 capture('10-cycle', '#planes');
 if (process.argv.includes('--capture')) {
@@ -124,12 +124,9 @@ for (const plan of PRICING.plans) {
     pass('real enrollment preselection', selected);
   }
 }
+// The NCLC 7, CRS, IRCC rounds and commitment sections left the home (2026-11 redesign):
+// their content lives on /nclc-7.html, /calculador.html and /condiciones.html.
 home();
-const rounds = evaluate(`new Promise(resolve=>{ const p=document.querySelector('[data-ircc-rounds]');const done=()=>resolve({mode:p.dataset.irccReady,score:[...p.querySelectorAll('[data-round-score]')].map(x=>x.textContent),updated:p.querySelector('[data-ircc-updated]').textContent});if(p.dataset.irccReady)done();else {const o=new MutationObserver(()=>{if(p.dataset.irccReady){o.disconnect();done();}});o.observe(p,{attributes:true});setTimeout(done,18000);} })`);
-assert(['live', 'snapshot'].includes(rounds.mode));
-assert(rounds.score.every(value => /^\d+$/.test(value)));
-assert(rounds.updated.includes('2026'));
-pass('verified IRCC values and explicit update', rounds);
 
 for (const width of [1440, 1280, 1024, 768, 390, 360, 320]) {
   command('set', 'viewport', String(width), '900');
@@ -139,7 +136,7 @@ for (const width of [1440, 1280, 1024, 768, 390, 360, 320]) {
   pass(`responsive width ${width}`, state);
 }
 command('set', 'viewport', '390', '844');
-for (const [name, selector] of [['08-mobile', '#historias'], ['10-mobile', '#planes'], ['11-mobile', '#resultado'], ['12-mobile', '#preguntas'], ['13-mobile', '#objetivo-nclc7'], ['14-mobile', '#crs'], ['15-mobile', '#rondas-ircc'], ['16-mobile', '#compromiso'], ['17-mobile', '.final-cta-v4'], ['footer-mobile', '.footer-v4']]) capture(name, selector);
+for (const [name, selector] of [['08-mobile', '#historias'], ['10-mobile', '#planes'], ['12-mobile', '#preguntas'], ['17-mobile', '.final-cta-v4'], ['footer-mobile', '.footer-v4']]) capture(name, selector);
 command('screenshot', '--full', resolve(output, 'mobile-long.png'));
 command('set', 'viewport', '1440', '1024');
 command('screenshot', '--full', resolve(output, 'desktop-long.png'));

@@ -14,10 +14,10 @@ export const pageLang = () => {
 // scripts/v4-pages-content.mjs). The V4 pages are served at the root, so the
 // links never go through the /v4/ working copies (which only redirect).
 const PAGES = {
-  es: { home: '/', test: '/test-placement.html', inscription: '/inscription.html', conditions: '/condiciones.html', nclc: '/nclc-7.html' },
-  fr: { home: '/fr/', test: '/fr/test.html', inscription: '/fr/inscription.html', conditions: '/fr/conditions-nclc7.html', nclc: '/fr/nclc-7.html' },
-  en: { home: '/en/', test: '/en/test.html', inscription: '/en/inscription.html', conditions: '/en/terms.html', nclc: '/en/nclc-7.html' },
-  de: { home: '/de/', test: '/de/test.html', inscription: '/de/inscription.html', conditions: '/de/bedingungen.html', nclc: '/de/nclc-7.html' }
+  es: { home: '/', test: '/test-placement.html', inscription: '/inscription.html', conditions: '/condiciones.html', nclc: '/nclc-7.html', crs: '/calculador.html' },
+  fr: { home: '/fr/', test: '/fr/test.html', inscription: '/fr/inscription.html', conditions: '/fr/conditions-nclc7.html', nclc: '/fr/nclc-7.html', crs: '/fr/calculateur-crs.html' },
+  en: { home: '/en/', test: '/en/test.html', inscription: '/en/inscription.html', conditions: '/en/terms.html', nclc: '/en/nclc-7.html', crs: '/en/crs-calculator.html' },
+  de: { home: '/de/', test: '/de/test.html', inscription: '/de/inscription.html', conditions: '/de/bedingungen.html', nclc: '/de/nclc-7.html', crs: '/de/crs-rechner.html' }
 };
 export const pages = lang => PAGES[lang] || PAGES.es;
 

@@ -336,12 +336,9 @@ function setupSkillReportAnimation() {
 function setupSectionTracking() {
   if (!('IntersectionObserver' in window)) return;
   const events = {
-    'en-la-practica': 'program_preview_viewed',
     recorrido: 'methodology_viewed',
     'tu-semana': 'weekly_preview_viewed',
-    programa: 'program_progress_viewed',
-    profesores: 'teachers_viewed',
-    experiencia: 'experience_viewed'
+    profesores: 'teachers_viewed'
   };
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
@@ -350,7 +347,7 @@ function setupSectionTracking() {
       observer.unobserve(entry.target);
     }
   }, { threshold: .25 });
-  Object.keys(events).forEach(id => observer.observe(document.getElementById(id)));
+  Object.keys(events).map(id => document.getElementById(id)).filter(Boolean).forEach(section => observer.observe(section));
 }
 
 setupNavigation();
