@@ -280,7 +280,9 @@ export function thanksPage(lang, homeMarkup) {
     .pg-thanks .pg-steps li { align-content: start; }
     .pg-thanks .pg-actions .button { gap: 12px; }
     .pg-thanks .pg-card-rows a { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
-    .pg-thanks .pg-card-rows .icon { width: 18px; height: 18px; }
+    .pg-thanks .pg-card-rows .icon { flex: none; width: 18px; height: 18px; }
+    .pg-thanks .pg-card-rows li { flex-wrap: wrap; align-items: center; }
+    .pg-thanks .pg-card-rows li > span { flex: none; hyphens: manual; }
     .pg-thanks-note { margin-top: 24px; color: var(--muted); font-size: 14px; }
     @media (max-width: 900px) { .pg-thanks .pg-steps { --pg-steps: 1; } }
   </style>
