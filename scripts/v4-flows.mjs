@@ -37,10 +37,10 @@ const COPY = {
   inscription: {
     trail: { es: 'Inscripción', fr: 'Inscription', en: 'Enrollment', de: 'Anmeldung' },
     steps: {
-      es: [['Elige tu ritmo', 'Esencial, Acelerado o Intensivo, según tu fecha.'], ['Propón tus horarios', 'Pathway comprueba la disponibilidad real.'], ['Confirmamos por escrito', 'El pago solo se pide después de la confirmación.']],
-      fr: [['Choisissez votre rythme', 'Essentiel, Accéléré ou Intensif, selon votre date.'], ['Proposez vos horaires', 'Pathway vérifie les disponibilités réelles.'], ['Nous confirmons par écrit', 'Le paiement n’est demandé qu’après la confirmation.']],
-      en: [['Choose your pace', 'Essential, Accelerated or Intensive, depending on your date.'], ['Suggest your times', 'Pathway checks real availability.'], ['We confirm in writing', 'Payment is only requested after confirmation.']],
-      de: [['Rhythmus wählen', 'Essenziell, Beschleunigt oder Intensiv, je nach Ihrem Datum.'], ['Zeiten vorschlagen', 'Pathway prüft die tatsächliche Verfügbarkeit.'], ['Schriftliche Bestätigung', 'Die Zahlung wird erst nach der Bestätigung angefordert.']]
+      es: [['Elige tu ritmo', 'Elige entre 2 y 6 horas por semana, según tu fecha.'], ['Propón tus horarios', 'Pathway comprueba la disponibilidad real.'], ['Confirmamos por escrito', 'El pago solo se pide después de la confirmación.']],
+      fr: [['Choisissez votre rythme', 'Choisissez entre 2 et 6 heures par semaine, selon votre date.'], ['Proposez vos horaires', 'Pathway vérifie les disponibilités réelles.'], ['Nous confirmons par écrit', 'Le paiement n’est demandé qu’après la confirmation.']],
+      en: [['Choose your pace', 'Choose between 2 and 6 hours a week, depending on your date.'], ['Suggest your times', 'Pathway checks real availability.'], ['We confirm in writing', 'Payment is only requested after confirmation.']],
+      de: [['Tempo wählen', 'Wählen Sie zwischen 2 und 6 Stunden pro Woche, je nach Ihrem Datum.'], ['Zeiten vorschlagen', 'Pathway prüft die tatsächliche Verfügbarkeit.'], ['Schriftliche Bestätigung', 'Die Zahlung wird erst nach der Bestätigung angefordert.']]
     }
   }
 };

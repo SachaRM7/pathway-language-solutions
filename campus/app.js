@@ -347,6 +347,8 @@ async function loadStaff() {
     A.staff.plans = pl.error ? null : Object.fromEntries((pl.data || []).map(x => [x.id, x])); // needs db/017_reglas_clases.sql
     const mem = await sb.rpc('admin_members');
     A.staff.members = mem.error ? null : (mem.data || []);
+    const enr = await sb.rpc('staff_enrollments');
+    A.staff.enrollments = enr.error ? null : (enr.data || []); // needs db/021_solicitudes.sql
   }
 }
 async function refresh() { try { await loadAll(); } catch (e) { fail(e); } }
@@ -472,6 +474,8 @@ function notifications() {
     const fresh = A.staff.overview.filter(s => !s.onboarded).length;
     if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#alumnos' });
     if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#alumnos' });
+    const requests = isAdmin() ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
+    if (requests) out.push({ key: 'enr' + requests, ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender.`, href: '#cuentas' });
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
     if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
@@ -809,6 +813,8 @@ const noStudentsTile = () => `<article class="tile empty"><h2>Todavía no tienes
 // What waits for a decision, each line with a link to the tab where it is handled.
 function todoItems() {
   const out = [], admin = isAdmin();
+  const requests = admin ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
+  if (requests) out.push({ ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender`, href: '#cuentas' });
   const pending = A.staff.changes.filter(c => c.status === 'pending').length;
   if (admin && pending) out.push({ ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar`, href: '#horarios' });
   if (admin && A.staff.groups && A.staff.members) {
@@ -1017,7 +1023,7 @@ function viewCuentas() {
   const admin = isAdmin();
   return `<section class="view" aria-labelledby="h-cuentas">
   ${topBar('h-cuentas', 'Cuentas', admin ? 'Invitar a alumnos y profesores, y gestionar sus cuentas' : 'Invitar a tus alumnos al campus')}
-  <div class="bento staff">${inviteTile()}${membersTile()}</div></section>`;
+  <div class="bento staff">${enrollTile()}${inviteTile()}${membersTile()}</div></section>`;
 }
 
 function progressionTile() {
@@ -1059,6 +1065,47 @@ function levelTile() {
   }).join('');
   return `<article class="tile c-6"><div class="tile-head"><h2>Fin de nivel</h2></div>
     <p class="muted" style="font-size:14px;margin:-6px 0 12px">Paso 1: valida aquí el examen que el alumno hizo contigo. Paso 2: el examen final del campus, si el nivel tiene uno publicado. Con los dos, el alumno pasa solo al nivel siguiente.</p>${rows}</article>`;
+}
+
+// Enrollment requests sent from the website form (db/021_solicitudes.sql).
+const ENR_LANG = { es: 'español', fr: 'francés', en: 'inglés', de: 'alemán' };
+const enrPlan = r => r.plan ? `${r.plan}${r.hours ? ` · ${r.hours} h/semana` : ''}${r.billing ? ` · ${r.billing === 'Ciclo' ? 'ciclo completo' : 'mensual'}` : ''}` : 'Ritmo por recomendar';
+const enrDay = d => d ? fmtDate(new Date(d + 'T12:00:00Z'), { day: 'numeric', month: 'short', year: 'numeric' }, 'UTC') : '—';
+function enrollTile() {
+  const list = A.staff.enrollments;
+  if (!isAdmin() || !list) return '';
+  const open = list.filter(r => !r.handled_at);
+  const shown = A.staff.enrAll ? list : open;
+  const detail = r => {
+    const wa = String(r.whatsapp || '').replace(/[^\d]/g, '');
+    const rows = [
+      ['Correo', `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a>`],
+      ['WhatsApp', r.whatsapp ? `<a href="https://wa.me/${wa}" target="_blank" rel="noopener">${esc(r.whatsapp)}</a>` : '—'],
+      ['Objetivo', esc(r.objective || '—')],
+      ['Nivel del test', r.level ? esc(r.level) : 'sin test de nivel'],
+      ['Fórmula', esc(enrPlan(r))],
+      ['Zona horaria', esc(r.timezone || '—')],
+      ['Inicio ideal', esc(enrDay(r.start_date))],
+      ['Días posibles', esc((r.days || []).join(', ') || '—')],
+      ['Franjas', esc((r.times || []).join(', ') || '—')],
+      ['Examen TEF / TCF', esc(r.exam_date ? enrDay(r.exam_date) : 'sin fecha')],
+      ['Precisiones', esc(r.comments || '—')],
+      ['Idioma del sitio', esc(ENR_LANG[r.lang] || r.lang || '—')],
+      ['Recibida', esc(fmtDate(new Date(r.created_at), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))]
+    ];
+    if (r.handled_at) rows.push(['Atendida', esc(`${fmtDate(new Date(r.handled_at), { day: 'numeric', month: 'short' })}${r.handled_by ? ` · ${r.handled_by}` : ''}`)]);
+    return `<dl class="enr-detail">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+  };
+  const row = r => {
+    const on = A.staff.enrOpen === r.id;
+    return `<div class="enr-row${r.handled_at ? ' done' : ''}"><div class="err-row"><span style="min-width:0"><b>${esc(r.name)}</b><br><span class="muted" style="font-size:13px">${esc(r.email)} · ${esc(enrPlan(r))}${r.level ? ` · test ${esc(r.level)}` : ''} · ${esc(fmtDate(new Date(r.created_at), { day: 'numeric', month: 'short' }))}</span></span>
+      <span class="row-act">${r.handled_at ? '<span class="status">Atendida</span>' : ''}<button class="btn btn-light btn-sm" type="button" data-enr-open="${r.id}" aria-expanded="${on}">${on ? 'Cerrar' : 'Ver'}</button>${A.staff.invitesReady ? `<button class="btn btn-dark btn-sm" type="button" data-enr-invite="${r.id}">${icon('user-plus')}Invitar</button>` : ''}${r.handled_at ? `<button class="btn btn-light btn-sm" type="button" data-enr-done="${r.id}" data-on="0">Reabrir</button>` : `<button class="btn btn-light btn-sm" type="button" data-enr-done="${r.id}" data-on="1">${icon('check')}Marcar como atendida</button>`}</span></div>
+      ${on ? detail(r) : ''}</div>`;
+  };
+  return `<article class="tile" id="solicitudes"><div class="tile-head"><h2>Solicitudes de inscripción</h2><span class="pill ${open.length ? 'warn' : 'ghost'} num">${open.length} por atender</span></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 12px">Llegan del formulario de inscripción del sitio (también abren un mensaje de WhatsApp). «Invitar» completa la invitación con el correo, el nombre y el nivel del test.</p>
+    ${shown.length ? shown.map(row).join('') : `<p class="muted">${list.length ? 'Todas las solicitudes están atendidas.' : 'Todavía no hay solicitudes.'}</p>`}
+    ${list.length > open.length ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-enr-all>${A.staff.enrAll ? 'Ver solo las pendientes' : `Ver también las atendidas (${list.length - open.length})`}</button>` : ''}</article>`;
 }
 
 function inviteTile() {
@@ -1849,6 +1896,27 @@ function bindView(id) {
       }
       await refresh(); render();
     };
+    $$('[data-enr-open]').forEach(b => b.onclick = () => { A.staff.enrOpen = A.staff.enrOpen === b.dataset.enrOpen ? null : b.dataset.enrOpen; render(); });
+    $$('[data-enr-all]').forEach(b => b.onclick = () => { A.staff.enrAll = !A.staff.enrAll; render(); });
+    $$('[data-enr-done]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      const on = b.dataset.on === '1';
+      const { error } = await sb.rpc('set_enrollment_handled', { p_id: b.dataset.enrDone, p_handled: on });
+      if (error) { b.disabled = false; return fail(error, 'No se pudo actualizar la solicitud.'); }
+      toast(on ? 'Solicitud marcada como atendida.' : 'Solicitud reabierta.'); await refresh(); render();
+    });
+    $$('[data-enr-invite]').forEach(b => b.onclick = () => {
+      const r = (A.staff.enrollments || []).find(x => x.id === b.dataset.enrInvite);
+      if (!r || !$('#invForm')) return;
+      $('#invEmail').value = r.email;
+      $('#invName').value = r.name;
+      if (r.level && $('#invLevel')) $('#invLevel').value = r.level;
+      if ($('#invRole')) $('#invRole').value = 'student';
+      $('#invEmail').dispatchEvent(new Event('input', { bubbles: true }));
+      $('#invForm').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      $('#invName').focus({ preventScroll: true });
+      toast(`Invitación preparada para ${r.name}: revisa el nivel y el profesor, y envíala.`);
+    });
     $$('[data-resend]').forEach(b => b.onclick = async () => {
       b.disabled = true;
       const sent = await sendInvite(b.dataset.resend);
