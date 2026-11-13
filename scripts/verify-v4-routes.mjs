@@ -142,7 +142,8 @@ try {
 
   assert(inscription.includes('/v4/inscription-v4.js'), 'adapter script not referenced');
   assert(inscription.indexOf('/v4/inscription-v4.js') < inscription.indexOf('inscription.js?v='), 'adapter must load before the form script');
-  assert(inscription.includes('src="/v4/inscription.js?v=20260831-stepper"'), 'root form script must be rebased and kept');
+  const formScriptVersion = (sourceInscription.match(/src="inscription\.js\?v=([^"]+)"/) || [])[1];
+  assert(formScriptVersion && inscription.includes(`src="/v4/inscription.js?v=${formScriptVersion}"`), 'root form script must be rebased and kept');
   assert(!/action=|method="post"/i.test(inscription), 'no live form submission should be added');
   assert(!/fetch\(|XMLHttpRequest|api\.hsforms/i.test(adapter), 'adapter must not submit anywhere');
   assert(adapter.includes("'pathwayV4Selection'"), 'adapter must read the continuation session key pathwayV4Selection');
@@ -177,13 +178,17 @@ try {
 
   // --- resolver + rebase unit tests ---------------------------------------
   const r = (search, stored) => resolveEnrollPreferences(search, stored);
-  assert.deepEqual(r('?plan=Acelerado&billing=Ciclo', null), { plan: 'Acelerado', billing: 'Ciclo' });
-  assert.deepEqual(r('?plan=esencial&billing=mensual', null), { plan: 'Esencial', billing: 'Mensual' });
-  assert.deepEqual(r('', { plan: 'Intensivo', billing: 'Ciclo' }), { plan: 'Intensivo', billing: 'Ciclo' });
-  assert.deepEqual(r('?plan=Intensivo', { plan: 'Esencial', billing: 'Mensual' }), { plan: 'Intensivo', billing: 'Mensual' });
-  assert.deepEqual(r('?plan=bogus&billing=nope', { plan: 'Acelerado', billing: 'Ciclo' }), { plan: 'Acelerado', billing: 'Ciclo' });
-  assert.deepEqual(r('', null), { plan: null, billing: null });
-  assert.deepEqual(r('?plan=INTENSIVO&billing=cycle', null), { plan: 'Intensivo', billing: 'Ciclo' });
+  assert.deepEqual(r('?plan=Acelerado&billing=Ciclo', null), { plan: 'Acelerado', hours: 4, billing: 'Ciclo' });
+  assert.deepEqual(r('?plan=esencial&billing=mensual', null), { plan: 'Esencial', hours: 2, billing: 'Mensual' });
+  assert.deepEqual(r('', { plan: 'Intensivo', billing: 'Ciclo' }), { plan: 'Intensivo', hours: 6, billing: 'Ciclo' });
+  assert.deepEqual(r('?plan=Intensivo', { plan: 'Esencial', billing: 'Mensual' }), { plan: 'Intensivo', hours: 6, billing: 'Mensual' });
+  assert.deepEqual(r('?plan=bogus&billing=nope', { plan: 'Acelerado', billing: 'Ciclo' }), { plan: 'Acelerado', hours: 4, billing: 'Ciclo' });
+  assert.deepEqual(r('', null), { plan: null, hours: null, billing: null });
+  assert.deepEqual(r('?plan=INTENSIVO&billing=cycle', null), { plan: 'Intensivo', hours: 6, billing: 'Ciclo' });
+  // Hours must belong to the plan (2 · 3–4 · 5–6); otherwise the plan's usual hours apply.
+  assert.deepEqual(r('?plan=Acelerado&hours=3', null), { plan: 'Acelerado', hours: 3, billing: null });
+  assert.deepEqual(r('?plan=Acelerado&hours=6', null), { plan: 'Acelerado', hours: 4, billing: null });
+  assert.deepEqual(r('?plan=Intensivo&hours=5&billing=Mensual', null), { plan: 'Intensivo', hours: 5, billing: 'Mensual' });
   ok('resolver: query precedence, session fallback, canonicalization, ignores junk');
 
   assert(buildAdapterSource().includes(resolveEnrollPreferences.toString()), 'adapter must embed the tested resolver');
@@ -205,13 +210,13 @@ try {
   ok('rebaseHtml rewrites local/site/root-relative refs, keeps /assets/ and externals');
 
   // --- adapter behavior in a fake DOM -------------------------------------
-  function makeInput(name, value) {
-    return { tagName: 'INPUT', type: 'radio', name, value, checked: false, events: [], dispatchEvent(event) { this.events.push(event.type); return true; } };
+  function makeInput(name, value, h) {
+    return { tagName: 'INPUT', type: 'radio', name, value, dataset: h ? { h: String(h) } : {}, checked: false, events: [], dispatchEvent(event) { this.events.push(event.type); return true; } };
   }
   function runAdapter({ search, stored }) {
     const all = [
-      makeInput('plan', 'Esencial'), makeInput('plan', 'Acelerado 3h'), makeInput('plan', 'Acelerado'),
-      makeInput('plan', 'Intensivo 5h'), makeInput('plan', 'Intensivo'),
+      makeInput('plan', 'Esencial', 2), makeInput('plan', 'Acelerado', 3), makeInput('plan', 'Acelerado', 4),
+      makeInput('plan', 'Intensivo', 5), makeInput('plan', 'Intensivo', 6),
       makeInput('billing', 'Mensual'), makeInput('billing', 'Ciclo')
     ];
     const form = { querySelectorAll(selector) { const name = (selector.match(/name="([^"]+)"/) || [])[1]; return all.filter((input) => input.name === name); } };
@@ -230,8 +235,8 @@ try {
 
   const queryRun = runAdapter({ search: '?plan=Intensivo&billing=Ciclo', stored: null });
   assert.deepEqual(queryRun.all.filter((i) => i.checked).map((i) => i.value).sort(), ['Ciclo', 'Intensivo']);
-  assert.deepEqual(queryRun.all.find((i) => i.value === 'Intensivo').events, ['input', 'change']);
-  assert.deepEqual(JSON.parse(queryRun.store.get('pathwayV4Selection')), { plan: 'Intensivo', billing: 'Ciclo' });
+  assert.deepEqual(queryRun.all.find((i) => i.value === 'Intensivo' && i.dataset.h === '6').events, ['input', 'change']);
+  assert.deepEqual(JSON.parse(queryRun.store.get('pathwayV4Selection')), { plan: 'Intensivo', hours: 6, billing: 'Ciclo' });
 
   const sessionRun = runAdapter({ search: '', stored: { plan: 'Esencial', billing: 'Mensual' } });
   assert.deepEqual(sessionRun.all.filter((i) => i.checked).map((i) => i.value).sort(), ['Esencial', 'Mensual']);
@@ -243,8 +248,11 @@ try {
   assert.equal(junkRun.all.filter((i) => i.checked).length, 0);
 
   const exactRun = runAdapter({ search: '?plan=Acelerado', stored: null });
-  assert.equal(exactRun.all.find((i) => i.value === 'Acelerado').checked, true);
-  assert.equal(exactRun.all.find((i) => i.value === 'Acelerado 3h').checked, false);
+  // Without ?hours=, Acelerado selects its usual 4 h card, not the 3 h one.
+  assert.equal(exactRun.all.find((i) => i.value === 'Acelerado' && i.dataset.h === '4').checked, true);
+  assert.equal(exactRun.all.find((i) => i.value === 'Acelerado' && i.dataset.h === '3').checked, false);
+  const hoursRun = runAdapter({ search: '?plan=Acelerado&hours=3', stored: null });
+  assert.equal(hoursRun.all.find((i) => i.value === 'Acelerado' && i.dataset.h === '3').checked, true);
   ok('adapter preselects, fires input+change, merges query over session, and matches exact values');
 
   // --- visible route test: serve the built output over HTTP -----------------
@@ -310,7 +318,7 @@ try {
 
     const queryLive = simulate({ search: '?plan=Intensivo&billing=Ciclo', selection: null });
     assert.deepEqual(queryLive.inputs.filter((i) => i.checked).map((i) => i.value).sort(), ['Ciclo', 'Intensivo']);
-    assert.deepEqual(JSON.parse(queryLive.store.get('pathwayV4Selection')), { plan: 'Intensivo', billing: 'Ciclo' });
+    assert.deepEqual(JSON.parse(queryLive.store.get('pathwayV4Selection')), { plan: 'Intensivo', hours: 6, billing: 'Ciclo' });
 
     const sessionLive = simulate({ search: '', selection: { plan: 'Esencial', billing: 'Mensual' } });
     assert.deepEqual(sessionLive.inputs.filter((i) => i.checked).map((i) => i.value).sort(), ['Esencial', 'Mensual']);
