@@ -48,6 +48,22 @@ const T = {
         items: ['Clases individuales en vivo por Zoom', 'Un profesor que sigue todo tu recorrido', 'Campus Pathway: ejercicios, manual y grabaciones', 'Seguimiento de tu progreso', '2 simulacros TEF / TCF Canada', 'Recuperas la clase si avisas 48 h antes'] },
       foot: 'Precios en CAD · 92,50 CAD al mes por hora semanal · Cuota de inscripción única de 15 CAD', conditions: 'Condiciones de inscripción'
     },
+    rounds: {
+      tag: 'Rondas IRCC',
+      title: 'Los cortes cambian<br> de una ronda a otra.',
+      lead: 'El puntaje CRS mínimo de las últimas invitaciones de IRCC, en la categoría de francés y en Canadian Experience Class.',
+      french: 'Competencia lingüística en francés',
+      cec: 'Canadian Experience Class',
+      date: 'Fecha de la ronda',
+      score: 'CRS mínimo',
+      loading: 'Consultando…',
+      official: 'Rondas oficiales',
+      status: 'Consultando las publicaciones oficiales de IRCC…',
+      note: 'Datos históricos, no una previsión para tu perfil.',
+      source: 'Fuente oficial: IRCC',
+      crs: 'Calcula tu puntaje CRS',
+      noscript: 'Las cifras en vivo requieren JavaScript. Consulta las rondas en la fuente oficial.'
+    },
     faq: {
       tag: 'Preguntas frecuentes', title: 'Lo que necesitas saber<br> antes de empezar.', lead: 'Respuestas cortas a las dudas más comunes.',
       items: [
@@ -93,16 +109,32 @@ const T = {
         items: ['Cours particuliers en direct sur Zoom', 'Un professeur qui suit tout votre parcours', 'Campus Pathway : exercices, manuel et enregistrements', 'Suivi de vos progrès', '2 examens blancs TEF / TCF Canada', 'Cours rattrapé si vous prévenez 48 h avant'] },
       foot: 'Prix en CAD · 92,50 CAD par mois et par heure hebdomadaire · Frais d’inscription uniques de 15 CAD', conditions: 'Conditions d’inscription'
     },
+    rounds: {
+      tag: 'Rondes IRCC',
+      title: 'Les seuils changent<br> d’une ronde à l’autre.',
+      lead: 'Le score CRS minimum des dernières invitations d’IRCC, dans la catégorie francophone et dans la catégorie de l’expérience canadienne.',
+      french: 'Compétence linguistique en français',
+      cec: 'Catégorie de l’expérience canadienne',
+      date: 'Date de la ronde',
+      score: 'CRS minimum',
+      loading: 'Consultation…',
+      official: 'Rondes officielles',
+      status: 'Consultation des publications officielles d’IRCC…',
+      note: 'Données historiques, pas une prévision pour votre profil.',
+      source: 'Source officielle : IRCC',
+      crs: 'Calculer mon score CRS',
+      noscript: 'Les chiffres en direct nécessitent JavaScript. Consultez les rondes sur la source officielle.'
+    },
     faq: {
-      tag: 'Des questions ?', title: 'Tout ce qu’il faut<br> savoir pour commencer<br> sereinement.', lead: 'Nous répondons aux questions les plus fréquentes pour que vous fassiez le premier pas en confiance.',
+      tag: 'Questions fréquentes', title: 'Ce qu’il faut savoir<br> avant de commencer.', lead: 'Des réponses courtes aux questions les plus fréquentes.',
       items: [
-        ['Quel rythme me convient ?', '<p>Cela dépend de votre niveau, de vos disponibilités et de vos objectifs. L’évaluation initiale vous aide à choisir le rythme le plus adapté.</p>'],
-        ['Les cours sont-ils vraiment particuliers ?', '<p>Oui. Chaque cours est individuel, en direct sur Zoom, avec un professeur qui connaît votre parcours. Entre les cours, le Campus Pathway vous donne des exercices par unité, votre manuel en ligne qui s’ouvre au fil des cours, des examens blancs TEF et TCF Canada, et les enregistrements de vos cours.</p>'],
-        ['Comment fonctionne l’évaluation initiale ?', '<p>Un test progressif évalue votre compréhension écrite, votre compréhension orale, ainsi que votre grammaire et votre vocabulaire ; il dure de 12 à 30 minutes selon la version choisie. L’expression orale est confirmée avec votre professeur au premier cours. À partir de ces résultats et de vos disponibilités, nous définissons votre point de départ.</p><a class="source-link" href="{test}">Faire l’évaluation initiale →</a>'],
-        ['Proposez-vous une préparation au TEF Canada et au TCF Canada ?', '<p>Oui, le parcours est centré sur le TEF Canada et le TCF Canada. Nous travaillons les quatre compétences et incluons deux examens blancs complets. L’examen officiel se passe auprès de l’organisme certificateur, pas chez Pathway.</p>'],
-        ['Pourquoi viser le NCLC 7 ?', '<p>Pour la catégorie francophone d’Entrée express, il faut un NCLC 7 ou plus dans les quatre compétences.</p><p>L’atteindre ne garantit pas une invitation : votre profil et votre score CRS comptent aussi.</p><a class="source-link" href="{nclc}">Comprendre l’objectif NCLC 7 →</a>'],
-        ['Comment calculer mon score CRS ?', '<p>Notre calculateur applique la grille officielle d’IRCC et compare votre score aux dernières rondes publiées.</p><p>C’est une estimation, pas une décision d’immigration.</p><a class="source-link" href="{crs}">Calculer mon score CRS →</a>'],
-        ['Comment m’inscrire ?', '<p>Évaluez votre niveau, puis demandez un horaire en indiquant le rythme et vos disponibilités. Nous confirmons l’horaire et le prix final avant tout paiement.</p><a class="source-link" href="{inscription}">Demander un horaire →</a>']
+        ['Quel rythme me convient ?', '<p>Cela dépend de votre niveau, de vos disponibilités et de votre date d’examen. L’évaluation initiale vous recommande un rythme.</p>'],
+        ['Les cours sont-ils vraiment particuliers ?', '<p>Oui. Chaque cours est individuel, en direct sur Zoom, avec un professeur qui connaît votre parcours.</p><p>Entre les cours, le Campus vous donne des exercices, votre manuel en ligne, des examens blancs et les enregistrements de vos cours.</p>'],
+        ['Comment fonctionne l’évaluation initiale ?', '<p>Un test en ligne mesure votre compréhension orale et écrite, votre grammaire et votre vocabulaire. Il dure de 12 à 30 minutes.</p><p>L’expression orale est confirmée avec votre professeur au premier cours.</p><a class="source-link" href="{test}">Faire l’évaluation initiale →</a>'],
+        ['Préparez-vous au TEF Canada et au TCF Canada ?', '<p>Oui. Nous travaillons les quatre compétences de l’examen et incluons deux examens blancs complets.</p><p>L’examen officiel se passe auprès de l’organisme certificateur, pas chez Pathway.</p>'],
+        ['Pourquoi viser le NCLC 7 ?', '<p>Pour la catégorie francophone d’Entrée express, il faut un NCLC 7 ou plus dans les quatre compétences.</p><p>L’atteindre ne garantit pas une invitation : votre profil et votre score CRS comptent aussi.</p><a class="source-link" href="{nclc}">Comprendre l’objectif NCLC 7 →</a>'],
+        ['Comment calculer mon score CRS ?', '<p>Notre calculateur applique la grille officielle d’IRCC et compare votre score aux dernières rondes publiées.</p><p>C’est une estimation, pas une décision d’immigration.</p><a class="source-link" href="{crs}">Calculer mon score CRS →</a>'],
+        ['Comment m’inscrire ?', '<p>Évaluez votre niveau, puis demandez un horaire avec le rythme de votre choix. Nous confirmons l’horaire et le prix avant tout paiement.</p><a class="source-link" href="{inscription}">Demander un horaire →</a>']
       ]
     },
     final: {
@@ -138,16 +170,32 @@ const T = {
         items: ['Live one-to-one lessons on Zoom', 'One teacher who follows your whole path', 'Pathway Campus: exercises, textbook and recordings', 'Progress tracking', '2 TEF / TCF Canada mock exams', 'Lesson made up if you tell us 48 h ahead'] },
       foot: 'Prices in CAD · 92.50 CAD a month per weekly hour · One-time enrolment fee of 15 CAD', conditions: 'Enrolment terms'
     },
+    rounds: {
+      tag: 'IRCC rounds',
+      title: 'Cut-offs change<br> from round to round.',
+      lead: 'The minimum CRS score of IRCC’s latest invitations, in the French category and in the Canadian Experience Class.',
+      french: 'French-language proficiency',
+      cec: 'Canadian Experience Class',
+      date: 'Round date',
+      score: 'Minimum CRS',
+      loading: 'Checking…',
+      official: 'Official rounds',
+      status: 'Checking IRCC’s official publications…',
+      note: 'Historical figures, not a forecast for your profile.',
+      source: 'Official source: IRCC',
+      crs: 'Calculate my CRS score',
+      noscript: 'Live figures need JavaScript. See the rounds at the official source.'
+    },
     faq: {
-      tag: 'Questions?', title: 'Everything you need<br> to know to start<br> with peace of mind.', lead: 'We answer the most common questions so you can take the first step with confidence.',
+      tag: 'FAQ', title: 'What to know<br> before you start.', lead: 'Short answers to the most common questions.',
       items: [
-        ['Which pace is right for me?', '<p>It depends on your level, your availability and your goals. The initial assessment helps you choose the most suitable pace.</p>'],
-        ['Are the lessons really one-to-one?', '<p>Yes. Every lesson is one-to-one and live on Zoom, with a teacher who knows your path. Between lessons, the Pathway Campus gives you exercises for each unit, your online manual that opens lesson by lesson, TEF and TCF Canada mock exams, and the recordings of your lessons.</p>'],
-        ['How does the initial assessment work?', '<p>A progressive test assesses your reading, your listening, and your grammar and vocabulary; it takes 12 to 30 minutes, depending on the version you choose. Speaking is confirmed with your teacher in the first lesson. With these results and your availability, we set your starting point.</p><a class="source-link" href="{test}">Take the initial assessment →</a>'],
-        ['Do you prepare students for the TEF Canada and TCF Canada?', '<p>Yes, the path focuses on the TEF Canada and the TCF Canada. We work on all four skills and include two full mock exams. The official exam is taken with the exam provider, not with Pathway.</p>'],
+        ['Which pace is right for me?', '<p>It depends on your level, your availability and your exam date. The initial assessment recommends a pace.</p>'],
+        ['Are the lessons really one-to-one?', '<p>Yes. Every lesson is one-to-one and live on Zoom, with a teacher who knows your path.</p><p>Between lessons, the Campus gives you exercises, your online textbook, mock exams and the recordings of your lessons.</p>'],
+        ['How does the initial assessment work?', '<p>An online test measures your listening, reading, grammar and vocabulary. It takes 12 to 30 minutes.</p><p>Speaking is confirmed with your teacher in the first lesson.</p><a class="source-link" href="{test}">Take the initial assessment →</a>'],
+        ['Do you prepare for the TEF Canada and TCF Canada?', '<p>Yes. We work on all four exam skills and include two full mock exams.</p><p>The official exam is taken with the exam provider, not with Pathway.</p>'],
         ['Why aim for NCLC 7?', '<p>For the Express Entry French-language category, you need NCLC 7 or higher in all four skills.</p><p>Reaching it doesn’t guarantee an invitation: your profile and your CRS score also count.</p><a class="source-link" href="{nclc}">Understand the NCLC 7 goal →</a>'],
         ['How do I work out my CRS score?', '<p>Our calculator applies IRCC’s official grid and compares your score with the latest published rounds.</p><p>It is an estimate, not an immigration decision.</p><a class="source-link" href="{crs}">Calculate my CRS score →</a>'],
-        ['How do I enrol?', '<p>Assess your level, then request a schedule with your preferred pace and availability. We confirm the schedule and the final price before any payment.</p><a class="source-link" href="{inscription}">Request a schedule →</a>']
+        ['How do I enrol?', '<p>Assess your level, then request a schedule with the pace you prefer. We confirm the schedule and the price before any payment.</p><a class="source-link" href="{inscription}">Request a schedule →</a>']
       ]
     },
     final: {
@@ -183,16 +231,32 @@ const T = {
         items: ['Live-Einzelunterricht über Zoom', 'Eine Lehrkraft, die Ihren ganzen Weg begleitet', 'Pathway Campus: Übungen, Lehrbuch und Aufzeichnungen', 'Verfolgung Ihrer Fortschritte', '2 Probeprüfungen TEF / TCF Canada', 'Stunde wird nachgeholt, wenn Sie 48 Std. vorher absagen'] },
       foot: 'Preise in CAD · 92,50 CAD pro Monat und Wochenstunde · Einmalige Anmeldegebühr von 15 CAD', conditions: 'Anmeldebedingungen'
     },
+    rounds: {
+      tag: 'IRCC-Runden',
+      title: 'Die Grenzwerte ändern sich<br> von Runde zu Runde.',
+      lead: 'Der Mindest-CRS-Wert der letzten Einladungen von IRCC, in der französischen Kategorie und in der Canadian Experience Class.',
+      french: 'Französische Sprachkompetenz',
+      cec: 'Canadian Experience Class',
+      date: 'Datum der Runde',
+      score: 'Mindest-CRS',
+      loading: 'Wird abgerufen…',
+      official: 'Offizielle Runden',
+      status: 'Offizielle Veröffentlichungen von IRCC werden abgerufen…',
+      note: 'Historische Daten, keine Prognose für Ihr Profil.',
+      source: 'Offizielle Quelle: IRCC',
+      crs: 'Meinen CRS-Punktwert berechnen',
+      noscript: 'Die Live-Zahlen benötigen JavaScript. Sehen Sie die Runden in der offiziellen Quelle.'
+    },
     faq: {
-      tag: 'Fragen?', title: 'Alles, was Sie wissen<br> müssen, um entspannt<br> zu beginnen.', lead: 'Wir beantworten die häufigsten Fragen, damit Sie den ersten Schritt mit Zuversicht gehen.',
+      tag: 'Häufige Fragen', title: 'Was Sie vor dem<br> Start wissen sollten.', lead: 'Kurze Antworten auf die häufigsten Fragen.',
       items: [
-        ['Welches Tempo passt zu mir?', '<p>Das hängt von Ihrem Niveau, Ihrer Verfügbarkeit und Ihren Zielen ab. Die Ersteinstufung hilft Ihnen, das passende Tempo zu wählen.</p>'],
-        ['Ist der Unterricht wirklich Einzelunterricht?', '<p>Ja. Jede Stunde ist Einzelunterricht, live über Zoom, mit einer Lehrkraft, die Ihren Weg kennt. Zwischen den Stunden bietet Ihnen der Pathway Campus Übungen zu jeder Einheit, Ihr Online-Lehrbuch, das sich Stunde für Stunde öffnet, Probeprüfungen für TEF und TCF Canada sowie die Aufzeichnungen Ihrer Stunden.</p>'],
-        ['Wie funktioniert die Ersteinstufung?', '<p>Ein progressiver Test prüft Ihr Leseverstehen, Ihr Hörverstehen sowie Grammatik und Wortschatz; er dauert je nach Version 12 bis 30 Minuten. Der mündliche Ausdruck wird in der ersten Stunde mit Ihrer Lehrkraft bestätigt. Anhand dieser Ergebnisse und Ihrer Verfügbarkeit legen wir Ihren Ausgangspunkt fest.</p><a class="source-link" href="{test}">Ersteinstufung machen →</a>'],
-        ['Bereitet Pathway auf den TEF Canada und den TCF Canada vor?', '<p>Ja, der Weg ist auf den TEF Canada und den TCF Canada ausgerichtet. Wir trainieren alle vier Kompetenzen und bieten zwei vollständige Probeprüfungen. Die offizielle Prüfung wird bei der Prüfungsstelle abgelegt, nicht bei Pathway.</p>'],
+        ['Welches Tempo passt zu mir?', '<p>Das hängt von Ihrem Niveau, Ihrer Verfügbarkeit und Ihrem Prüfungstermin ab. Die Ersteinstufung empfiehlt Ihnen ein Tempo.</p>'],
+        ['Ist der Unterricht wirklich Einzelunterricht?', '<p>Ja. Jede Stunde ist Einzelunterricht, live über Zoom, mit einer Lehrkraft, die Ihren Weg kennt.</p><p>Zwischen den Stunden bietet Ihnen der Campus Übungen, Ihr Online-Lehrbuch, Probeprüfungen und die Aufzeichnungen Ihrer Stunden.</p>'],
+        ['Wie funktioniert die Ersteinstufung?', '<p>Ein Online-Test misst Ihr Hör- und Leseverstehen, Ihre Grammatik und Ihren Wortschatz. Er dauert 12 bis 30 Minuten.</p><p>Der mündliche Ausdruck wird in der ersten Stunde mit Ihrer Lehrkraft bestätigt.</p><a class="source-link" href="{test}">Ersteinstufung machen →</a>'],
+        ['Bereiten Sie auf den TEF Canada und den TCF Canada vor?', '<p>Ja. Wir trainieren alle vier Prüfungskompetenzen und bieten zwei vollständige Probeprüfungen.</p><p>Die offizielle Prüfung wird bei der Prüfungsstelle abgelegt, nicht bei Pathway.</p>'],
         ['Warum NCLC 7 anstreben?', '<p>Für die französische Kategorie von Express Entry brauchen Sie NCLC 7 oder mehr in allen vier Kompetenzen.</p><p>Das garantiert keine Einladung: Ihr Profil und Ihr CRS-Punktwert zählen ebenfalls.</p><a class="source-link" href="{nclc}">Das Ziel NCLC 7 verstehen →</a>'],
         ['Wie berechne ich meinen CRS-Punktwert?', '<p>Unser Rechner wendet die offizielle Tabelle von IRCC an und vergleicht Ihren Punktwert mit den letzten veröffentlichten Runden.</p><p>Das ist eine Schätzung, keine Einwanderungsentscheidung.</p><a class="source-link" href="{crs}">Meinen CRS-Punktwert berechnen →</a>'],
-        ['Wie melde ich mich an?', '<p>Stufen Sie Ihr Niveau ein und fragen Sie einen Stundenplan an, mit Tempo und Verfügbarkeit. Wir bestätigen Stundenplan und Endpreis vor jeder Zahlung.</p><a class="source-link" href="{inscription}">Stundenplan anfragen →</a>']
+        ['Wie melde ich mich an?', '<p>Bestimmen Sie Ihr Niveau und fragen Sie einen Stundenplan mit Ihrem Wunschtempo an. Wir bestätigen Stundenplan und Preis vor jeder Zahlung.</p><a class="source-link" href="{inscription}">Stundenplan anfragen →</a>']
       ]
     },
     final: {
@@ -344,6 +408,35 @@ function pricing(lang) {
     </section>`;
 }
 
+// Official IRCC rounds page: French on the French home, English elsewhere
+// (canada.ca has no Spanish or German version).
+const IRCC_ROUNDS = {
+  en: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html',
+  fr: 'https://www.canada.ca/fr/immigration-refugies-citoyennete/services/immigrer-canada/entree-express/rondes-invitations.html'
+};
+
+// Latest IRCC rounds (French category and CEC), filled live by v4/ircc-rounds.js.
+function rounds(lang) {
+  const r = T[lang].rounds;
+  const official = lang === 'fr' ? IRCC_ROUNDS.fr : IRCC_ROUNDS.en;
+  const card = (key, title) => `<article class="round-card" data-ircc-category="${key}"><h3>${title}</h3><dl><div><dt>${r.date}</dt><dd data-round-date>${r.loading}</dd></div><div><dt>${r.score}</dt><dd data-round-score></dd></div></dl><a class="round-source" data-round-source href="${official}" target="_blank" rel="noopener noreferrer">${r.official}</a></article>`;
+  return `<section class="v4-section rounds-home" id="rondas-ircc" aria-labelledby="rounds-title">
+      <div class="container">
+        <header class="home-head">
+          <p class="home-pill">${r.tag}</p>
+          <h2 id="rounds-title">${r.title}</h2>
+          <p>${r.lead}</p>
+        </header>
+        <div class="rounds-board" data-ircc-rounds aria-busy="true">
+          <div class="rounds-cards">${card('french', r.french)}${card('cec', r.cec)}</div>
+          <p class="rounds-status"><span data-ircc-status role="status">${r.status}</span> <span data-ircc-updated></span></p>
+          <noscript><p>${r.noscript}</p></noscript>
+        </div>
+        <p class="home-foot">${r.note} · <a href="${official}" target="_blank" rel="noopener noreferrer">${r.source} <span aria-hidden="true">↗</span></a> · <a href="${pages(lang).crs}">${r.crs} <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
+      </div>
+    </section>`;
+}
+
 function faq(lang) {
   const f = T[lang].faq;
   const fill = html => html.replace('{test}', pages(lang).test).replace('{inscription}', pages(lang).inscription).replace('{nclc}', pages(lang).nclc).replace('{crs}', pages(lang).crs);
@@ -388,7 +481,7 @@ function closing(lang) {
 /** Markup that replaces HOME_TAIL_MARKER (from the stories to the end of the footer). */
 export function homeTail(lang) {
   if (!T[lang]) throw new Error(`home-tail: unknown language ${lang}`);
-  const markup = [stories(lang), pricing(lang), faq(lang), closing(lang)].join('\n\n    ');
+  const markup = [stories(lang), rounds(lang), pricing(lang), faq(lang), closing(lang)].join('\n\n    ');
   return lang === 'fr' ? frenchTypography(markup) : markup;
 }
 

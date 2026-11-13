@@ -434,3 +434,35 @@ html.has-story-open { overflow: hidden; }
   .faq-v4 .faq-list { margin-top: 28px; }
   .final-actions .button { width: 100%; }
 }
+
+/* IRCC rounds: two plain cards (French category, CEC) with the latest round, filled live. */
+.rounds-home { background: var(--cream); }
+.pricing-v4 { background: var(--paper); }
+.faq-v4 { background: var(--cream); }
+.faq-v4 .home-pill { background: var(--paper); }
+.rounds-board { max-width: 860px; margin: 40px auto 0; }
+.rounds-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.round-card { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding: 26px; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); }
+.round-card h3 { font: 600 20px/1.2 Outfit, sans-serif; }
+.round-card dl { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; }
+.round-card dt { color: var(--muted); font-size: 13px; }
+.round-card dd { margin: 4px 0 0; font: 600 22px/1.2 Outfit, sans-serif; font-variant-numeric: tabular-nums; }
+.round-card dd[data-round-score] { font-size: clamp(34px, 3.4vw, 44px); line-height: 1; color: var(--action); }
+.round-source { margin-top: auto; color: var(--ink); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.round-source:not([href]) { display: none; }
+.rounds-status { margin-top: 14px; text-align: center; color: var(--muted); font-size: 13px; }
+@media (max-width: 700px) {
+  .rounds-cards { grid-template-columns: minmax(0, 1fr); max-width: 460px; margin-inline: auto; }
+}
+
+/* Teachers: two columns, text on the left, the photo composition on the right. */
+.teachers-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
+.home-head-left { margin: 0; text-align: left; }
+.home-head-left > p:last-child { margin-inline: 0; }
+.home-v4 .teachers-v4 .teachers-layout .teacher-stage { width: min(100%, 500px); margin: 0 auto 40px; }
+@media (max-width: 900px) {
+  .teachers-layout { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .home-head-left { margin: 0 auto; text-align: center; }
+  .home-head-left > p:last-child { margin-inline: auto; }
+  .home-v4 .teachers-v4 .teachers-layout .teacher-stage { margin-top: 28px; }
+}
