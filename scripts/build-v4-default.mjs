@@ -29,8 +29,10 @@ const ALIASES = {
   '/v4/nclc7.html': '/nclc-7.html'
 };
 
-// Files whose /v4/<page> links must follow the pages to the root.
-const V4_SCRIPTS_WITH_LINKS = ['content.js', 'render.js'];
+// Files whose /v4/<page> links must follow the pages to the root (i18n.js
+// holds the per-language page addresses render.js writes into the pricing
+// buttons: without it they pointed at /v4/… relay pages).
+const V4_SCRIPTS_WITH_LINKS = ['content.js', 'render.js', 'i18n.js'];
 
 const exists = path => access(path).then(() => true, () => false);
 const fileFor = (outDir, route) => join(outDir, route.endsWith('/') ? `${route}index.html` : route);
@@ -131,6 +133,7 @@ export async function makeV4Default({ outDir }) {
   }
 
   return {
+    destinations: destination,
     promoted: [...promoted].sort(),
     redirects: [...destination].filter(([route]) => v4Pages.get(route).placeholder).map(([route, target]) => `${route} -> ${target}`)
   };
