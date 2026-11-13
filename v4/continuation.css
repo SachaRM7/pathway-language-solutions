@@ -15,50 +15,10 @@
 .v4-round:hover { background: var(--sage); }
 .stories-v4 { padding-top: 65px; }
 .pricing-v4 { border-top: 1px solid var(--line); }
-.billing-bar { display: grid; grid-template-columns: 215px 1fr auto; gap: 22px; align-items: center; padding: 22px 26px; border-radius: 12px; background: color-mix(in srgb, var(--sage) 52%, var(--cream)); margin-bottom: 20px; }
-.billing-bar h3 { font-size: 21px; }
-.billing-copy { padding-left: 22px; border-left: 1px solid var(--line); }
-.billing-copy > strong { display: block; font-size: 13px; line-height: 1.4; }
-.billing-copy p { margin-top: 5px; font-size: 11px; line-height: 1.45; color: var(--muted); }
-.billing-switch { display: flex; padding: 4px; gap: 3px; border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent); border-radius: 8px; background: var(--cream); }
-.billing-switch button { min-height: 44px; border: 0; padding: 10px 13px; border-radius: 5px; background: transparent; font-size: 13px; font-weight: 600; white-space: nowrap; }
-.billing-switch button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
-.billing-switch button span { font-size: 10px; margin-left: 4px; }
 .pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.price-card { display: flex; flex-direction: column; padding: 24px 26px; border: 1px solid color-mix(in srgb, var(--ink) 22%, var(--cream)); border-radius: 16px; background: color-mix(in srgb, var(--sage) 15%, var(--cream)); }
-.price-card.is-featured { color: var(--cream); background: var(--ink); border-color: var(--ink); }
-.price-card-head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 89px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
-.is-featured .price-card-head { border-color: rgb(245 239 228 / 24%); }
-.price-card h3 { font-size: 33px; }
-.price-tag { display: inline-block; border: 1px solid currentColor; border-radius: 5px; padding: 4px 8px; font-size: 11px; font-weight: 600; line-height: 1.4; }
-.price-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 27px; }
-.price-duration { margin-top: -4px; font-size: 14px; font-weight: 600; color: var(--muted); }
-.is-featured .price-duration { color: var(--sage); }
-.price-tag-featured, .is-featured .price-tag-featured { color: var(--paper); border-color: var(--action); background: var(--action); }
-.price-from { align-self: center; font-size: 14px; font-weight: 600; }
-.price-block { display: flex; flex-direction: column; justify-content: flex-start; min-height: 190px; padding-block: 20px 12px; }
-.price-amount { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 9px; font-size: 16px; }
-.price-amount strong { font: 650 clamp(35px, 3.25vw, 46px)/1.12 Outfit, sans-serif; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
-.price-original { font-size: 14px; opacity: .78; }
-.price-hours { margin-top: 10px; font-size: 14px; font-weight: 600; }
-.price-context { margin-top: 7px; font-size: 12px; opacity: .85; }
-.price-saving { margin-top: 12px; padding: 10px 12px; font-size: 12px; border-radius: 7px; background: color-mix(in srgb, var(--sage) 42%, transparent); }
-.price-saving p:first-child { display: flex; flex-wrap: wrap; gap: 4px 13px; }
-.price-saving p:last-child { border-top: 1px solid var(--line); padding-top: 4px; margin-top: 4px; }
-.is-featured .price-saving { background: #305346; }
-.is-featured .price-saving p:last-child { border-color: rgb(245 239 228 / 24%); }
-.price-saving s { color: inherit; opacity: .85; }
-.price-includes { min-height: 164px; padding: 12px 0 12px; margin: 0; list-style: none; }
-.is-featured .price-includes { border-color: rgb(245 239 228 / 24%); }
-.price-includes li { position: relative; padding-left: 23px; margin-bottom: 12px; font-size: 14px; line-height: 1.45; }
-.price-includes li::before, .result-benefits li::before { content: '✓'; position: absolute; left: 0; font-weight: 600; color: var(--success); }
-.is-featured .price-includes li::before { color: var(--sage); }
-.price-card > .button { margin-top: auto; width: 100%; }
+.result-benefits li::before { content: '✓'; position: absolute; left: 0; font-weight: 600; color: var(--success); }
 .is-featured > .button { background: var(--sage); color: var(--ink); }
 .is-featured > .button:hover { background: var(--paper); }
-.price-foot { min-height: 35px; padding-top: 12px; font-size: 11px; text-align: center; opacity: .85; }
-.pricing-notes { margin-top: 22px; padding-inline: 3px; color: var(--muted); font-size: 12px; line-height: 1.65; }
-.pricing-notes p + p { margin-top: 5px; }
 .outcome-grid { display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 70px; }
 .title-soft { display: block; margin-top: 10px; color: var(--muted); font-weight: 400; }
 .result-benefits { list-style: none; margin: 26px 0 0; padding: 0; }
@@ -265,11 +225,6 @@ html.has-story-open { overflow: hidden; }
   .stories-head { grid-template-columns: 1fr; gap: 28px; }
   .stories-stats li:first-child { padding-left: 0; border-left: 0; }
   .v4-split-heading, .information-grid, .outcome-grid { gap: 45px; }
-  .billing-bar { grid-template-columns: .7fr 1.3fr; }
-  .billing-switch { grid-column: 1 / -1; justify-self: end; margin-top: -4px; }
-  .price-card { padding-inline: 21px; }
-  .price-card-head { min-height: 89px; }
-  .price-includes { min-height: 210px; }
   .faq-layout { gap: 50px; }
   .faq-invitation { grid-template-columns: 1fr 1fr; }
   .faq-invitation > div { grid-column: 2; grid-row: 1 / 3; }
@@ -323,21 +278,7 @@ html.has-story-open { overflow: hidden; }
   .v4-split-heading, .outcome-grid, .faq-layout, .information-grid { grid-template-columns: 1fr; gap: 30px; }
   .v4-split-heading { margin-bottom: 26px; gap: 20px; }
   .v4-split-heading > p, .v4-copy > p:not(.section-tag) { font-size: 16px; }
-  .billing-bar { grid-template-columns: 1fr 1fr; gap: 15px; padding: 22px 20px; }
-  .billing-bar h3 { grid-column: 1 / -1; font-size: 23px; }
-  .billing-bar h3 br { display: none; }
-  .billing-copy { grid-column: 1 / -1; padding-left: 0; border: 0; }
-  .billing-copy > strong { font-size: 14px; }
-  .billing-copy p { font-size: 12px; }
-  .billing-switch { justify-self: stretch; margin-top: 5px; }
-  .billing-switch button { flex: 1; }
   .pricing-grid { grid-template-columns: 1fr; gap: 20px; }
-  .price-card { padding: 24px; }
-  .price-card-head { min-height: 89px; }
-  .price-block { min-height: 0; }
-  .price-amount strong { font-size: 42px; }
-  .price-includes { min-height: 184px; }
-  .pricing-notes { font-size: 12px; }
   .result-benefits li { font-size: 15px; }
   .result-scene figcaption { margin-top: 16px; font-size: 13px; }
   .faq-list { padding-top: 0; }
@@ -386,12 +327,7 @@ html.has-story-open { overflow: hidden; }
   .footer-v4-bottom nav a + a::before { display: none; }
 }
 @media (max-width: 359px) {
-  .billing-switch button { display: flex; flex-direction: column; align-items: center; justify-content: center; white-space: normal; padding-inline: 8px; font-size: 12px; }
-  .billing-switch button span { margin: 2px 0 0; }
   .v4-section h2 { font-size: 32px; }
-  .price-card { padding-inline: 20px; }
-  .price-card-head { gap: 7px; }
-  .price-tag { font-size: 10px; }
   .information-panel { padding-inline: 18px; }
   .final-copy h2 { font-size: 41px; }
 }
@@ -419,17 +355,7 @@ html.has-story-open { overflow: hidden; }
 .button-terra:focus-visible { outline-color: var(--ink); }
 .is-featured :focus-visible, .results-band :focus-visible, .final-cta-v4 :focus-visible, .footer-v4 :focus-visible, .continuity-exams :focus-visible, .continuity-notebook :focus-visible { outline-color: var(--sage); }
 
-/* Monthly view of a pricing card: what the month includes, and the cycle. */
-.price-monthly p + p { border-top: 1px solid var(--line); padding-top: 4px; margin-top: 4px; }
-.is-featured .price-monthly p + p { border-color: rgb(245 239 228 / 24%); }
 
-/* Attendance rules, summarised under the prices. */
-.attendance-note { margin-top: 22px; padding: 20px 24px; border: 1px solid var(--line); border-left: 3px solid var(--terracotta); border-radius: 10px; background: var(--paper); }
-.attendance-note h3 { font-size: 19px; }
-.attendance-note ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; line-height: 1.6; }
-.attendance-note li + li { margin-top: 6px; }
-.attendance-note li strong { color: var(--ink); font-weight: 600; }
-.attendance-note > p { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 8px; }
 
 /* Partial screenshot: says which tests it shows. */
 .rs-partial { margin: 0 0 14px; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--sage) 30%, var(--paper)); color: var(--muted); font-size: 13px; }
@@ -466,11 +392,6 @@ html.has-story-open { overflow: hidden; }
 .home-v4 .results-copy .section-tag::after, .home-v4 .final-copy .section-tag::after { background: var(--sage); }
 
 /* Small text on the home: 12 px minimum for labels, 13 px for reading. */
-.home-v4 .billing-copy p { font-size: 12px; }
-.home-v4 .billing-switch button span { font-size: 12px; }
-.home-v4 .price-tag { font-size: 12px; }
-.home-v4 .price-context, .home-v4 .price-saving { font-size: 13px; }
-.home-v4 .pricing-notes { font-size: 13px; }
 .home-v4 .faq-invitation small, .home-v4 .rounds-status, .home-v4 .rounds-updated, .home-v4 .rs-score small, .home-v4 .quote-card figcaption small, .home-v4 .reel-badge { font-size: 12px; }
 .home-v4 .information-panel > .source-link { font-size: 13px; }
 .home-v4 .footer-v4-bottom { font-size: 13px; }
@@ -480,19 +401,77 @@ html.has-story-open { overflow: hidden; }
 @media (max-width: 767px) {
   .home-v4 .v4-section .section-tag, .home-v4 .final-copy .section-tag { font-size: 12px; letter-spacing: .14em; }
   .home-v4 .section-tag::after { flex-basis: 48px; }
-  .attendance-note { padding: 18px 18px 14px; }
-  .price-tags:empty { display: none; }
-  .home-v4 .price-card-head { min-height: 0; }
-  .attendance-note ul { font-size: 14px; }
   .campus-screen { padding: 18px 16px 12px; }
   .campus-screen::before { inset: 18px -8px -10px 14px; }
   .campus-items strong { font-size: 14px; }
   .final-lighthouse { -webkit-mask-image: none; mask-image: none; object-fit: cover; object-position: right bottom; }
   .home-v4 .stories-stats span { font-size: 12px; }
-  .home-v4 .billing-copy p { font-size: 13px; }
-  .home-v4 .billing-switch button { display: flex; flex-direction: column; align-items: center; justify-content: center; white-space: normal; line-height: 1.25; }
-  .home-v4 .billing-switch button span { margin: 3px 0 0; }
   /* Legal links: one per line, 44 px high, no orphan. */
   .home-v4 .footer-v4-bottom nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; width: 100%; }
   .home-v4 .footer-v4-bottom nav a { min-height: 44px; font-size: 13px; }
+}
+
+/* Pricing: centred heading, one billing switch, three plain cards (hours picked in the card),
+   one shared "included" band and a single footnote line. */
+.plans-head { max-width: 660px; margin: 0 auto; text-align: center; }
+.plans-pill { display: inline-block; padding: 4px 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); font-size: 13px; font-weight: 600; color: var(--muted); }
+.plans-head h2 { margin-top: 16px; text-wrap: balance; }
+.plans-head > p:last-child { max-width: 31em; margin: 14px auto 0; color: var(--muted); font-size: 17px; }
+.plans-billing { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 28px; }
+.plans-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: color-mix(in srgb, var(--ink) 8%, var(--cream)); }
+.plans-switch button { min-height: 44px; padding: 10px 18px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 15px; font-weight: 600; white-space: nowrap; }
+.plans-switch button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgb(18 43 38 / 12%); }
+.plans-switch button span { margin-left: 6px; color: var(--success); font-size: 13px; }
+.plans-hint { font-size: 13px; color: var(--muted); text-align: center; }
+.pricing-v4 .pricing-grid { gap: 16px; margin-top: 40px; }
+.price-card { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding: 28px 26px; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); }
+.price-card.is-featured { border: 2px solid var(--ink); padding: 27px 25px; box-shadow: 0 18px 40px -24px rgb(18 43 38 / 45%); }
+.plan-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; }
+.plan-top h3 { font: 600 24px/1.1 Outfit, sans-serif; }
+.plan-badge { padding: 3px 10px; border-radius: 20px; background: color-mix(in srgb, var(--action) 14%, var(--paper)); color: var(--action); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.plan-for { margin-top: -14px; color: var(--muted); font-size: 15px; }
+.plan-hours { display: flex; flex-wrap: wrap; gap: 6px; }
+.plan-hours button, .plan-hours span { min-height: 36px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); font-size: 14px; font-weight: 600; }
+.plan-hours span { display: inline-flex; align-items: center; border-color: transparent; background: var(--sage-wash); }
+.plan-hours button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.plan-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+.plan-price strong { font: 600 clamp(40px, 4.2vw, 52px)/1 Outfit, sans-serif; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.plan-price span { color: var(--muted); font-size: 15px; }
+.plan-sub { margin-top: -14px; min-height: 1.6em; color: var(--muted); font-size: 14px; }
+.plan-sub b { color: var(--success); font-weight: 600; }
+.plan-cta { width: 100%; border-color: var(--ink); color: var(--ink); background: transparent; }
+.plan-cta:hover { background: var(--sage-wash); }
+.is-featured .plan-cta { border-color: var(--action); background: var(--action); color: var(--paper); }
+.is-featured .plan-cta:hover { background: #873d2d; }
+.plan-facts { display: grid; gap: 10px; margin: 0; padding-top: 18px; border-top: 1px dashed var(--line); font-size: 14px; }
+.plan-facts div { display: flex; justify-content: space-between; gap: 12px; }
+.plan-facts dt { color: var(--muted); }
+.plan-facts dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.plans-included { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 32px; margin-top: 16px; padding: 30px 32px; border-radius: 20px; background: var(--sage-wash); }
+.plans-included h3 { font: 600 24px/1.15 Outfit, sans-serif; }
+.plans-included p { max-width: 28em; margin: 8px 0 20px; color: var(--muted); font-size: 15px; }
+.plans-included ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-content: center; margin: 0; padding: 0; list-style: none; }
+.plans-included li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.5; }
+.plans-included li .icon { flex: none; width: 16px; height: 16px; margin-top: 4px; color: var(--success); }
+.plans-foot { margin-top: 22px; text-align: center; color: var(--muted); font-size: 13px; }
+.plans-foot a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.pricing-v4 :is(.plans-switch button, .plan-hours button):focus-visible { outline: 3px solid var(--action); outline-offset: 2px; }
+.price-card.is-featured .plan-cta:focus-visible { outline-color: var(--ink); }
+/* Wide screens: the cards share their rows, so names, prices and buttons line up even when a line wraps. */
+@media (min-width: 901px) {
+  @supports (grid-template-rows: subgrid) {
+    .pricing-v4 .pricing-grid { grid-template-rows: repeat(7, auto); row-gap: 0; }
+    .price-card { display: grid; grid-row: span 7; grid-template-rows: subgrid; row-gap: 20px; align-content: start; }
+  }
+}
+@media (max-width: 900px) {
+  .pricing-v4 .pricing-grid { grid-template-columns: minmax(0, 1fr); max-width: 460px; margin-inline: auto; }
+  .price-card.is-featured { order: -1; }
+  .plans-included { grid-template-columns: minmax(0, 1fr); max-width: 460px; margin-inline: auto; padding: 26px 22px; gap: 22px; }
+  .plans-included ul { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 400px) {
+  .plans-switch button { padding-inline: 12px; font-size: 14px; }
+  .price-card { padding: 24px 20px; }
+  .price-card.is-featured { padding: 23px 19px; }
 }
