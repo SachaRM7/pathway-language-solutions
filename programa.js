@@ -10,7 +10,7 @@
       context: 'Bonjour ! Je m’appelle Lucas. J’ai 20 ans et j’habite à Montréal. Je parle français et anglais. Le week-end, je sors avec mes amis.',
       unitQuestion: 'Où habite Lucas ?',
       unitOptions: ['À Paris', 'À Lima', 'À Montréal', 'À Québec'],
-      examTitle: 'Où travaille Camille ?',
+      examTitle: 'Où travaille Pierre ?',
       examAudio: '/assets/audio/placement-a1.mp3',
       examOptions: ['Dans une école', 'Dans une librairie', 'Dans un restaurant', 'Dans un hôpital'],
       self: ['Me presento con mi nombre, origen e idiomas.', 'Identifico lugares y horarios en mensajes breves.', 'Formulo una petición sencilla con una expresión de cortesía.']
@@ -47,7 +47,7 @@
       unitQuestion: 'Quelle conclusion implicite se dégage du texte ?',
       unitOptions: ['La rapidité garantit la fiabilité', 'Toute information en ligne est trompeuse', 'Disposer de l’information ne dispense pas de la vérifier', 'La vérification devient inutile'],
       examTitle: 'Quelle est l’idée principale de l’extrait ?',
-      examAudio: '/assets/audio/placement-b2.mp3',
+      examAudio: '/assets/audio/placement-b2.mp3?v=20261113',
       examOptions: ['Le numérique supprime les tâches répétitives', 'Il faut abandonner les outils numériques', 'La technique suffit à protéger la concentration', 'Les outils aident si l’on en limite aussi l’usage'],
       self: ['Identifico una conclusión implícita y los presupuestos de un texto.', 'Reformulo una idea sin perder sus matices.', 'Estructuro una objeción compleja con precisión y cortesía.']
     }
