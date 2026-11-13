@@ -82,12 +82,14 @@ main { padding-top: var(--header-height); }
 .nav-links > a { position: relative; display: inline-flex; align-items: center; min-height: 48px; text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; }
 .nav-links > a::after { content: ''; position: absolute; bottom: 7px; left: 0; right: 0; height: 1.5px; background: var(--terracotta); transform: scaleX(0); transform-origin: left; transition: transform 200ms var(--ease); }
 .nav-links > a:hover::after, .nav-links > a[aria-current="location"]::after { transform: scaleX(1); }
-.nav-cta { min-width: 154px; white-space: nowrap; }
+.nav-cta { min-width: 154px; white-space: nowrap; background: var(--action); }
+.nav-cta:hover { background: #873d2d; }
+.nav-cta:focus-visible { outline-color: var(--ink); }
 .nav-campus { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: border-color 180ms var(--ease), background 180ms var(--ease); }
 .nav-campus:hover { border-color: var(--ink); background: var(--sage-wash); }
 .nav-campus .icon { width: 20px; height: 20px; }
 .language-switcher { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 10px; }
-.language-switcher a { display: grid; min-width: 32px; min-height: 40px; place-items: center; border-radius: 7px; font-size: 11px; font-weight: 700; text-decoration: none; }
+.language-switcher a { display: grid; min-width: 32px; min-height: 40px; place-items: center; border-radius: 7px; font-size: 12px; font-weight: 700; text-decoration: none; }
 .language-switcher a:hover { background: var(--sage-wash); }
 .language-switcher a[aria-current="page"] { background: color-mix(in srgb, var(--terracotta) 13%, var(--paper)); color: var(--action); }
 .menu-toggle { display: none; }
@@ -197,7 +199,7 @@ main { padding-top: var(--header-height); }
 .method-section { background: var(--paper); }
 .method-section h2 span { color: var(--action); }
 .method-intro { margin-top: 24px; font-size: 20px; line-height: 1.45; color: var(--muted); }
-.method-steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; list-style: none; padding: 0; margin: 56px -10px 0; }
+.method-steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; list-style: none; padding: 0; margin: 56px 0 0; }
 .method-steps::before { content: ''; position: absolute; top: -10px; left: 12.5%; right: 12.5%; height: 1.5px; background: #77877d; }
 .method-step { position: relative; padding: 30px 32px 26px; border-radius: 14px; background: var(--sage-wash); }
 .method-number { position: absolute; top: -28px; left: 50%; display: grid; place-items: center; width: 50px; height: 50px; transform: translateX(-50%); border-radius: 50%; color: var(--paper); background: var(--muted); font-family: Outfit, Arial, sans-serif; font-size: 23px; font-weight: 600; }
@@ -208,7 +210,7 @@ main { padding-top: var(--header-height); }
 .method-step:last-child .method-icon { color: var(--action); background: color-mix(in srgb, var(--terracotta) 14%, var(--paper)); }
 .method-step h3 { text-align: center; font-size: 24px; }
 .method-step p { margin-top: 8px; color: var(--muted); font-size: 17px; line-height: 1.45; }
-.results-strip { display: grid; grid-template-columns: 1.6fr 1.25fr 1.05fr 1fr; align-items: center; margin: 40px -16px 0; padding: 14px 26px; background: var(--sage-wash); border-radius: 12px; }
+.results-strip { display: grid; grid-template-columns: 1.6fr 1.25fr 1.05fr 1fr; align-items: center; margin: 40px 0 0; padding: 14px 26px; background: var(--sage-wash); border-radius: 12px; }
 .results-intro > strong { display: block; font-size: 11px; letter-spacing: .22em; font-weight: 600; text-transform: uppercase; }
 .results-intro p { color: var(--muted); font-size: 14px; margin-top: 2px; }
 .result-item { display: flex; align-items: center; justify-content: center; gap: 16px; padding-inline: 16px; border-left: 1px solid color-mix(in srgb, var(--muted) 38%, var(--paper)); }
@@ -326,7 +328,7 @@ main { padding-top: var(--header-height); }
 .continuity-notebook { background: var(--action); color: var(--paper); }
 .continuity-notebook p, .continuity-notebook .card-number { color: var(--paper); }
 .continuity-feedback { background: color-mix(in srgb, var(--sage) 68%, var(--cream)); }
-.continuity-workshops { background: color-mix(in srgb, var(--terracotta) 13%, var(--cream)); }
+.continuity-campus { background: color-mix(in srgb, var(--terracotta) 13%, var(--cream)); }
 .continuity-exams { background: var(--ink); color: var(--paper); }
 .continuity-exams p, .continuity-exams .card-number { color: var(--paper); }
 
@@ -357,16 +359,20 @@ main { padding-top: var(--header-height); }
   .program-intro { top: 64px; }
 }
 
-/* Compact header between tablet and wide desktop, so the student access link and the language switcher always fit. */
-@media (max-width: 1500px) and (min-width: 1024px) {
+/* Compact header on desktop, so the student access link and the language
+   switcher always fit in every language (the menu is a burger below 1200 px).
+   The Campus link shows its label from 1400 px, where it fits. */
+@media (min-width: 1200px) {
   .header-inner { gap: 20px; }
   .brand img { width: 220px; }
   .main-navigation { gap: 10px; }
   .nav-links { gap: 16px; margin-right: 8px; }
   .nav-links > a { font-size: 13px; }
+  .language-switcher a { min-width: 28px; }
+}
+@media (min-width: 1200px) and (max-width: 1399px) {
   .nav-campus { width: 48px; padding: 0; justify-content: center; }
   .nav-campus-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .language-switcher a { min-width: 28px; }
 }
 
 @media (max-width: 1160px) and (min-width: 1024px) {
@@ -690,3 +696,84 @@ main { padding-top: var(--header-height); }
 .objective-label .icon.maple { width: 22px; height: 22px; }
 /* Safety net: the page never scrolls sideways on a phone, whatever a section does. */
 html, body { overflow-x: clip; }
+
+/* ------------------------------------------------------------------ */
+/* Home fixes (2026-11 review).                                        */
+/* ------------------------------------------------------------------ */
+
+/* Pause button of the teachers' animation: an opaque pill under the photos,
+   never over them. */
+.home-v4 .teacher-stage { margin-bottom: 40px; }
+.home-v4 .teacher-pause { bottom: -48px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgb(18 43 38 / 8%); }
+.home-v4 .teacher-pause:hover { background: var(--sage-wash); }
+
+/* Long words (DE, EN) hyphenate instead of overflowing. */
+.home-v4 .stage-button span, .home-v4:lang(de) .continuity-card h3 { hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
+.home-v4 .week-preview > header { flex-wrap: wrap; }
+
+/* Small text on the home: 12 px minimum for labels. */
+.home-v4 .example-label, .home-v4 .priority-label, .home-v4 .now-label { font-size: 12px; }
+.home-v4 .skill-pending small, .home-v4 .week-preview > header span, .home-v4 .progress-table-head, .home-v4 .progress-preview > header h3, .home-v4 .progress-foot, .home-v4 .result-item span { font-size: 12px; }
+.home-v4 .results-intro > strong, .home-v4 .skill-report h4 { font-size: 12px; }
+.home-v4 .objective-label { font-size: 12px; }
+.home-v4 .week-calendar, .home-v4 .week-calendar thead small, .home-v4 .week-calendar tbody th, .home-v4 .calendar-event strong, .home-v4 .calendar-event span, .home-v4 .calendar-event small { font-size: 12px; }
+.home-v4 .progress-copy .eyebrow, .home-v4 .teachers-copy .eyebrow { font-size: 12px; }
+
+/* « Mi semana »: a list by day on small screens, the table above. */
+.week-list { display: none; }
+
+@media (max-width: 1023px) {
+  .home-v4 .objective-label, .home-v4 .priority-label { font-size: 12px; }
+  .home-v4 .teacher-pause { bottom: -44px; }
+}
+
+@media (max-width: 767px) {
+  .home-v4 .eyebrow, .home-v4 .teachers-copy .eyebrow, .home-v4 .progress-copy .eyebrow { font-size: 12px; letter-spacing: .14em; }
+  .home-v4 .skill-report h4 { font-size: 12px; }
+  .home-v4 .progress-table-head, .home-v4 .now-label { font-size: 12px; }
+  .home-v4 .progress-row p { font-size: 13px; }
+  .home-v4 .week-preview > header span { font-size: 12px; }
+  /* Stage tiles: only the level; the subtitle of the current stage is in the slide above. */
+  .home-v4 .stage-button span { display: none; }
+  .home-v4 .stage-button { min-height: 68px; }
+  .home-v4 .stage-goal { min-height: 92px; }
+  .home-v4 .stage-goal .maple { margin-bottom: 4px; }
+  .home-v4 .program-carousel { height: 520px; }
+  .home-v4 .teacher-stage { margin-bottom: 44px; }
+  .home-v4 .teacher-pause { bottom: -40px; }
+}
+
+@media (max-width: 479px) {
+  .home-v4 .continuity-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 599px) {
+  .home-v4 .calendar-scroll { display: none; }
+  .home-v4 .week-list { display: grid; gap: 8px; margin: 0; padding: 0 4px; list-style: none; }
+  .week-list li { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; padding: 12px 14px; border-radius: 8px; background: color-mix(in srgb, var(--sage) 54%, var(--paper)); font-size: 14px; line-height: 1.4; }
+  .week-list li.is-task { background: color-mix(in srgb, var(--terracotta) 12%, var(--paper)); }
+  .week-list-day { font-weight: 600; }
+  .week-list-time { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .week-list strong { grid-column: 1 / -1; font-weight: 600; }
+  .week-list li > span:last-child { grid-column: 1 / -1; color: var(--muted); }
+}
+
+/* Burger menu between 1024 and 1199 px too: the French and German navigation
+   does not fit on one line there (same rules as below 1024 px). */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  :root { --header-height: 88px; }
+  .header-inner { gap: 20px; }
+  .brand img { width: 228px; }
+  .menu-toggle { position: relative; display: grid; align-content: center; gap: 6px; width: 48px; height: 48px; padding: 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+  .menu-toggle > span:not(.sr-only) { display: block; width: 24px; height: 1.8px; background: var(--ink); transition: transform 200ms; }
+  .menu-toggle[aria-expanded="true"] > span:first-child { transform: translateY(3.9px) rotate(45deg); }
+  .menu-toggle[aria-expanded="true"] > span:nth-child(2) { transform: translateY(-3.9px) rotate(-45deg); }
+  .main-navigation { position: absolute; top: calc(100% - 1px); left: 0; right: 0; display: none; align-items: stretch; gap: 16px; padding: 20px var(--gutter) 28px; max-height: calc(100dvh - var(--header-height)); overflow-y: auto; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .main-navigation.is-open { display: flex; flex-direction: column; }
+  .nav-links { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 0; }
+  .nav-links > a { font-size: 17px; padding-block: 10px; }
+  .language-switcher { width: fit-content; }
+  .language-switcher a { min-width: 48px; min-height: 44px; font-size: 12px; }
+  .nav-cta { width: fit-content; min-width: 154px; padding-inline: 20px; font-size: 15px; }
+  .nav-campus { width: fit-content; min-height: 48px; padding: 0 14px; font-size: 16px; }
+}
