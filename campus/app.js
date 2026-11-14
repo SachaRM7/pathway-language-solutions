@@ -1169,7 +1169,7 @@ function membersTile() {
   const row = m => {
     const last = daysSince(m.last_activity);
     const pl = A.staff.plans && A.staff.plans[m.id];
-    const meta = `${esc(m.email)} · ${m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}${pl ? ` · ${pl.plan === 'mensual' ? `mensual desde el ${esc(fmtDate(new Date(pl.plan_start + 'T12:00:00Z'), { day: 'numeric', month: 'short' }, 'UTC'))}` : pl.plan === 'ciclo' ? 'ciclo' : 'sin fórmula'}` : ''}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
+    const meta = `${esc(m.email)} · ${m.role === 'admin' ? 'Administración' : m.role === 'teacher' ? 'Profesor' : `${m.level} · ${esc(m.teacher_name || 'sin profesor')}${pl ? ` · ${pl.plan === 'mensual' ? `mensual desde el ${esc(fmtDate(new Date(pl.plan_start + 'T12:00:00Z'), { day: 'numeric', month: 'short' }, 'UTC'))}` : pl.plan === 'ciclo' ? 'ciclo' : 'sin fórmula'}` : ''}`} · ${!m.onboarded ? 'sin empezar' : last == null ? 'sin actividad' : last === 0 ? 'activo hoy' : `hace ${last} día${last === 1 ? '' : 's'}`}`;
     if (A.staff.editing === m.id) {
       return `<form class="member-edit form" data-member-form="${m.id}">
         <div class="form-2"><label class="field" for="mName">Nombre<input id="mName" required maxlength="120" value="${esc(m.full_name)}"></label>
@@ -1185,6 +1185,7 @@ function membersTile() {
     return `<div class="err-row"><span style="min-width:0"><b>${esc(m.full_name)}</b><br><span class="muted" style="font-size:13px">${meta}</span></span>
       <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${confirming
         ? `<button class="btn btn-coral btn-sm" type="button" data-member-delete="${m.id}">Eliminar definitivamente</button><button class="btn btn-light btn-sm" type="button" data-member-cancel>No</button>`
+        : m.role === 'admin' ? '<span class="status">Admin</span>'
         : `<button class="btn btn-light btn-sm" type="button" data-member-edit="${m.id}">Editar</button><button class="btn btn-light btn-sm" type="button" data-member-ask="${m.id}">Eliminar</button>`}</span></div>
       ${confirming ? `<p class="form-error" style="margin:0 0 12px">Se borran la cuenta de ${esc(m.full_name)} y todo su progreso. No se puede deshacer.</p>` : ''}`;
   };
