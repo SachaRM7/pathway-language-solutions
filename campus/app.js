@@ -722,7 +722,7 @@ function viewRuta() {
     }
     cells.push(`<button class="u ${cls}" ${action} aria-label="${label}">${inner}</button>`);
   }
-  cells.push(`<button class="u exam" data-toast="El examen ${s.letter} se desbloquea al terminar las 16 unidades del segmento." aria-label="Examen ${s.letter}">${icon('trophy')}</button>`);
+  cells.push(`<button class="u u-exam" data-toast="El examen ${s.letter} se desbloquea al terminar las 16 unidades del segmento." aria-label="Examen ${s.letter}">${icon('trophy')}</button>`);
   const featured = nu && nu.segment === s.letter ? nu : null;
   const fInfo = featured ? A.unitInfo[featured.id] : null;
   return `<section class="view" aria-labelledby="h-ruta">

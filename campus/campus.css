@@ -246,7 +246,8 @@ input, select, textarea { font: inherit; color: inherit; }
 .u:hover { transform: translateY(-2px); }
 .u.done { background: var(--ink); color: var(--on-ink); }
 .u.cur { background: var(--coral); color: #fff; box-shadow: 0 10px 24px -10px var(--coral); }
-.u.exam { background: var(--butter); color: var(--butter-ink); }
+.u.u-exam { background: var(--butter); color: var(--butter-ink); }
+.u.u-exam .icon { width: 24px; height: 24px; }
 .u .icon { width: 18px; height: 18px; }
 .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
