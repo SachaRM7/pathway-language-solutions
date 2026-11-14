@@ -370,7 +370,8 @@ async function loadStaff() {
     A.staff.enrollments = enr.error ? null : (enr.data || []); // needs db/021_solicitudes.sql
     await loadAgents();
     await loadCrm();
-  } else A.staff.prospects = null;
+    await loadWa();
+  } else { A.staff.prospects = null; A.staff.wa = null; }
 }
 async function refresh() { try { await loadAll(); } catch (e) { fail(e); } }
 
@@ -449,7 +450,7 @@ const isAdmin = () => !!(A.profile && A.profile.role === 'admin');
 const TNAV = [
   { id: 'panel', label: 'Inicio', icon: 'home' },
   { id: 'alumnos', label: 'Alumnos', icon: 'users' },
-  { id: 'prospectos', label: 'Prospectos', icon: 'funnel', when: () => isAdmin() && Array.isArray(A.staff.prospects), count: () => crmDue().length },
+  { id: 'prospectos', label: 'Prospectos', icon: 'funnel', when: () => isAdmin() && Array.isArray(A.staff.prospects), count: () => crmDue().length + (waOn() ? waWaiting().length : 0) },
   { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => Array.isArray(A.staff.threads), count: () => threadsWaiting().length },
   { id: 'tareas', label: 'Tareas', icon: 'pen' },
   { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null, count: () => isAdmin() ? A.staff.changes.filter(c => c.status === 'pending').length : 0 },
@@ -460,7 +461,7 @@ const TNAV = [
 const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
 const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
 // Old links (#grupo) keep working.
-const ALIASES = { grupo: 'panel' };
+const ALIASES = { grupo: 'panel', whatsapp: 'prospectos' };
 
 function currentView() {
   const raw = location.hash.slice(1), id = ALIASES[raw] || raw;
@@ -502,8 +503,10 @@ function notifications() {
     if (requests) out.push({ key: 'enr' + requests, ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender.`, href: '#cuentas' });
     const crmN = isAdmin() && A.staff.prospects ? crmDue().length : 0;
     if (crmN) out.push({ key: 'crm' + crmToday() + crmN, ic: 'funnel', text: `${crmN} prospecto${crmN > 1 ? 's' : ''} con una acción para hoy o atrasada.`, href: '#prospectos', today: true });
+    const wa = waOn() ? waWaiting() : [];
+    if (wa.length) out.push({ key: 'wa' + wa.map(t => t.id + t.needs_reply_since).join(','), ic: 'chat', text: `${wa.length} ${wa.length > 1 ? 'conversaciones' : 'conversación'} de WhatsApp necesita${wa.length > 1 ? 'n' : ''} respuesta.`, href: '#whatsapp' });
     const waiting = threadsWaiting();
-    if (waiting.length) out.push({ key: 'msg' + waiting.map(t => t.id + t.needs_staff_since).join(','), ic: 'chat', text: `${waiting.length} conversación${waiting.length > 1 ? 'es' : ''} de alumno${waiting.length > 1 ? 's' : ''} necesita${waiting.length > 1 ? 'n' : ''} respuesta.`, href: '#mensajes' });
+    if (waiting.length) out.push({ key: 'msg' + waiting.map(t => t.id + t.needs_staff_since).join(','), ic: 'chat', text: `${waiting.length} ${waiting.length > 1 ? 'conversaciones' : 'conversación'} de alumno${waiting.length > 1 ? 's' : ''} necesita${waiting.length > 1 ? 'n' : ''} respuesta.`, href: '#mensajes' });
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
     if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
@@ -855,13 +858,15 @@ const noStudentsTile = () => `<article class="tile empty"><h2>Todavía no tienes
 function todoItems() {
   const out = [], admin = isAdmin();
   const waiting = threadsWaiting().length;
-  if (waiting) out.push({ ic: 'chat', text: `${waiting} conversación${waiting > 1 ? 'es' : ''} por responder`, href: '#mensajes' });
+  if (waiting) out.push({ ic: 'chat', text: `${waiting} ${waiting > 1 ? 'conversaciones' : 'conversación'} por responder`, href: '#mensajes' });
   const requests = admin ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
   if (requests) out.push({ ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender`, href: '#cuentas' });
   if (admin && A.staff.prospects) {
     const due = crmDue(), late = due.filter(p => p.next_due < crmToday()).length;
     if (due.length) out.push({ ic: 'funnel', text: `${due.length} prospecto${due.length > 1 ? 's' : ''} para hoy${late ? ` (${late} atrasado${late > 1 ? 's' : ''})` : ''}`, href: '#prospectos', today: true });
   }
+  const wa = waOn() ? waWaiting().length : 0;
+  if (wa) out.push({ ic: 'chat', text: `${wa} ${wa > 1 ? 'conversaciones' : 'conversación'} de WhatsApp por responder`, href: '#whatsapp' });
   const pending = A.staff.changes.filter(c => c.status === 'pending').length;
   if (admin && pending) out.push({ ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar`, href: '#horarios' });
   if (admin && A.staff.groups && A.staff.members) {
@@ -1386,10 +1391,12 @@ function crmKpis() {
   ].map(([l, v, s], i) => `<div class="tile crm-kpi${i === 3 && due ? ' due' : ''}"><span class="label">${l}</span><strong class="${typeof v === 'string' ? 'txt' : 'num'}">${esc(v)}</strong><small>${esc(s)}</small></div>`).join('');
 }
 function viewProspectos() {
+  if (waView()) return viewWhatsapp();
   if (!C.view) C.view = crmPhone() ? 'list' : 'board';
   const owners = crmOwners();
   return `<section class="view" aria-labelledby="h-crm">
   ${topBar('h-crm', 'Prospectos', 'Del primer contacto a la inscripción. Solo administración.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-crm-add>${icon('plus')}Añadir prospecto</button>`)}
+  ${crmSubNav('crm')}
   <section class="crm-kpis" aria-label="Resumen del mes">${crmKpis()}</section>
   <div class="crm-tools tile">
     <label class="crm-search" for="crmQ">${icon('search')}<input id="crmQ" type="search" autocomplete="off" placeholder="Nombre, correo o WhatsApp" aria-label="Buscar un prospecto" value="${esc(C.q)}"></label>
@@ -1420,7 +1427,7 @@ function crmWaLink(p) {
 function crmSheet() {
   const p = C.detail || crmById(C.open);
   if (!p) return '';
-  const owners = crmOwners(), wa = crmWaLink(p);
+  const owners = crmOwners(), wa = crmWaLink(p), waT = waOn() ? waList().find(t => t.prospect && t.prospect.id === p.id) : null;
   const canInvite = A.staff.invitesReady && !p.student_id && p.stage !== 'activo';
   const strong = ['horario', 'inscrito'].includes(p.stage);
   const evIcon = e => e.kind === 'note' ? `<span class="crm-t-ico stone" aria-hidden="true">${icon('pen')}</span>` : `<span class="crm-t-ico lilac" aria-hidden="true">${icon('sparkle')}</span>`;
@@ -1460,9 +1467,9 @@ function crmSheet() {
       <div class="crm-stage-pick" role="group" aria-labelledby="crmStageT">${CRM_STAGES.map(s => `<button type="button" data-crm-stage="${s.id}" aria-pressed="${s.id === p.stage}">${s.name}</button>`).join('')}</div>
       ${p.stage === 'pausa' ? `<form class="crm-row crm-pause" id="crmPauseForm"><label class="field" for="cpKind">Estado<select id="cpKind"><option ${p.pause_kind !== 'Perdido' ? 'selected' : ''}>En pausa</option><option ${p.pause_kind === 'Perdido' ? 'selected' : ''}>Perdido</option></select></label>
         <label class="field" for="cpReason">Motivo<input id="cpReason" maxlength="300" value="${esc(p.reason || '')}" placeholder="Ej.: vuelve en enero"></label><button class="btn btn-dark btn-sm" type="submit">Guardar</button></form>` : ''}
-      <div class="crm-row">${wa ? `<a class="btn btn-light btn-sm" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}Abrir WhatsApp</a>` : '<button class="btn btn-light btn-sm" type="button" disabled title="Sin número de WhatsApp">Sin WhatsApp</button>'}
+      <div class="crm-row">${waT ? `<a class="btn btn-dark btn-sm" href="#whatsapp" data-wa-goto="${waT.id}">${icon('chat')}Ver la conversación${waT.needs_reply ? ' · por responder' : ''}</a>` : wa ? `<a class="btn btn-light btn-sm" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}Abrir WhatsApp</a>` : '<button class="btn btn-light btn-sm" type="button" disabled title="Sin número de WhatsApp">Sin WhatsApp</button>'}
         ${canInvite ? `<button class="btn ${strong ? 'btn-coral' : 'btn-light'} btn-sm" type="button" data-crm-invite>${icon('user-plus')}${p.invited_at ? 'Volver a invitar' : 'Invitar al Campus'}</button>` : ''}</div>
-      <p class="muted crm-note">${wa ? '«Abrir WhatsApp» prepara un mensaje en español; tú decides si lo envías. ' : ''}${canInvite ? '«Invitar al Campus» abre la invitación con el correo, el nombre y el nivel del test.' : p.student_id ? 'Ya tiene su cuenta en el Campus.' : ''}</p></section>
+      <p class="muted crm-note">${waT ? 'Escribió al WhatsApp de Pathway: respóndele desde la conversación del Campus. ' : wa ? '«Abrir WhatsApp» prepara un mensaje en español; tú decides si lo envías. ' : ''}${canInvite ? '«Invitar al Campus» abre la invitación con el correo, el nombre y el nivel del test.' : p.student_id ? 'Ya tiene su cuenta en el Campus.' : ''}</p></section>
     <section class="crm-box" aria-labelledby="crmNextT"><h3 id="crmNextT">Próxima acción</h3>
       <form class="form" id="crmNextForm" novalidate>
         <div class="crm-row"><label class="field crm-grow" for="cnWhat">Qué hacer<input id="cnWhat" maxlength="200" value="${esc(p.next_action || '')}" placeholder="Ej.: relanzar por WhatsApp"></label>
@@ -1637,6 +1644,265 @@ function bindCrm() {
     if (!saved) { await loadCrm(); crmRefreshBody(); }
   };
 }
+/* ───────────── WhatsApp (db/027_whatsapp.sql): « Prospectos » → « WhatsApp », only admins ───────────── */
+// Every inbound WhatsApp message gets a reply draft (function « whatsapp »); nothing leaves until
+// an admin sends it (as is, edited, or their own text). WhatsApp lets a business answer freely
+// only for 24 h after the person's last message (« ventana »): after that the Campus refuses.
+// W.open / W.thread: the conversation being read; W.drafts: unsent text per conversation;
+// W.editing: the draft being edited; W.error: the last refusal, shown under the conversation.
+const W = { open: null, thread: null, drafts: {}, editing: null, busy: false, error: null };
+const waOn = () => isAdmin() && Array.isArray(A.staff.wa);
+const waList = () => A.staff.wa || [];
+const waWaiting = () => waList().filter(t => t.needs_reply);
+const waName = t => t.name || (t.prospect && t.prospect.name) || t.phone;
+const waView = () => waOn() && location.hash === '#whatsapp';
+async function loadWa() {
+  const r = await sb.rpc('wa_threads_list');
+  A.staff.wa = r.error ? null : (r.data || []); // needs db/027_whatsapp.sql
+}
+// The 24 h window, from the person's last message.
+function waWindow(t) {
+  const end = t && t.last_inbound_at ? Date.parse(t.last_inbound_at) + 864e5 : 0, left = end - Date.now();
+  if (left <= 0) return { open: false, label: 'Ventana cerrada' };
+  const h = Math.floor(left / 3600e3);
+  return { open: true, label: `Ventana abierta: quedan ${h >= 1 ? h + ' h' : Math.max(1, Math.ceil(left / 60000)) + ' min'}` };
+}
+const WA_STATUS = { pending: ['Enviando…', '…'], sent: ['Enviado', '✓'], delivered: ['Entregado', '✓✓'], read: ['Leído', '✓✓'], failed: ['No enviado', '!'] };
+function crmSubNav(cur) {
+  if (!waOn()) return '';
+  const n = waWaiting().length;
+  return `<nav class="seg-tabs crm-sub" aria-label="Secciones de Prospectos">
+    <a href="#prospectos"${cur === 'crm' ? ' aria-current="page"' : ''}><b>${icon('funnel')}</b>Fichas</a>
+    <a href="#whatsapp"${cur === 'wa' ? ' aria-current="page"' : ''}><b>${icon('chat')}</b>WhatsApp${n ? `<span class="count num">${n}<span class="sr-only"> por responder</span></span>` : ''}</a></nav>`;
+}
+function waRow(t) {
+  const last = t.last || {}, on = t.id === W.open;
+  const prefix = last.kind === 'draft' ? 'Borrador: ' : last.direction === 'out' ? 'Pathway: ' : '';
+  const state = t.flagged ? '<span class="status bad">Revisar la nota</span>' : t.drafts ? '<span class="status warn">Borrador por enviar</span>' : t.needs_reply ? '<span class="status warn">Necesita respuesta</span>' : '';
+  const card = t.prospect && t.prospect.name && t.prospect.name !== t.name ? ` · ficha: ${esc(t.prospect.name)}` : '';
+  return `<button type="button" class="msg-row wa-row${on ? ' on' : ''}" data-wa-thread="${t.id}"${on ? ' aria-current="true"' : ''}>
+    <span class="ava sm">${esc(initials(waName(t)))}</span>
+    <span class="msg-row-main"><b>${esc(waName(t))}</b><small class="wa-phone">${esc(t.phone)}${card}</small><small>${esc(prefix + (last.body || 'Sin mensajes'))}</small></span>
+    <span class="msg-row-side">${t.last_message_at ? `<small>${esc(msgWhen(t.last_message_at))}</small>` : ''}${state}${t.unread ? `<span class="count num" title="Sin leer">${t.unread}<span class="sr-only"> sin leer</span></span>` : ''}</span></button>`;
+}
+function waListHtml() {
+  const list = waList();
+  if (!list.length) return '<p class="muted">Todavía no hay conversaciones. Cuando alguien escriba al WhatsApp de Pathway, aparecerá aquí con un borrador de respuesta.</p>';
+  const wait = list.filter(t => t.needs_reply), rest = list.filter(t => !t.needs_reply);
+  return `${wait.length ? `<p class="label">Necesitan respuesta</p><div class="msg-list">${wait.map(waRow).join('')}</div>` : ''}
+    ${rest.length ? `<p class="label"${wait.length ? ' style="margin-top:14px"' : ''}>${wait.length ? 'Otras conversaciones' : 'Todas al día'}</p><div class="msg-list">${rest.map(waRow).join('')}</div>` : ''}`;
+}
+// One message: the person on the left, Pathway on the right; a draft with its actions.
+function waItem(m, win) {
+  const ours = m.direction === 'out';
+  const when = `<time datetime="${esc(m.sent_at || m.created_at)}">${esc(msgWhen(m.sent_at || m.created_at))}</time>`;
+  if (m.kind === 'draft' && W.editing === m.id) {
+    return `<div class="msg ours is-draft is-editing wa-msg"><p class="msg-who">${icon('sparkle')}Borrador · la persona todavía no lo ve</p>
+      <form class="msg-draft-edit" data-wa-edit-form="${m.id}"><label class="sr-only" for="waDraftText">Texto de la respuesta</label>
+        <textarea id="waDraftText" rows="5" maxlength="4096">${esc(m.body)}</textarea>
+        <div class="msg-draft-acts"><button class="btn btn-dark btn-sm" type="submit"${win.open ? '' : ' disabled'}>${icon('arrow')}Enviar</button><button class="btn btn-light btn-sm" type="button" data-wa-save>Guardar sin enviar</button><button class="btn btn-light btn-sm" type="button" data-wa-cancel>Cancelar</button></div></form></div>`;
+  }
+  if (m.kind === 'draft') {
+    return `<div class="msg ours is-draft wa-msg${m.flagged ? ' is-flagged' : ''}"><p class="msg-who">${icon('sparkle')}Borrador · la persona todavía no lo ve</p>
+      <div class="msg-bubble">${msgBody(m.body)}</div>
+      ${m.note ? `<p class="msg-flag wa-note">${icon(m.flagged ? 'users' : 'sparkle')}<span><span class="sr-only">Nota para el equipo: </span>${esc(m.note)}</span></p>` : ''}
+      <div class="msg-draft-acts"><button class="btn btn-dark btn-sm" type="button" data-wa-send="${m.id}"${win.open ? '' : ' disabled'}>${icon('arrow')}Enviar</button><button class="btn btn-light btn-sm" type="button" data-wa-edit="${m.id}">${icon('pen')}Editar</button><button class="btn btn-light btn-sm" type="button" data-wa-discard="${m.id}">Descartar</button></div>
+      <p class="msg-time">${when}</p></div>`;
+  }
+  if (m.kind === 'discarded') {
+    return `<div class="msg ours is-discarded wa-msg"><p class="msg-who">Borrador descartado${m.author ? ' por ' + esc(firstName(m.author)) : ''}</p><div class="msg-bubble">${msgBody(m.body)}</div><p class="msg-time">${when}</p></div>`;
+  }
+  const media = m.media_type && m.media_type !== 'text' && m.media_type !== 'interactive' && m.media_type !== 'button';
+  if (!ours) return `<div class="msg theirs wa-msg"><div class="msg-bubble${media ? ' wa-media' : ''}">${msgBody(m.body)}</div><p class="msg-time">${when}</p></div>`;
+  const who = m.from_app ? 'Desde la app de WhatsApp' : m.drafted_by_ai
+    ? `${icon('sparkle')}Borrador revisado${m.edited ? ' y editado' : ''} por ${esc(m.mine ? 'ti' : firstName(m.author) || 'el equipo')}`
+    : `${esc(firstName(m.author) || 'Equipo Pathway')}${m.mine ? ' · tú' : ''}`;
+  const [label, tick] = WA_STATUS[m.status] || WA_STATUS.sent;
+  const failed = m.status === 'failed';
+  return `<div class="msg ours wa-msg${failed ? ' is-failed' : ''}"><p class="msg-who">${who}</p><div class="msg-bubble">${msgBody(m.body)}</div>
+    ${failed ? `<p class="msg-flag wa-fail" role="note">${icon('x')}<span>No se envió${m.error ? ': ' + esc(m.error) : ''}</span></p><div class="msg-draft-acts"><button class="btn btn-light btn-sm" type="button" data-wa-retry="${m.id}"${win.open ? '' : ' disabled'}>Reintentar</button></div>` : ''}
+    <p class="msg-time">${when} <span class="wa-tick s-${esc(m.status || 'sent')}" title="${label}" aria-label="${label}">${tick}</span></p></div>`;
+}
+function waLog(t, win) {
+  if (!W.thread || W.thread.id !== t.id) return '<p class="muted">Cargando…</p>';
+  const list = W.thread.messages || [];
+  return list.length ? list.map(m => waItem(m, win)).join('') : '<p class="muted">Sin mensajes todavía.</p>';
+}
+function waThreadTile(t) {
+  const win = waWindow(t), p = t.prospect;
+  const note = (W.thread && W.thread.id === t.id ? W.thread.messages || [] : []).filter(m => m.kind === 'draft' && m.flagged).pop();
+  return `<article class="tile msg-thread-tile wa-thread" aria-labelledby="waThreadName">
+    <div class="tile-head msg-thread-head"><button type="button" class="round msg-back" data-wa-close aria-label="Volver a las conversaciones">${icon('arrow')}</button>
+      <div class="msg-thread-title"><h2 id="waThreadName" tabindex="-1">${esc(waName(t))}</h2>
+        <p class="muted">${esc(t.phone)}${p ? ` · <a href="#prospectos" data-crm-goto="${p.id}">Ver la ficha${p.name && p.name !== waName(t) ? ' de ' + esc(p.name) : ''}</a>` : ''}</p></div>
+      <span class="pill wa-win ${win.open ? 'open' : 'closed'}">${icon(win.open ? 'timer' : 'lock')}${win.label}</span></div>
+    ${note ? `<p class="msg-reason">${icon('users')}<span><b>Antes de enviar:</b> hay algo que decidir. Lee la nota debajo del borrador.</span></p>`
+      : t.drafts ? `<p class="msg-reason">${icon('sparkle')}<span><b>Hay un borrador de respuesta.</b> Revísalo, edítalo si hace falta y envíalo: la persona no lo ve antes.</span></p>` : ''}
+    <div class="chat-log" id="waLog" role="log" aria-label="Conversación de WhatsApp con ${esc(waName(t))}" tabindex="0">${waLog(t, win)}</div>
+    ${W.error ? `<p class="wa-error" role="alert">${icon('x')}<span>${esc(W.error)}</span></p>` : ''}
+    ${win.open ? `<form class="chat-form" id="waForm" novalidate>
+      <label class="sr-only" for="waText">Tu respuesta por WhatsApp</label>
+      <textarea id="waText" rows="2" maxlength="4096" placeholder="${esc(`Responde a ${firstName(waName(t))}…`)}" aria-describedby="waHint"></textarea>
+      <button class="btn btn-dark chat-send" type="submit">${icon('arrow')}<span>Enviar</span></button>
+      <p class="chat-hint" id="waHint"><span>Ctrl + Enter para enviar</span><span class="num" id="waCount">0 / 4096</span></p></form>`
+      : `<p class="wa-closed">${icon('lock')}<span><b>Ventana cerrada.</b> WhatsApp solo deja responder durante las 24 h que siguen al último mensaje de la persona. Para escribirle ahora hace falta una plantilla aprobada por WhatsApp, y el Campus todavía no envía plantillas.</span></p>`}
+    <div class="msg-actions">${t.needs_reply ? `<button class="btn btn-light btn-sm" type="button" data-wa-done>${icon('check')}Marcar como resuelta</button><span class="muted">Si ya le respondiste por otro medio.</span>` : `<span class="muted">${t.handled_at ? `Resuelta${t.handled_by ? ' por ' + esc(firstName(t.handled_by)) : ''} · ${esc(msgWhen(t.handled_at))}` : 'Al día'}</span>`}</div>
+  </article>`;
+}
+function viewWhatsapp() {
+  const list = waList(), t = W.open ? list.find(x => x.id === W.open) : null;
+  if (W.open && !t) { W.open = null; W.thread = null; }
+  const wait = waWaiting().length;
+  return `<section class="view" aria-labelledby="h-crm">
+  ${topBar('h-crm', 'Prospectos', wait ? `${wait} ${wait > 1 ? 'conversaciones' : 'conversación'} de WhatsApp por responder` : 'Conversaciones de WhatsApp. Cada respuesta la revisa y la envía alguien del equipo.')}
+  ${crmSubNav('wa')}
+  <div class="msg-layout wa-layout${t ? ' has-open' : ''}">
+    <article class="tile msg-list-tile"><div class="tile-head"><h2>Conversaciones</h2>${wait ? `<span class="pill warn num">${wait} por responder</span>` : ''}</div>
+      <div id="waList">${waListHtml()}</div></article>
+    ${t ? waThreadTile(t) : `<article class="tile msg-thread-tile empty"><h2>Elige una conversación</h2><p class="muted">Cada mensaje que llega tiene un borrador de respuesta: envíalo, edítalo o descártalo. Nada se envía solo.</p></article>`}
+  </div></section>`;
+}
+async function waLoadThread() {
+  const id = W.open;
+  const r = await sb.rpc('wa_thread', { p_thread: id });
+  if (W.open !== id) return;
+  if (r.error) { fail(r.error, 'No se pudo abrir la conversación.'); W.thread = { id, messages: [] }; return; }
+  W.thread = r.data;
+  const t = waList().find(x => x.id === id);
+  if (t) t.unread = 0;
+}
+async function waRefresh() {
+  await loadWa();
+  if (W.open) await waLoadThread();
+}
+// Redraw the list and the open conversation in place (polling, after an action).
+function waPaint() {
+  if (!waView()) return;
+  const t = W.open && waList().find(x => x.id === W.open);
+  const l = $('#waList'); if (l) l.innerHTML = waListHtml();
+  const tile = $('.wa-thread');
+  if (t && tile) {
+    const text = $('#waText'), keep = text && document.activeElement === text;
+    const log = $('#waLog'), atEnd = !log || log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+    tile.outerHTML = waThreadTile(t);
+    bindWaThread(keep);
+    if (atEnd) waScroll();
+  } else if (!!t !== !!tile) { render(); return; }
+  bindWaRows();
+  renderNav(currentView());
+}
+const waScroll = () => { const log = $('#waLog'); if (log) log.scrollTop = log.scrollHeight; };
+async function waOpen(id) {
+  W.open = id; W.thread = null; W.editing = null; W.error = null;
+  render();
+  await waLoadThread();
+  if (W.open !== id || !waView()) return;
+  waPaint(); waScroll();
+  ($('#waText') || $('#waThreadName'))?.focus({ preventScroll: true });
+}
+function waClose() {
+  const id = W.open; W.open = null; W.thread = null; W.editing = null; W.error = null; render();
+  $(`[data-wa-thread="${id}"]`)?.focus();
+}
+// Sends through the « whatsapp » function: a draft (edited or not), a failed message again, or
+// free text. A refusal (window closed, provider error) stays visible under the conversation.
+async function waSend(payload, btn) {
+  if (W.busy) return false;
+  W.busy = true; W.error = null;
+  if (btn) btn.disabled = true;
+  try {
+    const { data, error } = await sb.functions.invoke('whatsapp', { body: { action: 'send', thread_id: W.open, ...payload } });
+    if (error || !data || !data.ok) {
+      // Kept as « No enviado » with « Reintentar » in the conversation, or refused before (window).
+      const stored = data && (data.code === 'send_failed' || data.code === 'not_configured');
+      W.error = stored ? null : (data && data.message) || 'No se pudo enviar: el servicio de WhatsApp no respondió. Inténtalo de nuevo.';
+      if (error) console.error(error);
+      if (stored) W.editing = null;
+      await waRefresh(); waPaint(); if (stored) waScroll();
+      toast(stored ? (data.message || 'No se envió el mensaje.') : 'No se envió el mensaje.');
+      return stored ? 'stored' : false;
+    }
+    W.editing = null;
+    await waRefresh(); waPaint(); waScroll();
+    toast('Enviado por WhatsApp.');
+    return true;
+  } finally { W.busy = false; if (btn && btn.isConnected) btn.disabled = false; }
+}
+function bindWaRows() { $$('[data-wa-thread]').forEach(b => b.onclick = () => waOpen(b.dataset.waThread)); }
+function bindWaThread(keepFocus) {
+  const back = $('[data-wa-close]'); if (back) back.onclick = waClose;
+  const f = $('#waForm'), ta = $('#waText');
+  if (f && ta) {
+    const key = W.open;
+    ta.value = W.drafts[key] || '';
+    const sync = () => {
+      W.drafts[key] = ta.value;
+      const c = $('#waCount'); if (c) c.textContent = `${ta.value.length} / ${ta.maxLength}`;
+      ta.style.height = 'auto'; ta.style.height = Math.min(220, ta.scrollHeight + 2) + 'px';
+    };
+    ta.addEventListener('input', sync); sync();
+    if (keepFocus) ta.focus({ preventScroll: true });
+    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.requestSubmit(); } });
+    f.onsubmit = async e => {
+      e.preventDefault();
+      const text = ta.value.trim();
+      if (!text) { toast('Escribe tu mensaje.'); ta.focus(); return; }
+      const sent = await waSend({ text }, f.querySelector('.chat-send'));
+      // Sent, or kept as « No enviado » with « Reintentar »: the box is emptied either way.
+      if (sent) { W.drafts[key] = ''; const t2 = $('#waText'); if (t2) { t2.value = ''; t2.dispatchEvent(new Event('input')); t2.focus({ preventScroll: true }); } }
+    };
+  }
+  $$('[data-wa-send]').forEach(b => b.onclick = () => waSend({ message_id: +b.dataset.waSend }, b));
+  $$('[data-wa-retry]').forEach(b => b.onclick = () => waSend({ message_id: +b.dataset.waRetry }, b));
+  $$('[data-wa-edit]').forEach(b => b.onclick = () => { W.editing = +b.dataset.waEdit; waPaint(); const t = $('#waDraftText'); if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); } });
+  $$('[data-wa-discard]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await sb.rpc('wa_discard_draft', { p_message: +b.dataset.waDiscard });
+    if (error) { b.disabled = false; return fail(error, 'No se pudo descartar el borrador.'); }
+    await waRefresh(); waPaint(); toast('Borrador descartado: no se enviará.'); $('#waText')?.focus({ preventScroll: true });
+  });
+  const ef = $('[data-wa-edit-form]');
+  if (ef) {
+    const id = +ef.dataset.waEditForm, ta2 = $('#waDraftText');
+    const cancel = () => { W.editing = null; waPaint(); $(`[data-wa-edit="${id}"]`)?.focus(); };
+    ef.onsubmit = e => { e.preventDefault(); const v = ta2.value.trim(); if (!v) return toast('Escribe la respuesta.'); waSend({ message_id: id, text: v }, ef.querySelector('button[type=submit]')); };
+    $('[data-wa-cancel]', ef).onclick = cancel;
+    $('[data-wa-save]', ef).onclick = async () => {
+      const v = ta2.value.trim(); if (!v) return toast('Escribe la respuesta.');
+      const { error } = await sb.rpc('wa_edit_draft', { p_message: id, p_body: v });
+      if (error) return fail(error, /draft_not_found/.test(error.message || '') ? 'Este borrador ya no está: actualiza la conversación.' : 'No se pudo guardar el borrador.');
+      W.editing = null; await waRefresh(); waPaint(); toast('Borrador guardado. Todavía no se envió.'); $(`[data-wa-edit="${id}"]`)?.focus();
+    };
+    ta2.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancel(); } });
+  }
+  const done = $('[data-wa-done]');
+  if (done) done.onclick = async () => {
+    done.disabled = true;
+    const { error } = await sb.rpc('wa_set_done', { p_thread: W.open, p_done: true });
+    if (error) { done.disabled = false; return fail(error, 'No se pudo marcar la conversación.'); }
+    await waRefresh(); waPaint(); toast('Conversación marcada como resuelta.');
+  };
+}
+function bindWa() {
+  if (!waView()) return;
+  bindWaRows();
+  if (W.open && (!W.thread || W.thread.id !== W.open)) waLoadThread().then(() => { waPaint(); waScroll(); });
+  else { bindWaThread(false); waScroll(); }
+}
+// While « WhatsApp » is open: new messages every 20 s (only when the tab is visible).
+let waPoll = 0;
+function pollWa() {
+  clearInterval(waPoll);
+  if (!waView()) return;
+  waPoll = setInterval(async () => {
+    if (!waView()) return clearInterval(waPoll);
+    if (document.hidden || W.busy || W.editing) return;
+    const before = JSON.stringify([A.staff.wa, W.thread]);
+    await waRefresh();
+    if (waView() && JSON.stringify([A.staff.wa, W.thread]) !== before) waPaint();
+  }, 20000);
+}
+
 // «Accesos de asistentes» in Ajustes.
 function bindAgents() {
   const f = $('#agForm');
@@ -2569,7 +2835,7 @@ function viewMensajesStaff() {
     </article>`
     : `<article class="tile msg-thread-tile empty"><h2>Elige una conversación</h2><p class="muted">Verás lo que escribió el alumno y lo que le contestó el asistente, y podrás responderle. Las que necesitan respuesta están arriba.</p></article>`;
   return `<section class="view" aria-labelledby="h-mensajes">
-  ${topBar('h-mensajes', 'Mensajes', wait ? `${wait} conversación${wait > 1 ? 'es necesitan' : ' necesita'} respuesta` : 'Las preguntas de tus alumnos: el asistente responde primero')}
+  ${topBar('h-mensajes', 'Mensajes', wait ? `${wait} ${wait > 1 ? 'conversaciones necesitan' : 'conversación necesita'} respuesta` : 'Las preguntas de tus alumnos: el asistente responde primero')}
   <div class="msg-layout${t ? ' has-open' : ''}">
     <article class="tile msg-list-tile"><div class="tile-head"><h2>Conversaciones</h2>${wait ? `<span class="pill warn num">${wait} por responder</span>` : ''}</div>
       <div id="msgList">${msgListHtml()}</div>
@@ -2739,7 +3005,8 @@ function bindView(id) {
   if (id === 'mensajes') bindMessages();
   pollMessages(id);
   if (id === 'contenido') bindEditor();
-  if (id === 'prospectos') bindCrm();
+  if (id === 'prospectos') { bindCrm(); bindWa(); }
+  pollWa();
   if (id === 'ajustes') bindAgents();
   {
     const inf = $('#invForm');
@@ -2888,6 +3155,8 @@ function bindView(id) {
 }
 
 document.addEventListener('click', async e => {
+  const wg = e.target.closest('[data-wa-goto]');
+  if (wg) { W.open = wg.dataset.waGoto; W.thread = null; W.editing = null; W.error = null; if (location.hash === '#whatsapp') { e.preventDefault(); if (crmOverlayOpen()) crmClose(); render(); } }
   const ct = e.target.closest('[data-crm-today],[data-crm-goto]');
   if (ct) {
     if (ct.matches('[data-crm-today]')) { C.today = true; C.q = ''; C.origin = ''; C.owner = ''; }
@@ -2957,6 +3226,7 @@ document.addEventListener('keydown', e => {
   if (crmOverlayOpen()) { if (e.key === 'Escape') { e.preventDefault(); crmClose(); } return; }
   if (e.key === 'Escape' && (document.querySelector('#bellSlot .menu, #menuSlot .menu, #searchSlot .menu'))) { closeMenus(); return; }
   if (e.key === 'Escape' && currentView() === 'mensajes' && teacherMode() && M.open) { e.preventDefault(); closeThread(); return; }
+  if (e.key === 'Escape' && waView() && W.open && !W.editing) { e.preventDefault(); waClose(); return; }
   if (e.key === 'Escape') closeMenus();
   if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
