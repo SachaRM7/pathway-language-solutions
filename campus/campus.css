@@ -1093,3 +1093,39 @@ a.pill.warn { text-decoration: none; }
 }
 :root[data-theme="dark"] .crm-draft > span:last-child { background: color-mix(in srgb, var(--sky) 12%, var(--panel)); box-shadow: inset 0 0 0 1.5px rgb(205 225 255 / 30%); }
 :root[data-theme="dark"] .crm-draft-k { color: var(--sky); }
+
+/* WhatsApp (db/027_whatsapp.sql, admin): « Fichas | WhatsApp » inside Prospectos, then the same
+   list + conversation layout as « Mensajes », with the 24 h window, delivery ticks and drafts. */
+.view > .crm-sub { margin-bottom: -4px; }
+.seg-tabs a { flex: none; height: 44px; padding: 0 18px 0 8px; border-radius: 999px; display: inline-flex; align-items: center; gap: 10px; background: var(--panel); box-shadow: var(--shadow); font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.seg-tabs a b { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--ink); }
+.seg-tabs a b .icon { width: 16px; height: 16px; }
+.seg-tabs a[aria-current="page"] { background: var(--ink); color: var(--on-ink); }
+.seg-tabs a[aria-current="page"] b { background: var(--coral); color: #fff; }
+.seg-tabs a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.crm-sub .count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--coral); color: #fff; font-size: 11px; }
+.msg-row-main small.wa-phone { font-size: 12px; color: var(--ink-3); }
+.msg-thread-head { flex-wrap: wrap; }
+.msg-thread-head .msg-thread-title { flex: 1 1 160px; }
+.msg-thread-title a { text-decoration: underline; text-underline-offset: 2px; color: var(--ink); }
+.wa-win { flex: none; }
+.wa-win.open { background: var(--mint); color: #135c36; }
+.wa-win.closed { background: var(--soft); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+.wa-media { font-style: italic; color: var(--ink-2); }
+.msg-time .wa-tick { margin-left: 4px; font-weight: 700; letter-spacing: -.12em; color: var(--ink-3); }
+.msg-time .wa-tick.s-read { color: var(--sky-ink); }
+.msg-time .wa-tick.s-failed { color: var(--coral); letter-spacing: 0; }
+.msg.is-failed .msg-bubble { box-shadow: 0 0 0 2px var(--coral); }
+.msg-flag.wa-note, .msg-flag.wa-fail { align-items: flex-start; border-radius: 14px; max-width: 100%; line-height: 1.4; }
+.msg-flag.wa-note .icon, .msg-flag.wa-fail .icon { margin-top: 1px; flex: none; }
+.msg-flag.wa-fail { background: var(--peach); color: #7a2a12; }
+.msg.is-draft.is-flagged .msg-bubble { border-color: #c48a00; }
+.wa-error, .wa-closed { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; font-size: 14px; line-height: 1.45; }
+.wa-error { background: var(--peach); color: #7a2a12; }
+.wa-closed { background: var(--soft); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+.wa-closed b { color: var(--ink); }
+.wa-error .icon, .wa-closed .icon { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+@media (max-width: 480px) { .msg-thread-head .wa-win { order: 3; margin-left: 52px; } }
+.wa-msg.is-draft .msg-bubble { background: var(--lilac); color: #141414; }
+/* Phones: the state keeps its coloured dot (the text stays for screen readers) so the preview has room. */
+@media (max-width: 480px) { .wa-row .msg-row-side .status { font-size: 0; gap: 0; } .wa-row .msg-row-side .status::before { width: 10px; height: 10px; } }
