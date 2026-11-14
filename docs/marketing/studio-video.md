@@ -14,6 +14,35 @@ Les vidéos sont du **motion design fabriqué par Claude en code** : animation H
 - Guide « 13 étapes » (série animée avec Claude Code + Picsart MCP) : https://x.com/0xmovez/status/2120879442008457700
 - Le guide vise une série animée monétisée aux vues. Pathway gagne de l'argent par les inscriptions : on reprend la méthode, pas l'objectif.
 
+## Les deux usages
+
+### 1. La pub principale : présenter Pathway et le Campus (priorité de Sacha)
+
+Une publicité en motion design qui montre de **vrais aperçus du site et du Campus**, avec une accroche au début et un appel à l'action à la fin.
+
+- **Structure (30 à 45 s, plus une version courte de 15 s)** :
+
+  | Moment | Contenu |
+  | --- | --- |
+  | 0–3 s | Accroche, lisible sans le son. Exemple : « 407 puntos con francés. ¿Y tú? » |
+  | 3–8 s | Le problème : préparer seul le TEF ou le TCF, sans plan, sans suivi |
+  | 8–18 s | Le site : test de niveau gratuit, résultat par compétence, tarifs simples |
+  | 18–35 s | Le Campus : exercices par unité, manuel qui s'ouvre cours après cours, enregistrements des cours, simulacres TEF/TCF, progression, contrat et rappels |
+  | 35–40 s | La preuve : vrais résultats d'élèves, rondes IRCC |
+  | Fin | Appel à l'action : « Mide tu nivel gratis », avec le lien étiqueté, et le logo |
+
+- **Technique** :
+  - **les écrans** sont de vraies captures du site et du Campus, faites automatiquement par Playwright à la bonne taille (téléphone et ordinateur) ;
+  - **l'animation** est faite en code (GSAP ou Remotion) : écrans dans un cadre de téléphone ou d'ordinateur, zooms et panoramiques, curseur, mise en évidence des fonctions, texte animé ;
+  - **le son** : voix off ElevenLabs et musique ;
+  - **les formats** : 9:16, 1:1 et 16:9.
+- **Données affichées** : dans les captures du Campus, uniquement un compte de démonstration avec des élèves fictifs, jamais de vrais noms ni de vraies données d'élèves.
+- **Langues** : espagnol d'abord, puis les autres langues avec le même montage et une autre voix off.
+
+### 2. Les réseaux sociaux : du contenu régulier, toujours dans la même direction artistique
+
+C'est là que la méthode du guide sert le plus. La bible, les modèles de formats et l'équipe d'agents garantissent le même style d'une vidéo à l'autre, même en publiant plusieurs fois par semaine (voir les formats plus bas).
+
 ## Les principes repris du guide
 
 1. **Préparer avant de produire** : script → plan découpé (une action par plan) → maquette animée gratuite → brouillon → version finale. On ne paie rien tant que le brouillon n'est pas validé.
