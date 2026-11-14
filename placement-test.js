@@ -373,15 +373,20 @@
   // (campus/db/019_test_nivel.sql). A network failure never blocks the result.
   const track = (name, data) => { try { window.PathwayAnalytics?.track(name, data); } catch (error) { /* never blocks */ } };
   const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+  // First touch (campaign.js): where this visitor first came from, if known.
+  const firstTouch = () => { try { const t = window.PathwayCampaign?.get() || {}; return { p_campaign: t.campaign || null, p_source: t.source || null }; } catch (error) { return { p_campaign: null, p_source: null }; } };
   const saveResult = (email, data) => {
     try {
       const skills = Object.fromEntries(SKILLS.map(name => [name, data.skillScores[name]]));
-      return fetch(`${SUPABASE.url}/rest/v1/rpc/submit_placement`, {
+      const base = { p_email: email, p_level: data.level, p_overall: Math.round(data.overall), p_mode: mode, p_lang: ['es', 'fr', 'en', 'de'].includes(locale) ? locale : 'es', p_detail: { skills, correct: data.totalCorrect, questions: data.totalQuestions } };
+      const send = body => fetch(`${SUPABASE.url}/rest/v1/rpc/submit_placement`, {
         method: 'POST',
         headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_level: data.level, p_overall: Math.round(data.overall), p_mode: mode, p_lang: ['es', 'fr', 'en', 'de'].includes(locale) ? locale : 'es', p_detail: { skills, correct: data.totalCorrect, questions: data.totalQuestions } }),
+        body: JSON.stringify(body),
         keepalive: true
-      }).then(response => {
+      });
+      // A database without campaign columns yet (before campus/db/023) answers 404: save without them.
+      return send({ ...base, ...firstTouch() }).then(response => (response.status === 404 ? send(base) : response)).then(response => {
         // A refused save (more than 5 tests per address and hour, network) is logged; the result still shows.
         if (!response.ok) track('placement_save_failed', { status: response.status });
         return response.ok;

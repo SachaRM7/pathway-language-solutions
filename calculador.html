@@ -178,7 +178,7 @@
             <div class="field wide"><label for="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" placeholder="+51 987 654 321" maxlength="30" required></div>
             <div class="status" id="form-status" role="alert" tabindex="-1"></div>
             <button class="button" id="lead-submit" type="submit">Continuar por WhatsApp</button>
-            <p class="privacy">Al continuar, abriremos WhatsApp con tus datos y tu resultado. Tú decides si envías el mensaje. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+            <p class="privacy">Al continuar, guardamos tus datos y tu puntaje para que Pathway te escriba, y se abre WhatsApp con tu resultado. Tú decides si envías el mensaje. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
           </form>
         </div>
       </section>
@@ -371,6 +371,9 @@
     });
 
     // Optional contact: WhatsApp with the result, then the thanks page (gracias.html can reopen the message).
+    // The contact is also saved for the Pathway Campus (campus/db/023_crm.sql, with the first-touch
+    // campaign of campaign.js); a failed save never blocks the visitor.
+    const SUPABASE={url:'https://ynflykxalfynxoupkxmy.supabase.co',key:'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB'};const saveLead=(data,lang)=>{try{const t=(window.PathwayCampaign&&window.PathwayCampaign.get())||{};fetch(SUPABASE.url+'/rest/v1/rpc/submit_lead',{method:'POST',headers:{apikey:SUPABASE.key,Authorization:'Bearer '+SUPABASE.key,'Content-Type':'application/json'},body:JSON.stringify({p_name:String(data.first_name||'').trim(),p_whatsapp:String(data.whatsapp||'').trim(),p_email:String(data.email||'').trim().toLowerCase()||null,p_crs:data.current_crs?Number(data.current_crs):null,p_french_eligible:data.french_category_eligible||null,p_lang:lang,p_campaign:t.campaign||null,p_source:t.source||null}),keepalive:true}).catch(()=>{});}catch(_){}};
     document.querySelector('#capture').addEventListener('submit',async event=>{
       event.preventDefault();
       const capture=event.currentTarget,status=document.querySelector('#form-status'),submit=document.querySelector('#lead-submit');
@@ -381,6 +384,7 @@
       try{
         const webhookUrl=String(config.leadWebhook||'').trim();
         try{sessionStorage.setItem('pathwayLead',JSON.stringify(data));}catch(_){}
+        saveLead(data,'es');
         if(webhookUrl){
           const response=await fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
           if(!response.ok)throw new Error('Webhook error');

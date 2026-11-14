@@ -43,7 +43,7 @@ const PAGES = [
 ];
 
 const ADAPTER_ASSET = 'inscription-v4.js';
-const INSCRIPTION_SCRIPT_MARKER = '<script src="inscription.js?v=20261113-forms"></script>';
+const INSCRIPTION_SCRIPT_MARKER = '<script src="inscription.js?v=20261114-crm"></script>';
 const SELECTION_STORAGE_KEY = 'pathwayV4Selection';
 
 export const PLAN_VALUES = ['Esencial', 'Acelerado', 'Intensivo'];
@@ -288,6 +288,7 @@ export function thanksPage(lang, homeMarkup) {
   </style>
   <script src="/site-config.js" defer></script>
   <script src="/analytics.js" defer></script>
+  <script src="/campaign.js" defer></script>
   <script src="/v4/placeholder.js" type="module"></script>
 </head>
 <body class="pg-page pg-thanks">

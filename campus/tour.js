@@ -44,7 +44,12 @@
     { view: 'panel', target: () => navLink('alumnos'), title: 'Alumnos', text: 'El avance de cada alumno. Entremos.', pad: 6 },
     { view: 'alumnos', target: () => tileWithTitle('Avance'), title: 'El avance de tus alumnos', text: 'Nivel, racha, última actividad, aciertos y tareas de cada alumno.' },
     { view: 'alumnos', target: () => tileWithTitle('Fin de nivel'), title: 'Fin de nivel', text: 'Valida aquí el examen que el alumno hizo contigo: con el examen final del campus, pasa solo al nivel siguiente.' },
-    { view: 'alumnos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6 },
+    { view: 'alumnos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6, admin: false },
+    // Prospectos (admin only, db/023_crm.sql).
+    { view: 'alumnos', target: () => navLink('prospectos'), title: 'Prospectos', text: 'Las personas interesadas, del primer contacto a la inscripción. Solo la administración las ve. Entremos.', pad: 6, admin: true },
+    { view: 'prospectos', target: () => pick('#main .crm-kpis'), title: 'El mes de un vistazo', text: 'Los nuevos prospectos, los inscritos, el origen que más inscribe y las acciones para hoy.', admin: true },
+    { view: 'prospectos', target: () => pick('#main .crm-board-wrap', '#main .crm-list', '#main #crmBody'), title: 'Siete etapas', text: 'El test, el formulario y la calculadora crean las fichas solas, y las etapas avanzan con la invitación, el contrato y la primera clase. Abre una tarjeta para ver su ficha y su historial; en computadora, arrástrala de una columna a otra.', admin: true },
+    { view: 'prospectos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6, admin: true },
     { view: 'tareas', target: () => tileWithTitle('Asignar una tarea'), title: 'Asignar una tarea', text: 'Elige una unidad y una fecha: el alumno la ve en su inicio y en sus avisos.' },
     { view: 'tareas', target: () => tileWithTitle('Anotar un error de la clase'), title: 'Anotar un error de la clase', text: 'Un error que oyes en clase se convierte en una tarjeta en la zona «Repasar» del alumno.' },
     { view: 'tareas', target: () => navLink('horarios'), title: 'Horarios', text: 'Tus grupos y sus clases fijas. Entremos.', pad: 6 },
@@ -186,7 +191,8 @@
     if (!$('#lesson')?.hidden) return; // never over a lesson
     tour = window.CampusApp?.mode() === 'teacher' ? 'teacher' : 'student';
     const all = tour === 'teacher' ? TEACHER : STUDENT;
-    steps = phone() ? all.filter(s => !s.desktopOnly) : all;
+    const admin = !!window.CampusApp?.admin?.();
+    steps = all.filter(s => !(phone() && s.desktopOnly) && (s.admin === undefined || s.admin === admin));
     steps.home = all.home;
     show(0);
   }

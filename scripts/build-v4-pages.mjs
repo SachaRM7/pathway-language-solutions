@@ -68,6 +68,7 @@ export function shell({ lang, key, title, description, main, homeMarkup, bodyCla
   ${headAfter}
   <script src="/site-config.js" defer></script>
   <script src="/analytics.js" defer></script>
+  <script src="/campaign.js" defer></script>
   <script src="/v4/placeholder.js" type="module"></script>
 </head>
 <body class="pg-page ${bodyClass}">
