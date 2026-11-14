@@ -978,3 +978,43 @@ a.pill.warn { text-decoration: none; }
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .crm-scrim { background: rgb(0 0 0 / 60%); } }
 :root[data-theme="dark"] .crm-scrim { background: rgb(0 0 0 / 60%); }
+
+/* Accesos de asistentes (Ajustes, db/026) and assistant drafts in the CRM sheet */
+.ag-intro { font-size: 14px; margin: -6px 0 14px; max-width: 75ch; }
+.ag-help { font-size: 13px; }
+.ag-form { margin-bottom: 8px; }
+.ag-list { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.ag-who { min-width: 0; overflow-wrap: anywhere; }
+.ag-meta { font-size: 13px; }
+.ag-meta code, .ag-args code, .ag-table code { font: 600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.ag-row.off b { color: var(--ink-2); }
+.ag-foot { margin-top: 14px; }
+.ag-empty { font-size: 14px; margin-top: 8px; }
+.ag-new { display: grid; gap: 10px; margin: 0 0 16px; padding: 16px; border-radius: 18px; background: var(--butter); color: #3d2c00; box-shadow: inset 0 0 0 1.5px rgb(134 96 0 / 35%); }
+.ag-new-t { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+.ag-new-t .icon { width: 16px; height: 16px; flex: none; }
+.ag-token { display: flex; gap: 8px; align-items: center; }
+.ag-mono { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 12px; border: 0; border-radius: 12px; background: #fffdf5; color: #141414; box-shadow: inset 0 0 0 1.5px rgb(134 96 0 / 40%); font: 600 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.ag-mono:focus-visible { outline: 3px solid #866000; outline-offset: 2px; }
+.ag-warn { font-size: 13px; line-height: 1.5; }
+.ag-new .btn-light { justify-self: start; background: #fffdf5; color: #141414; }
+.ag-table td { vertical-align: top; }
+.ag-nowrap { white-space: nowrap; }
+.ag-args { max-width: 320px; }
+.ag-detail { font-size: 12px; }
+.ag-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#agLog:focus { outline: none; }
+#agLog:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+@media (max-width: 640px) { .ag-row { flex-wrap: wrap; } .ag-token { flex-wrap: wrap; } .ag-token .btn { flex: 1 1 100%; } }
+.crm-t-ico.sky { background: var(--sky); color: #1f467f; }
+.crm-draft > span:last-child { display: grid; gap: 8px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--sky) 45%, var(--panel)); box-shadow: inset 0 0 0 1.5px rgb(45 93 176 / 28%); }
+.crm-draft-k { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--sky-ink); }
+.crm-draft-s { font-weight: 700; }
+.crm-draft-b { white-space: pre-wrap; }
+.crm-draft small { margin-top: 0; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .crm-draft > span:last-child { background: color-mix(in srgb, var(--sky) 12%, var(--panel)); box-shadow: inset 0 0 0 1.5px rgb(205 225 255 / 30%); }
+  :root:not([data-theme="light"]) .crm-draft-k { color: var(--sky); }
+}
+:root[data-theme="dark"] .crm-draft > span:last-child { background: color-mix(in srgb, var(--sky) 12%, var(--panel)); box-shadow: inset 0 0 0 1.5px rgb(205 225 255 / 30%); }
+:root[data-theme="dark"] .crm-draft-k { color: var(--sky); }

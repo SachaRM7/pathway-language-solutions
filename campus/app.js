@@ -365,6 +365,7 @@ async function loadStaff() {
     A.staff.members = mem.error ? null : (mem.data || []);
     const enr = await sb.rpc('staff_enrollments');
     A.staff.enrollments = enr.error ? null : (enr.data || []); // needs db/021_solicitudes.sql
+    await loadAgents();
     await loadCrm();
   } else A.staff.prospects = null;
 }
@@ -1062,6 +1063,71 @@ function progressionTile() {
       <button class="btn btn-dark" type="submit">Guardar</button>
     </form></article>`;
 }
+// Access for the team's AI assistants (db/026_acceso_asistentes.sql, function pathway-mcp):
+// one key per bot, one role per key; the key is shown once, then only its first characters.
+const AG_SCOPES = {
+  admisiones: ['Admisiones', 'Prospectos: leer las fichas, añadir notas, guardar borradores de mensaje y fijar la próxima acción. Nunca invita, archiva, cambia la etapa ni envía nada.'],
+  seguimiento: ['Seguimiento', 'Alumnos en riesgo y resumen semanal por profesor. Solo lectura, con nombres pero sin correos ni teléfonos.'],
+  gestion: ['Gestión', 'Cifras del mes: alumnos activos, inscripciones, clases dadas o perdidas y horas por profesor. Sin datos personales.'],
+  marketing: ['Marketing', 'Cifras por origen y campaña: prospectos, tests e inscripciones por semana. Sin nombres, correos ni teléfonos.']
+};
+const AG_CHIP = { admisiones: 'peach', seguimiento: 'mint', gestion: 'sky', marketing: 'lilac' };
+const AG_STATUS = { active: ['Activa', ''], revoked: ['Revocada', 'bad'], expired: ['Caducada', 'warn'] };
+const AG_RESULT = { ok: ['Hecho', ''], invalid: ['Datos inválidos', 'warn'], not_found: ['No encontrado', 'warn'], rate_limited: ['Límite por hora', 'warn'],
+  forbidden: ['Rechazado', 'bad'], unknown_tool: ['Herramienta desconocida', 'bad'], error: ['Error', 'bad'] };
+const AG_TOOLS = { list_prospects: 'Lista de prospectos', get_prospect: 'Ficha de un prospecto', add_note: 'Nota', save_draft: 'Borrador de mensaje',
+  set_next_action: 'Próxima acción', students_at_risk: 'Alumnos en riesgo', weekly_summary: 'Resumen semanal', monthly_report: 'Informe mensual', campaign_stats: 'Campañas' };
+async function loadAgents() {
+  const r = await sb.rpc('agent_tokens_list');
+  A.staff.agents = r.error ? null : (r.data || []); // needs db/026_acceso_asistentes.sql
+}
+const agWhen = d => d ? fmtDate(new Date(d), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+const agDay = d => d ? fmtDate(new Date(d), { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+function agentsTile() {
+  const list = A.staff.agents;
+  if (!isAdmin() || !list) return '';
+  const fresh = A.staff.agentNew, scope = A.staff.agentScope || 'admisiones';
+  const active = list.filter(t => t.status === 'active').length;
+  const rows = list.map(t => {
+    const [st, cls] = AG_STATUS[t.status] || AG_STATUS.active, sc = AG_SCOPES[t.scope] || [t.scope];
+    const meta = [`<code>${esc(t.hint)}</code>`, `creada el ${esc(agDay(t.created_at))}${t.created_by ? ` por ${esc(firstName(t.created_by))}` : ''}`,
+      t.last_used_at ? `último uso: ${esc(agWhen(t.last_used_at))}` : 'nunca usada',
+      t.status === 'active' ? `caduca el ${esc(agDay(t.expires_at))}` : t.status === 'revoked' ? `revocada el ${esc(agDay(t.revoked_at))}` : `caducó el ${esc(agDay(t.expires_at))}`,
+      ...(t.calls_24h ? [`${t.calls_24h} llamada${t.calls_24h === 1 ? '' : 's'} en 24 h`] : [])];
+    return `<div class="err-row ag-row${t.status === 'active' ? '' : ' off'}"><span class="ag-who"><b>${esc(t.name)}</b> <span class="crm-chip ${AG_CHIP[t.scope] || 'stone'}">${esc(sc[0])}</span><br><span class="muted ag-meta">${meta.join(' · ')}</span></span>
+      <span class="row-act"><span class="status ${cls}">${st}</span>${t.status === 'active' ? `<button class="btn btn-light btn-sm" type="button" data-ag-revoke="${t.id}" data-name="${esc(t.name)}">Revocar</button>` : ''}</span></div>`;
+  }).join('');
+  return `<article class="tile" id="asistentes" aria-labelledby="agT"><div class="tile-head"><h2 id="agT">Accesos de asistentes</h2><span class="pill ghost num">${active} activa${active === 1 ? '' : 's'}</span></div>
+    <p class="muted ag-intro">Claves para los asistentes de IA del equipo (bots con Claude Code o Codex en AppuBot). Cada clave tiene un solo rol y solo ve lo que ese rol necesita; nunca actúa como administración. Cada uso queda en el registro.</p>
+    ${fresh ? `<div class="ag-new" role="status" aria-labelledby="agNewT">
+      <p class="ag-new-t" id="agNewT">${icon('lock')}Clave de «${esc(fresh.name)}» · ${esc((AG_SCOPES[fresh.scope] || [fresh.scope])[0])}</p>
+      <div class="ag-token"><input id="agToken" class="ag-mono" readonly value="${esc(fresh.token)}" aria-label="Clave nueva" spellcheck="false" autocomplete="off"><button class="btn btn-dark btn-sm" type="button" data-ag-copy>Copiar</button></div>
+      <p class="ag-warn"><b>Cópiala ahora: no se volverá a mostrar.</b> Pégala tú mismo en la configuración del bot, nunca en un chat ni en un mensaje. Caduca el ${esc(agDay(fresh.expires_at))}; si se pierde, revócala y crea otra.</p>
+      <button class="btn btn-light btn-sm" type="button" data-ag-done>Ya la guardé</button></div>` : ''}
+    <form id="agForm" class="form ag-form" novalidate>
+      <div class="form-2"><label class="field" for="agName">Nombre del asistente<input id="agName" maxlength="80" placeholder="Ej.: Bot admisiones · AppuBot" autocomplete="off"></label>
+        <label class="field" for="agScope">Rol<select id="agScope" aria-describedby="agScopeHelp">${Object.entries(AG_SCOPES).map(([k, [n]]) => `<option value="${k}" ${k === scope ? 'selected' : ''}>${n}</option>`).join('')}</select></label></div>
+      <p class="muted ag-help" id="agScopeHelp">${esc(AG_SCOPES[scope][1])}</p>
+      <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">${icon('plus')}Crear la clave</button><span class="muted ag-help">Dura 90 días. Una clave por bot.</span></div>
+    </form>
+    ${rows ? `<div class="ag-list">${rows}</div>` : '<p class="muted ag-empty">Todavía no hay claves.</p>'}
+    <div class="crm-row ag-foot"><button class="btn btn-light btn-sm" type="button" data-ag-log aria-expanded="${!!A.staff.agentLog}" aria-controls="agLog">${A.staff.agentLog ? 'Ocultar el registro' : 'Ver el registro (últimas 100 acciones)'}</button></div>
+  </article>${agentLogTile()}`;
+}
+function agentLogTile() {
+  const log = A.staff.agentLog;
+  if (!log) return '';
+  const rows = log.map(a => {
+    const [r, cls] = AG_RESULT[a.status] || AG_RESULT.error;
+    return `<tr><td class="num ag-nowrap">${esc(agWhen(a.created_at))}</td><td><b>${esc(a.token)}</b><br><span class="muted">${esc((AG_SCOPES[a.scope] || [a.scope || '—'])[0])}</span></td>
+      <td>${esc(AG_TOOLS[a.tool] || a.tool)}<br><code class="muted">${esc(a.tool)}</code></td><td class="ag-args"><code>${esc(a.args || '')}</code></td>
+      <td><span class="status ${cls}">${r}</span>${a.detail && a.status !== 'ok' ? `<br><span class="muted ag-detail">${esc(a.detail)}</span>` : ''}</td></tr>`;
+  }).join('');
+  return `<article class="tile" id="agLog" tabindex="-1" aria-labelledby="agLogT"><div class="tile-head"><h2 id="agLogT">Registro de los asistentes</h2><span class="pill ghost num">${log.length} acci${log.length === 1 ? 'ón' : 'ones'}</span></div>
+    ${rows ? `<div class="table-wrap"><table class="ag-table"><caption class="ag-sr">Últimas acciones de los asistentes</caption><thead><tr><th scope="col">Fecha</th><th scope="col">Asistente</th><th scope="col">Herramienta</th><th scope="col">Datos enviados</th><th scope="col">Resultado</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted ag-help">Los textos largos (notas, borradores) aparecen aquí recortados a 200 caracteres; el texto completo está en la ficha del prospecto.</p>` : '<p class="muted">Ningún asistente ha usado todavía su clave.</p>'}
+  </article>`;
+}
 function viewAjustes() {
   return `<section class="view" aria-labelledby="h-ajustes">
   ${topBar('h-ajustes', 'Ajustes', 'Asistencia, recordatorios y correos automáticos')}
@@ -1073,6 +1139,7 @@ function viewAjustes() {
       <div class="err-row"><span><b>Acceso al campus</b><br><span class="muted" style="font-size:13px">El código de 6 cifras para entrar, enviado por Supabase.</span></span></div>
       <button class="btn btn-light" style="margin-top:14px" type="button" data-mail-test>Enviarme los correos de prueba</button>
       <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes, un recordatorio de clase y un aviso de ausencia de ejemplo.</p></article>
+    ${agentsTile()}
   </div></section>`;
 }
 
@@ -1372,10 +1439,42 @@ function crmSheet() {
       </form></section>
     <section class="crm-box" aria-labelledby="crmFichaT"><h3 id="crmFichaT">Ficha</h3>${edit}</section>
     <section class="crm-box" aria-labelledby="crmHistT"><h3 id="crmHistT">Historial</h3>
-      ${C.detail ? `<ul class="crm-timeline">${(C.detail.events || []).map(e => `<li>${evIcon(e)}<span>${esc(e.body)}<small>${esc(crmDay(e.created_at))} · ${e.kind === 'note' ? `nota${e.author ? ' de ' + esc(firstName(e.author)) : ''}` : `<span class="crm-auto">automático</span>${e.author ? ' · ' + esc(firstName(e.author)) : ''}`}</small></span></li>`).join('') || '<li class="muted">Sin movimientos todavía.</li>'}</ul>` : '<p class="muted">Cargando…</p>'}
+      ${C.detail ? `<ul class="crm-timeline">${(C.detail.events || []).map(e => crmEvent(p, e, evIcon)).join('') || '<li class="muted">Sin movimientos todavía.</li>'}</ul>` : '<p class="muted">Cargando…</p>'}
       <form class="form" id="crmNoteForm" novalidate><label class="field" for="crmNote">Añadir una nota<textarea id="crmNote" maxlength="2000" rows="3" placeholder="Ej.: llamada de 10 min, quiere empezar en diciembre"></textarea></label>
         <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Añadir la nota</button></div></form></section>
     <div class="crm-row crm-sheet-foot"><button class="btn btn-light btn-sm" type="button" data-crm-archive>${icon('archive')}Archivar la ficha</button><span class="muted">Desaparece del tablero sin borrarse.</span></div>`;
+}
+// One line of the history. Drafts left by an assistant (db/026) stand out, with «Copiar» and a
+// link that opens WhatsApp or the mail app with the text; nothing is sent from here.
+const crmAgent = e => e.agent ? `asistente «${esc(e.agent)}»` : '';
+function crmDraftParts(e) {
+  const m = e.topic === 'email' && /^Asunto: (.*)\n\n([\s\S]*)$/.exec(e.body || '');
+  return m ? { subject: m[1], body: m[2] } : { subject: '', body: e.body || '' };
+}
+function crmEvent(p, e, evIcon) {
+  const day = esc(crmDay(e.created_at));
+  if (e.kind === 'draft') {
+    const d = crmDraftParts(e), n = String(p.whatsapp || '').replace(/\D/g, '');
+    const open = e.topic === 'email' ? (p.email ? `<a class="btn btn-light btn-sm" href="mailto:${esc(p.email)}?subject=${encodeURIComponent(d.subject)}&amp;body=${encodeURIComponent(d.body)}">${icon('arrow-up')}Abrir en el correo</a>` : '')
+      : n.length >= 6 ? `<a class="btn btn-light btn-sm" href="https://wa.me/${n}?text=${encodeURIComponent(d.body)}" target="_blank" rel="noopener">${icon('chat')}Abrir en WhatsApp</a>` : '';
+    return `<li class="crm-draft"><span class="crm-t-ico sky" aria-hidden="true">${icon('chat')}</span><span>
+      <span class="crm-draft-k">Borrador ${e.topic === 'email' ? 'de correo' : 'de WhatsApp'} · por revisar y enviar</span>
+      ${d.subject ? `<span class="crm-draft-s">Asunto: ${esc(d.subject)}</span>` : ''}<span class="crm-draft-b">${esc(d.body)}</span>
+      <span class="crm-row"><button class="btn btn-dark btn-sm" type="button" data-crm-copy="${e.id}" aria-label="Copiar el borrador del ${day}">Copiar</button>${open}</span>
+      <small>${day} · ${crmAgent(e) || (e.author ? esc(firstName(e.author)) : 'borrador')}</small></span></li>`;
+  }
+  const who = e.kind === 'note' ? `nota${e.agent ? ' del ' + crmAgent(e) : e.author ? ' de ' + esc(firstName(e.author)) : ''}`
+    : `<span class="crm-auto">automático</span>${e.agent ? ' · ' + crmAgent(e) : e.author ? ' · ' + esc(firstName(e.author)) : ''}`;
+  return `<li>${evIcon(e)}<span>${esc(e.body)}<small>${day} · ${who}</small></span></li>`;
+}
+// Copies a text; falls back to selecting it when the clipboard API is refused.
+async function copyText(text, input) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { /* fallback below */ }
+  try {
+    const t = input || Object.assign(document.createElement('textarea'), { value: text });
+    if (!input) { t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); }
+    t.select(); const ok = document.execCommand('copy'); if (!input) t.remove(); return ok;
+  } catch (e) { return false; }
 }
 async function crmOpen(id) {
   if (!crmById(id)) return;
@@ -1505,6 +1604,46 @@ function bindCrm() {
     if (!saved) { await loadCrm(); crmRefreshBody(); }
   };
 }
+// «Accesos de asistentes» in Ajustes.
+function bindAgents() {
+  const f = $('#agForm');
+  if (!f) return;
+  $('#agScope').onchange = () => { A.staff.agentScope = $('#agScope').value; $('#agScopeHelp').textContent = AG_SCOPES[A.staff.agentScope][1]; };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const name = $('#agName').value.trim(), btn = f.querySelector('button[type=submit]');
+    if (!name) { $('#agName').focus(); return toast('Ponle un nombre a la clave, por ejemplo «Bot admisiones · AppuBot».'); }
+    btn.disabled = true;
+    const { data, error } = await sb.rpc('agent_token_create', { p_name: name, p_scope: $('#agScope').value });
+    if (error) { btn.disabled = false; return fail(error, /too many/.test(error.message || '') ? 'Hay demasiadas claves activas: revoca alguna antes.' : 'No se pudo crear la clave.'); }
+    A.staff.agentNew = data; await loadAgents(); render();
+    $('[data-ag-copy]')?.focus();
+  };
+  $$('[data-ag-copy]').forEach(b => b.onclick = async () => {
+    const ok = A.staff.agentNew && await copyText(A.staff.agentNew.token, $('#agToken'));
+    toast(ok ? 'Clave copiada. Pégala en la configuración del bot.' : 'No se pudo copiar: selecciona la clave a mano.');
+    if (ok) b.textContent = 'Copiada';
+  });
+  $$('[data-ag-done]').forEach(b => b.onclick = () => { A.staff.agentNew = null; render(); $('#agName')?.focus(); });
+  $$('[data-ag-revoke]').forEach(b => b.onclick = async () => {
+    if (!confirm(`¿Revocar la clave «${b.dataset.name}»? El asistente pierde el acceso al instante.`)) return;
+    b.disabled = true;
+    const { error } = await sb.rpc('agent_token_revoke', { p_id: b.dataset.agRevoke });
+    if (error) { b.disabled = false; return fail(error, 'No se pudo revocar la clave.'); }
+    toast(`Clave «${b.dataset.name}» revocada.`); await loadAgents(); render(); $('#agT')?.scrollIntoView({ block: 'nearest' });
+  });
+  $$('[data-ag-log]').forEach(b => b.onclick = async () => {
+    if (A.staff.agentLog) { A.staff.agentLog = null; render(); $('[data-ag-log]')?.focus(); return; }
+    b.disabled = true;
+    const { data, error } = await sb.rpc('agent_actions_list', { p_limit: 100 });
+    if (error) { b.disabled = false; return fail(error, 'No se pudo cargar el registro.'); }
+    A.staff.agentLog = data || []; render();
+    const t = $('#agLog'); if (t) { t.focus({ preventScroll: true }); t.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+  });
+}
+// The new key and the log never outlive the visit to Ajustes.
+window.addEventListener('hashchange', () => { if (A.staff && location.hash !== '#ajustes') { A.staff.agentNew = null; A.staff.agentLog = null; } });
+
 // Sheet and dialog: clicks, forms and keyboard (they live outside #main).
 function bindCrmOverlay() {
   const sheet = $('#crmSheet'), modal = $('#crmModal');
@@ -1520,10 +1659,18 @@ function bindCrmOverlay() {
   modal.addEventListener('keydown', e => trap(modal, e));
   modal.addEventListener('click', e => { if (e.target.closest('[data-crm-close]')) crmClose(); });
   sheet.addEventListener('click', async e => {
-    const t = e.target.closest('[data-crm-close],[data-crm-stage],[data-crm-edit],[data-crm-invite],[data-crm-done],[data-crm-archive]');
+    const t = e.target.closest('[data-crm-close],[data-crm-stage],[data-crm-edit],[data-crm-invite],[data-crm-done],[data-crm-archive],[data-crm-copy]');
     if (!t) return;
     const id = C.open, p = C.detail || crmById(id);
     if (t.matches('[data-crm-close]')) return crmClose();
+    if (t.matches('[data-crm-copy]')) {
+      const ev = ((C.detail && C.detail.events) || []).find(x => String(x.id) === t.dataset.crmCopy);
+      if (!ev) return;
+      const ok = await copyText(crmDraftParts(ev).body);
+      toast(ok ? 'Borrador copiado: revísalo antes de enviarlo.' : 'No se pudo copiar: selecciona el texto a mano.');
+      if (ok) { t.textContent = 'Copiado'; setTimeout(() => { if (t.isConnected) t.textContent = 'Copiar'; }, 2000); }
+      return;
+    }
     if (t.matches('[data-crm-stage]')) {
       const stage = t.dataset.crmStage; if (!p || p.stage === stage) return;
       t.disabled = true;
@@ -2267,6 +2414,7 @@ function bindView(id) {
   bindSchedule(id);
   if (id === 'contenido') bindEditor();
   if (id === 'prospectos') bindCrm();
+  if (id === 'ajustes') bindAgents();
   {
     const inf = $('#invForm');
     if (inf && $('#invEmail')) {
