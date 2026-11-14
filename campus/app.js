@@ -539,6 +539,16 @@ function toggleBell() {
   slot.innerHTML = `<div class="menu menu-wide" role="menu"><div class="who"><b>Notificaciones</b></div>${notes.length ? notes.map(n => n.start
     ? `<button type="button" role="menuitem" data-start="${n.start}">${icon(n.ic)}<span>${n.text}</span></button>`
     : `<a role="menuitem" href="${n.href}"${n.today ? ' data-crm-today' : ''}>${icon(n.ic)}<span>${n.text}</span></a>`).join('') : '<p class="menu-empty">Nada nuevo por ahora.</p>'}</div>`;
+  fitMenu(slot);
+}
+/* Keep an open menu inside the screen (16 px gutter): on phones the tool row wraps under the
+   title, so a menu hung from the avatar or the bell can otherwise run off the left edge. */
+function fitMenu(slot) {
+  const m = slot && slot.firstElementChild; if (!m) return;
+  m.style.transform = '';
+  const r = m.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+  const dx = r.left < 16 ? 16 - r.left : (r.right > vw - 16 ? vw - 16 - r.right : 0);
+  if (dx) m.style.transform = `translateX(${Math.round(dx)}px)`;
 }
 function closeMenus() { for (const id of ['#menuSlot', '#bellSlot', '#searchSlot']) { const s = $(id); if (s) s.innerHTML = ''; } }
 function runSearch(q) {
@@ -592,6 +602,7 @@ function toggleMenu() {
   slot.innerHTML = `<div class="menu" role="menu"><div class="who"><b>${esc(p.full_name)}</b>${esc(A.session.user.email)}</div>
     ${isStaff() ? '' : `<button type="button" role="menuitem" data-action="plan">${icon('target')}Mi plan</button>`}
     <button type="button" role="menuitem" data-action="logout">${icon('x')}Cerrar sesión</button></div>`;
+  fitMenu(slot);
 }
 
 /* ───────────── Student views ───────────── */

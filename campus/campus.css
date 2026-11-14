@@ -525,6 +525,8 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .menu button:hover, .menu a:hover { background: var(--soft); }
 .menu .who { padding: 10px 14px 12px; border-bottom: 1px solid var(--line); margin-bottom: 4px; font-size: 13px; color: var(--ink-2); }
 .menu .who b { display: block; color: var(--ink); font-size: 15px; }
+.menu { max-width: calc(100vw - 32px); }
+.menu .who { overflow-wrap: anywhere; }
 .ava-btn { padding: 0; border-radius: 50%; }
 .saving { display: grid; justify-items: center; gap: 14px; padding: 40px 0; color: var(--ink-2); font-weight: 600; }
 .saving .logo-mark { width: 44px; height: 44px; border-radius: 14px; animation: breathe 1s ease-in-out infinite; }

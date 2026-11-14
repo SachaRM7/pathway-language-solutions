@@ -11,6 +11,18 @@
   const navLink = id => pick(`#sideNav a[href="#${id}"]`, `#tabbar a[href="#${id}"]`);
   const phone = () => innerWidth <= 720;
 
+  // On a phone the conversation fills the screen: frame the writing box instead, so the card fits.
+  const chatZone = () => phone() ? pick('#chatForm') : pick('#main .chat-tile');
+  // Mensajes texts, shared by the full tours and the « Nuevo » tour below.
+  const MSG_STUDENT = [
+    'Tu conversación con tu profesor y el equipo Pathway. Entremos.',
+    'Aquí hablas con tu profesor y el equipo Pathway. Si escribes una pregunta sobre tus clases, Zoom o tus ausencias, te respondemos aquí con los datos de tu curso; lo que decide tu profesor se lo pasamos a él.'
+  ];
+  const MSG_TEACHER = [
+    'Las preguntas de tus alumnos, en un solo lugar en vez de WhatsApp. Entremos.',
+    'El asistente prepara la respuesta a las preguntas prácticas, con los datos de cada alumno: según «Ajustes», sale sola o queda como borrador para que la envíes. Lo que no sabe o lo que decides tú (cambios de horario, justificativos, precios, nivel) queda arriba, en «Necesita respuesta», y te llega un correo. El alumno ve las respuestas firmadas «Equipo Pathway».'
+  ];
+
   // view: screen to show first; target: zone to frame; pad: margin around it.
   const STUDENT = [
     { center: true, title: '¡Te damos la bienvenida a tu Campus!', text: 'En un minuto te mostramos dónde está cada cosa. Puedes volver a ver este recorrido cuando quieras con el botón «?» de la parte de arriba.', next: 'Empezar', skip: 'Ahora no' },
@@ -30,8 +42,8 @@
     { view: 'simulacros', target: () => navLink('logros'), title: 'Logros', text: 'Tu nivel y tus insignias. Entremos.', pad: 6 },
     { view: 'logros', target: () => pick('#main .badges')?.closest('.tile') || pick('#main .badges', '#main .view'), title: 'Tus insignias', text: 'Cada insignia marca un paso real hacia tu examen: tu primera lección, tu racha, tus repasos…' },
     // Mensajes (db/025_mensajes.sql): skipped when the tab is not there.
-    { view: 'logros', target: () => navLink('mensajes'), title: 'Mensajes', text: 'Tus preguntas para tu profesor, aquí y no por WhatsApp. Entremos.', pad: 6 },
-    { view: 'mensajes', target: () => pick('#main .chat-tile'), title: 'Tus mensajes', text: 'Escribe aquí tus preguntas sobre tus clases, Zoom o tus ausencias: el equipo Pathway te responde con los datos de tu curso, y lo que decide tu profesor se lo pasamos a él. Todas las respuestas llegan aquí.' },
+    { view: 'logros', target: () => navLink('mensajes'), title: 'Mensajes', text: MSG_STUDENT[0], pad: 6 },
+    { view: 'mensajes', target: chatZone, title: 'Tus mensajes', text: MSG_STUDENT[1] },
     { target: () => navLink('inicio'), title: 'Inicio', text: 'Para volver aquí desde cualquier pantalla.', pad: 6 },
     { view: 'inicio', target: () => pick('#main .search'), title: 'El buscador', text: 'Escribe una unidad o un verbo para encontrarlo al instante.', pad: 6, desktopOnly: true },
     { view: 'inicio', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Las tareas que te deja tu profesor, sus respuestas en «Mensajes» y tus recordatorios. ¿Dónde está la tarea? Aquí.', pad: 6 },
@@ -48,8 +60,8 @@
     { view: 'alumnos', target: () => tileWithTitle('Avance'), title: 'El avance de tus alumnos', text: 'Nivel, racha, última actividad, aciertos y tareas de cada alumno.' },
     { view: 'alumnos', target: () => tileWithTitle('Fin de nivel'), title: 'Fin de nivel', text: 'Valida aquí el examen que el alumno hizo contigo: con el examen final del campus, pasa solo al nivel siguiente.' },
     // Mensajes (db/025_mensajes.sql): skipped when the tab is not there.
-    { view: 'alumnos', target: () => navLink('mensajes'), title: 'Mensajes', text: 'Las preguntas de tus alumnos, en un solo lugar en vez de WhatsApp. Entremos.', pad: 6 },
-    { view: 'mensajes', target: () => pick('#main .msg-list-tile'), title: 'Mensajes de tus alumnos', text: 'El asistente prepara la respuesta a las preguntas prácticas, con los datos de cada alumno: según «Ajustes», sale sola o queda como borrador para que la envíes. Lo que no sabe o lo que decides tú (cambios de horario, justificativos, precios, nivel) queda arriba, en «Necesita respuesta», y te llega un correo. El alumno ve las respuestas firmadas «Equipo Pathway».' },
+    { view: 'alumnos', target: () => navLink('mensajes'), title: 'Mensajes', text: MSG_TEACHER[0], pad: 6 },
+    { view: 'mensajes', target: () => pick('#main .msg-list-tile'), title: 'Mensajes de tus alumnos', text: MSG_TEACHER[1] },
     { view: 'mensajes', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6, admin: false },
     // Prospectos (admin only, db/023_crm.sql).
     { view: 'mensajes', target: () => navLink('prospectos'), title: 'Prospectos', text: 'Las personas interesadas, del primer contacto a la inscripción. Solo la administración las ve. Entremos.', pad: 6, admin: true },
@@ -75,6 +87,21 @@
     { target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];
   TEACHER.home = 'panel';
+
+  // « Nuevo »: a short tour of a tab added after an account already saw its full tour.
+  // Shown once (remembered like the tours), only when the tab is there.
+  const NEWS = {
+    'student-mensajes': [
+      { center: true, title: 'Nuevo: Mensajes', text: 'Una nueva pestaña en tu Campus. Te la mostramos en unos segundos.', next: 'Ver', skip: 'Ahora no' },
+      { target: () => navLink('mensajes'), title: 'Mensajes', text: MSG_STUDENT[0], pad: 6 },
+      { view: 'mensajes', target: chatZone, title: 'Tus mensajes', text: MSG_STUDENT[1], next: 'Entendido', last: true }
+    ],
+    'teacher-mensajes': [
+      { center: true, title: 'Nuevo: Mensajes', text: 'Una nueva pestaña en tu Campus. Te la mostramos en unos segundos.', next: 'Ver', skip: 'Ahora no' },
+      { target: () => navLink('mensajes'), title: 'Mensajes', text: MSG_TEACHER[0], pad: 6 },
+      { view: 'mensajes', target: () => pick('#main .msg-list-tile'), title: 'Mensajes de tus alumnos', text: MSG_TEACHER[1], next: 'Entendido', last: true }
+    ]
+  };
 
   let steps = STUDENT, tour = 'student', root, ring, card, shade, step = -1, target = null;
   const R = 18;
@@ -193,10 +220,12 @@
     if (location.hash.slice(1) !== steps.home) location.hash = steps.home;
   }
 
-  function start() {
+  function start(news) {
     if (!$('#lesson')?.hidden) return; // never over a lesson
-    tour = window.CampusApp?.mode() === 'teacher' ? 'teacher' : 'student';
-    const all = tour === 'teacher' ? TEACHER : STUDENT;
+    const mode = window.CampusApp?.mode() === 'teacher' ? 'teacher' : 'student';
+    tour = news || mode;
+    const all = news ? NEWS[news] : mode === 'teacher' ? TEACHER : STUDENT;
+    if (news) all.home = mode === 'teacher' ? TEACHER.home : STUDENT.home;
     const admin = !!window.CampusApp?.admin?.();
     steps = all.filter(s => !(phone() && s.desktopOnly) && (s.admin === undefined || s.admin === admin));
     steps.home = all.home;
@@ -215,7 +244,14 @@
     const app = window.CampusApp;
     if (!app || step >= 0 || pending) return;
     const mode = app.mode(), home = mode === 'teacher' ? TEACHER.home : STUDENT.home;
-    if (e.detail.view !== home || app.seen(mode)) return;
-    pending = setTimeout(() => { pending = 0; if (step < 0 && app.mode() === mode && !app.seen(mode)) start(); }, 700);
+    if (e.detail.view !== home) return;
+    if (!app.seen(mode)) {
+      pending = setTimeout(() => { pending = 0; if (step < 0 && app.mode() === mode && !app.seen(mode)) start(); }, 700);
+      return;
+    }
+    // Full tour already seen: show what is new since, once.
+    const news = Object.keys(NEWS).find(k => k.startsWith(mode + '-') && !app.seen(k));
+    if (!news || !navLink(news.slice(mode.length + 1))) return;
+    pending = setTimeout(() => { pending = 0; if (step < 0 && app.mode() === mode && !app.seen(news) && navLink(news.slice(mode.length + 1))) start(news); }, 700);
   });
 })();
