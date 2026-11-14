@@ -2451,7 +2451,6 @@ const M = { ready: false, thread: null, typing: false, busy: false, open: null, 
 const TEAM = 'Equipo Pathway';
 const ASSISTANT_LABEL = 'Asistente Pathway · respuesta automática';
 const HANDED = 'Se lo pasamos a tu profesor';
-const MSG_SUGG = ['¿A qué hora es mi próxima clase?', '¿Cómo entro a mi clase de Zoom?', '¿Cuántas ausencias llevo este mes?', '¿Cómo aviso que no podré asistir?'];
 const myUnread = () => (M.thread && M.thread.unread) || 0;
 const threadsWaiting = () => (A.staff.threads || []).filter(t => t.needs_staff);
 const msgWhen = iso => {
@@ -2497,7 +2496,7 @@ function msgItem(m, staff, studentName) {
 }
 function studentLog() {
   const list = (M.thread && M.thread.messages) || [];
-  if (!list.length) return `<div class="msg-empty">${icon('chat')}<p><b>Escribe tu primera pregunta.</b><br>Por ejemplo: «¿A qué hora es mi próxima clase?». Te respondemos aquí, y tu profesor ve toda la conversación.</p></div>`;
+  if (!list.length) return `<div class="msg-empty">${icon('chat')}<p>Aquí aparecen tus mensajes con el equipo Pathway.</p></div>`;
   const last = list[list.length - 1];
   return list.map(m => msgItem(m, false)).join('')
     + (M.typing && M.thread && M.thread.auto_reply ? `<div class="msg theirs k-team typing"><p class="msg-who">${TEAM}</p><div class="msg-bubble"><span class="msg-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">${TEAM} está escribiendo…</span></div></div>`
@@ -2513,20 +2512,11 @@ function viewMensajes() { return teacherMode() ? viewMensajesStaff() : viewMensa
 function viewMensajesStudent() {
   const teacher = (M.thread && M.thread.teacher) || (A.teacher && A.teacher.full_name) || '';
   return `<section class="view" aria-labelledby="h-mensajes">
-  ${topBar('h-mensajes', 'Mensajes', teacher ? `Tus preguntas para ${esc(teacher)}, en un solo lugar` : 'Tus preguntas para tu profesor, en un solo lugar')}
+  ${topBar('h-mensajes', 'Mensajes', teacher ? `Tu conversación con ${esc(teacher)} y el equipo Pathway` : 'Tu conversación con el equipo Pathway')}
   <div class="bento">
-    <article class="tile chat-tile c-8"><div class="tile-head"><h2>Tu conversación</h2>${teacher ? `<span class="pill ghost">${icon('users')}${esc(teacher)}</span>` : ''}</div>
+    <article class="tile chat-tile" style="grid-column:1/-1"><div class="tile-head"><h2>Tu conversación</h2>${teacher ? `<span class="pill ghost">${icon('users')}${esc(teacher)}</span>` : ''}</div>
       <div class="chat-log" id="chatLog" role="log" aria-label="Conversación con tu profesor" tabindex="0">${studentLog()}</div>
-      ${composer('Tu mensaje', 'Escribe tu pregunta…', 1000)}
-    </article>
-    <article class="tile lilac c-4 chat-how"><p class="label" style="color:var(--lilac-ink)">Cómo funciona</p>
-      <ol class="how">
-        <li><b>Escribe tu pregunta aquí</b>, en vez de WhatsApp: tus clases, cómo entrar a Zoom, tus ausencias, las reglas del curso.</li>
-        <li><b>El equipo Pathway te responde</b> con los datos de tu curso. Lo que decide tu profesor (cambiar una clase, aceptar un justificativo, un precio especial, tu nivel) se lo pasamos a tu profesor.</li>
-        <li><b>Todas las respuestas llegan aquí</b> y te avisamos por correo.</li>
-      </ol>
-      <p class="label" style="margin-top:18px;color:var(--lilac-ink)">Pregunta rápida</p>
-      <div class="chat-sugg">${MSG_SUGG.map(q => `<button type="button" data-sugg="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+      ${composer('Tu mensaje', 'Escribe tu mensaje…', 1000)}
     </article>
   </div></section>`;
 }
@@ -2694,7 +2684,6 @@ function bindMessages() {
       return teacherMode() ? sendStaffMessage(text) : sendStudentMessage(text);
     };
   }
-  $$('[data-sugg]').forEach(b => b.onclick = () => { const t = $('#chatText'); if (!t) return; t.value = b.dataset.sugg; t.dispatchEvent(new Event('input')); t.focus(); });
   bindThreadRows();
   const back = $('[data-thread-close]'); if (back) back.onclick = closeThread;
   const done = $('[data-thread-done]');
