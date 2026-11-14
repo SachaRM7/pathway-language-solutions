@@ -1012,11 +1012,6 @@ a.pill.warn { text-decoration: none; }
 .chat-hint { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--ink-3); }
 @media (pointer: coarse) { .chat-hint span:first-child { visibility: hidden; } }
 @media (max-width: 480px) { .chat-send { width: 50px; padding: 0; } .chat-send span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
-.chat-how .how { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; font-size: 14px; color: var(--ink-2); }
-.chat-how .how b { color: var(--ink); }
-.chat-sugg { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.chat-sugg button { min-height: 38px; padding: 7px 14px; border-radius: 16px; background: var(--panel); color: var(--ink); font-size: 13px; font-weight: 700; text-align: left; }
-.chat-sugg button:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
 .msg-layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
 @media (min-width: 1000px) { .msg-layout { grid-template-columns: minmax(290px, 380px) minmax(0, 1fr); } .msg-back { display: none !important; } }
 @media (max-width: 999px) { .msg-layout.has-open .msg-list-tile, .msg-layout:not(.has-open) .msg-thread-tile { display: none; } }
