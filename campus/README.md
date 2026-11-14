@@ -27,6 +27,8 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 | `db/013_asistencia.sql` | Présences par le bouton « Entrar a la clase » (lien ouvert N min avant, absent après N min, palier « tarde » optionnel) et rappel e-mail avant chaque cours ; règles réglées par l'admin dans « Horarios » |
 | `../supabase/functions/class-reminders/` | Edge Function qui envoie les rappels avec Resend (appelée toutes les 5 min par pg_cron) |
 | `db/014_cron_secreto.sql` | Secret partagé (Vault) envoyé par pg_cron et vérifié par `weekly-report` et `class-reminders` : un appel extérieur est refusé |
+| `db/025_mensajes.sql` | « Mensajes » : une conversation par élève avec son professeur (et les admins), limites anti-spam, « Necesita respuesta » dans la cloche et « Por revisar », e-mails groupés (via `class-reminders`), réglage « Respuestas del asistente » (brouillons à envoyer ou réponses directes) |
+| `../supabase/functions/campus-assistant/` | Edge Function facultative : l'assistant (Claude Haiku) prépare la réponse aux questions pratiques avec les seules données de l'élève (lues avec sa session) et passe au professeur ce qu'il ne sait pas ou ce que le professeur décide. `logic.ts` : la partie pure (contexte, prompt, validation, décision), testable sans réseau |
 | `db/SQL_A_COPIER.md` | Tous les blocs SQL et le code de la fonction, prêts à copier-coller |
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
