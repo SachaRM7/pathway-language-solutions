@@ -378,12 +378,15 @@
   const saveResult = (email, data) => {
     try {
       const skills = Object.fromEntries(SKILLS.map(name => [name, data.skillScores[name]]));
-      return fetch(`${SUPABASE.url}/rest/v1/rpc/submit_placement`, {
+      const base = { p_email: email, p_level: data.level, p_overall: Math.round(data.overall), p_mode: mode, p_lang: ['es', 'fr', 'en', 'de'].includes(locale) ? locale : 'es', p_detail: { skills, correct: data.totalCorrect, questions: data.totalQuestions } };
+      const send = body => fetch(`${SUPABASE.url}/rest/v1/rpc/submit_placement`, {
         method: 'POST',
         headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_level: data.level, p_overall: Math.round(data.overall), p_mode: mode, p_lang: ['es', 'fr', 'en', 'de'].includes(locale) ? locale : 'es', p_detail: { skills, correct: data.totalCorrect, questions: data.totalQuestions }, ...firstTouch() }),
+        body: JSON.stringify(body),
         keepalive: true
-      }).then(response => {
+      });
+      // A database without campaign columns yet (before campus/db/023) answers 404: save without them.
+      return send({ ...base, ...firstTouch() }).then(response => (response.status === 404 ? send(base) : response)).then(response => {
         // A refused save (more than 5 tests per address and hour, network) is logged; the result still shows.
         if (!response.ok) track('placement_save_failed', { status: response.status });
         return response.ok;
