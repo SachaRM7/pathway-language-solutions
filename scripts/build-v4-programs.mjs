@@ -440,6 +440,7 @@ export function renderProgramPage({ lang, level, data, pages, tour, homeMarkup }
   <link rel="stylesheet" href="/v4/programa.css?v=${READER_VERSION}">
   <script src="/site-config.js" defer></script>
   <script src="/analytics.js" defer></script>
+  <script src="/campaign.js" defer></script>
   <script src="/v4/placeholder.js" type="module"></script>
 </head>
 <body class="v4-program">

@@ -43,6 +43,7 @@
      el envío por WhatsApp.
      ========================================================================= */
   const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+  const firstTouch = () => { try { const t = window.PathwayCampaign?.get() || {}; return { p_campaign: t.campaign || null, p_source: t.source || null }; } catch (_) { return { p_campaign: null, p_source: null }; } };
   function saveRequest(payload) {
     try {
       return fetch(`${SUPABASE.url}/rest/v1/rpc/submit_enrollment`, {
@@ -339,7 +340,9 @@
       p_times: times,
       p_exam_date: data.get('examDate') || null,
       p_comments: String(data.get('scheduleNote') || '').trim() || null,
-      p_lang: ['es', 'fr', 'en', 'de'].includes(L.lang) ? L.lang : 'es'
+      p_lang: ['es', 'fr', 'en', 'de'].includes(L.lang) ? L.lang : 'es',
+      // First touch (campaign.js): where this visitor first came from, if known.
+      ...firstTouch()
     });
 
     try {

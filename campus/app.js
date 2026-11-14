@@ -365,7 +365,8 @@ async function loadStaff() {
     A.staff.members = mem.error ? null : (mem.data || []);
     const enr = await sb.rpc('staff_enrollments');
     A.staff.enrollments = enr.error ? null : (enr.data || []); // needs db/021_solicitudes.sql
-  }
+    await loadCrm();
+  } else A.staff.prospects = null;
 }
 async function refresh() { try { await loadAll(); } catch (e) { fail(e); } }
 
@@ -443,6 +444,7 @@ const isAdmin = () => !!(A.profile && A.profile.role === 'admin');
 const TNAV = [
   { id: 'panel', label: 'Inicio', icon: 'home' },
   { id: 'alumnos', label: 'Alumnos', icon: 'users' },
+  { id: 'prospectos', label: 'Prospectos', icon: 'funnel', when: () => isAdmin() && Array.isArray(A.staff.prospects), count: () => crmDue().length },
   { id: 'tareas', label: 'Tareas', icon: 'pen' },
   { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null, count: () => isAdmin() ? A.staff.changes.filter(c => c.status === 'pending').length : 0 },
   { id: 'contenido', label: 'Contenido', icon: 'book' },
@@ -450,7 +452,7 @@ const TNAV = [
   { id: 'ajustes', label: 'Ajustes', icon: 'settings', when: () => isAdmin() && !!A.staff.settings }
 ];
 const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
-const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
+const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
 // Old links (#grupo) keep working.
 const ALIASES = { grupo: 'panel' };
 
@@ -470,12 +472,12 @@ function renderNav(cur) {
       : `<span>Tu objetivo</span><b>NCLC 7</b><span>${esc(EXAMS[p.exam] || 'Examen por definir')}</span>`);
   $('#sideFoot').innerHTML = `<span>${esc(firstName(p.full_name))}</span><button type="button" data-action="menu">Mi cuenta</button>`;
 }
-function topBar(id, title, sub) {
+function topBar(id, title, sub, extra = '') {
   const p = A.profile, notes = notifications();
   let seen = ''; try { seen = localStorage.getItem('campus-seen') || ''; } catch (e) { /* ignore */ }
   const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
   return `<header class="top"><div><h1 id="${id}">${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>
-    <div class="top-tools">
+    <div class="top-tools">${extra}
       ${teacherMode() ? '' : `<div class="menu-wrap"><label class="search" for="campusSearch">${icon('search')}<input id="campusSearch" type="search" autocomplete="off" placeholder="Buscar una unidad, un verbo…" value="${esc(A.search)}"></label><div id="searchSlot"></div></div>`}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Vista"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode()}">Profesor</button></div>` : ''}
       <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
@@ -492,6 +494,8 @@ function notifications() {
     if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#alumnos' });
     const requests = isAdmin() ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
     if (requests) out.push({ key: 'enr' + requests, ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender.`, href: '#cuentas' });
+    const crmN = isAdmin() && A.staff.prospects ? crmDue().length : 0;
+    if (crmN) out.push({ key: 'crm' + crmToday() + crmN, ic: 'funnel', text: `${crmN} prospecto${crmN > 1 ? 's' : ''} con una acción para hoy o atrasada.`, href: '#prospectos', today: true });
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
     if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
@@ -525,7 +529,7 @@ function toggleBell() {
   $('[data-action="bell"] .pip')?.remove();
   slot.innerHTML = `<div class="menu menu-wide" role="menu"><div class="who"><b>Notificaciones</b></div>${notes.length ? notes.map(n => n.start
     ? `<button type="button" role="menuitem" data-start="${n.start}">${icon(n.ic)}<span>${n.text}</span></button>`
-    : `<a role="menuitem" href="${n.href}">${icon(n.ic)}<span>${n.text}</span></a>`).join('') : '<p class="menu-empty">Nada nuevo por ahora.</p>'}</div>`;
+    : `<a role="menuitem" href="${n.href}"${n.today ? ' data-crm-today' : ''}>${icon(n.ic)}<span>${n.text}</span></a>`).join('') : '<p class="menu-empty">Nada nuevo por ahora.</p>'}</div>`;
 }
 function closeMenus() { for (const id of ['#menuSlot', '#bellSlot', '#searchSlot']) { const s = $(id); if (s) s.innerHTML = ''; } }
 function runSearch(q) {
@@ -553,6 +557,7 @@ function render() {
 // (profiles.tours, db/007_tutorial.sql; the device keeps a copy if the column is missing).
 window.CampusApp = {
   mode: () => teacherMode() ? 'teacher' : 'student',
+  admin: () => isAdmin(),
   seen: name => {
     let local = false; try { local = !!localStorage.getItem('campus-tour-' + name); } catch (e) { /* ignore */ }
     return local || !!(A.profile && A.profile.tours && A.profile.tours[name]);
@@ -568,7 +573,7 @@ function showApp() {
   document.body.classList.remove('no-scroll');
   render();
 }
-window.addEventListener('hashchange', () => { flipped = false; if (A.profile && !$('#app').hidden) { render(); window.scrollTo({ top: 0 }); } });
+window.addEventListener('hashchange', () => { flipped = false; if (crmOverlayOpen() && location.hash !== '#prospectos') crmClose(); if (A.profile && !$('#app').hidden) { render(); window.scrollTo({ top: 0 }); } });
 
 function toggleMenu() {
   const slot = $('#menuSlot'); if (!slot) return;
@@ -831,6 +836,10 @@ function todoItems() {
   const out = [], admin = isAdmin();
   const requests = admin ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
   if (requests) out.push({ ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender`, href: '#cuentas' });
+  if (admin && A.staff.prospects) {
+    const due = crmDue(), late = due.filter(p => p.next_due < crmToday()).length;
+    if (due.length) out.push({ ic: 'funnel', text: `${due.length} prospecto${due.length > 1 ? 's' : ''} para hoy${late ? ` (${late} atrasado${late > 1 ? 's' : ''})` : ''}`, href: '#prospectos', today: true });
+  }
   const pending = A.staff.changes.filter(c => c.status === 'pending').length;
   if (admin && pending) out.push({ ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar`, href: '#horarios' });
   if (admin && A.staff.groups && A.staff.members) {
@@ -889,7 +898,7 @@ function viewPanel() {
     <article class="tile c-7"><div class="tile-head"><h2>Necesitan atención</h2>${alerts.length ? `<span class="pill ghost num">${alerts.length}</span>` : ''}</div>
       ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert"><span class="ava">${esc(initials(a.s.full_name))}</span><p><b>${esc(a.s.full_name)}</b><br>${a.text}</p>${canAssign ? `<button class="btn btn-dark btn-sm" type="button" data-hw-student="${a.s.id}">Asignar tarea</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">Todo el grupo está al día.</p>'}</article>` : noStudentsTile()}
     <article class="tile ${ov.length ? 'c-5' : 'c-6'}"><div class="tile-head"><h2>Por revisar</h2>${todo.length ? `<span class="pill ghost num">${todo.length}</span>` : ''}</div>
-      ${todo.length ? `<div class="todo">${todo.map(t => `<a class="todo-row" href="${t.href}">${icon(t.ic)}<span>${t.text}</span>${icon('arrow')}</a>`).join('')}</div>` : '<p class="muted">Nada pendiente por ahora.</p>'}</article>
+      ${todo.length ? `<div class="todo">${todo.map(t => `<a class="todo-row" href="${t.href}"${t.today ? ' data-crm-today' : ''}>${icon(t.ic)}<span>${t.text}</span>${icon('arrow')}</a>`).join('')}</div>` : '<p class="muted">Nada pendiente por ahora.</p>'}</article>
     ${A.staff.groups !== null ? `<article class="tile c-6"><div class="tile-head"><h2>Próximas clases</h2><a class="pill ghost" href="#horarios">Horarios</a></div>
       ${upcoming.length ? upcoming.map(({ g, x }) => `<div class="err-row"><span><b>${esc(cap(sessionLabel(x.at)))}</b><br><span class="muted" style="font-size:13px">${esc(g.name)}${g.teacher ? ' · ' + esc(g.teacher) : ''}</span></span>${x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : ''}</div>`).join('') : '<p class="muted">Sin clases próximas.</p>'}</article>` : ''}
     ${ov.length ? `<article class="tile c-6"><div class="tile-head"><h2>Errores frecuentes</h2><span class="pill ghost">30 días</span></div>
@@ -1112,10 +1121,11 @@ function enrollTile() {
     if (r.handled_at) rows.push(['Atendida', esc(`${fmtDate(new Date(r.handled_at), { day: 'numeric', month: 'short' })}${r.handled_by ? ` · ${r.handled_by}` : ''}`)]);
     return `<dl class="enr-detail">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
   };
+  const prospectOf = r => (A.staff.prospects || []).find(p => p.email === r.email);
   const row = r => {
-    const on = A.staff.enrOpen === r.id;
+    const on = A.staff.enrOpen === r.id, pr = prospectOf(r);
     return `<div class="enr-row${r.handled_at ? ' done' : ''}"><div class="err-row"><span style="min-width:0"><b>${esc(r.name)}</b><br><span class="muted" style="font-size:13px">${esc(r.email)} · ${esc(enrPlan(r))}${r.level ? ` · test ${esc(r.level)}` : ''} · ${esc(fmtDate(new Date(r.created_at), { day: 'numeric', month: 'short' }))}</span></span>
-      <span class="row-act">${r.handled_at ? '<span class="status">Atendida</span>' : ''}<button class="btn btn-light btn-sm" type="button" data-enr-open="${r.id}" aria-expanded="${on}">${on ? 'Cerrar' : 'Ver'}</button>${A.staff.invitesReady ? `<button class="btn btn-dark btn-sm" type="button" data-enr-invite="${r.id}">${icon('user-plus')}Invitar</button>` : ''}${r.handled_at ? `<button class="btn btn-light btn-sm" type="button" data-enr-done="${r.id}" data-on="0">Reabrir</button>` : `<button class="btn btn-light btn-sm" type="button" data-enr-done="${r.id}" data-on="1">${icon('check')}Marcar como atendida</button>`}</span></div>
+      <span class="row-act">${r.handled_at ? '<span class="status">Atendida</span>' : ''}<button class="btn btn-light btn-sm" type="button" data-enr-open="${r.id}" aria-expanded="${on}">${on ? 'Cerrar' : 'Ver'}</button>${pr ? `<a class="btn btn-light btn-sm" href="#prospectos" data-crm-goto="${pr.id}" title="Ficha en Prospectos">${icon('funnel')}Prospecto</a>` : ''}${A.staff.invitesReady ? `<button class="btn btn-dark btn-sm" type="button" data-enr-invite="${r.id}">${icon('user-plus')}Invitar</button>` : ''}${r.handled_at ? `<button class="btn btn-light btn-sm" type="button" data-enr-done="${r.id}" data-on="0">Reabrir</button>` : `<button class="btn btn-light btn-sm" type="button" data-enr-done="${r.id}" data-on="1">${icon('check')}Marcar como atendida</button>`}</span></div>
       ${on ? detail(r) : ''}</div>`;
   };
   return `<article class="tile" id="solicitudes"><div class="tile-head"><h2>Solicitudes de inscripción</h2><span class="pill ${open.length ? 'warn' : 'ghost'} num">${open.length} por atender</span></div>
@@ -1181,6 +1191,385 @@ function membersTile() {
   return `<article class="tile"><div class="tile-head"><h2>Miembros</h2><span class="pill ghost num">${list.length} cuenta${list.length === 1 ? '' : 's'}</span></div>
     <p class="muted" style="font-size:14px;margin:-6px 0 12px">Solo tú ves esta lista: cambia el nombre, el nivel, el profesor o el tipo de cuenta, o elimina una cuenta.</p>
     ${list.length ? list.map(row).join('') : '<p class="muted">Todavía no hay alumnos ni profesores.</p>'}</article>`;
+}
+
+/* ───────────── Prospectos (db/023_crm.sql): only admins ───────────── */
+// Every lead from the first contact to the enrolment. The website test, the enrollment form and
+// the CRS calculator create or complete the prospects by themselves; the team adds the others.
+const CRM_STAGES = [
+  { id: 'nuevo', name: 'Nuevo', color: 'var(--coral)' },
+  { id: 'contactado', name: 'Contactado', color: 'var(--sky-ink)' },
+  { id: 'test', name: 'Test hecho', color: 'var(--lilac-ink)' },
+  { id: 'horario', name: 'Horario propuesto', color: 'var(--butter-ink)' },
+  { id: 'inscrito', name: 'Inscrito', color: 'var(--mint-ink)' },
+  { id: 'activo', name: 'Activo', color: 'var(--ink)' },
+  { id: 'pausa', name: 'En pausa / Perdido', color: 'var(--ink-3)' }
+];
+// [label, chip colour, arrives by itself from the website]
+const CRM_ORIGINS = {
+  test: ['Test de nivel', 'lilac', true], form: ['Formulario de inscripción', 'mint', true], calc: ['Calculadora CRS', 'sky', true], ads: ['Publicidad', 'peach', true],
+  whatsapp: ['WhatsApp', 'mint', false], superprof: ['Superprof', 'butter', false], instagram: ['Instagram', 'peach', false], tiktok: ['TikTok', 'stone', false],
+  facebook: ['Facebook', 'sky', false], referral: ['Recomendación', 'lilac', false], email: ['Correo', 'stone', false], alumni: ['Antiguo alumno', 'butter', false], other: ['Otro', 'stone', false]
+};
+const CRM_AV = ['peach', 'lilac', 'mint', 'butter', 'sky'];
+const CRM_OWNER_COLORS = ['var(--coral)', 'var(--sky-ink)', 'var(--mint-ink)', 'var(--lilac-ink)', 'var(--butter-ink)'];
+const crmPhone = () => matchMedia('(max-width: 719px)').matches;
+const C = { q: '', origin: '', owner: '', today: false, view: null, open: null, detail: null, editing: false, pause: false, lastFocus: null, drag: null };
+const crmToday = () => dayKey(new Date());
+const crmList = () => A.staff.prospects || [];
+const crmById = id => crmList().find(p => p.id === id);
+const crmDue = () => crmList().filter(p => p.next_due && p.next_due <= crmToday());
+const crmName = p => p.name || p.email || p.whatsapp || 'Sin nombre';
+const crmOwners = () => (A.staff.teachers || []).filter(t => t.role === 'admin');
+const crmOwnerColor = id => CRM_OWNER_COLORS[Math.max(0, crmOwners().findIndex(o => o.id === id)) % CRM_OWNER_COLORS.length];
+const crmHash = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const crmDay = d => d ? fmtDate(new Date(d.length === 10 ? d + 'T12:00:00Z' : d), { day: 'numeric', month: 'short' }, d.length === 10 ? 'UTC' : tzOf()).replace('.', '') : '';
+const crmDue1 = d => !d ? '' : d < crmToday() ? 'late' : d === crmToday() ? 'today' : '';
+const crmDueLabel = d => !d ? '' : d < crmToday() ? `Atrasado · ${crmDay(d)}` : d === crmToday() ? 'Hoy' : crmDay(d);
+const crmPlan = p => p.plan ? `${p.plan}${p.hours ? ` · ${p.hours} h/semana` : ''}${p.billing ? ` · ${p.billing === 'Ciclo' ? 'ciclo completo' : 'mensual'}` : ''}` : '';
+const crmOriginChip = p => { const [n, c] = CRM_ORIGINS[p.origin] || CRM_ORIGINS.other; return `<span class="crm-chip ${c}">${n}${p.campaign ? ' · ' + esc(p.campaign) : ''}${p.referrer_name ? ' · de ' + esc(p.referrer_name) : ''}</span>`; };
+
+async function loadCrm() {
+  const r = await sb.rpc('crm_prospects');
+  A.staff.prospects = r.error ? null : (r.data || []); // needs db/023_crm.sql
+}
+function crmVisible() {
+  const q = C.q.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''), today = crmToday();
+  const digits = q.replace(/\D/g, '');
+  return crmList().filter(p => {
+    if (C.origin && p.origin !== C.origin) return false;
+    if (C.owner && (C.owner === 'none' ? p.owner_id : p.owner_id !== C.owner)) return false;
+    if (C.today && !(p.next_due && p.next_due <= today)) return false;
+    if (!q) return true;
+    const hay = [p.name, p.email, p.whatsapp, p.country, p.campaign].join(' ').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return hay.includes(q) || (digits.length >= 3 && String(p.whatsapp || '').replace(/\D/g, '').includes(digits));
+  });
+}
+function crmCard(p, drag) {
+  const sub = p.stage === 'activo' ? (p.active_at ? `Alumno desde el ${crmDay(p.active_at)}` : 'Alumno') : p.stage === 'pausa' ? `${p.pause_kind || 'En pausa'}${p.reason ? ' · ' + p.reason : ''}` : '';
+  return `<div class="crm-card" role="button" tabindex="0" ${drag ? 'draggable="true"' : ''} data-crm-open="${p.id}" aria-label="Abrir la ficha de ${esc(crmName(p))}">
+    <span class="crm-card-top"><span class="ava sm crm-av ${CRM_AV[crmHash(p.id) % CRM_AV.length]}" aria-hidden="true">${esc(initials(crmName(p)))}</span><span class="crm-card-name">${esc(crmName(p))}</span>${p.level ? `<span class="crm-lvl" title="Nivel del test">${esc(p.level)}</span>` : ''}</span>
+    <span class="crm-chips">${crmOriginChip(p)}${p.plan ? `<span class="crm-chip stone">${esc(p.plan)}${p.hours ? ` ${p.hours} h` : ''}</span>` : ''}</span>
+    ${sub ? `<span class="crm-next">${esc(sub)}</span>` : ''}
+    ${p.next_action ? `<span class="crm-next ${crmDue1(p.next_due)}"><span aria-hidden="true">→</span><span>${esc(p.next_action)}${p.next_due ? ` · ${crmDueLabel(p.next_due)}` : ''}</span></span>` : ''}
+    <span class="crm-owner">${p.owner_id ? `<i style="background:${crmOwnerColor(p.owner_id)}" aria-hidden="true">${esc(initials(p.owner || '?')[0] || '?')}</i>${esc(firstName(p.owner))}` : 'Sin responsable'}</span>
+  </div>`;
+}
+function crmBody() {
+  const list = crmVisible(), board = C.view === 'board';
+  const by = id => list.filter(p => p.stage === id);
+  if (!crmList().length) return `<article class="tile empty"><h2>Todavía no hay prospectos</h2><p class="muted">Los que hacen el test de nivel, envían el formulario de inscripción o dejan su WhatsApp en la calculadora CRS aparecen aquí solos. Los demás se añaden con «Añadir prospecto».</p></article>`;
+  if (board) {
+    return `<div class="crm-board-wrap"><div class="crm-board">${CRM_STAGES.map(s => `<section class="crm-col" data-stage="${s.id}" aria-labelledby="crm-col-${s.id}">
+      <div class="crm-col-head"><span class="crm-dot" style="background:${s.color}" aria-hidden="true"></span><h2 id="crm-col-${s.id}">${s.name}</h2><span class="crm-n num">${by(s.id).length}</span></div>
+      <div class="crm-col-list">${by(s.id).map(p => crmCard(p, true)).join('') || '<p class="crm-empty">Nadie en esta etapa</p>'}</div></section>`).join('')}</div></div>`;
+  }
+  const groups = CRM_STAGES.filter(s => by(s.id).length);
+  return groups.length ? `<div class="crm-list">${groups.map(s => `<section class="crm-group" aria-labelledby="crm-g-${s.id}"><h2 id="crm-g-${s.id}"><span class="crm-dot" style="background:${s.color}" aria-hidden="true"></span><span>${s.name}</span><span class="crm-n num">${by(s.id).length}</span></h2>
+    <div class="crm-col-list">${by(s.id).map(p => crmCard(p, false)).join('')}</div></section>`).join('')}</div>` : '<p class="crm-empty">Ningún prospecto con estos filtros.</p>';
+}
+function crmKpis() {
+  const list = crmList(), month = crmToday().slice(0, 7);
+  const inMonth = d => d && dayKey(new Date(d)).slice(0, 7) === month;
+  const fresh = list.filter(p => inMonth(p.created_at)).length;
+  const enrolled = list.filter(p => inMonth(p.enrolled_at)).length;
+  const counts = {};
+  for (const p of list) if (p.enrolled_at) counts[p.origin] = (counts[p.origin] || 0) + 1;
+  const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const due = crmDue().length, mName = MONTHS_L[+month.slice(5) - 1];
+  return [
+    [`Nuevos en ${mName}`, fresh, fresh === 1 ? 'prospecto' : 'prospectos'],
+    [`Inscritos en ${mName}`, enrolled, fresh ? `${Math.round(enrolled / fresh * 100)} % de los nuevos` : 'sin nuevos este mes'],
+    ['Origen que más inscribe', best ? (CRM_ORIGINS[best[0]] || CRM_ORIGINS.other)[0] : '—', best ? `${best[1]} ${best[1] === 1 ? 'inscrito' : 'inscritos'}` : 'todavía nadie inscrito'],
+    ['Para hoy', due, due ? 'acciones pendientes o atrasadas' : 'todo al día']
+  ].map(([l, v, s], i) => `<div class="tile crm-kpi${i === 3 && due ? ' due' : ''}"><span class="label">${l}</span><strong class="${typeof v === 'string' ? 'txt' : 'num'}">${esc(v)}</strong><small>${esc(s)}</small></div>`).join('');
+}
+function viewProspectos() {
+  if (!C.view) C.view = crmPhone() ? 'list' : 'board';
+  const owners = crmOwners();
+  return `<section class="view" aria-labelledby="h-crm">
+  ${topBar('h-crm', 'Prospectos', 'Del primer contacto a la inscripción. Solo administración.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-crm-add>${icon('plus')}Añadir prospecto</button>`)}
+  <section class="crm-kpis" aria-label="Resumen del mes">${crmKpis()}</section>
+  <div class="crm-tools tile">
+    <label class="crm-search" for="crmQ">${icon('search')}<input id="crmQ" type="search" autocomplete="off" placeholder="Nombre, correo o WhatsApp" aria-label="Buscar un prospecto" value="${esc(C.q)}"></label>
+    <select id="crmOrigin" aria-label="Origen"><option value="">Todos los orígenes</option>${Object.entries(CRM_ORIGINS).map(([k, [n]]) => `<option value="${k}" ${C.origin === k ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <select id="crmOwner" aria-label="Responsable"><option value="">Todos los responsables</option>${owners.map(o => `<option value="${o.id}" ${C.owner === o.id ? 'selected' : ''}>${esc(o.full_name)}</option>`).join('')}<option value="none" ${C.owner === 'none' ? 'selected' : ''}>Sin responsable</option></select>
+    <button type="button" class="crm-toggle" id="crmToday" aria-pressed="${C.today}">${icon('calendar')}Para hoy${crmDue().length ? ` <span class="num">${crmDue().length}</span>` : ''}</button>
+    <div class="switch crm-view" role="group" aria-label="Vista"><button type="button" data-crm-view="board" aria-pressed="${C.view === 'board'}">Tablero</button><button type="button" data-crm-view="list" aria-pressed="${C.view === 'list'}">Lista</button></div>
+    <button class="btn btn-dark btn-sm crm-add" type="button" data-crm-add>${icon('plus')}Añadir prospecto</button>
+  </div>
+  <div id="crmBody">${crmBody()}</div>
+  <p class="muted crm-foot">${C.view === 'board' && !crmPhone() ? 'Arrastra una tarjeta a otra columna para cambiar su etapa, o ábrela para ver su ficha. ' : ''}Las etapas avanzan solas con el test, la invitación al Campus, el contrato firmado y la primera clase.</p>
+  </section>`;
+}
+const crmRefreshBody = () => { const b = $('#crmBody'); if (b) b.innerHTML = crmBody(); };
+
+// Side sheet: the person, the next action, the fields and the history.
+function crmWaLink(p) {
+  const n = String(p.whatsapp || '').replace(/\D/g, '');
+  if (n.length < 6) return '';
+  const me = firstName(A.profile.full_name), hi = `Hola${p.name ? ' ' + firstName(p.name) : ''}, soy ${me} de Pathway.`;
+  const body = p.stage === 'activo' || p.stage === 'inscrito' ? '¿Cómo vas con el Campus? Si necesitas algo para tus clases, aquí estoy.'
+    : p.level ? `Vi tu resultado del test de nivel (${p.level}). ¿Te parece si coordinamos una llamada corta para proponerte un horario y un ritmo?`
+    : p.plan ? `Recibimos tu solicitud de inscripción (${crmPlan(p)}). ¿Te parece si te propongo un horario?`
+    : p.origin === 'calc' ? `Vi que calculaste tu puntaje CRS${p.crs_score ? ` (${p.crs_score})` : ''}. Con el francés puedes sumar muchos puntos: ¿quieres hacer el test de nivel gratis? https://pathway-languages.com/test-placement.html`
+    : 'Te escribo por tu proyecto con el francés. ¿Te parece si coordinamos una llamada corta?';
+  return `https://wa.me/${n}?text=${encodeURIComponent(hi + ' ' + body)}`;
+}
+function crmSheet() {
+  const p = C.detail || crmById(C.open);
+  if (!p) return '';
+  const owners = crmOwners(), wa = crmWaLink(p);
+  const canInvite = A.staff.invitesReady && !p.student_id && p.stage !== 'activo';
+  const strong = ['horario', 'inscrito'].includes(p.stage);
+  const evIcon = e => e.kind === 'note' ? `<span class="crm-t-ico stone" aria-hidden="true">${icon('pen')}</span>` : `<span class="crm-t-ico lilac" aria-hidden="true">${icon('sparkle')}</span>`;
+  const kv = [
+    ['WhatsApp', p.whatsapp ? (wa ? `<a href="${esc(wa)}" target="_blank" rel="noopener">${esc(p.whatsapp)}</a>` : esc(p.whatsapp)) : '—'],
+    ['Correo', p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : '—'],
+    ['País', esc(p.country || '—')], ['Zona horaria', esc(p.timezone || '—')],
+    ['Objetivo', esc(p.goal || '—')], ['Examen', esc([p.exam, p.exam_date ? crmDay(p.exam_date) + ' ' + p.exam_date.slice(0, 4) : ''].filter(Boolean).join(' · ') || '—')],
+    ['Nivel del test', p.level ? `${esc(p.level)}${p.level_score != null ? ` · ${p.level_score}/100` : ''}` : 'Sin test todavía'],
+    ['Ritmo deseado', esc(crmPlan(p) || '—')],
+    ...(p.crs_score ? [['Puntaje CRS', `${p.crs_score}`]] : []),
+    ['Origen', `${(CRM_ORIGINS[p.origin] || CRM_ORIGINS.other)[0]}${p.campaign ? ` · campaña «${esc(p.campaign)}»` : ''}${p.source ? ` · ${esc(p.source)}` : ''}${p.referrer_name ? ` · recomendado por ${esc(p.referrer_name)}` : ''}`],
+    ['En el Campus', p.student_id ? esc(p.student_name || 'Cuenta creada') : p.invited_at ? `Invitado el ${crmDay(p.invited_at)}` : 'Todavía no'],
+    ['Creado', crmDay(p.created_at)]
+  ];
+  const edit = C.editing ? `<form class="form crm-edit" id="crmEditForm" novalidate>
+      <div class="form-2"><label class="field" for="ceName">Nombre y apellido<input id="ceName" maxlength="120" value="${esc(p.name || '')}"></label>
+        <label class="field" for="ceWa">WhatsApp<input id="ceWa" type="tel" maxlength="40" value="${esc(p.whatsapp || '')}"></label></div>
+      <div class="form-2"><label class="field" for="ceEmail">Correo<input id="ceEmail" type="email" maxlength="200" value="${esc(p.email || '')}"></label>
+        <label class="field" for="ceCountry">País o ciudad<input id="ceCountry" maxlength="120" value="${esc(p.country || '')}"></label></div>
+      <label class="field" for="ceGoal">Objetivo<input id="ceGoal" maxlength="300" value="${esc(p.goal || '')}"></label>
+      <div class="form-2"><label class="field" for="ceExam">Examen<select id="ceExam"><option value="">Por definir</option>${['TEF Canada', 'TCF Canada', 'TEFAQ', 'TCF Québec'].map(x => `<option ${p.exam === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <label class="field" for="ceExamDate">Fecha del examen<input id="ceExamDate" type="date" value="${esc(p.exam_date || '')}"></label></div>
+      <div class="form-2"><label class="field" for="ceLevel">Nivel<select id="ceLevel"><option value="">Sin nivel</option>${LEVELS.map(l => `<option ${p.level === l ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="field" for="cePlan">Fórmula<select id="cePlan"><option value="">Por definir</option>${['Esencial', 'Acelerado', 'Intensivo'].map(x => `<option ${p.plan === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label></div>
+      <div class="form-2"><label class="field" for="ceHours">Horas por semana<input id="ceHours" type="number" min="1" max="12" value="${esc(p.hours ?? '')}"></label>
+        <label class="field" for="ceBilling">Pago<select id="ceBilling"><option value="">Por definir</option><option value="Mensual" ${p.billing === 'Mensual' ? 'selected' : ''}>Mensual</option><option value="Ciclo" ${p.billing === 'Ciclo' ? 'selected' : ''}>Ciclo completo</option></select></label></div>
+      <div class="form-2"><label class="field" for="ceOrigin">Origen<select id="ceOrigin">${Object.entries(CRM_ORIGINS).map(([k, [n]]) => `<option value="${k}" ${p.origin === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        <label class="field" for="ceRef">Recomendado por<input id="ceRef" maxlength="120" value="${esc(p.referrer_name || '')}" placeholder="Si llegó por recomendación"></label></div>
+      <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Guardar la ficha</button><button class="btn btn-light btn-sm" type="button" data-crm-edit="0">Cancelar</button></div>
+    </form>` : `<dl class="crm-kv">${kv.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+    <div class="crm-row"><button class="btn btn-light btn-sm" type="button" data-crm-edit="1">${icon('pen')}Editar la ficha</button></div>`;
+  return `<div class="crm-sheet-head"><span class="ava crm-av ${CRM_AV[crmHash(p.id) % CRM_AV.length]}" aria-hidden="true">${esc(initials(crmName(p)))}</span>
+      <div style="min-width:0"><h2 id="crmName">${esc(crmName(p))}</h2><p>${p.country ? `<span>${esc(p.country)}</span>` : ''}${crmOriginChip(p)}</p></div>
+      <button class="round" type="button" data-crm-close aria-label="Cerrar la ficha">${icon('x')}</button></div>
+    <section class="crm-box" aria-labelledby="crmStageT"><h3 id="crmStageT">Etapa</h3>
+      <div class="crm-stage-pick" role="group" aria-labelledby="crmStageT">${CRM_STAGES.map(s => `<button type="button" data-crm-stage="${s.id}" aria-pressed="${s.id === p.stage}">${s.name}</button>`).join('')}</div>
+      ${p.stage === 'pausa' ? `<form class="crm-row crm-pause" id="crmPauseForm"><label class="field" for="cpKind">Estado<select id="cpKind"><option ${p.pause_kind !== 'Perdido' ? 'selected' : ''}>En pausa</option><option ${p.pause_kind === 'Perdido' ? 'selected' : ''}>Perdido</option></select></label>
+        <label class="field" for="cpReason">Motivo<input id="cpReason" maxlength="300" value="${esc(p.reason || '')}" placeholder="Ej.: vuelve en enero"></label><button class="btn btn-dark btn-sm" type="submit">Guardar</button></form>` : ''}
+      <div class="crm-row">${wa ? `<a class="btn btn-light btn-sm" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}Abrir WhatsApp</a>` : '<button class="btn btn-light btn-sm" type="button" disabled title="Sin número de WhatsApp">Sin WhatsApp</button>'}
+        ${canInvite ? `<button class="btn ${strong ? 'btn-coral' : 'btn-light'} btn-sm" type="button" data-crm-invite>${icon('user-plus')}${p.invited_at ? 'Volver a invitar' : 'Invitar al Campus'}</button>` : ''}</div>
+      <p class="muted crm-note">${wa ? '«Abrir WhatsApp» prepara un mensaje en español; tú decides si lo envías. ' : ''}${canInvite ? '«Invitar al Campus» abre la invitación con el correo, el nombre y el nivel del test.' : p.student_id ? 'Ya tiene su cuenta en el Campus.' : ''}</p></section>
+    <section class="crm-box" aria-labelledby="crmNextT"><h3 id="crmNextT">Próxima acción</h3>
+      <form class="form" id="crmNextForm" novalidate>
+        <div class="crm-row"><label class="field crm-grow" for="cnWhat">Qué hacer<input id="cnWhat" maxlength="200" value="${esc(p.next_action || '')}" placeholder="Ej.: relanzar por WhatsApp"></label>
+          <label class="field" for="cnDue">Fecha<input id="cnDue" type="date" value="${esc(p.next_due || '')}"></label></div>
+        <label class="field" for="cnOwner">Responsable<select id="cnOwner"><option value="">Sin responsable</option>${owners.map(o => `<option value="${o.id}" ${o.id === p.owner_id ? 'selected' : ''}>${esc(o.full_name)}</option>`).join('')}</select></label>
+        <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Guardar</button>${p.next_action || p.next_due ? '<button class="btn btn-light btn-sm" type="button" data-crm-done>' + icon('check') + 'Hecho</button>' : ''}</div>
+      </form></section>
+    <section class="crm-box" aria-labelledby="crmFichaT"><h3 id="crmFichaT">Ficha</h3>${edit}</section>
+    <section class="crm-box" aria-labelledby="crmHistT"><h3 id="crmHistT">Historial</h3>
+      ${C.detail ? `<ul class="crm-timeline">${(C.detail.events || []).map(e => `<li>${evIcon(e)}<span>${esc(e.body)}<small>${esc(crmDay(e.created_at))} · ${e.kind === 'note' ? `nota${e.author ? ' de ' + esc(firstName(e.author)) : ''}` : `<span class="crm-auto">automático</span>${e.author ? ' · ' + esc(firstName(e.author)) : ''}`}</small></span></li>`).join('') || '<li class="muted">Sin movimientos todavía.</li>'}</ul>` : '<p class="muted">Cargando…</p>'}
+      <form class="form" id="crmNoteForm" novalidate><label class="field" for="crmNote">Añadir una nota<textarea id="crmNote" maxlength="2000" rows="3" placeholder="Ej.: llamada de 10 min, quiere empezar en diciembre"></textarea></label>
+        <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Añadir la nota</button></div></form></section>
+    <div class="crm-row crm-sheet-foot"><button class="btn btn-light btn-sm" type="button" data-crm-archive>${icon('archive')}Archivar la ficha</button><span class="muted">Desaparece del tablero sin borrarse.</span></div>`;
+}
+async function crmOpen(id) {
+  if (!crmById(id)) return;
+  if (C.open !== id) { C.editing = false; C.detail = null; }
+  if (!C.open) C.lastFocus = document.activeElement;
+  C.open = id;
+  const sheet = $('#crmSheet');
+  sheet.innerHTML = crmSheet();
+  if (sheet.hidden) {
+    sheet.hidden = false; $('#crmScrim').hidden = false; $('#crmModal').hidden = true;
+    document.body.classList.add('no-scroll'); $('#app').inert = true; $('#tabbar').inert = true;
+    sheet.scrollTop = 0; $('[data-crm-close]', sheet)?.focus();
+  }
+  const { data, error } = await sb.rpc('crm_prospect', { p_id: id });
+  if (C.open !== id) return;
+  if (error) return fail(error, 'No se pudo cargar la ficha.');
+  C.detail = data; crmRedrawSheet();
+}
+// Redraw the sheet in place, keeping the focus on the same control when it still exists.
+function crmRedrawSheet() {
+  const sheet = $('#crmSheet'); if (!sheet || sheet.hidden) return;
+  const f = document.activeElement, key = f && sheet.contains(f) ? (f.id ? '#' + f.id : [...f.attributes].filter(a => a.name.startsWith('data-crm')).map(a => `[${a.name}="${a.value}"]`).join('')) : '';
+  const top = sheet.scrollTop;
+  sheet.innerHTML = crmSheet(); sheet.scrollTop = top;
+  if (key) { try { $(key, sheet)?.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+}
+function crmClose() {
+  const sheet = $('#crmSheet'), modal = $('#crmModal');
+  if (sheet.hidden && modal.hidden) return;
+  const id = C.open, back = C.lastFocus;
+  sheet.hidden = true; modal.hidden = true; $('#crmScrim').hidden = true; sheet.innerHTML = ''; modal.innerHTML = '';
+  $('#app').inert = false; $('#tabbar').inert = false; document.body.classList.remove('no-scroll');
+  C.open = null; C.detail = null; C.editing = false; C.lastFocus = null;
+  const card = id && $(`[data-crm-open="${id}"]`);
+  (card || (back && back.isConnected ? back : null) || $('#main'))?.focus({ preventScroll: !!card });
+}
+const crmOverlayOpen = () => !$('#crmSheet').hidden || !$('#crmModal').hidden;
+// Saves a change and keeps the board, the sheet and the counters in step.
+async function crmSave(id, patch, msg) {
+  const { data, error } = await sb.rpc('crm_update_prospect', { p_id: id, p: patch });
+  if (error) {
+    const m = String(error.message || '');
+    return fail(error, /email already used/.test(m) ? 'Ese correo ya está en otra ficha.' : /invalid email/.test(m) ? 'Escribe un correo válido.' : 'No se pudo guardar el cambio.');
+  }
+  const list = A.staff.prospects || [], i = list.findIndex(p => p.id === id);
+  if (i >= 0) list[i] = data;
+  if (msg) toast(msg);
+  if (currentView() === 'prospectos') { crmRefreshBody(); const k = $('.crm-kpis'); if (k) k.innerHTML = crmKpis(); }
+  renderNav(currentView());
+  if (C.open === id) {
+    const r = await sb.rpc('crm_prospect', { p_id: id });
+    if (!r.error && C.open === id) { C.detail = r.data; crmRedrawSheet(); }
+  }
+  return data;
+}
+function crmModalOpen() {
+  const owners = crmOwners();
+  const modal = $('#crmModal');
+  C.lastFocus = document.activeElement;
+  modal.innerHTML = `<div class="crm-modal-head"><h2 id="crmModalTitle">Añadir prospecto</h2><button class="round" type="button" data-crm-close aria-label="Cerrar">${icon('x')}</button></div>
+    <p class="muted">Los que hacen el test, envían el formulario o usan la calculadora aparecen solos. Aquí se añaden los que llegan por otros canales.</p>
+    <form class="form" id="crmAddForm" novalidate>
+      <label class="field" for="caName">Nombre y apellido<input id="caName" required maxlength="120" placeholder="Ej.: Ana Vargas" aria-describedby="caErr"></label>
+      <div class="form-2"><label class="field" for="caWa">WhatsApp<input id="caWa" type="tel" maxlength="40" placeholder="+51 9…"></label>
+        <label class="field" for="caEmail">Correo<input id="caEmail" type="email" maxlength="200" placeholder="opcional"></label></div>
+      <div class="form-2"><label class="field" for="caOrigin">Origen<select id="caOrigin">${Object.entries(CRM_ORIGINS).filter(([, v]) => !v[2]).map(([k, [n]]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
+        <label class="field" for="caOwner">Responsable<select id="caOwner">${owners.map(o => `<option value="${o.id}" ${o.id === A.profile.id ? 'selected' : ''}>${esc(o.full_name)}</option>`).join('')}</select></label></div>
+      <label class="field" for="caRef" id="caRefWrap" hidden>Recomendado por<input id="caRef" maxlength="120" placeholder="Ej.: Lucía Romero (alumna)"></label>
+      <label class="field" for="caGoal">Objetivo<input id="caGoal" maxlength="300" placeholder="Ej.: Entrada exprés, TEF en 2027"></label>
+      <p class="form-error" id="caErr" hidden></p>
+      <div class="crm-row"><button class="btn btn-dark" type="submit">${icon('plus')}Añadir</button><button class="btn btn-light" type="button" data-crm-close>Cancelar</button></div>
+    </form>`;
+  modal.hidden = false; $('#crmScrim').hidden = false;
+  document.body.classList.add('no-scroll'); $('#app').inert = true; $('#tabbar').inert = true;
+  $('#caName').focus();
+  $('#caOrigin').onchange = () => { $('#caRefWrap').hidden = $('#caOrigin').value !== 'referral'; };
+  $('#crmAddForm').onsubmit = async e => {
+    e.preventDefault();
+    const err = $('#caErr'), name = $('#caName').value.trim(), email = $('#caEmail').value.trim();
+    const say = (m, el) => { err.textContent = m; err.hidden = false; el.setAttribute('aria-invalid', 'true'); el.focus(); };
+    if (!name) return say('Escribe al menos el nombre.', $('#caName'));
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) return say('Escribe un correo válido o déjalo vacío.', $('#caEmail'));
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    const { data, error } = await sb.rpc('crm_create_prospect', { p: { name, email, whatsapp: $('#caWa').value.trim(), origin: $('#caOrigin').value, owner_id: $('#caOwner').value || null, goal: $('#caGoal').value.trim(), referrer_name: $('#caOrigin').value === 'referral' ? $('#caRef').value.trim() : '' } });
+    btn.disabled = false;
+    if (error) return fail(error, 'No se pudo añadir el prospecto.');
+    await loadCrm();
+    crmClose(); render();
+    if (data.existing) { toast(`${crmName(data)} ya estaba en Prospectos: abrimos su ficha.`); crmOpen(data.id); }
+    else toast(`${crmName(data)} añadido a «Nuevo».`);
+  };
+}
+// Opens the existing invitation form of «Cuentas», filled in from the prospect.
+function crmInvite() {
+  const p = C.detail || crmById(C.open); if (!p) return;
+  A.staff.invitePrefill = { prospect: p.id, email: p.email || '', name: p.name || '', level: p.level || '' };
+  crmClose();
+  if (location.hash === '#cuentas') render(); else location.hash = 'cuentas';
+}
+function bindCrm() {
+  const q = $('#crmQ');
+  if (!q) return;
+  q.oninput = () => { C.q = q.value; crmRefreshBody(); };
+  $('#crmOrigin').onchange = e => { C.origin = e.target.value; crmRefreshBody(); };
+  $('#crmOwner').onchange = e => { C.owner = e.target.value; crmRefreshBody(); };
+  $('#crmToday').onclick = e => { C.today = !C.today; e.currentTarget.setAttribute('aria-pressed', String(C.today)); crmRefreshBody(); };
+  $$('[data-crm-view]').forEach(b => b.onclick = () => { C.view = b.dataset.crmView; render(); $(`[data-crm-view="${C.view}"]`)?.focus(); });
+  $$('[data-crm-add]').forEach(b => b.onclick = crmModalOpen);
+  const body = $('#crmBody');
+  body.onclick = e => { const c = e.target.closest('[data-crm-open]'); if (c) crmOpen(c.dataset.crmOpen); };
+  body.onkeydown = e => { const c = e.target.closest('[data-crm-open]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); crmOpen(c.dataset.crmOpen); } };
+  // Drag and drop between the columns of the board (desktop).
+  body.ondragstart = e => { const c = e.target.closest('.crm-card[draggable]'); if (!c) return; C.drag = c.dataset.crmOpen; c.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', C.drag); } catch (err) { /* ignore */ } };
+  body.ondragover = e => { const col = e.target.closest('.crm-col'); if (!col || !C.drag) return; e.preventDefault(); $$('.crm-col.drop').forEach(x => x !== col && x.classList.remove('drop')); col.classList.add('drop'); };
+  body.ondragleave = e => { const col = e.target.closest('.crm-col'); if (col && !col.contains(e.relatedTarget)) col.classList.remove('drop'); };
+  body.ondragend = () => { C.drag = null; $$('.crm-col.drop, .crm-card.dragging').forEach(x => x.classList.remove('drop', 'dragging')); };
+  body.ondrop = async e => {
+    const col = e.target.closest('.crm-col'), id = C.drag;
+    $$('.crm-col.drop').forEach(x => x.classList.remove('drop')); C.drag = null;
+    if (!col || !id) return;
+    e.preventDefault();
+    const p = crmById(id), stage = col.dataset.stage;
+    if (!p || p.stage === stage) return;
+    p.stage = stage; crmRefreshBody(); // moves at once; the server answer follows
+    const s = CRM_STAGES.find(x => x.id === stage);
+    const saved = await crmSave(id, { stage }, `${crmName(p)} → ${s.name}`);
+    if (!saved) { await loadCrm(); crmRefreshBody(); }
+  };
+}
+// Sheet and dialog: clicks, forms and keyboard (they live outside #main).
+function bindCrmOverlay() {
+  const sheet = $('#crmSheet'), modal = $('#crmModal');
+  $('#crmScrim').onclick = crmClose;
+  const trap = (root, e) => {
+    if (e.key !== 'Tab') return;
+    const f = $$('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]', root).filter(el => el.offsetParent !== null);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  };
+  sheet.addEventListener('keydown', e => trap(sheet, e));
+  modal.addEventListener('keydown', e => trap(modal, e));
+  modal.addEventListener('click', e => { if (e.target.closest('[data-crm-close]')) crmClose(); });
+  sheet.addEventListener('click', async e => {
+    const t = e.target.closest('[data-crm-close],[data-crm-stage],[data-crm-edit],[data-crm-invite],[data-crm-done],[data-crm-archive]');
+    if (!t) return;
+    const id = C.open, p = C.detail || crmById(id);
+    if (t.matches('[data-crm-close]')) return crmClose();
+    if (t.matches('[data-crm-stage]')) {
+      const stage = t.dataset.crmStage; if (!p || p.stage === stage) return;
+      t.disabled = true;
+      return crmSave(id, { stage }, `${crmName(p)} → ${CRM_STAGES.find(s => s.id === stage).name}`);
+    }
+    if (t.matches('[data-crm-edit]')) { C.editing = t.dataset.crmEdit === '1'; crmRedrawSheet(); if (C.editing) $('#ceName')?.focus(); else $('[data-crm-edit="1"]')?.focus(); return; }
+    if (t.matches('[data-crm-invite]')) return crmInvite();
+    if (t.matches('[data-crm-done]')) {
+      t.disabled = true;
+      await sb.rpc('crm_add_note', { p_id: id, p_body: `Hecho: ${p.next_action || 'próxima acción'}.` });
+      return crmSave(id, { next_action: '', next_due: '' }, 'Próxima acción marcada como hecha.');
+    }
+    if (t.matches('[data-crm-archive]')) {
+      t.disabled = true;
+      const { error } = await sb.rpc('crm_archive_prospect', { p_id: id, p_archived: true });
+      if (error) { t.disabled = false; return fail(error, 'No se pudo archivar la ficha.'); }
+      A.staff.prospects = crmList().filter(x => x.id !== id);
+      toast(`Ficha de ${crmName(p)} archivada.`); crmClose(); render();
+    }
+  });
+  sheet.addEventListener('submit', async e => {
+    e.preventDefault();
+    const id = C.open, f = e.target, btn = f.querySelector('button[type=submit]');
+    if (f.id === 'crmNextForm') {
+      btn.disabled = true;
+      await crmSave(id, { next_action: $('#cnWhat').value, next_due: $('#cnDue').value, owner_id: $('#cnOwner').value }, 'Próxima acción guardada.');
+    } else if (f.id === 'crmPauseForm') {
+      btn.disabled = true;
+      await crmSave(id, { pause_kind: $('#cpKind').value, reason: $('#cpReason').value }, 'Estado guardado.');
+    } else if (f.id === 'crmNoteForm') {
+      const v = $('#crmNote').value.trim();
+      if (!v) { $('#crmNote').focus(); return toast('Escribe la nota.'); }
+      btn.disabled = true;
+      const { error } = await sb.rpc('crm_add_note', { p_id: id, p_body: v });
+      if (error) { btn.disabled = false; return fail(error, 'No se pudo añadir la nota.'); }
+      toast('Nota añadida.');
+      const r = await sb.rpc('crm_prospect', { p_id: id });
+      if (!r.error && C.open === id) { C.detail = r.data; crmRedrawSheet(); $('#crmNote')?.focus(); }
+    } else if (f.id === 'crmEditForm') {
+      const email = $('#ceEmail').value.trim();
+      if (email && !/^\S+@\S+\.\S+$/.test(email)) { $('#ceEmail').focus(); return toast('Escribe un correo válido.'); }
+      btn.disabled = true;
+      C.editing = false;
+      const ok = await crmSave(id, { name: $('#ceName').value, whatsapp: $('#ceWa').value, email, country: $('#ceCountry').value, goal: $('#ceGoal').value, exam: $('#ceExam').value, exam_date: $('#ceExamDate').value, level: $('#ceLevel').value, plan: $('#cePlan').value, hours: $('#ceHours').value, billing: $('#ceBilling').value, origin: $('#ceOrigin').value, referrer_name: $('#ceRef').value }, 'Ficha guardada.');
+      if (!ok) { C.editing = true; btn.disabled = false; }
+    }
+  });
 }
 
 /* ───────────── Horarios fijos y programa (db/008_horarios.sql) ───────────── */
@@ -1876,6 +2265,7 @@ function bindEditor() {
 function bindView(id) {
   bindSchedule(id);
   if (id === 'contenido') bindEditor();
+  if (id === 'prospectos') bindCrm();
   {
     const inf = $('#invForm');
     if (inf && $('#invEmail')) {
@@ -1895,6 +2285,17 @@ function bindView(id) {
       };
       $('#invEmail').addEventListener('input', () => { clearTimeout(inf._t); inf._t = setTimeout(lookup, 450); });
       $('#invEmail').addEventListener('blur', lookup);
+      // «Invitar al Campus» from a prospect (db/023_crm.sql): the form arrives filled in.
+      const pre = A.staff.invitePrefill;
+      if (pre && !pre.shown) {
+        pre.shown = true;
+        $('#invEmail').value = pre.email; $('#invName').value = pre.name;
+        if (pre.level && $('#invLevel')) $('#invLevel').value = pre.level;
+        if ($('#invRole')) $('#invRole').value = 'student';
+        if (pre.email) $('#invEmail').dispatchEvent(new Event('input', { bubbles: true }));
+        setTimeout(() => { inf.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); (pre.email ? $('#invName') : $('#invEmail')).focus({ preventScroll: true }); }, 60);
+        toast(`Invitación preparada para ${pre.name || pre.email}: revisa el nivel y el profesor, y envíala.`);
+      }
     }
     if (inf) inf.onsubmit = async e => {
       e.preventDefault();
@@ -1903,8 +2304,12 @@ function bindView(id) {
       if (!name) return toast('Escribe el nombre del alumno.');
       const btn = inf.querySelector('button[type=submit]'); btn.disabled = true;
       const role = $('#invRole') ? $('#invRole').value : 'student';
+      // The prospect gets this email first, so the invitation is linked to it (db/023_crm.sql).
+      const pre = A.staff.invitePrefill;
+      if (pre && role === 'student' && email !== pre.email && isAdmin()) await sb.rpc('crm_update_prospect', { p_id: pre.prospect, p: { email } });
       const { data, error } = await sb.rpc('create_invitation', { p_email: email, p_full_name: name, p_level: $('#invLevel').value, p_teacher: $('#invTeacher') ? $('#invTeacher').value : null, p_role: role });
       if (error) { btn.disabled = false; return fail(error, 'No se pudo preparar la invitación.'); }
+      A.staff.invitePrefill = null;
       if (data && data.existing_account) toast(`${name} ya tenía cuenta: su perfil quedó actualizado.`);
       else {
         const sent = await sendInvite(email);
@@ -2008,6 +2413,12 @@ function bindView(id) {
 }
 
 document.addEventListener('click', async e => {
+  const ct = e.target.closest('[data-crm-today],[data-crm-goto]');
+  if (ct) {
+    if (ct.matches('[data-crm-today]')) { C.today = true; C.q = ''; C.origin = ''; C.owner = ''; }
+    if (ct.matches('[data-crm-goto]')) { const id = ct.dataset.crmGoto; setTimeout(() => crmOpen(id), 80); }
+    if (location.hash === '#prospectos') { e.preventDefault(); closeMenus(); render(); }
+  }
   const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-cont],[data-cont-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],[data-edit-unit],[data-ed-back],[data-ed-open],[data-ed-new],[data-ed-close],[data-ed-ask],[data-ed-delete],[data-ed-move],#flash');
   if (!e.target.closest('.menu-wrap')) closeMenus();
   if (!t) return;
@@ -2068,6 +2479,7 @@ document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (!$('#lesson').hidden) return lessonKeys(e, tag);
   if (!$('#ob').hidden || !$('#contract').hidden) return;
+  if (crmOverlayOpen()) { if (e.key === 'Escape') { e.preventDefault(); crmClose(); } return; }
   if (e.key === 'Escape') closeMenus();
   if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
@@ -2871,4 +3283,5 @@ function lessonKeys(e, tag) {
   }
 }
 
+bindCrmOverlay();
 boot().finally(() => { booted = true; });

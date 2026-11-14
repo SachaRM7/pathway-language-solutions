@@ -13,7 +13,11 @@ Le test de niveau et le formulaire d’inscription enregistrent leurs envois dan
 - le test : `submit_placement` (`campus/db/019_test_nivel.sql`) ; l’équipe retrouve le niveau en invitant l’élève au Campus ;
 - l’inscription : `submit_enrollment` (`campus/db/021_solicitudes.sql`) ; les demandes apparaissent dans le Campus, « Cuentas » → « Solicitudes de inscripción », avec la cloche et « Inicio → Por revisar ».
 
-Les deux sont limités par adresse e-mail et par connexion (`campus/db/022_limite_ip.sql`). Un échec réseau ne bloque jamais le visiteur : WhatsApp s’ouvre quand même avec le message prérempli.
+- le calculateur CRS : `submit_lead` (`campus/db/023_crm.sql`) enregistre le contact facultatif laissé sous le résultat.
+
+Les trois sont limités par adresse e-mail (ou WhatsApp) et par connexion (`campus/db/022_limite_ip.sql`, `023_crm.sql`). Un échec réseau ne bloque jamais le visiteur : WhatsApp s’ouvre quand même avec le message prérempli. Chaque envoi crée ou complète une fiche dans l’onglet admin « Prospectos » du Campus.
+
+`campaign.js` (chargé sur toutes les pages publiques) garde 30 jours dans le navigateur la première origine du visiteur (`utm_campaign`, `utm_source`, `utm_medium`, ou le site d’où il vient) et l’envoie avec le test, l’inscription et le calculateur.
 
 `leadWebhook` dans `site-config.js` reste facultatif : il sert seulement à envoyer aussi chaque demande vers un CRM externe (JSON, réponse HTTP 2xx attendue).
 
