@@ -282,6 +282,7 @@ async function loadAll() {
   await loadWeekly();
   await loadResumable();
   await loadContract();
+  await loadMyThread();
   if (isStaff()) await loadStaff();
 }
 // The account follows the device's time zone (classes, reminders and streaks are shown in it):
@@ -353,6 +354,8 @@ async function loadStaff() {
   A.staff.reports = rep.error ? null : (rep.data || []); // needs db/018_informe_clase.sql
   const cts = await sb.rpc('staff_contracts');
   A.staff.contracts = cts.error ? null : (cts.data || {}); // needs db/015_contrato.sql
+  const th = await sb.rpc('staff_threads');
+  A.staff.threads = th.error ? null : (th.data || []); // needs db/025_mensajes.sql
   const lv = await sb.rpc('staff_level_status');
   A.staff.levels = lv.error ? null : (lv.data || []); // needs db/012_fin_nivel.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
@@ -437,7 +440,8 @@ const SNAV = [
   { id: 'repasar', label: 'Repasar', icon: 'cards', count: () => A.due },
   { id: 'simulacros', label: 'Simulacros', icon: 'timer' },
   { id: 'logros', label: 'Logros', icon: 'trophy' },
-  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) || (A.contract && A.contract.signed) }
+  { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) || (A.contract && A.contract.signed) },
+  { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => !isStaff() && M.ready, count: () => myUnread() }
 ];
 // Staff space: one tab per job, like the student side (Inicio first, settings last).
 const isAdmin = () => !!(A.profile && A.profile.role === 'admin');
@@ -445,6 +449,7 @@ const TNAV = [
   { id: 'panel', label: 'Inicio', icon: 'home' },
   { id: 'alumnos', label: 'Alumnos', icon: 'users' },
   { id: 'prospectos', label: 'Prospectos', icon: 'funnel', when: () => isAdmin() && Array.isArray(A.staff.prospects), count: () => crmDue().length },
+  { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => Array.isArray(A.staff.threads), count: () => threadsWaiting().length },
   { id: 'tareas', label: 'Tareas', icon: 'pen' },
   { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null, count: () => isAdmin() ? A.staff.changes.filter(c => c.status === 'pending').length : 0 },
   { id: 'contenido', label: 'Contenido', icon: 'book' },
@@ -452,7 +457,7 @@ const TNAV = [
   { id: 'ajustes', label: 'Ajustes', icon: 'settings', when: () => isAdmin() && !!A.staff.settings }
 ];
 const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
-const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
+const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
 // Old links (#grupo) keep working.
 const ALIASES = { grupo: 'panel' };
 
@@ -496,6 +501,8 @@ function notifications() {
     if (requests) out.push({ key: 'enr' + requests, ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender.`, href: '#cuentas' });
     const crmN = isAdmin() && A.staff.prospects ? crmDue().length : 0;
     if (crmN) out.push({ key: 'crm' + crmToday() + crmN, ic: 'funnel', text: `${crmN} prospecto${crmN > 1 ? 's' : ''} con una acción para hoy o atrasada.`, href: '#prospectos', today: true });
+    const waiting = threadsWaiting();
+    if (waiting.length) out.push({ key: 'msg' + waiting.map(t => t.id + t.needs_staff_since).join(','), ic: 'chat', text: `${waiting.length} conversación${waiting.length > 1 ? 'es' : ''} de alumno${waiting.length > 1 ? 's' : ''} necesita${waiting.length > 1 ? 'n' : ''} respuesta.`, href: '#mensajes' });
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
     if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
     return out;
@@ -517,6 +524,7 @@ function notifications() {
     const d = new Date(A.profile.next_class_at);
     out.push({ key: 'class' + A.profile.next_class_at, ic: 'video', text: `Próxima clase: ${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' })} a las ${fmtDate(d, { hour: '2-digit', minute: '2-digit' })}.`, href: '#inicio' });
   }
+  if (myUnread()) { const last = M.thread.messages[M.thread.messages.length - 1]; out.push({ key: 'msg' + (last ? last.id : ''), ic: 'chat', text: `${myUnread() === 1 ? 'Un mensaje nuevo' : `${myUnread()} mensajes nuevos`} en «Mensajes».`, href: '#mensajes' }); }
   if (A.due) out.push({ key: 'due' + A.due, ic: 'cards', text: `${A.due} tarjeta${A.due > 1 ? 's' : ''} para repasar hoy.`, href: '#repasar' });
   return out;
 }
@@ -834,6 +842,8 @@ const noStudentsTile = () => `<article class="tile empty"><h2>Todavía no tienes
 // What waits for a decision, each line with a link to the tab where it is handled.
 function todoItems() {
   const out = [], admin = isAdmin();
+  const waiting = threadsWaiting().length;
+  if (waiting) out.push({ ic: 'chat', text: `${waiting} conversación${waiting > 1 ? 'es' : ''} por responder`, href: '#mensajes' });
   const requests = admin ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
   if (requests) out.push({ ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender`, href: '#cuentas' });
   if (admin && A.staff.prospects) {
@@ -1062,10 +1072,22 @@ function progressionTile() {
       <button class="btn btn-dark" type="submit">Guardar</button>
     </form></article>`;
 }
+// « Respuestas del asistente » (db/025_mensajes.sql): off = drafts the team sends; on = posted at once.
+function assistantTile() {
+  const st = A.staff.settings;
+  if (!st || !st.assistant || !isAdmin()) return '';
+  const on = !!st.assistant.auto_reply;
+  return `<article class="tile c-6"><div class="tile-head"><h2>Respuestas del asistente</h2><span class="pill ghost">${on ? 'Automáticas' : 'Borradores por revisar'}</span></div>
+    <form id="asForm" class="form">
+      <label class="check-row" for="asAuto"><input id="asAuto" type="checkbox" ${on ? 'checked' : ''}>Enviar al alumno, sin revisión, las respuestas que el asistente prepara en «Mensajes»</label>
+      <p class="muted" style="font-size:13px">Desactivado: cada respuesta del asistente queda como borrador en la conversación, visible solo para el equipo, con «Enviar» y «Editar»; el alumno no ve nada antes del envío. Activado: la respuesta sale al instante. En los dos casos, lo que decide el profesor (horarios, justificativos, precios, nivel) se le pasa con un correo, y el alumno ve las respuestas firmadas «Equipo Pathway».</p>
+      <button class="btn btn-dark" type="submit">Guardar</button>
+    </form></article>`;
+}
 function viewAjustes() {
   return `<section class="view" aria-labelledby="h-ajustes">
   ${topBar('h-ajustes', 'Ajustes', 'Asistencia, recordatorios y correos automáticos')}
-  <div class="bento staff">${rulesTile()}${contractTile()}${progressionTile()}
+  <div class="bento staff">${rulesTile()}${contractTile()}${progressionTile()}${assistantTile()}
     <article class="tile c-6"><div class="tile-head"><h2>Correos automáticos</h2></div>
       <div class="err-row"><span><b>Informe del lunes</b><br><span class="muted" style="font-size:13px">Cada lunes a las 8:00 (hora de Lima), en francés, a las cuentas de administración: clases dadas, grabaciones, retrasos, cambios y alumnos sin actividad.</span></span></div>
       <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia sin justificar: puede justificarla en 72 h, si no la hora se pierde; en la fórmula mensual, dónde está respecto a las ausencias que invalidan el mes. Se activa con la asistencia y el contrato.</span></span></div>
@@ -1850,6 +1872,15 @@ function bindSchedule(id) {
     if (error) { btn.disabled = false; return fail(error, 'No se pudo guardar el informe.'); }
     A.staff.reportFor = null; A.staff.reportSel = null; toast('Informe guardado.'); await refresh(); render();
   };
+  const asf = $('#asForm');
+  if (asf) asf.onsubmit = async e => {
+    e.preventDefault();
+    const auto = $('#asAuto').checked;
+    const { error } = await sb.rpc('set_campus_setting', { p_key: 'assistant', p_value: { auto_reply: auto } });
+    if (error) return fail(error);
+    A.staff.settings.assistant = { auto_reply: auto }; render();
+    toast(auto ? 'Las respuestas del asistente salen al instante.' : 'Las respuestas del asistente quedan como borrador para el equipo.'); await refresh(); render();
+  };
   const pgf = $('#pgForm');
   if (pgf) pgf.onsubmit = async e => {
     e.preventDefault();
@@ -2263,8 +2294,303 @@ function bindEditor() {
   }
 }
 
+/* ───────────── Mensajes (db/025_mensajes.sql): the student writes, the assistant answers first, the teacher replies ───────────── */
+// M.thread: the student's own conversation (null until the first message); M.open and
+// M.messages: the conversation the staff member is reading; M.drafts: unsent text per thread;
+// M.editing: the assistant draft being edited before « Enviar ».
+// Students see the assistant's answers signed « Equipo Pathway » (the database gives them as
+// kind « team »); only the team sees that the assistant wrote them, and its unsent drafts.
+const M = { ready: false, thread: null, typing: false, busy: false, open: null, messages: null, drafts: {}, editing: null };
+const TEAM = 'Equipo Pathway';
+const ASSISTANT_LABEL = 'Asistente Pathway · respuesta automática';
+const HANDED = 'Se lo pasamos a tu profesor';
+const MSG_SUGG = ['¿A qué hora es mi próxima clase?', '¿Cómo entro a mi clase de Zoom?', '¿Cuántas ausencias llevo este mes?', '¿Cómo aviso que no podré asistir?'];
+const myUnread = () => (M.thread && M.thread.unread) || 0;
+const threadsWaiting = () => (A.staff.threads || []).filter(t => t.needs_staff);
+const msgWhen = iso => {
+  const d = new Date(iso), k = dayKey(d), t = todayKey(), hm = fmtDate(d, { hour: '2-digit', minute: '2-digit' });
+  return k === t ? hm : k === addDays(t, -1) ? `ayer ${hm}` : `${fmtDate(d, { day: 'numeric', month: 'short' }).replace('.', '')} ${hm}`;
+};
+const msgBody = s => esc(s).replace(/\n/g, '<br>');
+async function loadMyThread() {
+  if (isStaff()) { M.ready = false; M.thread = null; return; }
+  const r = await sb.rpc('my_thread');
+  M.ready = !r.error;
+  M.thread = r.error ? null : (r.data || null);
+}
+const msgError = e => {
+  const m = (e && e.message) || '';
+  if (/rate_limit_hour/.test(m)) return 'Enviaste muchos mensajes en una hora. Espera un poco: tu profesor ya tiene tus preguntas.';
+  if (/rate_limit_day/.test(m)) return 'Llegaste al límite de mensajes de hoy. Mañana podrás escribir de nuevo.';
+  if (/message_too_long/.test(m)) return 'Tu mensaje es demasiado largo: 1000 caracteres como máximo.';
+  return 'No se pudo enviar el mensaje. Inténtalo de nuevo.';
+};
+
+// One message. staff: the staff member's view (the student on the left, the team on the right).
+function msgItem(m, staff, studentName) {
+  const ours = staff ? m.kind !== 'student' : m.kind === 'student';
+  const draft = staff && m.kind === 'assistant' ? m.draft_state : null;
+  const who = m.kind === 'assistant'
+    ? `${icon('sparkle')}${draft === 'pending' ? 'Borrador del asistente · el alumno todavía no lo ve' : draft === 'discarded' ? 'Borrador del asistente · descartado' : draft === 'sent' ? `Asistente Pathway · revisada${m.edited ? ' y editada' : ''} por ${esc(m.sent_by || 'el equipo')}` : ASSISTANT_LABEL}`
+    : m.kind === 'team' ? TEAM
+    : m.kind === 'staff' ? `${esc(m.author || TEAM)}${staff && m.mine ? ' · tú' : staff ? '' : ' · tu profesor'}`
+    : staff ? esc(studentName) : '';
+  let flag = '';
+  if (staff && m.kind === 'assistant' && m.escalated) flag = `<p class="msg-flag">${icon('users')}<span>Pasada al profesor${m.note ? ` · ${esc(m.note)}` : ''}</span></p>`;
+  if (!staff && m.handed_over) flag = `<p class="msg-flag">${icon('users')}<span>${HANDED}</span></p>`;
+  if (staff && draft === 'pending' && M.editing === m.id) {
+    return `<div class="msg ours k-assistant is-draft is-editing"><p class="msg-who">${who}</p>
+      <form class="msg-draft-edit" data-draft-form="${m.id}"><label class="sr-only" for="draftText">Texto de la respuesta</label>
+        <textarea id="draftText" rows="4" maxlength="2000">${esc(m.body)}</textarea>
+        <div class="msg-draft-acts"><button class="btn btn-dark btn-sm" type="submit">${icon('arrow')}Enviar</button><button class="btn btn-light btn-sm" type="button" data-draft-cancel>Cancelar</button></div></form></div>`;
+  }
+  const acts = draft === 'pending' ? `<div class="msg-draft-acts"><button class="btn btn-dark btn-sm" type="button" data-draft-send="${m.id}">${icon('arrow')}Enviar</button><button class="btn btn-light btn-sm" type="button" data-draft-edit="${m.id}">${icon('pen')}Editar</button><button class="btn btn-light btn-sm" type="button" data-draft-discard="${m.id}">Descartar</button></div>` : '';
+  return `<div class="msg ${ours ? 'ours' : 'theirs'} k-${m.kind}${draft === 'pending' ? ' is-draft' : draft === 'discarded' ? ' is-discarded' : ''}">${who ? `<p class="msg-who">${who}</p>` : ''}
+    <div class="msg-bubble">${msgBody(m.body)}</div>${flag}${acts}<p class="msg-time"><time datetime="${esc(m.created_at)}">${esc(msgWhen(m.created_at))}</time></p></div>`;
+}
+function studentLog() {
+  const list = (M.thread && M.thread.messages) || [];
+  if (!list.length) return `<div class="msg-empty">${icon('chat')}<p><b>Escribe tu primera pregunta.</b><br>Por ejemplo: «¿A qué hora es mi próxima clase?». Te respondemos aquí, y tu profesor ve toda la conversación.</p></div>`;
+  const last = list[list.length - 1];
+  return list.map(m => msgItem(m, false)).join('')
+    + (M.typing && M.thread && M.thread.auto_reply ? `<div class="msg theirs k-team typing"><p class="msg-who">${TEAM}</p><div class="msg-bubble"><span class="msg-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">${TEAM} está escribiendo…</span></div></div>`
+      : last.kind === 'student' && !M.typing ? `<p class="msg-sys">${icon('users')}<span>Te responderemos aquí. Te avisamos por correo.</span></p>` : '');
+}
+const composer = (label, ph, max) => `<form class="chat-form" id="chatForm" novalidate>
+    <label class="sr-only" for="chatText">${label}</label>
+    <textarea id="chatText" rows="2" maxlength="${max}" placeholder="${esc(ph)}" aria-describedby="chatHint"></textarea>
+    <button class="btn btn-dark chat-send" type="submit">${icon('arrow')}<span>Enviar</span></button>
+    <p class="chat-hint" id="chatHint"><span>Ctrl + Enter para enviar</span><span class="num" id="chatCount">0 / ${max}</span></p></form>`;
+
+function viewMensajes() { return teacherMode() ? viewMensajesStaff() : viewMensajesStudent(); }
+function viewMensajesStudent() {
+  const teacher = (M.thread && M.thread.teacher) || (A.teacher && A.teacher.full_name) || '';
+  return `<section class="view" aria-labelledby="h-mensajes">
+  ${topBar('h-mensajes', 'Mensajes', teacher ? `Tus preguntas para ${esc(teacher)}, en un solo lugar` : 'Tus preguntas para tu profesor, en un solo lugar')}
+  <div class="bento">
+    <article class="tile chat-tile c-8"><div class="tile-head"><h2>Tu conversación</h2>${teacher ? `<span class="pill ghost">${icon('users')}${esc(teacher)}</span>` : ''}</div>
+      <div class="chat-log" id="chatLog" role="log" aria-label="Conversación con tu profesor" tabindex="0">${studentLog()}</div>
+      ${composer('Tu mensaje', 'Escribe tu pregunta…', 1000)}
+    </article>
+    <article class="tile lilac c-4 chat-how"><p class="label" style="color:var(--lilac-ink)">Cómo funciona</p>
+      <ol class="how">
+        <li><b>Escribe tu pregunta aquí</b>, en vez de WhatsApp: tus clases, cómo entrar a Zoom, tus ausencias, las reglas del curso.</li>
+        <li><b>El equipo Pathway te responde</b> con los datos de tu curso. Lo que decide tu profesor (cambiar una clase, aceptar un justificativo, un precio especial, tu nivel) se lo pasamos a tu profesor.</li>
+        <li><b>Todas las respuestas llegan aquí</b> y te avisamos por correo.</li>
+      </ol>
+      <p class="label" style="margin-top:18px;color:var(--lilac-ink)">Pregunta rápida</p>
+      <div class="chat-sugg">${MSG_SUGG.map(q => `<button type="button" data-sugg="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+    </article>
+  </div></section>`;
+}
+
+function threadRow(t) {
+  const last = t.last || {}, prefix = last.draft_state === 'pending' ? 'Borrador: ' : last.kind === 'assistant' ? 'Asistente: ' : last.kind === 'staff' ? 'Equipo: ' : '';
+  return `<button type="button" class="msg-row${t.id === M.open ? ' on' : ''}" data-thread="${t.id}"${t.id === M.open ? ' aria-current="true"' : ''}>
+    <span class="ava sm">${esc(initials(t.name))}</span>
+    <span class="msg-row-main"><b>${esc(t.name)}</b><small>${esc(prefix + (last.body || 'Sin mensajes todavía'))}</small></span>
+    <span class="msg-row-side">${t.last_message_at ? `<small>${esc(msgWhen(t.last_message_at))}</small>` : ''}${t.drafts ? '<span class="status warn">Borrador por enviar</span>' : t.needs_staff ? '<span class="status warn">Necesita respuesta</span>' : ''}${t.unread ? `<span class="count num" title="Sin leer">${t.unread}<span class="sr-only"> sin leer</span></span>` : ''}</span></button>`;
+}
+function msgListHtml() {
+  const list = A.staff.threads || [];
+  const wait = list.filter(t => t.needs_staff), rest = list.filter(t => !t.needs_staff);
+  if (!list.length) return '<p class="muted">Todavía no hay mensajes. Cuando un alumno escriba desde su Campus, su conversación aparecerá aquí.</p>';
+  return `${wait.length ? `<p class="label">Necesitan respuesta</p><div class="msg-list">${wait.map(threadRow).join('')}</div>` : ''}
+    ${rest.length ? `<p class="label"${wait.length ? ' style="margin-top:14px"' : ''}>${wait.length ? 'Otras conversaciones' : 'Todas al día'}</p><div class="msg-list">${rest.map(threadRow).join('')}</div>` : ''}`;
+}
+function staffLog(t) {
+  if (!M.messages) return '<p class="muted">Cargando…</p>';
+  return M.messages.length ? M.messages.map(m => msgItem(m, true, t.name)).join('') : `<p class="muted">Todavía no hay mensajes. Escribe el primero a ${esc(firstName(t.name))}.</p>`;
+}
+function viewMensajesStaff() {
+  const list = A.staff.threads || [];
+  const t = M.open ? list.find(x => x.id === M.open) : null;
+  if (M.open && !t) M.open = null;
+  const wait = threadsWaiting().length;
+  const have = new Set(list.map(x => x.student_id));
+  const others = A.staff.overview.filter(s => !have.has(s.id));
+  const thread = t ? `<article class="tile msg-thread-tile" aria-labelledby="msgThreadName">
+      <div class="tile-head msg-thread-head"><button type="button" class="round msg-back" data-thread-close aria-label="Volver a las conversaciones">${icon('arrow')}</button>
+        <div class="msg-thread-title"><h2 id="msgThreadName" tabindex="-1">${esc(t.name)}</h2><p class="muted">${esc(t.level)}${isAdmin() && t.teacher ? ' · ' + esc(t.teacher) : ''}</p></div>
+        ${t.needs_staff ? '<span class="pill warn">Necesita respuesta</span>' : '<span class="pill ghost">Al día</span>'}</div>
+      ${t.drafts ? `<p class="msg-reason">${icon('sparkle')}<span><b>El asistente preparó una respuesta.</b> Revísala, edítala si hace falta y envíala: el alumno no la ve antes.</span></p>`
+        : t.needs_staff && t.escalated_reason ? `<p class="msg-reason">${icon('sparkle')}<span><b>El asistente te la pasó:</b> ${esc(t.escalated_reason)}</span></p>` : ''}
+      <div class="chat-log" id="chatLog" role="log" aria-label="Conversación con ${esc(t.name)}" tabindex="0">${staffLog(t)}</div>
+      ${composer('Tu respuesta', `Responde a ${firstName(t.name)}…`, 2000)}
+      ${t.needs_staff ? `<div class="msg-actions"><button class="btn btn-light btn-sm" type="button" data-thread-done>${icon('check')}Marcar como resuelta</button><span class="muted">Si ya lo resolviste por otro medio.</span></div>` : ''}
+    </article>`
+    : `<article class="tile msg-thread-tile empty"><h2>Elige una conversación</h2><p class="muted">Verás lo que escribió el alumno y lo que le contestó el asistente, y podrás responderle. Las que necesitan respuesta están arriba.</p></article>`;
+  return `<section class="view" aria-labelledby="h-mensajes">
+  ${topBar('h-mensajes', 'Mensajes', wait ? `${wait} conversación${wait > 1 ? 'es necesitan' : ' necesita'} respuesta` : 'Las preguntas de tus alumnos: el asistente responde primero')}
+  <div class="msg-layout${t ? ' has-open' : ''}">
+    <article class="tile msg-list-tile"><div class="tile-head"><h2>Conversaciones</h2>${wait ? `<span class="pill warn num">${wait} por responder</span>` : ''}</div>
+      <div id="msgList">${msgListHtml()}</div>
+      ${others.length ? `<form id="msgNew" class="form msg-new"><label class="field" for="msgNewStudent">Escribir a un alumno<select id="msgNewStudent">${others.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('')}</select></label><button class="btn btn-light btn-sm" type="submit">${icon('chat')}Abrir la conversación</button></form>` : ''}
+    </article>
+    ${thread}
+  </div></section>`;
+}
+
+const scrollLog = () => { const log = $('#chatLog'); if (log) log.scrollTop = log.scrollHeight; };
+function paintChat() {
+  const log = $('#chatLog');
+  if (log) { log.innerHTML = teacherMode() ? staffLog((A.staff.threads || []).find(x => x.id === M.open) || {}) : studentLog(); scrollLog(); }
+  if (teacherMode() && $('#msgList')) { $('#msgList').innerHTML = msgListHtml(); bindThreadRows(); }
+  if (teacherMode()) bindDrafts();
+  renderNav(currentView());
+}
+async function markMineRead() {
+  if (teacherMode() || !M.thread || !myUnread()) return;
+  M.thread.unread = 0; renderNav(currentView());
+  const r = await sb.rpc('mark_thread_read', { p_thread: M.thread.id });
+  if (r.error) console.error(r.error);
+}
+// The assistant answers (or passes the question on) by itself; the Campus only waits for it.
+// Without the function, or if it fails, the question simply waits for the teacher.
+async function askAssistant(messageId) {
+  try {
+    await Promise.race([sb.functions.invoke('campus-assistant', { body: { message_id: messageId } }), new Promise(r => setTimeout(r, 30000))]);
+  } catch (e) { console.warn('campus-assistant:', e && e.message); }
+}
+function setSending(on) { const b = $('#chatForm .chat-send'); if (b) b.disabled = on; }
+async function sendStudentMessage(text) {
+  M.busy = true; setSending(true);
+  try {
+    let id = M.thread && M.thread.id;
+    if (!id) { const r = await sb.rpc('open_thread'); if (r.error) return fail(r.error, msgError(r.error)); id = r.data; }
+    const { data, error } = await sb.from('messages').insert({ thread_id: id, body: text }).select().single();
+    if (error) return fail(error, msgError(error));
+    M.drafts.me = '';
+    if ($('#chatText')) { $('#chatText').value = ''; $('#chatText').dispatchEvent(new Event('input')); }
+    await loadMyThread(); M.typing = true; paintChat();
+    await askAssistant(data.id);
+    M.typing = false; await loadMyThread(); paintChat(); markMineRead();
+  } finally { M.typing = false; M.busy = false; setSending(false); }
+}
+async function loadOpenThread() {
+  const r = await sb.rpc('thread_messages', { p_thread: M.open });
+  if (r.error) { fail(r.error, 'No se pudo abrir la conversación.'); M.messages = []; return; }
+  M.messages = r.data || [];
+}
+async function openThread(id, focus = 'text') {
+  M.open = id; M.messages = null; M.editing = null; render();
+  await loadOpenThread();
+  const t = (A.staff.threads || []).find(x => x.id === id);
+  if (t && t.unread) { t.unread = 0; sb.rpc('mark_thread_read', { p_thread: id }).then(r => { if (r.error) console.error(r.error); }); }
+  if (M.open !== id) return;
+  render();
+  if (focus === 'text') $('#chatText')?.focus({ preventScroll: true }); else $('#msgThreadName')?.focus();
+}
+function closeThread() {
+  const id = M.open; M.open = null; M.messages = null; M.editing = null; render();
+  $(`[data-thread="${id}"]`)?.focus();
+}
+async function refreshStaffMessages() {
+  const r = await sb.rpc('staff_threads');
+  if (!r.error) A.staff.threads = r.data || [];
+  if (M.open) await loadOpenThread();
+}
+async function sendStaffMessage(text) {
+  M.busy = true; setSending(true);
+  try {
+    const { error } = await sb.from('messages').insert({ thread_id: M.open, body: text }).select().single();
+    if (error) return fail(error, msgError(error));
+    M.drafts[M.open] = '';
+    await refreshStaffMessages(); render(); $('#chatText')?.focus({ preventScroll: true });
+    toast('Respuesta enviada. El alumno la ve en su Campus.');
+  } finally { M.busy = false; setSending(false); }
+}
+// Drafts of the assistant (setting « Respuestas del asistente » off): send as is, edit then send,
+// or discard. A sent draft reaches the student signed « Equipo Pathway ».
+async function sendDraft(id, body) {
+  M.busy = true;
+  try {
+    const { error } = await sb.rpc('send_draft', { p_message: +id, p_body: body == null ? null : body });
+    if (error) return fail(error, msgError(error));
+    M.editing = null; await refreshStaffMessages(); render(); toast('Respuesta enviada al alumno, firmada «Equipo Pathway».');
+  } finally { M.busy = false; }
+}
+function bindDrafts() {
+  $$('[data-draft-send]').forEach(b => b.onclick = () => { b.disabled = true; sendDraft(b.dataset.draftSend, null); });
+  $$('[data-draft-edit]').forEach(b => b.onclick = () => { M.editing = +b.dataset.draftEdit; paintChat(); const t = $('#draftText'); if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); } });
+  $$('[data-draft-cancel]').forEach(b => b.onclick = () => { const id = M.editing; M.editing = null; paintChat(); $(`[data-draft-edit="${id}"]`)?.focus(); });
+  $$('[data-draft-discard]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await sb.rpc('discard_draft', { p_message: +b.dataset.draftDiscard });
+    if (error) { b.disabled = false; return fail(error, 'No se pudo descartar el borrador.'); }
+    await refreshStaffMessages(); render(); toast('Borrador descartado: el alumno no lo verá.');
+  });
+  const df = $('[data-draft-form]');
+  if (df) {
+    df.onsubmit = e => { e.preventDefault(); const v = $('#draftText').value.trim(); if (!v) return toast('Escribe la respuesta.'); sendDraft(df.dataset.draftForm, v); };
+    $('#draftText').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); df.querySelector('[data-draft-cancel]').click(); } });
+  }
+}
+function bindThreadRows() { $$('[data-thread]').forEach(b => b.onclick = () => openThread(b.dataset.thread)); }
+function bindMessages() {
+  const f = $('#chatForm'), ta = $('#chatText');
+  if (f && ta) {
+    const key = teacherMode() ? M.open : 'me';
+    ta.value = M.drafts[key] || '';
+    const sync = () => {
+      M.drafts[key] = ta.value;
+      const c = $('#chatCount'); if (c) c.textContent = `${ta.value.length} / ${ta.maxLength}`;
+      ta.style.height = 'auto'; ta.style.height = Math.min(220, ta.scrollHeight + 2) + 'px';
+    };
+    ta.addEventListener('input', sync); sync();
+    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.requestSubmit(); } });
+    f.onsubmit = e => {
+      e.preventDefault();
+      const text = ta.value.trim();
+      if (!text) { toast('Escribe tu mensaje.'); ta.focus(); return; }
+      if (M.busy) return;
+      return teacherMode() ? sendStaffMessage(text) : sendStudentMessage(text);
+    };
+  }
+  $$('[data-sugg]').forEach(b => b.onclick = () => { const t = $('#chatText'); if (!t) return; t.value = b.dataset.sugg; t.dispatchEvent(new Event('input')); t.focus(); });
+  bindThreadRows();
+  const back = $('[data-thread-close]'); if (back) back.onclick = closeThread;
+  const done = $('[data-thread-done]');
+  if (done) done.onclick = async () => {
+    done.disabled = true;
+    const { error } = await sb.rpc('set_thread_handled', { p_thread: M.open, p_handled: true });
+    if (error) { done.disabled = false; return fail(error, 'No se pudo marcar la conversación.'); }
+    await refreshStaffMessages(); render(); toast('Conversación marcada como resuelta.');
+  };
+  bindDrafts();
+  const nf = $('#msgNew');
+  if (nf) nf.onsubmit = async e => {
+    e.preventDefault();
+    const { data, error } = await sb.rpc('open_thread', { p_student: $('#msgNewStudent').value });
+    if (error) return fail(error, 'No se pudo abrir la conversación.');
+    await refreshStaffMessages(); openThread(data);
+  };
+  scrollLog();
+  markMineRead();
+}
+// While « Mensajes » is open: new messages every 20 s (only when the tab is visible).
+let msgPoll = 0;
+function pollMessages(id) {
+  clearInterval(msgPoll);
+  if (id !== 'mensajes') return;
+  msgPoll = setInterval(async () => {
+    if (document.hidden || M.busy || M.editing || currentView() !== 'mensajes') return;
+    if (teacherMode()) {
+      const before = JSON.stringify([A.staff.threads, M.messages]);
+      await refreshStaffMessages();
+      if (JSON.stringify([A.staff.threads, M.messages]) !== before && currentView() === 'mensajes') paintChat();
+    } else {
+      const before = JSON.stringify(M.thread);
+      await loadMyThread();
+      if (JSON.stringify(M.thread) !== before && currentView() === 'mensajes') { paintChat(); markMineRead(); }
+    }
+  }, 20000);
+}
+
 function bindView(id) {
   bindSchedule(id);
+  if (id === 'mensajes') bindMessages();
+  pollMessages(id);
   if (id === 'contenido') bindEditor();
   if (id === 'prospectos') bindCrm();
   {
@@ -2481,6 +2807,8 @@ document.addEventListener('keydown', e => {
   if (!$('#lesson').hidden) return lessonKeys(e, tag);
   if (!$('#ob').hidden || !$('#contract').hidden) return;
   if (crmOverlayOpen()) { if (e.key === 'Escape') { e.preventDefault(); crmClose(); } return; }
+  if (e.key === 'Escape' && (document.querySelector('#bellSlot .menu, #menuSlot .menu, #searchSlot .menu'))) { closeMenus(); return; }
+  if (e.key === 'Escape' && currentView() === 'mensajes' && teacherMode() && M.open) { e.preventDefault(); closeThread(); return; }
   if (e.key === 'Escape') closeMenus();
   if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {

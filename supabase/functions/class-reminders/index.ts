@@ -4,6 +4,9 @@
 // formule mensuelle, où il en est de ses 3 absences. Appelée toutes les 5 minutes par pg_cron ;
 // le rappel ne part que s'il est activé dans « Ajustes » → « Reglas de asistencia », et les
 // e-mails d'absence que si les présences et le contrat de l'élève y sont activés.
+// Envoie aussi les e-mails des messages (campus/db/025_mensajes.sql) : au professeur, un seul
+// e-mail pour toutes les conversations qui l'attendent depuis 5 min ; à l'élève, quand l'équipe
+// lui a répondu et qu'il ne l'a pas lu depuis 10 min. Sans le contenu des messages.
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor, nom
 // « class-reminders », coller ce fichier, Deploy, puis désactiver « Verify JWT » (pg_cron l'appelle
@@ -13,6 +16,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 
 const FROM = 'Pathway Campus <campus@pathway-languages.com>';
 const CAMPUS = 'https://pathway-languages.com/campus/#curso';
+const CAMPUS_MESSAGES = 'https://pathway-languages.com/campus/#mensajes';
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 // Test from the Campus (admin only): the caller's own session decides, and the email goes to them.
@@ -42,6 +46,8 @@ type Month = { from: string; to: string; total: number; max: number; failed: boo
 type Notice = { student_id: string; name: string; email: string; timezone: string | null; teacher: string | null; plan: 'mensual' | 'ciclo' | null;
   group_id: string; scheduled_at: string; at: string; deadline: string; duration_min: number; month: Month; motives: string[] };
 type Due = { student_id: string; name: string; email: string; timezone: string | null; group: string; teacher: string | null; scheduled_at: string; at: string; status: string };
+type StaffWaiting = { thread: string; student: string; since: string; escalated: boolean; recipients: { email: string; name: string }[] };
+type StudentReply = { thread: string; email: string; name: string; staff: string | null };
 
 // Same look as the Campus login email (supabase/templates/magic-link.html): Pathway logo, white
 // card with a lilac band and a big coral word, black pill buttons, Pathway footer.
@@ -156,6 +162,36 @@ export function renderNotice(n: Notice): { subject: string; html: string } {
 }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+// Teacher: the students waiting for an answer in « Mensajes » (names only, no message content).
+export function renderStaffMessages(name: string, students: string[]): { subject: string; html: string } {
+  const first = (name || '').split(/\s+/)[0] || '';
+  const n = students.length;
+  const who = n === 1 ? `${esc(students[0])} espera tu respuesta` : `${n} alumnos esperan tu respuesta`;
+  const body = h1(`${first ? `${esc(first)}, ` : ''}${who}`)
+    + para('Estas conversaciones te esperan en «Mensajes»: preguntas que el asistente del Campus te pasó, o respuestas que preparó y que debes revisar y enviar. Allí ves también lo que el asistente ya contestó.')
+    + panel(`<p style="margin:0 0 6px;font:700 12px/1.4 ${FONT};color:#9b9ba3;letter-spacing:.06em;">NECESITAN RESPUESTA</p>
+        ${students.map(s => `<p style="margin:0 0 4px;font:700 17px/1.4 ${FONT};color:#141414;">${esc(s)}</p>`).join('')}`)
+    + button(CAMPUS_MESSAGES, 'Responder en el Campus')
+    + small('Recibes un solo correo por conversación en espera, no uno por mensaje.');
+  return {
+    subject: n === 1 ? `${students[0]} te escribió en el Campus` : `${n} alumnos esperan tu respuesta en el Campus`,
+    html: layout({ lang: 'es', title: 'Mensajes del Campus', preview: n === 1 ? `${students[0]} espera tu respuesta en el Campus.` : `${n} alumnos esperan tu respuesta en el Campus.`, tag: 'CAMPUS PATHWAY', hero: 'Mensajes', body })
+  };
+}
+// Student: the team answered (no message content: it is read in the Campus).
+export function renderStudentReply(d: StudentReply): { subject: string; html: string } {
+  const first = (d.name || '').split(/\s+/)[0] || '';
+  const who = d.staff ? esc(d.staff) : 'El equipo Pathway';
+  const body = h1(`${first ? `${esc(first)}, tienes` : 'Tienes'} una respuesta`)
+    + para(`${who} te respondió en el Campus.`)
+    + button(CAMPUS_MESSAGES, 'Leer la respuesta')
+    + small('La respuesta se lee en «Mensajes», dentro del Campus. Puedes contestar desde allí.');
+  return {
+    subject: `${d.staff || 'El equipo Pathway'} te respondió en el Campus`,
+    html: layout({ lang: 'es', title: 'Tienes una respuesta', preview: `${d.staff || 'El equipo Pathway'} te respondió en el Campus.`, tag: 'CAMPUS PATHWAY', hero: 'Mensajes', body })
+  };
+}
+
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
@@ -192,7 +228,11 @@ Deno.serve(async req => {
   // Without db/017_reglas_clases.sql the call fails: no absence emails, reminders unchanged.
   const { data: nd } = await supabase.rpc('due_absence_notices');
   const notices = (nd || []) as Notice[];
-  if (!due.length && !notices.length) return json(200, { sent: 0 });
+  // Without db/025_mensajes.sql the call fails: no message emails.
+  const { data: md } = await supabase.rpc('due_message_emails');
+  const waiting = ((md && md.staff) || []) as StaffWaiting[];
+  const replies = ((md && md.students) || []) as StudentReply[];
+  if (!due.length && !notices.length && !waiting.length && !replies.length) return json(200, { sent: 0 });
   const key = Deno.env.get('RESEND_API_KEY');
   if (!key) return json(500, { error: 'missing_resend_key' });
 
@@ -215,5 +255,33 @@ Deno.serve(async req => {
     if (res.ok) sent++;
     else await supabase.from('class_reminders_sent').delete().eq('student_id', d.student_id).eq('scheduled_at', d.scheduled_at);
   }
-  return json(200, { sent, due: due.length, warned });
+  // Messages: one email per teacher for all the conversations waiting for them.
+  let messaged = 0;
+  const claimed: StaffWaiting[] = [];
+  for (const t of waiting) {
+    const { data: ok } = await supabase.rpc('claim_message_email', { p_thread: t.thread, p_side: 'staff' });
+    if (ok === true) claimed.push(t);
+  }
+  const byRecipient = new Map<string, { name: string; threads: StaffWaiting[] }>();
+  for (const t of claimed) for (const r of t.recipients || []) {
+    const k = String(r.email).toLowerCase();
+    const entry = byRecipient.get(k) || { name: r.name, threads: [] };
+    entry.threads.push(t);
+    byRecipient.set(k, entry);
+  }
+  for (const [email, r] of byRecipient) {
+    const { subject, html } = renderStaffMessages(r.name, r.threads.map(t => t.student));
+    const res = await sendMail(key, [email], subject, html);
+    if (res.ok) messaged++;
+    else for (const t of r.threads) await supabase.rpc('release_message_email', { p_thread: t.thread, p_side: 'staff' });
+  }
+  for (const d of replies) {
+    const { data: ok } = await supabase.rpc('claim_message_email', { p_thread: d.thread, p_side: 'student' });
+    if (ok !== true) continue;
+    const { subject, html } = renderStudentReply(d);
+    const res = await sendMail(key, [d.email], subject, html);
+    if (res.ok) messaged++;
+    else await supabase.rpc('release_message_email', { p_thread: d.thread, p_side: 'student' });
+  }
+  return json(200, { sent, due: due.length, warned, messaged });
 });

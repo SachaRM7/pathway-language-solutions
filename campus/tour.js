@@ -29,9 +29,12 @@
     { view: 'simulacros', target: () => pick('#main .exam-grid', '#main .view'), title: 'Tus simulacros', text: 'Cada prueba se hace como el día del examen, con el tiempo limitado. Al final ves tu nivel NCLC estimado.' },
     { view: 'simulacros', target: () => navLink('logros'), title: 'Logros', text: 'Tu nivel y tus insignias. Entremos.', pad: 6 },
     { view: 'logros', target: () => pick('#main .badges')?.closest('.tile') || pick('#main .badges', '#main .view'), title: 'Tus insignias', text: 'Cada insignia marca un paso real hacia tu examen: tu primera lección, tu racha, tus repasos…' },
-    { view: 'logros', target: () => navLink('inicio'), title: 'Inicio', text: 'Para volver aquí desde cualquier pantalla.', pad: 6 },
+    // Mensajes (db/025_mensajes.sql): skipped when the tab is not there.
+    { view: 'logros', target: () => navLink('mensajes'), title: 'Mensajes', text: 'Tus preguntas para tu profesor, aquí y no por WhatsApp. Entremos.', pad: 6 },
+    { view: 'mensajes', target: () => pick('#main .chat-tile'), title: 'Tus mensajes', text: 'Escribe aquí tus preguntas sobre tus clases, Zoom o tus ausencias: el equipo Pathway te responde con los datos de tu curso, y lo que decide tu profesor se lo pasamos a él. Todas las respuestas llegan aquí.' },
+    { target: () => navLink('inicio'), title: 'Inicio', text: 'Para volver aquí desde cualquier pantalla.', pad: 6 },
     { view: 'inicio', target: () => pick('#main .search'), title: 'El buscador', text: 'Escribe una unidad o un verbo para encontrarlo al instante.', pad: 6, desktopOnly: true },
-    { view: 'inicio', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Las tareas que te deja tu profesor y tus recordatorios. ¿Dónde está la tarea? Aquí.', pad: 6 },
+    { view: 'inicio', target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Las tareas que te deja tu profesor, sus respuestas en «Mensajes» y tus recordatorios. ¿Dónde está la tarea? Aquí.', pad: 6 },
     { view: 'inicio', target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido. ¡Ahora te toca a ti!', next: 'Terminar', pad: 6, last: true }
   ];
   STUDENT.home = 'inicio';
@@ -40,13 +43,16 @@
     { center: true, title: 'Tu espacio de profesor', text: 'En un minuto te mostramos cómo seguir a tus alumnos entre clases y preparar el contenido. Puedes volver a ver este recorrido con el botón «?» de la parte de arriba.', next: 'Empezar', skip: 'Ahora no' },
     { view: 'panel', target: () => { const k = [...document.querySelectorAll('#main .tile.kpi')].filter(visible); return k.length ? k : null; }, title: 'Tu grupo de un vistazo', text: 'Alumnos activos esta semana, tareas pendientes y porcentaje de aciertos a la primera.' },
     { view: 'panel', target: () => tileWithTitle('Necesitan atención'), title: 'Necesitan atención', text: 'Los alumnos que no practican desde hace días o que fallan mucho. «Asignar tarea» te lleva directo a la pestaña Tareas.' },
-    { view: 'panel', target: () => tileWithTitle('Por revisar'), title: 'Por revisar', text: 'Lo que espera una decisión: cambios de horario, alumnos sin grupo, exámenes por validar… Cada línea te lleva a la pestaña donde se resuelve.' },
+    { view: 'panel', target: () => tileWithTitle('Por revisar'), title: 'Por revisar', text: 'Lo que espera una decisión: mensajes por responder, cambios de horario, alumnos sin grupo, exámenes por validar… Cada línea te lleva a la pestaña donde se resuelve.' },
     { view: 'panel', target: () => navLink('alumnos'), title: 'Alumnos', text: 'El avance de cada alumno. Entremos.', pad: 6 },
     { view: 'alumnos', target: () => tileWithTitle('Avance'), title: 'El avance de tus alumnos', text: 'Nivel, racha, última actividad, aciertos y tareas de cada alumno.' },
     { view: 'alumnos', target: () => tileWithTitle('Fin de nivel'), title: 'Fin de nivel', text: 'Valida aquí el examen que el alumno hizo contigo: con el examen final del campus, pasa solo al nivel siguiente.' },
-    { view: 'alumnos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6, admin: false },
+    // Mensajes (db/025_mensajes.sql): skipped when the tab is not there.
+    { view: 'alumnos', target: () => navLink('mensajes'), title: 'Mensajes', text: 'Las preguntas de tus alumnos, en un solo lugar en vez de WhatsApp. Entremos.', pad: 6 },
+    { view: 'mensajes', target: () => pick('#main .msg-list-tile'), title: 'Mensajes de tus alumnos', text: 'El asistente prepara la respuesta a las preguntas prácticas, con los datos de cada alumno: según «Ajustes», sale sola o queda como borrador para que la envíes. Lo que no sabe o lo que decides tú (cambios de horario, justificativos, precios, nivel) queda arriba, en «Necesita respuesta», y te llega un correo. El alumno ve las respuestas firmadas «Equipo Pathway».' },
+    { view: 'mensajes', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6, admin: false },
     // Prospectos (admin only, db/023_crm.sql).
-    { view: 'alumnos', target: () => navLink('prospectos'), title: 'Prospectos', text: 'Las personas interesadas, del primer contacto a la inscripción. Solo la administración las ve. Entremos.', pad: 6, admin: true },
+    { view: 'mensajes', target: () => navLink('prospectos'), title: 'Prospectos', text: 'Las personas interesadas, del primer contacto a la inscripción. Solo la administración las ve. Entremos.', pad: 6, admin: true },
     { view: 'prospectos', target: () => pick('#main .crm-kpis'), title: 'El mes de un vistazo', text: 'Los nuevos prospectos, los inscritos, el origen que más inscribe y las acciones para hoy.', admin: true },
     { view: 'prospectos', target: () => pick('#main .crm-board-wrap', '#main .crm-list', '#main #crmBody'), title: 'Siete etapas', text: 'El test, el formulario y la calculadora crean las fichas solas, y las etapas avanzan con la invitación, el contrato y la primera clase. Abre una tarjeta para ver su ficha y su historial; en computadora, arrástrala de una columna a otra.', admin: true },
     { view: 'prospectos', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6, admin: true },
@@ -65,7 +71,7 @@
     { view: 'cuentas', target: () => navLink('ajustes'), title: 'Ajustes', text: 'Las reglas del campus. Entremos.', pad: 6 },
     { view: 'ajustes', target: () => tileWithTitle('Reglas de asistencia'), title: 'Reglas de asistencia', text: 'Cuándo se abre el enlace de la clase, cuándo un alumno cuenta como tarde o ausente, y el correo de recordatorio antes de cada clase.' },
     { target: () => pick('#main .switch'), title: 'Vista Alumno', text: 'Pasa a la vista Alumno para usar el Campus como tus alumnos, con tu propia cuenta.', pad: 6 },
-    { target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los alumnos inactivos y los que todavía no completaron la bienvenida.', pad: 6 },
+    { target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los mensajes que necesitan respuesta, los alumnos inactivos y los que todavía no completaron la bienvenida.', pad: 6 },
     { target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];
   TEACHER.home = 'panel';
