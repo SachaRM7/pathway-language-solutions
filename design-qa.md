@@ -80,3 +80,17 @@ node scripts/verify-campus-motion.cjs
 ```
 
 Test hooks are appended only by the browser fixture; production files contain no test hooks. These checks do not use a live account or validate production backend responses. Physical iOS/Safari testing remains outside this verification; input focus is deliberately synchronous with the opening gesture to support mobile keyboards.
+
+## Extension: bottom navigation
+
+final result: passed
+
+The bottom navigation now uses one persistent pill that follows the selected hash link with the same native spring engine (tune 25). The destination icon gives a small 340 ms emphasis. This is a Campus-specific interaction, not a copy of an additional Bencho block. Layout, icons, links and theme tokens are preserved.
+
+An inverted icon rail is clipped inside the moving pill so icons stay visible throughout its travel. This rail is decorative and hidden from assistive technology. The original links remain in the DOM, retaining native keyboard activation, focus, browser history and notification dots. Same-view data refreshes do not restart the animation. Dynamic navigation items and viewport changes reposition the pill; reduced motion snaps directly to the selected item. The pill is constrained to the inside of the bar at both ends.
+
+- [Animated capture of the actual navigation](docs/campus-motion/tabbar-motion.gif)
+- [Mobile, light theme](docs/campus-motion/tabbar-light.png)
+- [Mobile, dark theme with keyboard focus on the next link](docs/campus-motion/tabbar-dark-keyboard.png)
+
+`scripts/verify-campus-tabbar.cjs` passes at 390, 360 and 768 px. It checks intermediate animation positions, reversals during movement, travel within the bar, Back/Forward, Enter and Tab, focus across data refreshes, 5–9 navigation items, orientation changes, the desktop sidebar breakpoint, changes to reduced-motion preference, and login reset. The existing motion suite also passes at 1440, 390 and 360 px. Build, site validation, the 23 IRCC checks, the 18 V4 route checks, syntax and diff checks pass. Browser verification uses the existing intercepted backend fixture.

@@ -37,6 +37,81 @@ export function spring(initial, paint, tune = 50) {
   };
 }
 
+// One persistent selection pill follows the native hash links. The clipped icon
+// rail keeps every icon readable while the pill passes under it, in both themes.
+export function mountTabbar(nav) {
+  const pill = document.createElement('span');
+  pill.className = 'tabbar-indicator'; pill.hidden = true;
+  pill.setAttribute('aria-hidden', 'true');
+  const rail = document.createElement('span');
+  rail.className = 'tabbar-indicator-icons'; pill.append(rail); nav.prepend(pill);
+  let mover = null, selected = '', signature = '', pops = [], minX = 0, maxX = 0;
+  const stopPop = () => { pops.forEach(a => a.cancel()); pops = []; };
+  const paint = x => nav.style.setProperty('--tab-x', `${clamp(x, minX, maxX).toFixed(3)}px`);
+  function align(animate = false) {
+    const active = nav.querySelector('a[aria-current="page"]');
+    if (!active || !nav.getClientRects().length) {
+      mover?.dispose(); mover = null; pill.hidden = true;
+      nav.removeAttribute('data-tab-motion'); stopPop(); return;
+    }
+    const box = nav.getBoundingClientRect(), target = active.getBoundingClientRect();
+    const style = getComputedStyle(nav), left = parseFloat(style.paddingLeft), right = parseFloat(style.paddingRight);
+    minX = left; maxX = box.width - right - target.width;
+    nav.style.setProperty('--tab-width', `${target.width}px`);
+    nav.style.setProperty('--tab-inset', `${left}px`);
+    nav.style.setProperty('--tab-rail-width', `${nav.clientWidth - left - right}px`);
+    const x = target.left - box.left;
+    if (animate && mover) mover.to(x);
+    else { mover?.dispose(); mover = spring(x, paint, 25); }
+    pill.hidden = false; nav.dataset.tabMotion = 'ready';
+  }
+  const resize = new ResizeObserver(() => align());
+  resize.observe(nav);
+  const preference = () => { if (reducedMotion.matches) { stopPop(); align(); } };
+  reducedMotion.addEventListener('change', preference);
+  return {
+    update(html, context) {
+      const template = document.createElement('template'); template.innerHTML = html;
+      const incoming = [...template.content.querySelectorAll('a')];
+      const nextSignature = `${context}:${incoming.map(a => a.getAttribute('href')).join('|')}`;
+      const nextSelected = incoming.find(a => a.hasAttribute('aria-current'))?.getAttribute('href') || '';
+      const changed = nextSelected !== selected, rebuilt = nextSignature !== signature;
+      const links = new Map([...nav.querySelectorAll('a')].map(a => [a.getAttribute('href'), a]));
+      if (changed || rebuilt) stopPop();
+      incoming.forEach((fresh, i) => {
+        const href = fresh.getAttribute('href'), link = links.get(href) || fresh;
+        links.delete(href);
+        link.setAttribute('aria-label', fresh.getAttribute('aria-label'));
+        if (fresh.hasAttribute('aria-current')) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+        if (link.innerHTML !== fresh.innerHTML) link.innerHTML = fresh.innerHTML;
+        // Leave existing links in place: replacing the nav would lose keyboard focus.
+        if (nav.children[i + 1] !== link) nav.insertBefore(link, nav.children[i + 1] || null);
+      });
+      links.forEach(link => link.remove());
+      if (rebuilt) rail.replaceChildren(...incoming.map(a => {
+        const cell = document.createElement('span');
+        cell.append(a.querySelector('.icon').cloneNode(true)); return cell;
+      }));
+      const animate = changed && !rebuilt && !reducedMotion.matches && !!mover;
+      if (changed || rebuilt || !mover) align(animate);
+      if (animate && !pill.hidden && Element.prototype.animate) {
+        const index = incoming.findIndex(a => a.hasAttribute('aria-current'));
+        const icons = [nav.querySelector('a[aria-current="page"] .icon'), rail.children[index]?.firstElementChild];
+        pops = icons.filter(Boolean).map(el => el.animate([
+          { transform: 'scale(.88)' }, { transform: 'scale(1.08)', offset: .55 }, { transform: 'scale(1)' }
+        ], { duration: 340, easing: 'cubic-bezier(.22, 1, .36, 1)' }));
+      }
+      selected = nextSelected; signature = nextSignature;
+    },
+    reset() {
+      stopPop(); mover?.dispose(); mover = null; selected = ''; signature = '';
+      pill.hidden = true; nav.removeAttribute('data-tab-motion');
+    },
+    dispose() { this.reset(); resize.disconnect(); reducedMotion.removeEventListener('change', preference); }
+  };
+}
+
 export function searchMarkup(value = '') {
   const open = !!value;
   return `<div class="menu-wrap campus-search" role="search" aria-label="Buscar en el campus">
