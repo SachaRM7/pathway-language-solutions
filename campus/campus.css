@@ -144,7 +144,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .tile-head h2 { font-size: 18px; letter-spacing: -.025em; }
 .label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .huge { font-size: clamp(48px, 5vw, 64px); font-weight: 800; letter-spacing: -.06em; line-height: .95; }
-.big span { margin-left: 4px; letter-spacing: -.02em; }
+.big > span:not([data-roll]) { margin-left: 4px; letter-spacing: -.02em; }
 .big { font-size: 34px; font-weight: 800; letter-spacing: -.05em; line-height: 1; }
 .pill { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: color-mix(in srgb, var(--panel) 70%, transparent); color: var(--ink); white-space: nowrap; }
 .pill .icon { width: 14px; height: 14px; stroke-width: 2.2; }
@@ -662,7 +662,7 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 @keyframes otp-ring { 0% { box-shadow: inset 0 0 0 1.5px var(--line, #e3e3e5); transform: none; } 50% { transform: scale(1.06); } 100% { box-shadow: inset 0 0 0 2px var(--mint-ink, #1d7a49), 0 0 0 4px color-mix(in srgb, var(--mint-ink, #1d7a49) 14%, transparent); background: var(--mint, #dcf3e4); transform: none; } }
 @media (prefers-reduced-motion: reduce) { .otp-box, .otp-box b, .otp-boxes, .otp-caret { animation: none !important; transition: none !important; } }
 /* Staff home on a phone: the three figures side by side instead of three tall tiles. */
-@media (max-width: 719px) { .bento.staff > .kpi { grid-column: span 4; min-height: 0; padding: 16px 14px; gap: 10px; } .bento.staff > .kpi .label { font-size: 12px; line-height: 1.25; } .bento.staff > .kpi .big { font-size: 30px; } .bento.staff > .kpi .big span { font-size: 15px !important; } }
+@media (max-width: 719px) { .bento.staff > .kpi { grid-column: span 4; min-height: 0; padding: 16px 14px; gap: 10px; } .bento.staff > .kpi .label { font-size: 12px; line-height: 1.25; } .bento.staff > .kpi .big { font-size: 30px; } .bento.staff > .kpi .big > span:not([data-roll]) { font-size: 15px !important; } }
 
 /* ───────────── Contrato del alumno: a sheet of aged paper on a dark desk ───────────── */
 .contract { --desk: #1d1915; --desk-2: #3b3128; --paper: #f2e7cf; --paper-ink: #2b2116; --paper-ink-2: #6b5537; --seal: #b3302a; --fold: 54px;
