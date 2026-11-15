@@ -1,4 +1,4 @@
-import { searchMarkup, mountSearch, mountMotion, rollNumber, checkMarkup, cardSlot, advanceDeck } from './motion.js';
+import { searchMarkup, mountSearch, mountMotion, mountTabbar, rollNumber, checkMarkup, cardSlot, advanceDeck } from './motion.js';
 
 // Campus Pathway · application élève et professeur, branchée sur Supabase.
 // Interface en espagnol ; contenu travaillé en français. Données : voir campus/db/001_init.sql.
@@ -23,6 +23,7 @@ const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 const pad2 = n => String(n).padStart(2, '0');
 
 const motionMemory = new Map();
+const tabbarMotion = mountTabbar($('#tabbar'));
 let disposeViewMotion = () => {}, disposeSearch = () => {}, disposeEndMotion = () => {};
 let motionUser = null;
 
@@ -114,6 +115,7 @@ const LT = {
   de: { h1: 'Melden Sie sich im Campus an', sub: 'Wir senden Ihnen einen Anmeldelink per E-Mail. Ohne Passwort.', email: 'Ihre E-Mail', ph: 'name@beispiel.de', send: 'Link erhalten', sending: 'Wird gesendet…', invalid: 'Geben Sie eine gültige E-Mail ein, zum Beispiel name@beispiel.de.', noAccess: 'Diese E-Mail hat keinen Campus-Zugang. Bitten Sie Pathway um eine Einladung.', wait: 'Warten Sie eine Minute, bevor Sie einen neuen Link anfordern.', failed: 'Der Link konnte nicht gesendet werden. Bitte erneut versuchen.', help: 'Probleme bei der Anmeldung? Schreiben Sie uns auf WhatsApp.', note: 'Nach der Anmeldung ist der Campus auf Spanisch.', back: '/de/' }
 }[LOGIN_LANG];
 function showLogin(err, sent = false) {
+  tabbarMotion.reset();
   $('#app').hidden = true; $('#tabbar').hidden = true; $('#login').hidden = false;
   const box = $('#loginBox');
   $('#loginBack').href = LT.back; $('#loginHelp').textContent = LT.help;
@@ -477,7 +479,7 @@ function renderNav(cur) {
   const items = navItems();
   $('#sideNav').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${it.label}${c ? `<span class="count num">${c > 99 ? '99+' : c}</span>` : ''}</a>`; }).join('');
   $('#tabbar').hidden = false;
-  $('#tabbar').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join('');
+  tabbarMotion.update(items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join(''), `${A.profile.id}:${teacherMode()}`);
   const p = A.profile;
   $('#promo').innerHTML = teacherMode()
     ? `<span>${p.role === 'admin' ? 'Administración' : 'Profesor'}</span><b>${esc(p.full_name)}</b><span>${A.staff.overview.length} alumno${A.staff.overview.length === 1 ? '' : 's'}</span>`

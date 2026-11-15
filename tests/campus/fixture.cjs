@@ -33,6 +33,13 @@ window.__motionTest = {
  earn() {A.xp.push({amount:20,created_at:new Date().toISOString()}); A.profile.xp_total+=20; render(false);},
  state: () => ({cards:R.cards.map(c=>c.id),busy:R.busy,reviewed:R.reviewed,search:A.search}),
  render,
+ navOptions(count) { A.schedule=count>=6?{}:null; M.ready=count>=7; renderNav(currentView()); },
+ staffNav() {
+  A.profile.role='admin'; A.mode='profesor';
+  Object.assign(A.staff,{prospects:[],threads:[],groups:[],invitesReady:true,settings:{}});
+  renderNav('ajustes');
+ },
+ login: () => showLogin(''),
  result() {
   $('#lesson').hidden=false; $('#toast').classList.remove('show');
   $('#lessonBody').innerHTML='<div class="end"><h2>¡Unidad superada!</h2><div class="end-stats"><div style="background:var(--butter);color:var(--butter-ink)"><small>XP ganados</small><b id="xpCount"></b></div></div><div class="end-list"><div class="end-item">'+checkMarkup('Tarea entregada',true,'fixture-check',true)+'</div></div></div>';
