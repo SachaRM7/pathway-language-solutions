@@ -2778,7 +2778,6 @@ function bindEditor() {
 const M = { ready: false, thread: null, typing: false, busy: false, open: null, messages: null, drafts: {}, editing: null };
 const TEAM = 'Equipo Pathway';
 const ASSISTANT_LABEL = 'Asistente Pathway · respuesta automática';
-const HANDED = 'Se lo pasamos a tu profesor';
 const myUnread = () => (M.thread && M.thread.unread) || 0;
 const threadsWaiting = () => (A.staff.threads || []).filter(t => t.needs_staff);
 const msgWhen = iso => {
@@ -2811,7 +2810,7 @@ function msgItem(m, staff, studentName) {
     : staff ? esc(studentName) : '';
   let flag = '';
   if (staff && m.kind === 'assistant' && m.escalated) flag = `<p class="msg-flag">${icon('users')}<span>Pasada al profesor${m.note ? ` · ${esc(m.note)}` : ''}</span></p>`;
-  if (!staff && m.handed_over) flag = `<p class="msg-flag">${icon('users')}<span>${HANDED}</span></p>`;
+  // The student never reads that a message was passed on: the teacher simply answers.
   if (staff && draft === 'pending' && M.editing === m.id) {
     return `<div class="msg ours k-assistant is-draft is-editing"><p class="msg-who">${who}</p>
       <form class="msg-draft-edit" data-draft-form="${m.id}"><label class="sr-only" for="draftText">Texto de la respuesta</label>
