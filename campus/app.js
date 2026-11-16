@@ -3896,6 +3896,9 @@ function fixNote(d) {
 }
 // brief: only « wrong → right », when the teacher wrote the explanation for this option.
 const fixList = (diffs, brief) => diffs.length ? `<ul class="fix-list">${diffs.slice(0, 5).map(d => `<li>${brief && d.from && d.to ? `<s>${esc(d.from)}</s> → <b>${esc(d.to)}</b>.` : fixNote(d)}</li>`).join('')}${diffs.length > 5 ? `<li>Y ${diffs.length - 5} error${diffs.length - 5 > 1 ? 'es' : ''} más: compara con la respuesta correcta.</li>` : ''}</ul>` : '';
+// When the correction is already shown in place (fill-in-the-blank, find the error): only the
+// explanations, without repeating « wrong → right ».
+const ruleText = diffs => diffs.map(d => fixNote(d).replace(/^<s>.*?<\/s> → <b>.*?<\/b>\.\s*/, '')).filter(Boolean).map(t => `<p>${t}</p>`).join('');
 // The full sentence an option gives (choice with a blank, or the option itself).
 const optSentence = (ex, i) => ex.type === 'choice' && ex.fr ? ex.fr.replace('___', ex.options[i]) : ex.options[i];
 const wave = () => `<div class="wave" aria-hidden="true">${Array.from({ length: 34 }, (_, i) => `<i style="height:${(18 + Math.abs(Math.sin(i * 1.7)) * 70 + (i % 3) * 6).toFixed(0)}%"></i>`).join('')}</div>`;
@@ -4071,15 +4074,18 @@ function check(skipped = false, miss = 0) {
   L.xp += g; setProgress(); if (g) floatXp(g);
   const T = ['¡Bien hecho!', '¡Exacto!', '¡Perfecto!', 'Muy bien'];
   if (ex.type === 'match') setFoot(miss ? 'warn' : 'good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
-  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: fixList(diffs) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
+  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: (ex.type === 'type' ? ruleText(diffs) : fixList(diffs)) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
   else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.explain });
   else {
     // Only what the student got wrong: the word-by-word corrections, or the teacher's note for the
     // option picked; the exercise's general explanation only when there is nothing more precise.
     const why = (ex.type === 'choice' || ex.type === 'listen') && Array.isArray(ex.why) ? (ex.why[L.answer] || '') : '';
     // Find-the-error and word-order exercises: their explanation is about the very mistake, keep it.
-    const own = (ex.type === 'spot' || ex.type === 'order') && diffs.length && ex.explain ? `<p>${ex.explain}</p>` : '';
-    const precise = skipped === true ? '' : otherSentence ? '<p>No es la misma frase: escúchala otra vez y compárala con la correcta.</p>' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + fixList(diffs, !!why || !!own) + (why ? `<p>${why}</p>` : '') + own;
+    const own = ex.type === 'order' && diffs.length && ex.explain ? `<p>${ex.explain}</p>` : '';
+    const exp = ex.explain ? `<p>${ex.explain}</p>` : '';
+    // Correction already shown in place (the blank, the faulty word): just the explanation.
+    const inPlace = ex.type === 'type' ? (ruleText(diffs) || exp) : ex.type === 'spot' ? (exp || ruleText(diffs)) : null;
+    const precise = skipped === true ? '' : otherSentence ? '<p>No es la misma frase: escúchala otra vez y compárala con la correcta.</p>' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + (inPlace !== null ? inPlace : fixList(diffs, !!why || !!own) + (why ? `<p>${why}</p>` : '') + own);
     setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
   }
 }
