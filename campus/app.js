@@ -3841,24 +3841,27 @@ const noAcc = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
    debrief at the end of the lesson. */
 const words = s => norm(s).split(' ').filter(Boolean);
 const bare = s => noAcc(s).replace(/['\s-]/g, '');
-function diffWords(given, right) {
-  const a = words(given), b = words(right), n = a.length, m = b.length;
+// before: the text in front of the answer (fill-in-the-blank), to know the subject of a verb.
+function diffWords(given, right, before = '') {
+  const a = words(given), b = words(right), n = a.length, m = b.length, lead = words(before).pop() || '';
   const T = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) T[i][j] = a[i] === b[j] ? T[i + 1][j + 1] + 1 : Math.max(T[i + 1][j], T[i][j + 1]);
   const out = []; let i = 0, j = 0, g = null;
   while (i < n || j < m) {
     if (i < n && j < m && a[i] === b[j]) { if (g) out.push(g); g = null; i++; j++; }
-    else if (j < m && (i >= n || T[i][j + 1] >= T[i + 1][j])) (g = g || { from: [], to: [] }).to.push(b[j++]);
-    else (g = g || { from: [], to: [] }).from.push(a[i++]);
+    else if (j < m && (i >= n || T[i][j + 1] >= T[i + 1][j])) (g = g || { from: [], to: [], prev: j ? b[j - 1] : lead }).to.push(b[j++]);
+    else (g = g || { from: [], to: [], prev: j ? b[j - 1] : lead }).from.push(a[i++]);
   }
   if (g) out.push(g);
   // Same number of words on both sides: one correction per word (« ecout → écoute », « du → de »).
-  const pairs = out.flatMap(x => x.from.length > 1 && x.from.length === x.to.length ? x.from.map((w, k) => ({ from: [w], to: [x.to[k]] })) : [x]);
-  return pairs.map(x => { const from = x.from.join(' '), to = x.to.join(' '); return { from, to, minor: !!from && !!to && bare(from) === bare(to) }; });
+  const pairs = out.flatMap(x => x.from.length > 1 && x.from.length === x.to.length ? x.from.map((w, k) => ({ from: [w], to: [x.to[k]], prev: k ? x.to[k - 1] : x.prev })) : [x]);
+  return pairs.map(x => { const from = x.from.join(' '), to = x.to.join(' '); return { from, to, prev: x.prev || '', minor: !!from && !!to && bare(from) === bare(to) }; });
 }
+const SUBJECTS = ['je', 'tu', 'il', 'elle', 'on', 'nous', 'vous', 'ils', 'elles'];
+const ENDINGS = ['ons', 'ent', 'ez', 'es', 'e', 's', 't', 'x'];
 const ELIDE = ['je', 'le', 'la', 'de', 'ne', 'me', 'te', 'se', 'que', 'ce'];
 // The closest accepted answer (fewest differences).
-const bestDiff = (given, answers) => answers.map(x => diffWords(given, x)).sort((p, q) => p.length - q.length)[0] || [];
+const bestDiff = (given, answers, before = '') => answers.map(x => diffWords(given, x, before)).sort((p, q) => p.length - q.length)[0] || [];
 const VERB_ENDS = ['', 'e', 'es', 'ent', 'ons', 'ez', 'er', 's', 't', 'x'];
 function fixNote(d) {
   const f = `<s>${esc(d.from)}</s>`, t = `<b>${esc(d.to)}</b>`;
@@ -3881,7 +3884,11 @@ function fixNote(d) {
     let k = 0; while (k < d.from.length && k < d.to.length && d.from[k] === d.to[k]) k++;
     const sa = d.from.slice(k), sb = d.to.slice(k);
     const inf = /(er|ir)$/.test(d.from) && (sa === 'r' || sa === 'er' || sa === 'ir');
-    if (k >= 3 && (inf || (VERB_ENDS.includes(sa) && VERB_ENDS.includes(sb)))) note += inf ?` «${esc(d.from)}» es el infinitivo: aquí el verbo va conjugado.` : ' Terminación del verbo: je → -e, tu → -es, il/elle → -e, nous → -ons, vous → -ez, ils/elles → -ent.';
+    // The subject in front of the verb (or the elided j'), and the ending the right form takes.
+    const subj = /^j'/.test(d.to) ? 'je' : SUBJECTS.includes(d.prev) ? d.prev : d.prev === "j'" ? 'je' : '';
+    const end = ENDINGS.find(e => d.to.endsWith(e)) || '', fend = ENDINGS.find(e => d.from.endsWith(e)) || '';
+    const sameStem = end !== fend && d.to.slice(0, d.to.length - end.length) === d.from.slice(0, d.from.length - fend.length) && d.to.length - end.length >= 3;
+    if (k >= 3 && (inf || sameStem || (VERB_ENDS.includes(sa) && VERB_ENDS.includes(sb)))) note += inf ? ` «${esc(d.from)}» es el infinitivo: aquí el verbo va conjugado.` : subj && end ? ` Con <b>${esc(subj)}</b>, la terminación es <b>-${esc(end)}</b>.` : ' Terminación del verbo: je → -e, tu → -es, il/elle → -e, nous → -ons, vous → -ez, ils/elles → -ent.';
   }
   return note;
 }
@@ -3970,7 +3977,7 @@ function bind(ex) {
       if (pick === null) return toast('Elige primero un elemento de la izquierda.');
       const lb = Ls[pick];
       if (+b.dataset.r === pick) { lb.classList.remove('picked'); lb.classList.add('paired'); b.classList.add('paired'); lb.disabled = b.disabled = true; pick = null; if (++paired === ex.pairs.length) setTimeout(() => check(false, miss), 280); }
-      else { miss++; [b, lb].forEach(x => { x.classList.remove('shake'); void x.offsetWidth; x.classList.add('shake'); }); }
+      else { miss++; [b, lb].forEach(x => { x.classList.remove('shake', 'miss'); void x.offsetWidth; x.classList.add('shake', 'miss'); clearTimeout(x._miss); x._miss = setTimeout(() => x.classList.remove('miss'), 750); }); }
     });
   }
   if (ex.type === 'spot') $$('[data-w]', body).forEach(b => b.onclick = () => { if (L.checked) return; $$('[data-w]', body).forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); L.answer = +b.dataset.w; enable(true); });
@@ -4010,7 +4017,7 @@ function check(skipped = false, miss = 0) {
   else if (ex.type === 'type' || ex.type === 'dictation') {
     const a = norm(L.answer || ''); ok = ex.answers.some(x => norm(x) === a);
     if (!ok) {
-      diffs = bestDiff(L.answer || '', ex.answers);
+      diffs = bestDiff(L.answer || '', ex.answers, ex.type === 'type' ? ex.before : '');
       if (diffs.length && diffs.every(d => d.minor)) { if (L.slip) slipAgain = true; else { ok = slip = true; L.slip = true; (L.slips = L.slips || new Set()).add(ex.id); } }
     }
   }
@@ -4022,7 +4029,20 @@ function check(skipped = false, miss = 0) {
     $$('[data-opt]', body).forEach(b => { const i = +b.dataset.opt; b.disabled = true; if (i === ex.answer) b.classList.add('right'); else if (i === L.answer) b.classList.add('wrong'); });
     if (ex.type === 'listen') body.querySelector('.ex').insertAdjacentHTML('beforeend', nbsp(`<p class="transcript">${esc(ex.audio)}</p>`));
   }
-  if (ex.type === 'spot') { const w = $$('[data-w]', body)[ex.wrong]; w.classList.add('right'); w.textContent = ex.fix; $$('[data-w]', body).forEach(b => b.disabled = true); }
+  if (ex.type === 'spot') {
+    // The faulty word shows its correction (« mangez → mangent »); a wrong tap is marked red.
+    const all = $$('[data-w]', body), w = all[ex.wrong];
+    w.classList.add('right'); w.innerHTML = `<s>${esc(ex.words[ex.wrong])}</s>${esc(ex.fix)}`;
+    if (!ok && L.answer != null && all[L.answer] && L.answer !== ex.wrong) all[L.answer].classList.add('wrong');
+    all.forEach(b => { b.disabled = true; b.setAttribute('aria-pressed', 'false'); });
+    if (!ok) diffs = [{ from: norm(ex.words[ex.wrong]), to: norm(ex.fix), minor: bare(ex.words[ex.wrong]) === bare(ex.fix) }];
+  }
+  if (ex.type === 'order' && !ok && skipped !== true) {
+    // Wrong word chosen among the tiles (« regardes » for « regarde »): name it; a pure order mistake
+    // keeps the exercise's explanation.
+    const d = diffWords(L.answer.map(i => ex.tiles[i]).join(' '), ex.answer.join(' '));
+    if (d.length && d.every(x => x.from && x.to)) diffs = d;
+  }
   const ti = $('#typeIn', body); if (ti) ti.disabled = true;
   // Result per exercise: first attempt decides first_try; a later success sets correct.
   const r = L.res.get(ex.id) || { exercise_id: ex.id, first_try: false, correct: false };
@@ -4035,14 +4055,16 @@ function check(skipped = false, miss = 0) {
   else { L.combo = 0; if (!ex.retry) L.queue.push({ ...ex, retry: true }); }
   L.xp += g; setProgress(); if (g) floatXp(g);
   const T = ['¡Bien hecho!', '¡Exacto!', '¡Perfecto!', 'Muy bien'];
-  if (ex.type === 'match') setFoot('good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
+  if (ex.type === 'match') setFoot(miss ? 'warn' : 'good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
   else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), explain: fixList(diffs) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
   else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.explain });
   else {
     // Only what the student got wrong: the word-by-word corrections, or the teacher's note for the
     // option picked; the exercise's general explanation only when there is nothing more precise.
     const why = (ex.type === 'choice' || ex.type === 'listen') && Array.isArray(ex.why) ? (ex.why[L.answer] || '') : '';
-    const precise = skipped === true ? '' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + fixList(diffs, !!why) +(why ? `<p>${why}</p>` : '');
+    // Find-the-error and word-order exercises: their explanation is about the very mistake, keep it.
+    const own = (ex.type === 'spot' || ex.type === 'order') && diffs.length && ex.explain ? `<p>${ex.explain}</p>` : '';
+    const precise = skipped === true ? '' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + fixList(diffs, !!why || !!own) + (why ? `<p>${why}</p>` : '') + own;
     setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
   }
 }
