@@ -2610,7 +2610,9 @@ function exForm(type, x) {
   const opts = p.options || ['', '', '', ''];
   const f = (id, label, value, ph = '', attrs = '') => `<label class="field" for="${id}">${label}<input id="${id}" value="${esc(value || '')}" placeholder="${esc(ph)}" ${attrs}></label>`;
   const ta = (id, label, value, ph = '', rows = 3) => `<label class="field" for="${id}">${label}<textarea id="${id}" class="ed-area" rows="${rows}" placeholder="${esc(ph)}">${esc(value || '')}</textarea></label>`;
-  const optionsBlock = `<div class="field">Opciones · marca la correcta<div class="ed-options">${opts.map((o, i) => `<label class="ed-opt"><input type="radio" name="edAnswer" value="${i}" ${(p.answer || 0) === i ? 'checked' : ''} aria-label="Respuesta correcta ${i + 1}"><input class="ed-opt-text" data-opt-i="${i}" value="${esc(o)}" placeholder="Opción ${i + 1}"></label>`).join('')}</div><span class="ed-hint">Deja vacías las opciones que no necesites (mínimo 2).</span></div>`;
+  const why = Array.isArray(p.why) ? p.why : [];
+  const optionsBlock = `<div class="field">Opciones · marca la correcta<div class="ed-options">${opts.map((o, i) => `<label class="ed-opt"><input type="radio" name="edAnswer" value="${i}" ${(p.answer || 0) === i ? 'checked' : ''} aria-label="Respuesta correcta ${i + 1}"><input class="ed-opt-text" data-opt-i="${i}" value="${esc(o)}" placeholder="Opción ${i + 1}"></label>`).join('')}</div><span class="ed-hint">Deja vacías las opciones que no necesites (mínimo 2).</span></div>
+    <details class="field ed-why"${why.some(Boolean) ? ' open' : ''}><summary>Por qué es incorrecta cada opción (opcional)</summary><span class="ed-hint">Se muestra al alumno que elige esa opción, debajo de su error. Una frase corta sobre su falta.</span>${opts.map((o, i) => `<input class="ed-why-text" data-why-i="${i}" value="${esc(toStars(why[i] || ''))}" placeholder="Si elige la opción ${i + 1}…" aria-label="Si elige la opción ${i + 1}">`).join('')}</details>`;
   let body = '';
   if (type === 'choice') body = f('edFr', 'Frase en francés (opcional) · usa ___ para el hueco', p.fr, 'Nous ___ français au travail.') + f('edEs', 'Traducción (opcional)', p.es, 'Hablamos francés en el trabajo.') + optionsBlock;
   else if (type === 'type') body = `<div class="form-2">${f('edBefore', 'Antes del hueco', p.before, 'Tu')}${f('edAfter', 'Después del hueco', p.after, 'dans un bureau.')}</div>` + f('edHint', 'Pista (opcional)', p.hint, 'travailler') + ta('edAnswers', 'Respuestas aceptadas · una por línea', (p.answers || []).join('\n'), 'travailles', 2);
@@ -2641,6 +2643,9 @@ function readExForm(form) {
     const kept = raw.map((o, i) => ({ o, i })).filter(z => z.o);
     if (kept.length < 2) err('Escribe al menos dos opciones.');
     p.options = kept.map(z => z.o); p.answer = kept.findIndex(z => z.i === picked);
+    const whyRaw = [...form.querySelectorAll('[data-why-i]')].map(i => fromStars(i.value.trim()));
+    const why = kept.map((z, k) => k === p.answer ? '' : (whyRaw[z.i] || ''));
+    if (why.some(Boolean)) p.why = why;
     p.two = p.options.every(o => o.length <= 28);
   }
   if (type === 'choice') { if (v('edFr').trim()) p.fr = v('edFr').trim(); if (v('edEs').trim()) p.es = v('edEs').trim(); if (p.fr && !p.fr.includes('___') && !p.es) { /* plain sentence is fine */ } }
@@ -3721,7 +3726,7 @@ async function loadResumable() {
 }
 function saveProgress() {
   if (!L || L.preview || L.finished) return;
-  const state = { queue: L.queue.map(x => ({ id: x.id, retry: !!x.retry })), pos: L.pos, combo: L.combo, xp: L.xp, res: [...L.res.values()], elapsed: Date.now() - L.start, focusLost: L.focusLost || 0 };
+  const state = { queue: L.queue.map(x => ({ id: x.id, retry: !!x.retry })), pos: L.pos, combo: L.combo, xp: L.xp, res: [...L.res.values()], elapsed: Date.now() - L.start, focusLost: L.focusLost || 0, slip: !!L.slip, slips: [...(L.slips || [])] };
   L_RESUME.add(L.unit.id);
   sb.rpc('save_lesson_progress', { p_unit: L.unit.id, p_state: state }).then(r => { if (r && r.error) console.error(r.error); });
 }
@@ -3746,7 +3751,7 @@ async function startLesson(unitId, preview) {
     const byId = Object.fromEntries(items.map(x => [x.id, x]));
     if (st && Array.isArray(st.queue) && st.queue.every(q => byId[q.id]) && st.pos > 0 && st.pos < st.queue.length) {
       L.queue = st.queue.map(q => ({ ...byId[q.id], retry: q.retry }));
-      L.pos = st.pos; L.combo = st.combo || 0; L.xp = st.xp || 0; L.start = Date.now() - (st.elapsed || 0); L.focusLost = st.focusLost || 0;
+      L.pos = st.pos; L.combo = st.combo || 0; L.xp = st.xp || 0; L.start = Date.now() - (st.elapsed || 0); L.focusLost = st.focusLost || 0; L.slip = !!st.slip; L.slips = new Set(st.slips || []);
       L.res = new Map((st.res || []).map(r => [r.exercise_id, r]));
       setTimeout(() => toast(`Retomamos donde lo dejaste: ejercicio ${L.pos + 1} de ${L.queue.length}.`), 300);
     }
@@ -3805,6 +3810,61 @@ $('#lessonClose').addEventListener('click', () => {
 const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const norm = s => s.toLowerCase().replace(/[’`´]/g, "'").replace(/[.!?¿¡,;:«»"]+/g, '').replace(/\s+/g, ' ').trim();
 const noAcc = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/* Corrections. Accents and apostrophes count: the first slip of a lesson that is only an accent or an
+   apostrophe is a warning (« Atención », the answer counts), the next ones are errors. The feedback
+   names only what the student got wrong, word by word; the exercise's full explanation goes to the
+   debrief at the end of the lesson. */
+const words = s => norm(s).split(' ').filter(Boolean);
+const bare = s => noAcc(s).replace(/['\s-]/g, '');
+function diffWords(given, right) {
+  const a = words(given), b = words(right), n = a.length, m = b.length;
+  const T = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) T[i][j] = a[i] === b[j] ? T[i + 1][j + 1] + 1 : Math.max(T[i + 1][j], T[i][j + 1]);
+  const out = []; let i = 0, j = 0, g = null;
+  while (i < n || j < m) {
+    if (i < n && j < m && a[i] === b[j]) { if (g) out.push(g); g = null; i++; j++; }
+    else if (j < m && (i >= n || T[i][j + 1] >= T[i + 1][j])) (g = g || { from: [], to: [] }).to.push(b[j++]);
+    else (g = g || { from: [], to: [] }).from.push(a[i++]);
+  }
+  if (g) out.push(g);
+  // Same number of words on both sides: one correction per word (« ecout → écoute », « du → de »).
+  const pairs = out.flatMap(x => x.from.length > 1 && x.from.length === x.to.length ? x.from.map((w, k) => ({ from: [w], to: [x.to[k]] })) : [x]);
+  return pairs.map(x => { const from = x.from.join(' '), to = x.to.join(' '); return { from, to, minor: !!from && !!to && bare(from) === bare(to) }; });
+}
+const ELIDE = ['je', 'le', 'la', 'de', 'ne', 'me', 'te', 'se', 'que', 'ce'];
+// The closest accepted answer (fewest differences).
+const bestDiff = (given, answers) => answers.map(x => diffWords(given, x)).sort((p, q) => p.length - q.length)[0] || [];
+const VERB_ENDS = ['', 'e', 'es', 'ent', 'ons', 'ez', 'er', 's', 't', 'x'];
+function fixNote(d) {
+  const f = `<s>${esc(d.from)}</s>`, t = `<b>${esc(d.to)}</b>`;
+  if (!d.from) return `Falta ${t}.`;
+  if (!d.to) return `Sobra ${f}.`;
+  if (d.minor) {
+    const accent = noAcc(d.from).replace(/['\s-]/g, '') === noAcc(d.to).replace(/['\s-]/g, '') && d.from.replace(/['\s-]/g, '') !== d.to.replace(/['\s-]/g, '');
+    const apos = noAcc(d.from) !== noAcc(d.to);
+    return [apos ? `Apóstrofo: ${t} (delante de vocal o h muda: je → j’, le/la → l’, de → d’, que → qu’).` : '', accent ? `Acento: ${t}, no ${f}.` : ''].filter(Boolean).join(' ');
+  }
+  // « je écoute » for « j'écoute »: the elision, then whatever else differs in the word.
+  const fw = d.from.split(' '), tw = d.to.split(' ');
+  if (fw.length === 2 && tw.length === 1 && ELIDE.includes(fw[0]) && /^[aeiouyhâàäéèêëîïôöûùü]/.test(fw[1]) && tw[0].startsWith(fw[0].slice(0, -1) + "'")) {
+    const rest = tw[0].slice(fw[0].length), elided = `${esc(fw[0])} + vocal → <b>${esc(fw[0].slice(0, -1))}’</b>`;
+    const restNote = fw[1] === rest ? '' : ' ' + fixNote({ from: fw[1], to: rest, minor: bare(fw[1]) === bare(rest) });
+    return `${f} → ${t}. Apóstrofo: ${elided}.${restNote}`;
+  }
+  let note = `${f} → ${t}.`;
+  if (!/\s/.test(d.from) && !/\s/.test(d.to)) {
+    let k = 0; while (k < d.from.length && k < d.to.length && d.from[k] === d.to[k]) k++;
+    const sa = d.from.slice(k), sb = d.to.slice(k);
+    const inf = /(er|ir)$/.test(d.from) && (sa === 'r' || sa === 'er' || sa === 'ir');
+    if (k >= 3 && (inf || (VERB_ENDS.includes(sa) && VERB_ENDS.includes(sb)))) note += inf ?` «${esc(d.from)}» es el infinitivo: aquí el verbo va conjugado.` : ' Terminación del verbo: je → -e, tu → -es, il/elle → -e, nous → -ons, vous → -ez, ils/elles → -ent.';
+  }
+  return note;
+}
+// brief: only « wrong → right », when the teacher wrote the explanation for this option.
+const fixList = (diffs, brief) => diffs.length ? `<ul class="fix-list">${diffs.slice(0, 5).map(d => `<li>${brief && d.from && d.to ? `<s>${esc(d.from)}</s> → <b>${esc(d.to)}</b>.` : fixNote(d)}</li>`).join('')}${diffs.length > 5 ? `<li>Y ${diffs.length - 5} error${diffs.length - 5 > 1 ? 'es' : ''} más: compara con la respuesta correcta.</li>` : ''}</ul>` : '';
+// The full sentence an option gives (choice with a blank, or the option itself).
+const optSentence = (ex, i) => ex.type === 'choice' && ex.fr ? ex.fr.replace('___', ex.options[i]) : ex.options[i];
 const wave = () => `<div class="wave" aria-hidden="true">${Array.from({ length: 34 }, (_, i) => `<i style="height:${(18 + Math.abs(Math.sin(i * 1.7)) * 70 + (i % 3) * 6).toFixed(0)}%"></i>`).join('')}</div>`;
 
 function setProgress() {
@@ -3813,7 +3873,7 @@ function setProgress() {
   $('#combo').innerHTML = L.combo >= 2 ? `<span class="pill num">${icon('flame')}${L.combo} seguidas</span>` : '';
 }
 function setFoot(mode, d = {}) {
-  foot.className = 'l-foot' + (mode === 'good' ? ' good' : mode === 'bad' ? ' bad' : '');
+  foot.className = 'l-foot' + (mode === 'good' ? ' good' : mode === 'bad' ? ' bad' : mode === 'warn' ? ' good warn' : '');
   if (mode === 'check') {
     footIn.innerHTML = `<button class="btn btn-light" id="skipBtn" type="button">No lo sé</button><button class="btn btn-dark" id="checkBtn" type="button" disabled>Comprobar</button>`;
     $('#checkBtn').onclick = () => check(); $('#skipBtn').onclick = () => check(true);
@@ -3826,8 +3886,8 @@ function setFoot(mode, d = {}) {
     footIn.innerHTML = `<p class="muted" style="font-size:14px">No pudimos guardar tu lección.</p><button class="btn btn-dark" id="retryBtn" type="button">Reintentar</button>`;
     $('#retryBtn').onclick = finish;
   } else {
-    const g = mode === 'good';
-    footIn.innerHTML = nbsp(`<div class="fb" role="status"><span class="fb-ico">${icon(g ? 'check' : 'x')}</span><div><h3>${esc(d.title)}</h3>${!g && d.correct ? `<p class="correct">${esc(d.correct)}</p>` : ''}${d.explain ? `<p>${d.explain}</p>` : ''}</div></div>
+    const g = mode === 'good' || mode === 'warn';
+    footIn.innerHTML = nbsp(`<div class="fb" role="status"><span class="fb-ico">${icon(mode === 'good' ? 'check' : mode === 'warn' ? 'sparkle' : 'x')}</span><div><h3>${esc(d.title)}</h3>${mode !== 'good' && d.correct ? `<p class="correct">${mode === 'bad' ? '<span class="fb-lbl">Correcto: </span>' : ''}${esc(d.correct)}</p>` : ''}${d.explain ? `<div class="fb-text">${/^\s*<(p|ul)\b/.test(d.explain) ? d.explain : `<p>${d.explain}</p>`}</div>` : ''}</div></div>
       <button class="btn ${g ? 'btn-good' : 'btn-coral'}" id="nextBtn" type="button">Continuar</button>`);
     $('#nextBtn').onclick = next; $('#nextBtn').focus();
   }
@@ -3910,10 +3970,26 @@ function reviewCard(ex) {
 }
 function check(skipped = false, miss = 0) {
   if (!L || L.checked) return;
-  const ex = L.queue[L.pos]; let ok = false, note = '';
+  const ex = L.queue[L.pos]; let ok = false, slip = false, slipAgain = false, diffs = [];
   if (skipped === true) ok = false;
-  else if (ex.type === 'choice' || ex.type === 'listen') ok = L.answer === ex.answer;
-  else if (ex.type === 'type' || ex.type === 'dictation') { const a = norm(L.answer || ''); ok = ex.answers.some(x => norm(x) === a); if (!ok && ex.answers.some(x => noAcc(norm(x)) === noAcc(a))) { ok = true; note = 'Ojo con los acentos: ' + correctText(ex); } }
+  else if (ex.type === 'choice' || ex.type === 'listen') {
+    ok = L.answer === ex.answer;
+    // Word-by-word only when the option picked is close to the right one (a form error, as in
+    // « J'habites » for « J'habite »), not for a comprehension or meaning question.
+    if (!ok && ex.type === 'choice') {
+      const d = diffWords(optSentence(ex, L.answer), optSentence(ex, ex.answer)), n = words(optSentence(ex, ex.answer)).length;
+      const changed = d.reduce((s, x) => s + Math.max(x.to.split(' ').filter(Boolean).length, 1), 0);
+      const close = x => x.minor || (x.from && x.to && noAcc(x.from).slice(0, 3) === noAcc(x.to).slice(0, 3));
+      if (d.length && (changed * 2 <= n || (n <= 2 && d.every(close)))) diffs = d;
+    }
+  }
+  else if (ex.type === 'type' || ex.type === 'dictation') {
+    const a = norm(L.answer || ''); ok = ex.answers.some(x => norm(x) === a);
+    if (!ok) {
+      diffs = bestDiff(L.answer || '', ex.answers);
+      if (diffs.length && diffs.every(d => d.minor)) { if (L.slip) slipAgain = true; else { ok = slip = true; L.slip = true; (L.slips = L.slips || new Set()).add(ex.id); } }
+    }
+  }
   else if (ex.type === 'order') ok = L.answer.map(i => ex.tiles[i]).join(' ') === ex.answer.join(' ');
   else if (ex.type === 'spot') ok = L.answer === ex.wrong;
   else if (ex.type === 'match') ok = miss === 0;
@@ -3936,8 +4012,15 @@ function check(skipped = false, miss = 0) {
   L.xp += g; setProgress(); if (g) floatXp(g);
   const T = ['¡Bien hecho!', '¡Exacto!', '¡Perfecto!', 'Muy bien'];
   if (ex.type === 'match') setFoot('good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
-  else if (ok) setFoot('good', { title: note ? 'Casi perfecto' : L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: note ? esc(note) : ex.explain });
-  else setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'Respuesta correcta', correct: correctText(ex), explain: (ex.explain || '') + (ex.retry ? '' : ' Volverá al final de la lección.') });
+  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), explain: fixList(diffs) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
+  else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.explain });
+  else {
+    // Only what the student got wrong: the word-by-word corrections, or the teacher's note for the
+    // option picked; the exercise's general explanation only when there is nothing more precise.
+    const why = (ex.type === 'choice' || ex.type === 'listen') && Array.isArray(ex.why) ? (ex.why[L.answer] || '') : '';
+    const precise = skipped === true ? '' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + fixList(diffs, !!why) +(why ? `<p>${why}</p>` : '');
+    setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
+  }
 }
 function floatXp(n) {
   const b = $('#nextBtn') || footIn, r = b.getBoundingClientRect();
@@ -3953,6 +4036,13 @@ async function finish() {
   const results = [...L.res.values()];
   const firstOk = results.filter(r => r.first_try).length;
   const acc = Math.round(firstOk / L.items.length * 100);
+  // Debrief: each exercise missed at the first try (or passed with a warning), its correct answer and
+  // the exercise's full explanation.
+  const debrief = () => {
+    const list = L.items.filter(ex => ex.type !== 'match' && (!(L.res.get(ex.id) || {}).first_try || (L.slips && L.slips.has(ex.id))));
+    if (!list.length) return '';
+    return `<div class="debrief"><h3>Repasa tus errores</h3><ol>${list.map(ex => `<li><b>${esc(correctText(ex))}${L.slips && L.slips.has(ex.id) ? '<span class="pill ghost">Atención</span>' : ''}</b>${ex.explain ? `<p>${ex.explain}</p>` : ''}</li>`).join('')}</ol></div>`;
+  };
   const item = (c, ic, title, sub) => `<div class="end-item"><span class="medal" style="background:var(--${c});color:var(--${c}-ink)">${icon(ic)}</span><div><b>${title}</b><span class="muted">${sub}</span></div></div>`;
   const header = (xp, extra) => `<div class="end">
     <span class="ex-kind">${icon('sparkle')}Unidad ${L.unit.number} terminada</span>
@@ -3961,7 +4051,7 @@ async function finish() {
       <div style="background:var(--butter);color:var(--butter-ink)"><small>XP ganados</small><b class="num" id="xpCount">+${xp}</b></div>
       <div style="background:var(--mint);color:var(--mint-ink)"><small>Aciertos</small><b class="num">${acc}%</b></div>
       <div style="background:var(--sky);color:var(--sky-ink)"><small>Tiempo</small><b class="num">${Math.floor(secs / 60)}:${pad2(secs % 60)}</b></div>
-    </div><div class="end-list">${extra}</div></div>`;
+    </div><div class="end-list">${extra}</div>${debrief()}</div>`;
   if (L.preview) {
     body.innerHTML = header(L.xp, item('butter', 'book', 'Vista previa', 'Nada se guardó. Los alumnos verán esta unidad cuando la publiques.'));
     setFoot('end'); return;
