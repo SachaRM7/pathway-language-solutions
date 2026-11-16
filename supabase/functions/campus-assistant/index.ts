@@ -64,6 +64,17 @@ Deno.serve(async req => {
   const { data: autoReply } = await asStudent.rpc('assistant_auto_reply');
   const service = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
   const post = async (decision: Decision) => {
+    // Nothing to say: the message stays for the teacher (« Necesita respuesta »), except a plain
+    // « gracias » or « ok », which needs no answer from anyone.
+    if (decision.kind === 'silent') {
+      if (decision.ack) {
+        const { error } = await service.from('message_threads').update({ needs_staff: false, needs_staff_since: null })
+          // Only if nothing older was waiting: a question asked before the « gracias » keeps waiting.
+          .eq('id', q.thread_id).is('escalated_at', null).eq('needs_staff_since', q.created_at);
+        if (error) console.error('ack clear failed', error.code || '');
+      }
+      return json(200, { status: decision.ack ? 'ack' : 'left_for_teacher', escalated: false });
+    }
     let d = applyMode(decision, autoReply === true);
     let { error } = await service.rpc('assistant_reply', { p_message: q.id, p_body: d.body, p_escalate: d.escalate, p_kind: d.kind, p_reason: d.reason, p_draft: d.draft });
     if (error && /assistant_cap/.test(error.message || '') && d.kind !== 'fallback') {
