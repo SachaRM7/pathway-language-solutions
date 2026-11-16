@@ -487,6 +487,22 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .bad .fb h3 { color: var(--peach-ink); }
 .fb .correct { font-weight: 800; font-size: 16px; letter-spacing: -.02em; margin-top: 2px; }
 .fb p { font-size: 14px; margin-top: 3px; color: var(--ink); }
+/* Warning (accent or apostrophe, first time in the lesson) and the word-by-word corrections. */
+.l-foot.warn { background: var(--butter); }
+.warn .fb-ico { background: var(--butter-ink); }
+.warn .fb h3 { color: var(--butter-ink); }
+.fb .fb-lbl { font-weight: 600; color: var(--ink-2); }
+.fb-text { max-height: 34vh; overflow-y: auto; }
+.fix-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; color: var(--ink); }
+.fix-list s { color: var(--ink-2); text-decoration-thickness: 1.5px; }
+.fb-again { color: var(--ink-2) !important; }
+/* End of lesson: the full explanation of each mistake. */
+.debrief { width: 100%; text-align: left; padding: 18px 20px; border-radius: 20px; background: var(--soft); }
+.debrief h3 { font-size: 16px; }
+.debrief ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 10px; font-size: 14px; }
+.debrief li > b { display: block; }
+.debrief li p { color: var(--ink-2); margin-top: 2px; }
+.debrief .pill { margin-left: 6px; vertical-align: 1px; }
 .xp-float { position: fixed; z-index: 70; pointer-events: none; font-weight: 800; font-size: 18px; color: var(--good); animation: up 1s var(--ease) forwards; }
 @keyframes up { to { transform: translateY(-50px); opacity: 0; } }
 .confirm { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--ink) 30%, transparent); backdrop-filter: blur(6px); }
@@ -584,6 +600,10 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .ed-opt-text { flex: 1; min-width: 0; height: 46px; padding: 0 14px; border-radius: 12px; border: 0; background: var(--panel); color: var(--ink); font: 500 15px var(--font); }
 .ed-opt-text:focus { outline: none; box-shadow: inset 0 0 0 2px var(--ink); }
 .ed-hint { font-size: 12px; font-weight: 500; color: var(--ink-3); }
+.ed-why { display: grid; gap: 8px; }
+.ed-why summary { cursor: pointer; font-weight: 600; }
+.ed-why-text { height: 42px; padding: 0 14px; border-radius: 12px; border: 0; background: var(--panel); color: var(--ink); font: 500 14px var(--font); width: 100%; }
+.ed-why-text:focus { outline: none; box-shadow: inset 0 0 0 2px var(--ink); }
 .ed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ed-add { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
 .ed-add .chips .btn .icon { width: 16px; height: 16px; }
