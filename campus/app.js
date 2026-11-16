@@ -1,4 +1,4 @@
-import { searchMarkup, mountSearch, mountMotion, mountTabbar, rollNumber, checkMarkup, cardSlot, advanceDeck } from './motion.js';
+import { searchMarkup, mountSearch, mountMotion, mountTabbar, checkMarkup, cardSlot, advanceDeck } from './motion.js';
 
 // Campus Pathway · application élève et professeur, branchée sur Supabase.
 // Interface en espagnol ; contenu travaillé en français. Données : voir campus/db/001_init.sql.
@@ -4073,8 +4073,8 @@ async function finish() {
     <h2>${acc === 100 ? '¡Lección perfecta!' : acc >= 75 ? '¡Unidad superada!' : 'Aún no superada'}</h2>
     <div class="end-stats">
       <div style="background:var(--butter);color:var(--butter-ink)"><small>XP ganados</small><b class="num" id="xpCount">+${xp}</b></div>
-      <div style="background:var(--mint);color:var(--mint-ink)"><small>Aciertos</small><b class="num">${acc}%</b></div>
-      <div style="background:var(--sky);color:var(--sky-ink)"><small>Tiempo</small><b class="num">${Math.floor(secs / 60)}:${pad2(secs % 60)}</b></div>
+      <div style="background:var(--mint);color:var(--mint-ink)"><small>Aciertos</small><b class="num end-acc"><span id="accCount">${acc}</span>%</b></div>
+      <div style="background:var(--sky);color:var(--sky-ink)"><small>Tiempo</small><b class="num end-time">${HOURGLASS}<span class="end-time-v">${Math.floor(secs / 60)}:${pad2(secs % 60)}</span></b></div>
     </div><div class="end-list">${extra}</div>${debrief()}</div>`;
   if (L.preview) {
     body.innerHTML = header(L.xp, item('butter', 'book', 'Vista previa', 'Nada se guardó. Los alumnos verán esta unidad cuando la publiques.'));
@@ -4112,12 +4112,37 @@ async function finish() {
   R.loaded = false;
   refresh().then(() => { if (lessonEl.hidden) render(); return maybeClaimWeekly(); });
 }
+// End of lesson: XP rolls up first, then the accuracy; the time waits for the hourglass (CSS only).
 function countUp(el, to) {
   disposeEndMotion();
-  const stopCounter = el ? rollNumber(el, to, { from: 0, prefix: '+' }) : () => {};
+  const stopCounter = el ? climb(el, to, { prefix: '+', delay: 120 }) : () => {};
+  const accEl = $('#accCount', body), acc = accEl ? +accEl.textContent || 0 : 0;
+  const stopAcc = accEl ? climb(accEl, acc, { delay: 420 }) : () => {};
   const stopChecks = mountMotion(body, new Map());
-  disposeEndMotion = () => { stopCounter(); stopChecks(); };
+  disposeEndMotion = () => { stopCounter(); stopAcc(); stopChecks(); };
 }
+// A number that climbs from 0 to its value (about 1 s, slowing down at the end); final value at once
+// with reduced motion.
+function climb(el, to, { prefix = '', delay = 0, dur = 950 } = {}) {
+  to = Math.max(0, Math.round(+to || 0));
+  if (reduced || !to) { el.textContent = prefix + to; return () => {}; }
+  el.textContent = prefix + '0'; el.setAttribute('aria-label', prefix + to);
+  let frame = 0; const t0 = performance.now() + delay;
+  const step = t => {
+    const p = Math.max(0, Math.min(1, (t - t0) / dur));
+    el.textContent = prefix + Math.round(to * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) frame = requestAnimationFrame(step); else el.removeAttribute('aria-label');
+  };
+  frame = requestAnimationFrame(step);
+  return () => { cancelAnimationFrame(frame); el.textContent = prefix + to; };
+}
+// Hourglass: sand runs from the top bulb to the bottom one, grains fall in between (see .hourglass).
+const HOURGLASS = `<span class="hourglass" aria-hidden="true"><svg viewBox="0 0 24 32" width="24" height="32">
+  <path class="hg-frame" d="M4 2h16M4 30h16M6 2c0 7 6 9 6 14S6 23 6 30M18 2c0 7-6 9-6 14s6 7 6 16"/>
+  <path class="hg-top" d="M7.6 6h8.8L12 14.6z"/>
+  <path class="hg-bottom" d="M6.8 29h10.4L12 22.4z"/>
+  <circle class="hg-grain" cx="12" cy="16" r=".9"/><circle class="hg-grain" cx="12" cy="16" r=".9"/><circle class="hg-grain" cx="12" cy="16" r=".9"/>
+</svg></span>`;
 
 function confetti() {
   if (reduced) return;
