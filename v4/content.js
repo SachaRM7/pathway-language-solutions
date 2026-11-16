@@ -207,7 +207,7 @@ export const EXAM_RESULTS = Object.freeze([
   }),
   Object.freeze({
     name: 'Elena',
-    exam: 'TCF Québec',
+    exam: 'TCF',
     session: '2026-09-03',
     video: 'Elena',
     image: '/assets/resultados/resultado-tcf-elena.jpg',
