@@ -4135,19 +4135,25 @@ function check(skipped = false, miss = 0) {
   }
   if (ex.type === 'spot') {
     // The faulty word shows its correction (« mangez → mangent »); a wrong tap is marked red.
+    // The faulty word is the answer to find: it turns green as it is; the right form is given in
+    // the explanation. A wrong tap turns red.
     const all = $$('[data-w]', body), w = all[ex.wrong], bad = ex.words[ex.wrong];
     const d0 = { from: norm(bad), to: norm(ex.fix), at: ex.wrong, ai: ex.wrong, prev: norm(ex.words[ex.wrong - 1] || ''), minor: bare(bad) === bare(ex.fix) };
-    const close = oneWord(d0) && closeDiff(d0);
-    w.classList.add('right'); w.innerHTML = `<s class="fx-old">${close ? markWrong(bad, ex.fix) : esc(bad)}</s>${close ? markRight(ex.fix, bad) : esc(ex.fix)}`;
+    w.classList.add('right');
     if (!ok && L.answer != null && all[L.answer] && L.answer !== ex.wrong) all[L.answer].classList.add('wrong');
     all.forEach(b => { b.disabled = true; b.setAttribute('aria-pressed', 'false'); });
-    if (!ok) diffs = [d0];
+    diffs = [d0];
   }
+  let orderNote = '';
   if (ex.type === 'order' && !ok && skipped !== true) {
-    // Wrong word chosen among the tiles (« regardes » for « regarde »): name it; a pure order mistake
-    // keeps the exercise's explanation.
+    // Wrong word chosen among the tiles (« regardes » for « regarde »): name it. Missing or extra
+    // blocks, or blocks in the wrong order: say so (the « Correcto » sentence shows the order).
     const d = diffWords(L.answer.map(i => ex.tiles[i]).join(' '), ex.answer.join(' '));
-    if (d.length && d.every(x => x.from && x.to)) diffs = d;
+    if (d.length && d.every(x => x.from && x.to && closeDiff(x))) diffs = d;
+    else if (d.some(x => !x.from || !x.to)) {
+      const sameWords = words(L.answer.map(i => ex.tiles[i]).join(' ')).sort().join(' ') === words(ex.answer.join(' ')).sort().join(' ');
+      orderNote = sameWords ? '<p class="fx-note"><span class="fx-tag">Construcción</span>El orden de las palabras no es el correcto.</p>' : noteLines(d.filter(x => !x.from || !x.to), ex);
+    }
   }
   const ti = $('#typeIn', body); if (ti) ti.disabled = true;
   // The accepted answer the student was closest to.
@@ -4192,8 +4198,30 @@ function check(skipped = false, miss = 0) {
   if (ex.type === 'order' && skipped !== true) {
     // Each block in its place: green when right, red and struck when wrong; the block that was
     // needed instead turns green among the unused ones.
-    const placed = $$('#line [data-pos]', body), bank = $$('[data-tile]', body), missing = [];
-    L.answer.forEach((t, p) => { const good = ex.tiles[t] === ex.answer[p]; const b = placed[p]; if (!b) return; b.classList.add(good ? 'right' : 'wrong'); if (!good) { b.innerHTML = `<s>${esc(ex.tiles[t])}</s>`; if (ex.answer[p] != null) missing.push(ex.answer[p]); } });
+    // Blocks are matched in order (longest common sequence), so one missing block does not make all
+    // the following ones wrong. A missing block shows as a dashed green block where it belongs.
+    const line = $('#line', body), placed = $$('#line [data-pos]', body), bank = $$('[data-tile]', body);
+    const got = L.answer.map(t => ex.tiles[t]), want = ex.answer, n = got.length, m = want.length;
+    const T = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) T[i][j] = got[i] === want[j] ? T[i + 1][j + 1] + 1 : Math.max(T[i + 1][j], T[i][j + 1]);
+    const steps = []; let i = 0, j = 0;
+    while (i < n || j < m) {
+      if (i < n && j < m && got[i] === want[j]) { steps.push({ k: 'ok', i }); i++; j++; }
+      else if (j < m && (i >= n || T[i][j + 1] >= T[i + 1][j])) steps.push({ k: 'miss', w: want[j++] });
+      else steps.push({ k: 'bad', i: i++ });
+    }
+    const missing = steps.filter(s => s.k === 'miss').map(s => s.w);
+    let html = '';
+    steps.forEach(s => {
+      if (s.k === 'miss') html += `<span class="tile-w ghost" aria-label="Faltaba: ${esc(s.w)}">${esc(s.w)}</span>`;
+      else { const b = placed[s.i]; if (b) { b.classList.add(s.k === 'ok' ? 'right' : 'wrong'); if (s.k === 'bad') b.innerHTML = `<s>${esc(got[s.i])}</s>`; html += b.outerHTML; } }
+    });
+    if (!ok) line.innerHTML = html; else placed.forEach(b => b.classList.add('right'));
+    // Missing or extra blocks named as written on them (« Falta Le soir »).
+    if (orderNote && !orderNote.includes('orden')) {
+      const extra = steps.filter(s => s.k === 'bad').map(s => got[s.i]), clean = w => esc(w.replace(/[,.;:!?]+$/, ''));
+      orderNote = `<p class="fx-note"><span class="fx-tag">Construcción</span>${[...missing.map(w => `Falta <b>${clean(w)}</b>`), ...extra.map(w => `Sobra «${clean(w)}»`)].join(' · ')}.</p>`;
+    }
     bank.forEach(b => { if (!L.answer.includes(+b.dataset.tile) && missing.includes(ex.tiles[+b.dataset.tile])) { b.classList.add('right'); missing.splice(missing.indexOf(ex.tiles[+b.dataset.tile]), 1); } });
   }
   if (ex.type === 'dictation' && ti && (!ok || slip) && skipped !== true && given) {
@@ -4214,7 +4242,9 @@ function check(skipped = false, miss = 0) {
   const T = ['¡Bien hecho!', '¡Exacto!', '¡Perfecto!', 'Muy bien'];
   if (ex.type === 'match') setFoot(miss ? 'warn' : 'good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
   else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), correctHtml: fixHtml, replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: noteLines(diffs, ex) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
-  else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.explain });
+  else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.type === 'spot'
+    // Found the faulty word: the sentence as it should be, then why.
+    ? `<p>Lo correcto: ${markSentence(correctText(ex), diffs)}</p>${ex.explain ? `<p>${ex.explain}</p>` : ''}` : ex.explain });
   else {
     // Only what the student got wrong: the word-by-word corrections, or the teacher's note for the
     // option picked; the exercise's general explanation only when there is nothing more precise.
@@ -4224,7 +4254,7 @@ function check(skipped = false, miss = 0) {
     // mistake with its rule.
     const exp = ex.explain ? `<p>${ex.explain}</p>` : '', notes = noteLines(diffs, ex);
     const explainFirst = ex.type === 'spot' || ex.type === 'order';
-    const body2 = why ? `<p>${why}</p>` : explainFirst ? (exp || notes) : (notes || exp);
+    const body2 = why ? `<p>${why}</p>` : orderNote || (explainFirst ? (exp || notes) : (notes || exp));
     const precise = skipped === true ? '' : otherSentence ? '<p>No es la misma frase: escúchala otra vez y compárala con la correcta.</p>' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + body2;
     setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), correctHtml: fixHtml, replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
   }
