@@ -627,6 +627,9 @@ const ring = (val, max, label) => {
   return `<svg class="ring" viewBox="0 0 112 112" role="img" aria-label="${label}"><circle class="track" cx="56" cy="56" r="${r}"/><circle class="val" cx="56" cy="56" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - p)).toFixed(1)}"/><text x="56" y="64" text-anchor="middle" class="num">${Math.round(p * 100)}%</text></svg>`;
 };
 
+// Why a unit is still closed: not seen in class yet (with the « units seen in class » rule), or the
+// previous unit is not passed.
+const lockedPill = st => `<span class="pill dark" style="height:40px;padding:0 16px">${icon('lock')}${st.taught === false ? 'Se abre cuando la veas en clase' : `Supera antes la unidad ${st.prev ? st.prev.number : ''}`}</span>`;
 function heroTile() {
   const hw = openHomework()[0];
   const unit = hw ? unitById(hw.unit_id) : nextUnit();
@@ -642,7 +645,7 @@ function heroTile() {
     <div><span class="pill">${tag}</span><h2>${esc(unit.title)}</h2><p>Unidad ${unit.number} · ${unit.level} · ${n} ejercicio${n === 1 ? '' : 's'} · ${Math.max(5, n + 2)} min</p></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1">${(() => { const st = unitState(unit);
       if (st.retryAt) return `<span class="pill dark" style="height:40px;padding:0 16px">${icon('timer')}Nuevo intento: ${esc(retryLabel(st.retryAt))}</span><a class="btn btn-light btn-sm" href="#repasar">Repasar mientras tanto</a>`;
-      if (!st.unlocked) return `<span class="pill dark" style="height:40px;padding:0 16px">${icon('lock')}Supera antes la unidad ${st.prev ? st.prev.number : ''}</span>`;
+      if (!st.unlocked) return lockedPill(st);
       return `<button class="btn btn-dark" data-start="${unit.id}">${L_RESUME.has(unit.id) ? 'Continuar la lección' : 'Empezar la lección'}<span class="arrow">${icon('arrow')}</span></button>`; })()}</div>
     ${art.stickers.map((s, i) => `<span class="sticker s${i + 1}">${s}</span>`).join('')}
     <span class="hero-art" aria-hidden="true">${esc(art.big)}</span></article>`;
@@ -743,8 +746,12 @@ function viewRuta() {
   <div class="seg-tabs" role="group" aria-label="Segmento">${segs.map((x, i) => `<button type="button" data-seg="${i}" aria-pressed="${i === A.seg}"><b>${x.letter}</b>${esc(x.name)}</button>`).join('')}</div>
   ${featured ? `<article class="tile peach unit-hero">
       <div><span class="pill">Unidad actual</span><h2>${esc(featured.title)}</h2>
-        <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">${unitState(featured).retryAt ? `<span class="pill dark" style="height:40px;padding:0 16px">${icon('timer')}Nuevo intento: ${esc(retryLabel(unitState(featured).retryAt))}</span>` : `<button class="btn btn-dark" data-start="${featured.id}">${L_RESUME.has(featured.id) ? 'Continuar' : 'Empezar'}<span class="arrow">${icon('arrow')}</span></button>`}</div>
-        <p style="margin-top:14px;font-size:14px;font-weight:600">Supérala con al menos 75 % para abrir la siguiente unidad.</p></div>
+        <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">${(() => { const st = unitState(featured);
+          // Closed units say why instead of offering « Empezar ».
+          if (st.retryAt) return `<span class="pill dark" style="height:40px;padding:0 16px">${icon('timer')}Nuevo intento: ${esc(retryLabel(st.retryAt))}</span>`;
+          if (!st.unlocked) return lockedPill(st);
+          return `<button class="btn btn-dark" data-start="${featured.id}">${L_RESUME.has(featured.id) ? 'Continuar' : 'Empezar'}<span class="arrow">${icon('arrow')}</span></button>`; })()}</div>
+        <p style="margin-top:14px;font-size:14px;font-weight:600">${unitState(featured).taught === false ? 'Tu profesor la abre cuando la ven en clase. Después, supérala con al menos 75 % para abrir la siguiente.' : 'Supérala con al menos 75 % para abrir la siguiente unidad.'}</p></div>
       <div class="unit-meta"><p class="unit-no">${pad2(featured.number)}</p><div><span>En el campus</span>${fInfo?.[isStaff() ? 'count' : 'validated'] || 0} ejercicios</div>${featured.manual_time ? `<div><span>En el manual</span>${esc(featured.manual_time)}</div>` : ''}</div>
     </article>` : ''}
   <article class="tile">
