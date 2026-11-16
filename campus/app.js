@@ -3857,6 +3857,8 @@ function diffWords(given, right, before = '') {
   const pairs = out.flatMap(x => x.from.length > 1 && x.from.length === x.to.length ? x.from.map((w, k) => ({ from: [w], to: [x.to[k]], prev: k ? x.to[k - 1] : x.prev })) : [x]);
   return pairs.map(x => { const from = x.from.join(' '), to = x.to.join(' '); return { from, to, prev: x.prev || '', minor: !!from && !!to && bare(from) === bare(to) }; });
 }
+// Two forms of the same word (same start, or a short word with the same first letter: du / de).
+const closeDiff = x => x.minor || (!!x.from && !!x.to && (() => { const a = bare(x.from), b = bare(x.to); return a.slice(0, 3) === b.slice(0, 3) || (Math.min(a.length, b.length) <= 2 && a[0] === b[0]); })());
 const SUBJECTS = ['je', 'tu', 'il', 'elle', 'on', 'nous', 'vous', 'ils', 'elles'];
 const ENDINGS = ['ons', 'ent', 'ez', 'es', 'e', 's', 't', 'x'];
 const ELIDE = ['je', 'le', 'la', 'de', 'ne', 'me', 'te', 'se', 'que', 'ce'];
@@ -3918,9 +3920,10 @@ function setFoot(mode, d = {}) {
     $('#retryBtn').onclick = finish;
   } else {
     const g = mode === 'good' || mode === 'warn';
-    footIn.innerHTML = nbsp(`<div class="fb" role="status"><span class="fb-ico">${icon(mode === 'good' ? 'check' : mode === 'warn' ? 'sparkle' : 'x')}</span><div><h3>${esc(d.title)}</h3>${mode !== 'good' && d.correct ? `<p class="correct">${mode === 'bad' ? '<span class="fb-lbl">Correcto: </span>' : ''}${esc(d.correct)}</p>` : ''}${d.explain ? `<div class="fb-text">${/^\s*<(p|ul)\b/.test(d.explain) ? d.explain : `<p>${d.explain}</p>`}</div>` : ''}</div></div>
+    footIn.innerHTML = nbsp(`<div class="fb" role="status"><span class="fb-ico">${icon(mode === 'good' ? 'check' : mode === 'warn' ? 'sparkle' : 'x')}</span><div><h3>${esc(d.title)}</h3>${mode !== 'good' && d.correct ? `<p class="correct">${mode === 'bad' ? '<span class="fb-lbl">Correcto: </span>' : ''}${esc(d.correct)}</p>` : ''}${d.explain ? `<div class="fb-text">${/^\s*<(p|ul)\b/.test(d.explain) ? d.explain : `<p>${d.explain}</p>`}</div>` : ''}${d.replay ? `<button class="fb-replay" type="button" id="replayBtn">${icon('speaker')}Volver a escuchar</button>` : ''}</div></div>
       <button class="btn ${g ? 'btn-good' : 'btn-coral'}" id="nextBtn" type="button">Continuar</button>`);
     $('#nextBtn').onclick = next; $('#nextBtn').focus();
+    const rb = $('#replayBtn'); if (rb) rb.onclick = () => { if (!speak(d.replay, .85, rb)) toast('Este navegador no tiene voz francesa.'); };
   }
 }
 const enable = on => { const b = $('#checkBtn'); if (b) b.disabled = !on; };
@@ -4010,8 +4013,7 @@ function check(skipped = false, miss = 0) {
     if (!ok && ex.type === 'choice') {
       const d = diffWords(optSentence(ex, L.answer), optSentence(ex, ex.answer)), n = words(optSentence(ex, ex.answer)).length;
       const changed = d.reduce((s, x) => s + Math.max(x.to.split(' ').filter(Boolean).length, 1), 0);
-      const close = x => x.minor || (x.from && x.to && noAcc(x.from).slice(0, 3) === noAcc(x.to).slice(0, 3));
-      if (d.length && (changed * 2 <= n || (n <= 2 && d.every(close)))) diffs = d;
+      if (d.length && (changed * 2 <= n || (n <= 2 && d.every(closeDiff)))) diffs = d;
     }
   }
   else if (ex.type === 'type' || ex.type === 'dictation') {
@@ -4044,6 +4046,19 @@ function check(skipped = false, miss = 0) {
     if (d.length && d.every(x => x.from && x.to)) diffs = d;
   }
   const ti = $('#typeIn', body); if (ti) ti.disabled = true;
+  // Fill-in-the-blank: the correction goes in the blank itself (« travaille → travailles »).
+  if (ex.type === 'type' && ti && !(ok && !slip)) {
+    const given = (L.answer || '').trim();
+    ti.insertAdjacentHTML('afterend', `<span class="inline-fix ${slip ? 'warn' : ''}">${given && skipped !== true ? `<s>${esc(given)}</s> ` : ''}<b>${esc(ex.answers[0])}</b></span>`);
+    ti.hidden = true;
+  }
+  // A dictation that is a different sentence altogether: say so rather than strike it all.
+  let otherSentence = false;
+  if (ex.type === 'dictation' && !ok && diffs.length) {
+    // Only words that look nothing alike count (« music » for « musique » is a spelling mistake).
+    const changed = diffs.filter(x => !closeDiff(x)).reduce((s, x) => s + Math.max(x.to.split(' ').filter(Boolean).length, 1), 0);
+    otherSentence = changed / Math.max(words(ex.audio).length, 1) > .6;
+  }
   // Result per exercise: first attempt decides first_try; a later success sets correct.
   const r = L.res.get(ex.id) || { exercise_id: ex.id, first_try: false, correct: false };
   if (!ex.retry) { r.first_try = ok; r.correct = ok || (ex.type === 'match'); }
@@ -4056,7 +4071,7 @@ function check(skipped = false, miss = 0) {
   L.xp += g; setProgress(); if (g) floatXp(g);
   const T = ['¡Bien hecho!', '¡Exacto!', '¡Perfecto!', 'Muy bien'];
   if (ex.type === 'match') setFoot(miss ? 'warn' : 'good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
-  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), explain: fixList(diffs) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
+  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: fixList(diffs) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
   else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.explain });
   else {
     // Only what the student got wrong: the word-by-word corrections, or the teacher's note for the
@@ -4064,8 +4079,8 @@ function check(skipped = false, miss = 0) {
     const why = (ex.type === 'choice' || ex.type === 'listen') && Array.isArray(ex.why) ? (ex.why[L.answer] || '') : '';
     // Find-the-error and word-order exercises: their explanation is about the very mistake, keep it.
     const own = (ex.type === 'spot' || ex.type === 'order') && diffs.length && ex.explain ? `<p>${ex.explain}</p>` : '';
-    const precise = skipped === true ? '' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + fixList(diffs, !!why || !!own) + (why ? `<p>${why}</p>` : '') + own;
-    setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
+    const precise = skipped === true ? '' : otherSentence ? '<p>No es la misma frase: escúchala otra vez y compárala con la correcta.</p>' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + fixList(diffs, !!why || !!own) + (why ? `<p>${why}</p>` : '') + own;
+    setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
   }
 }
 function floatXp(n) {
