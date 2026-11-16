@@ -389,6 +389,7 @@
       return send({ ...base, ...firstTouch() }).then(response => (response.status === 404 ? send(base) : response)).then(response => {
         // A refused save (more than 5 tests per address and hour, network) is logged; the result still shows.
         if (!response.ok) track('placement_save_failed', { status: response.status });
+        else track('placement_completed', { level: data.level });
         return response.ok;
       }, () => { track('placement_save_failed', { status: 0 }); return false; });
     } catch (error) { track('placement_save_failed', { status: -1 }); return Promise.resolve(false); }
