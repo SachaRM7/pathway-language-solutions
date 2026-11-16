@@ -526,7 +526,8 @@ s.fx-old { text-decoration-thickness: 1.5px; opacity: .8; }
 .tile-w.ghost { display: inline-flex; align-items: center; background: transparent; color: var(--good); box-shadow: none; outline: 2px dashed var(--good); outline-offset: -2px; opacity: 1; }
 .answer-fix { white-space: pre-wrap; font-weight: 700; }
 .answer-fix mark.fx-x { color: var(--coral); }
-.fx-gap { display: inline-block; width: 2px; height: .95em; margin: 0 2px; vertical-align: -.12em; border-radius: 2px; background: var(--coral); }
+/* A missing letter: a letter-wide blank in red (some browsers draw the blank character with no width). */
+.fx-gap { display: inline-block; min-width: .55em; height: 1.05em; margin: 0 1px; vertical-align: -.18em; border-radius: 4px; background: color-mix(in srgb, var(--coral) 60%, transparent); text-decoration: none; overflow: hidden; }
 .fb-text { max-height: 34vh; overflow-y: auto; }
 .fix-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; color: var(--ink); }
 .fix-list s { color: var(--ink-2); text-decoration-thickness: 1.5px; }
