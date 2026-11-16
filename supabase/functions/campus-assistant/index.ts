@@ -1,6 +1,6 @@
 // Supabase Edge Function « campus-assistant » : répond en premier aux questions pratiques d'un
-// élève dans « Mensajes » (campus/db/025_mensajes.sql), avec ses seules données, et passe le
-// reste à son professeur.
+// élève dans « Mensajes » (campus/db/025_mensajes.sql), avec ses seules données, et laisse le
+// reste à son professeur, sans rien écrire (l'élève ne lit jamais « je transmets »).
 //
 // • Appelée par le Campus, avec la session de l'élève, juste après qu'il a écrit. Toutes les
 //   données sont lues avec CETTE session : les règles d'accès (RLS) de la base s'appliquent,
@@ -8,11 +8,11 @@
 // • Réglage « Respuestas del asistente » (Ajustes) : désactivé (par défaut), la réponse est un
 //   brouillon que l'équipe relit et envoie ; activé, elle part tout de suite. L'élève la voit
 //   signée « Equipo Pathway ».
-// • La clé service ne sert qu'à une chose : écrire la réponse de l'assistant et l'état de la
-//   conversation, par assistant_reply().
+// • La clé service ne sert qu'à écrire la réponse de l'assistant (assistant_reply()) et l'état de
+//   la conversation (« Necesita respuesta » et son motif).
 // • Sans clé ANTHROPIC_API_KEY, si l'API ne répond pas, si l'élève a atteint ses 20 réponses du
-//   jour ou si la réponse n'est pas sûre : pas de réponse inventée, la question passe au
-//   professeur avec « Le pasamos tu pregunta a tu profesor. ». La messagerie marche sans elle.
+//   jour ou si la réponse n'est pas sûre : rien n'est écrit, la question attend le professeur
+//   (« Necesita respuesta », avec le motif). La messagerie marche sans elle.
 // • Le contenu des messages n'est jamais écrit dans les journaux.
 //
 // Déploiement : Supabase → Edge Functions → Deploy a new function → Via Editor, nom
@@ -63,26 +63,30 @@ Deno.serve(async req => {
   // « Respuestas del asistente » (Ajustes): off → the answer is a draft the team sends.
   const { data: autoReply } = await asStudent.rpc('assistant_auto_reply');
   const service = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  // Silent (not for the assistant, a teacher's matter, or nothing safe to say): nothing is posted;
+  // the message stays « Necesita respuesta » for the teacher, flagged with the reason. A plain
+  // « gracias » or « ok » needs no answer from anyone.
+  const leave = async (decision: Decision) => {
+    if (decision.escalate) {
+      const { error } = await service.from('message_threads').update({ escalated_at: new Date().toISOString(), escalated_reason: decision.reason.slice(0, 300) || null })
+        .eq('id', q.thread_id).is('escalated_at', null);
+      if (error) console.error('escalate failed', error.code || '');
+    }
+    if (decision.ack) {
+      const { error } = await service.from('message_threads').update({ needs_staff: false, needs_staff_since: null })
+        // Only if nothing older was waiting: a question asked before the « gracias » keeps waiting.
+        .eq('id', q.thread_id).is('escalated_at', null).eq('needs_staff_since', q.created_at);
+      if (error) console.error('ack clear failed', error.code || '');
+    }
+    return json(200, { status: decision.ack ? 'ack' : 'left_for_teacher', escalated: decision.escalate });
+  };
   const post = async (decision: Decision) => {
-    // Nothing to say: the message stays for the teacher (« Necesita respuesta »), except a plain
-    // « gracias » or « ok », which needs no answer from anyone.
-    if (decision.kind === 'silent') {
-      if (decision.ack) {
-        const { error } = await service.from('message_threads').update({ needs_staff: false, needs_staff_since: null })
-          // Only if nothing older was waiting: a question asked before the « gracias » keeps waiting.
-          .eq('id', q.thread_id).is('escalated_at', null).eq('needs_staff_since', q.created_at);
-        if (error) console.error('ack clear failed', error.code || '');
-      }
-      return json(200, { status: decision.ack ? 'ack' : 'left_for_teacher', escalated: false });
-    }
-    let d = applyMode(decision, autoReply === true);
-    let { error } = await service.rpc('assistant_reply', { p_message: q.id, p_body: d.body, p_escalate: d.escalate, p_kind: d.kind, p_reason: d.reason, p_draft: d.draft });
-    if (error && /assistant_cap/.test(error.message || '') && d.kind !== 'fallback') {
-      d = applyMode(fallback('Límite diario del asistente'), autoReply === true);
-      ({ error } = await service.rpc('assistant_reply', { p_message: q.id, p_body: d.body, p_escalate: true, p_kind: 'fallback', p_reason: d.reason }));
-    }
+    if (decision.kind !== 'answer') return leave(decision);
+    const d = applyMode(decision, autoReply === true);
+    const { error } = await service.rpc('assistant_reply', { p_message: q.id, p_body: d.body, p_escalate: false, p_kind: 'answer', p_reason: '', p_draft: d.draft });
+    if (error && /assistant_cap/.test(error.message || '')) return leave(fallback('Límite diario del asistente'));
     if (error) { console.error('assistant_reply failed', error.code || ''); return json(500, { error: 'save_failed' }); }
-    return json(200, { status: d.draft ? 'draft' : d.kind, escalated: d.escalate });
+    return json(200, { status: d.draft ? 'draft' : 'answer', escalated: false });
   };
 
   if (Number(st.used) >= DAILY_CAP) return post(fallback('Límite diario del asistente'));
