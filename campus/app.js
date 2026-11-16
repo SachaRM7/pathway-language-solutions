@@ -4240,11 +4240,19 @@ function check(skipped = false, miss = 0) {
       if (pr && got[pr[1].i] !== pr[0].w && !got.includes(pr[0].w)) { pr[1].sub = pr[0].w; pr[0].k = 'sub'; k++; }
     }
     const missing = steps.filter(s => s.k === 'miss' || s.k === 'sub').map(s => s.w);
+    // A right block in the wrong place: dashed red where it is, dashed green where it belongs.
+    const movedWords = steps.filter(s => s.k === 'miss').map(s => s.w);
     let html = '';
     steps.forEach(s => {
       if (s.k === 'sub') return;
-      if (s.k === 'miss') html += `<span class="tile-w ghost" aria-label="Faltaba: ${esc(s.w)}">${esc(s.w)}</span>`;
-      else { const b = placed[s.i]; if (b) { b.classList.add(s.k === 'ok' ? 'right' : 'wrong'); if (s.k === 'bad') b.innerHTML = `<s>${esc(got[s.i])}</s>`; html += b.outerHTML; } }
+      if (s.k === 'miss') html += `<span class="tile-w ghost" aria-label="Va aquí: ${esc(s.w)}">${esc(s.w)}</span>`;
+      else {
+        const b = placed[s.i]; if (!b) return;
+        const moved = s.k === 'bad' && !s.sub && movedWords.includes(got[s.i]);
+        b.classList.add(s.k === 'ok' ? 'right' : moved ? 'moved' : 'wrong');
+        if (s.k === 'bad' && !moved) b.innerHTML = `<s>${esc(got[s.i])}</s>`;
+        html += b.outerHTML;
+      }
     });
     if (!ok) line.innerHTML = html; else placed.forEach(b => b.classList.add('right'));
     // Missing or extra blocks named as written on them (« Falta Le soir »).

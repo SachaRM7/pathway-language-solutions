@@ -522,6 +522,8 @@ s.fx-old { text-decoration-thickness: 1.5px; opacity: .8; }
 .tile-w.right { background: var(--mint); color: var(--mint-ink); box-shadow: none; opacity: 1; }
 .tile-w.wrong { background: var(--peach); color: var(--peach-ink); box-shadow: inset 0 0 0 2px var(--coral); opacity: 1; }
 .tile-w.wrong s { text-decoration-thickness: 2px; }
+/* A right block in the wrong place: dashed red (not struck: the word is right, its place is not). */
+.tile-w.moved { background: transparent; color: var(--coral); box-shadow: none; outline: 2px dashed var(--coral); outline-offset: -2px; opacity: 1; }
 /* A block the student left out, shown where it belongs. */
 .tile-w.ghost { display: inline-flex; align-items: center; background: transparent; color: var(--good); box-shadow: none; outline: 2px dashed var(--good); outline-offset: -2px; opacity: 1; }
 .answer-fix { white-space: pre-wrap; font-weight: 700; }
