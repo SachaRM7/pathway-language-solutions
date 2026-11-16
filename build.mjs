@@ -56,7 +56,7 @@ const assets = [
   'index.html', 'index-v2.html', 'pathway-v3.css', 'pathway-v3.js', 'programa.css', 'programa.js', 'manual-a2.css', 'manual-a2.js', 'calculador.html', 'calculateur-crs.html', 'gracias.html', 'merci.html',
   'privacidad.html', 'politique-confidentialite.html', 'condiciones.html', 'conditions-nclc7.html',
   'preparacion-tef-canada.html', 'recursos.html', 'nclc-7.html', 'tefaq-quebec.html',
-  'pathway-mark.svg', 'theme.css', 'guide.css', 'theme.js', 'site-config.js', 'analytics.js', 'campaign.js',
+  'pathway-mark.svg', 'theme.css', 'guide.css', 'theme.js', 'site-config.js', 'analytics.js', 'campaign.js', 'meta-pixel.js',
   'og-pathway.png', 'og-pathway-es.jpg', 'og-pathway-fr.jpg', 'og-pathway-en.jpg', 'og-pathway-de.jpg',
   'favicon.ico', 'apple-touch-icon.png', 'pathway-logo-512.png', '404.html', 'robots.txt', 'crs-engine.js', 'ircc-data.js',
   'pathway-v2.css', 'pathway-page-shell.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
@@ -154,6 +154,24 @@ await buildV4Pages({ outDir: client, rootDir: root });
 const v4Default = await makeV4Default({ outDir: client });
 // The student and teacher campus is a separate app under /campus/ (noindex, invitation only).
 const campus = await buildCampus({ outDir: client, rootDir: root });
+// The Meta Pixel (meta-pixel.js) goes on every public page, not on the Campus.
+async function addMetaPixel(dir) {
+  const { readdir } = await import('node:fs/promises');
+  let count = 0;
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = resolve(dir, entry.name);
+    if (entry.isDirectory()) { if (entry.name !== 'campus' && entry.name !== 'assets') count += await addMetaPixel(path); continue; }
+    if (!entry.name.endsWith('.html')) continue;
+    const markup = await readFile(path, 'utf8');
+    if (markup.includes('/meta-pixel.js') || !markup.includes('</head>')) continue;
+    // A page that only redirects (meta refresh) does not need it.
+    if (/<meta[^>]+http-equiv=["']refresh["']/i.test(markup)) continue;
+    await writeFile(path, markup.replace('</head>', '  <script src="/meta-pixel.js" defer></script>\n</head>'), 'utf8');
+    count++;
+  }
+  return count;
+}
+const pixelPages = await addMetaPixel(client);
 // Redirects, share tags, hreflang, JSON-LD, sitemap and hosting headers, then
 // a check of the result (scripts/verify-site.mjs).
 const site = await finalizeSite({ outDir: client, rootDir: root, v4Destinations: v4Default.destinations });
