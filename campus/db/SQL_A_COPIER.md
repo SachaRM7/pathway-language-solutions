@@ -5958,7 +5958,7 @@ export function parseReply(reply: ModelReply): { ok: true; value: Parsed } | { o
   return { ok: true, value: { reply: o.reply, answer: o.answer.trim(), escalate: o.escalate, reason: o.reason.trim().slice(0, 200) } };
 }
 
-const plain = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const plain = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const numbersIn = (s: string) => (s.match(/\d+(?:[.,]\d+)?/g) || []).map(n => n.replace(',', '.').replace(/^0+(?=\d)/, ''));
 const timesIn = (s: string) => (s.match(/\b\d{1,2}[:h]\d{2}\b/g) || []).map(t => { const [h, m] = t.split(/[:h]/); return `${+h}:${m}`; });
 
