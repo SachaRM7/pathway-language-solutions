@@ -500,6 +500,14 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .fix-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; color: var(--ink); }
 .fix-list s { color: var(--ink-2); text-decoration-thickness: 1.5px; }
 .fb-again { color: var(--ink-2) !important; }
+.fb-replay { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; background: color-mix(in srgb, var(--panel) 75%, transparent); color: var(--ink); font-weight: 700; font-size: 14px; }
+.fb-replay .icon { width: 18px; height: 18px; }
+.fb-replay:hover { background: var(--panel); }
+/* Fill-in-the-blank: the correction in the blank (wrong word struck, right word in bold). */
+.inline-fix { display: inline-flex; align-items: baseline; gap: 10px; padding: 4px 14px; border-radius: 14px; background: var(--peach); color: var(--peach-ink); }
+.inline-fix.warn { background: var(--butter); color: var(--butter-ink); }
+.inline-fix s { opacity: .6; text-decoration-thickness: 2px; font-weight: 600; }
+.inline-fix b { font-weight: 800; }
 /* End of lesson: the full explanation of each mistake. */
 .debrief { width: 100%; text-align: left; padding: 18px 20px; border-radius: 20px; background: var(--soft); }
 .debrief h3 { font-size: 16px; }
