@@ -510,7 +510,10 @@ mark.fx-x { color: var(--coral); font-weight: 800; background: color-mix(in srgb
 .l-foot mark.fx, .inline-fix mark.fx, .word mark.fx { color: var(--mint-ink); }
 .l-foot mark.fx-x, .inline-fix mark.fx-x, .word mark.fx-x { color: var(--peach-ink); }
 .fx-new { font-weight: 700; }
-s.fx-old { text-decoration-thickness: 1.5px; opacity: .8; }
+/* The wrong form is struck by one line drawn across the whole word, blanks for missing letters
+   included, and a little past both ends (so it is not mistaken for the bar of a final « e »). */
+s.fx-old { position: relative; text-decoration: none; opacity: .8; }
+s.fx-old::after { content: ''; position: absolute; left: -.12em; right: -.12em; top: 54%; height: max(2px, .07em); border-radius: 2px; background: currentColor; pointer-events: none; }
 /* The kind of mistake, before its explanation. */
 .fx-note { display: block; margin-top: 6px; font-size: 14px; }
 .fx-items { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 3px; }
