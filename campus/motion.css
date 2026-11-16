@@ -56,14 +56,16 @@
 .end-item .check-say { font-weight: 700; }
 .end-item .motion-check + .muted { display: block; margin-top: 6px; }
 
-/* The card wrapper moves between Bencho slots; the existing inner card still
-   flips for the answer. Only the front card is interactive or in the a11y tree. */
-.review-deck { position: relative; padding: 60px 38px 0 0; }
-.review-stack { position: relative; perspective: 1000px; perspective-origin: 150px 95px; }
-.review-card { position: absolute; inset: 0; transform: var(--card-slot); border-radius: 26px; background: var(--panel); box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent); }
+/* A deck of cards: the front one straight, the next ones peeking out underneath (see cardSlot);
+   the front card flips for the answer, then leaves to the right (known) or the left (not known).
+   Only the front card is interactive or in the a11y tree. */
+.review-deck { position: relative; padding: 0 0 34px; overflow-x: clip; overflow-clip-margin: 24px; }
+.review-stack { position: relative; }
+.review-card { position: absolute; inset: 0; transform: var(--card-slot); transform-origin: 50% 100%; border-radius: 26px; background: var(--panel); box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent), 0 18px 40px -24px rgb(0 0 0 / 45%); }
 .review-card:first-child { position: relative; }
 .review-card:not(:first-child) { pointer-events: none; overflow: hidden; }
-.review-card .flash-wrap { perspective: none; }
+.review-card:not(:first-child) .face > * { opacity: 0; }
+.review-card .flash-wrap { perspective: 1400px; }
 .review-card .flash { display: grid; }
 .review-card .face { grid-area: 1 / 1; position: relative; min-height: 300px; box-shadow: none; overflow-wrap: anywhere; }
 .review-card .face.back { grid-area: 1 / 1; }
@@ -73,7 +75,6 @@
 .review-deck[aria-busy="true"] { pointer-events: none; }
 .rate button:disabled { cursor: wait; opacity: .6; }
 @media (max-width: 560px) {
-  .review-deck { padding-right: 24px; }
   .review-card .face { padding-inline: 16px; }
   .rate { gap: 5px; }
   .rate button { font-size: 12px; border-radius: 14px; }

@@ -812,7 +812,7 @@ async function rate(g) {
   catch (error) { release(); return fail(error); }
   const { data, error } = result;
   if (error) { release(); return fail(error); }
-  if (deck?.isConnected) await advanceDeck(deck);
+  if (deck?.isConnected) await advanceDeck(deck, g === 0 ? -1 : 1);
   R.cards.shift();
   if (g === 0) R.cards.splice(Math.min(2, R.cards.length), 0, { ...c, reps: 0 }); else R.reviewed++;
   A.due = Math.max(0, A.due - (g === 0 ? 0 : 1));
