@@ -317,6 +317,10 @@ input, select, textarea { font: inherit; color: inherit; }
 .err-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; }
 .err-row:first-of-type { border-top: 0; padding-top: 0; }
 .err-row s { color: var(--ink-3); }
+.level-acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-left: auto; }
+/* « Fin de nivel »: on a phone the buttons go under the name instead of squeezing it. */
+.err-row:has(> .level-acts) { flex-wrap: wrap; }
+.err-row:has(> .level-acts) > span:first-child { flex: 1 1 200px; }
 .table-wrap { overflow-x: auto; margin: 0 -24px; padding: 0 24px; }
 table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px; }
 th { text-align: left; font-size: 12px; font-weight: 600; color: var(--ink-3); padding: 0 12px 12px; }
