@@ -3973,8 +3973,10 @@ function noteLines(diffs, ex) {
     if (!groups.has(c.cat)) groups.set(c.cat, []);
     if (!groups.get(c.cat).includes(item)) groups.get(c.cat).push(item);
   });
-  // One tag per kind of mistake, its words after it.
-  return [...groups].map(([cat, items]) => `<p class="fx-note"><span class="fx-tag">${cat}</span>${items.join(many ? ' ; ' : ' ')}</p>`).join('');
+  // One tag per kind of mistake; several mistakes of that kind: one bullet each.
+  return [...groups].map(([cat, items]) => items.length > 1
+    ? `<div class="fx-note"><span class="fx-tag">${cat}</span><ul class="fx-items">${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`
+    : `<p class="fx-note"><span class="fx-tag">${cat}</span>${items[0]}</p>`).join('');
 }
 // The right sentence with the corrected words marked (letters for a misspelt word, the whole word
 // otherwise). Only the corrections stand out; the rest stays plain.

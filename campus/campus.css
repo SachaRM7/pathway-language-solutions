@@ -508,7 +508,9 @@ mark.fx-x { color: var(--coral); font-weight: 800; background: color-mix(in srgb
 .fx-new { font-weight: 700; }
 s.fx-old { text-decoration-thickness: 1.5px; opacity: .8; }
 /* The kind of mistake, before its explanation. */
-.fx-note { display: block; }
+.fx-note { display: block; margin-top: 6px; font-size: 14px; }
+.fx-items { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 3px; }
+.fx-items li { font-size: 14px; }
 .fx-tag { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 9%, transparent); font-size: 11px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; vertical-align: 1px; }
 /* Corrections in place: options, word blocks, the dictation text. */
 .opt mark.fx, .tile-w mark.fx { color: var(--mint-ink); }
