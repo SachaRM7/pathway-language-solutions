@@ -1,3 +1,5 @@
+import { searchMarkup, mountSearch, mountMotion, mountTabbar, rollNumber, checkMarkup, cardSlot, advanceDeck } from './motion.js';
+
 // Campus Pathway · application élève et professeur, branchée sur Supabase.
 // Interface en espagnol ; contenu travaillé en français. Données : voir campus/db/001_init.sql.
 
@@ -19,6 +21,11 @@ const firstName = n => (n || '').trim().split(/\s+/)[0] || '';
 const initials = n => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
 const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 const pad2 = n => String(n).padStart(2, '0');
+
+const motionMemory = new Map();
+const tabbarMotion = mountTabbar($('#tabbar'));
+let disposeViewMotion = () => {}, disposeSearch = () => {}, disposeEndMotion = () => {};
+let motionUser = null;
 
 let tt;
 const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 3600); };
@@ -90,7 +97,7 @@ async function boot() {
 sb.auth.onAuthStateChange((event, session) => {
   if (!booted) return;
   if (event === 'SIGNED_IN' && !A.session) { A.session = session; boot(); }
-  if (event === 'SIGNED_OUT') { A.session = null; A.profile = null; $('#app').hidden = true; $('#tabbar').hidden = true; showLogin(''); }
+  if (event === 'SIGNED_OUT') { disposeViewMotion(); disposeSearch(); disposeEndMotion(); motionMemory.clear(); A.session = null; A.profile = null; $('#app').hidden = true; $('#tabbar').hidden = true; showLogin(''); }
 });
 
 let loginEmail = '';
@@ -108,6 +115,7 @@ const LT = {
   de: { h1: 'Melden Sie sich im Campus an', sub: 'Wir senden Ihnen einen Anmeldelink per E-Mail. Ohne Passwort.', email: 'Ihre E-Mail', ph: 'name@beispiel.de', send: 'Link erhalten', sending: 'Wird gesendet…', invalid: 'Geben Sie eine gültige E-Mail ein, zum Beispiel name@beispiel.de.', noAccess: 'Diese E-Mail hat keinen Campus-Zugang. Bitten Sie Pathway um eine Einladung.', wait: 'Warten Sie eine Minute, bevor Sie einen neuen Link anfordern.', failed: 'Der Link konnte nicht gesendet werden. Bitte erneut versuchen.', help: 'Probleme bei der Anmeldung? Schreiben Sie uns auf WhatsApp.', note: 'Nach der Anmeldung ist der Campus auf Spanisch.', back: '/de/' }
 }[LOGIN_LANG];
 function showLogin(err, sent = false) {
+  tabbarMotion.reset();
   $('#app').hidden = true; $('#tabbar').hidden = true; $('#login').hidden = false;
   const box = $('#loginBox');
   $('#loginBack').href = LT.back; $('#loginHelp').textContent = LT.help;
@@ -471,7 +479,7 @@ function renderNav(cur) {
   const items = navItems();
   $('#sideNav').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${it.label}${c ? `<span class="count num">${c > 99 ? '99+' : c}</span>` : ''}</a>`; }).join('');
   $('#tabbar').hidden = false;
-  $('#tabbar').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join('');
+  tabbarMotion.update(items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join(''), `${A.profile.id}:${teacherMode()}`);
   const p = A.profile;
   $('#promo').innerHTML = teacherMode()
     ? `<span>${p.role === 'admin' ? 'Administración' : 'Profesor'}</span><b>${esc(p.full_name)}</b><span>${A.staff.overview.length} alumno${A.staff.overview.length === 1 ? '' : 's'}</span>`
@@ -485,7 +493,7 @@ function topBar(id, title, sub, extra = '') {
   const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
   return `<header class="top"><div><h1 id="${id}">${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">${extra}
-      ${teacherMode() ? '' : `<div class="menu-wrap"><label class="search" for="campusSearch">${icon('search')}<input id="campusSearch" type="search" autocomplete="off" placeholder="Buscar una unidad, un verbo…" value="${esc(A.search)}"></label><div id="searchSlot"></div></div>`}
+      ${teacherMode() ? '' : searchMarkup(A.search)}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Vista"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode()}">Profesor</button></div>` : ''}
       <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
@@ -563,16 +571,22 @@ function runSearch(q) {
   const units = A.units.filter(u => playable(u) && (plain(u.title).includes(n) || `unidad ${u.number}` === n || String(u.number) === n)).slice(0, 5);
   const words = [];
   for (const u of A.units) for (const c of (u.cards || [])) if (playable(u) && (plain(c.front).includes(n) || plain(c.back).includes(n))) words.push({ u, c });
-  slot.innerHTML = `<div class="menu menu-wide" role="listbox">${units.map(u => `<button type="button" data-start="${u.id}">${icon('route')}<span><b>${esc(u.title)}</b><small>Unidad ${u.number} · ${u.level}</small></span></button>`).join('')}
+  slot.innerHTML = `<div class="menu menu-wide">${units.map(u => `<button type="button" data-start="${u.id}">${icon('route')}<span><b>${esc(u.title)}</b><small>Unidad ${u.number} · ${u.level}</small></span></button>`).join('')}
     ${words.slice(0, 6).map(w => `<button type="button" data-say="${esc(w.c.front)}">${icon('speaker')}<span><b>${esc(w.c.front)}</b><small>${esc(w.c.back)} · unidad ${w.u.number}</small></span></button>`).join('')}
     ${!units.length && !words.length ? `<p class="menu-empty">Sin resultados para «${esc(q.trim())}».</p>` : ''}</div>`;
+  fitMenu(slot);
 }
-function render() {
+function render(animateEntry = true) {
   if (!A.profile) return;
+  disposeViewMotion(); disposeSearch();
+  if (motionUser !== A.profile.id) { motionMemory.clear(); motionUser = A.profile.id; }
   const id = currentView();
   renderNav(id);
   $('#main').innerHTML = VIEWS[id]();
+  if (!animateEntry) $('#main .view').style.animation = 'none';
   bindView(id);
+  disposeSearch = mountSearch($('#main'), runSearch);
+  disposeViewMotion = mountMotion($('#main'), motionMemory);
   document.dispatchEvent(new CustomEvent('campus:render', { detail: { view: id } }));
 }
 // Used by tour.js: which tour applies, and whether this account has already seen it
@@ -665,7 +679,8 @@ function viewInicio() {
     <article class="tile lilac c-4">
       <p class="label" style="color:var(--lilac-ink)">Meta de hoy</p>
       <div class="goal-row" style="margin-top:14px">${ring(tx, p.daily_goal, `Meta diaria: ${tx} de ${p.daily_goal} XP`)}
-        <div><p class="big num">${tx}<span style="font-size:18px;color:var(--lilac-ink)"> / ${p.daily_goal} XP</span></p><p style="margin-top:8px;font-weight:600;color:color-mix(in srgb,var(--lilac-ink) 70%,var(--ink))">Nivel ${li.lvl} · ${fmt(p.xp_total)} XP</p></div></div>
+        <div><p class="big num"><span data-roll="today-xp" data-value="${tx}">${tx}</span><span style="font-size:18px;color:var(--lilac-ink)"> / ${p.daily_goal} XP</span></p><p style="margin-top:8px;font-weight:600;color:color-mix(in srgb,var(--lilac-ink) 70%,var(--ink))">Nivel ${li.lvl} · <span data-roll="total-xp" data-value="${p.xp_total}">${fmt(p.xp_total)}</span> XP</p></div></div>
+      <div class="goal-check">${checkMarkup(`Gana ${p.daily_goal} XP hoy`, tx >= p.daily_goal, `daily-${t}`)}</div>
     </article>
     <article class="tile c-8">
       <div class="tile-head"><h2>Camino al NCLC 7</h2><a class="pill ghost" href="https://pathway-languages.com/calculador.html" target="_blank" rel="noopener">Calculadora CRS ${icon('arrow-up')}</a></div>
@@ -702,6 +717,7 @@ function challengeTile() {
       <p class="label" style="color:var(--mint-ink)">${A.teacher ? 'Reto de ' + esc(firstName(A.teacher.full_name)) : 'Reto de la semana'}</p>
       <p class="big num" style="margin-top:12px">${days}<span style="font-size:18px;color:var(--mint-ink)"> / ${w.goal_days} días</span></p>
       <p style="margin-top:8px;font-weight:600;font-size:14px">${w.claimed ? `Reto cumplido · +${w.bonus} XP ganados` : `Practica ${w.goal_days} días distintos esta semana · +${w.bonus} XP`}</p>
+      <div class="goal-check">${checkMarkup(`Practica ${w.goal_days} días`, days >= w.goal_days, `weekly-${todayKey()}`)}</div>
       <div class="dots">${Array.from({ length: w.goal_days }, (_, i) => `<i class="${i < days ? 'on' : ''}"></i>`).join('')}</div>
       ${w.group_size > 1 ? `<p class="group num">Grupo: ${fmt(w.group_xp)} / ${fmt(w.group_goal)} XP esta semana</p>` : `<p class="group num">${fmt(w.group_xp)} XP esta semana</p>`}
     </article>`;
@@ -764,13 +780,14 @@ const previewInterval = (c, g) => {
 function viewRepasar() {
   if (!R.loaded) { loadReview(); return `<section class="view">${topBar('h-rep', 'Repasar', '')}<div class="saving"><span class="logo-mark"><svg class="icon"><use href="#i-cards"/></svg></span>Cargando tus tarjetas…</div></section>`; }
   const card = R.cards[0];
-  const stage = card ? `<div class="flash-wrap"><div class="flash ${flipped ? 'flipped' : ''}" id="flash" role="button" tabindex="0" aria-label="Tarjeta, toca para girar">
+  const front = card ? `<div class="flash-wrap"><div class="flash ${flipped ? 'flipped' : ''}" id="flash" role="button" tabindex="0" aria-label="Tarjeta, toca para girar">
         <div class="face"><span class="pill ${card.source === 'class' ? 'err' : ''}">${esc(card.source_label || 'Repaso')}</span>
           <button class="round speak" type="button" data-say="${esc(card.source === 'unit' ? card.front : card.back)}" aria-label="Escuchar">${icon('speaker')}</button>
           ${card.source !== 'unit' ? '<p class="hint">Corrige o completa</p>' : ''}<p class="term ${card.source === 'class' ? 'err' : ''}">${esc(card.front)}</p><p class="hint">Toca o pulsa espacio para girar</p></div>
         <div class="face back"><span class="pill" style="background:var(--mint);color:var(--mint-ink)">Respuesta</span><p class="term">${esc(card.back)}</p>${card.note ? `<p class="muted" style="font-size:15px">${esc(card.note)}</p>` : ''}</div>
-      </div></div>
-      <div class="rate" id="rate" ${flipped ? '' : 'hidden'}>${['Otra vez', 'Difícil', 'Bien', 'Fácil'].map((l, g) => `<button type="button" data-rate="${g}">${l}<small>${previewInterval(card, g)}</small></button>`).join('')}</div>`
+      </div></div>` : '';
+  const stage = card ? `<div class="review-deck" id="reviewDeck" aria-busy="${R.busy}"><div class="review-stack">${R.cards.slice(0, 3).map((c, i) => `<div class="review-card" style="--card-slot:${cardSlot(i)};z-index:${3 - i}" ${i ? 'aria-hidden="true" inert' : ''}>${i ? `<div class="face"><span class="pill">${esc(c.source_label || 'Repaso')}</span><p class="term">${esc(c.front)}</p></div>` : front}</div>`).join('')}</div></div>
+      <div class="rate" id="rate" ${flipped ? '' : 'hidden'}>${['Otra vez', 'Difícil', 'Bien', 'Fácil'].map((l, g) => `<button type="button" data-rate="${g}" ${R.busy ? 'disabled' : ''}>${l}<small>${previewInterval(card, g)}</small></button>`).join('')}</div>`
     : `<div class="face" style="position:relative;min-height:300px"><span class="flame" style="background:var(--mint);color:var(--mint-ink)">${icon('check')}</span><p class="term">Todo repasado</p><p class="muted">${R.reviewed ? `<span class="num">${R.reviewed}</span> tarjetas repasadas. ` : ''}Las siguientes vuelven cuando toque.</p><a class="btn btn-dark btn-sm" href="#inicio">Volver al inicio</a></div>`;
   return `<section class="view" aria-labelledby="h-rep">
   ${topBar('h-rep', 'Repasar', 'Cada tarjeta vuelve justo antes de que la olvides')}
@@ -780,20 +797,28 @@ function viewRepasar() {
       <article class="tile"><p style="font-size:14px" class="muted">Vienen del vocabulario de cada unidad, de tus errores en las lecciones y de los que tus profesores anotan en clase.</p></article>
     </div></div></section>`;
 }
-function flip() { flipped = !flipped; $('#flash')?.classList.toggle('flipped', flipped); const r = $('#rate'); if (r) r.hidden = !flipped; }
+function flip() { if (R.busy) return; flipped = !flipped; $('#flash')?.classList.toggle('flipped', flipped); const r = $('#rate'); if (r) r.hidden = !flipped; }
 async function rate(g) {
   if (R.busy || !R.cards.length) return;
   R.busy = true;
-  const c = R.cards[0];
-  const { data, error } = await sb.rpc('review_card', { p_card: c.id, p_grade: g });
-  R.busy = false;
-  if (error) return fail(error);
+  const c = R.cards[0], deck = $('#reviewDeck');
+  const buttons = $$('#rate button');
+  buttons.forEach(b => { b.disabled = true; });
+  deck?.setAttribute('aria-busy', 'true');
+  const release = () => { R.busy = false; buttons.forEach(b => { b.disabled = false; }); deck?.setAttribute('aria-busy', 'false'); };
+  let result;
+  try { result = await sb.rpc('review_card', { p_card: c.id, p_grade: g }); }
+  catch (error) { release(); return fail(error); }
+  const { data, error } = result;
+  if (error) { release(); return fail(error); }
+  if (deck?.isConnected) await advanceDeck(deck);
   R.cards.shift();
   if (g === 0) R.cards.splice(Math.min(2, R.cards.length), 0, { ...c, reps: 0 }); else R.reviewed++;
   A.due = Math.max(0, A.due - (g === 0 ? 0 : 1));
   if (data && data.goal_reached) { A.profile.streak = data.streak; A.profile.last_goal_day = todayKey(); toast(`Meta de hoy cumplida · racha de ${data.streak} día${data.streak === 1 ? '' : 's'}`); }
   if (g > 0) A.xp.push({ amount: 2, created_at: new Date().toISOString() });
-  flipped = false; render();
+  flipped = false; release();
+  if (currentView() === 'repasar') { render(false); $('#flash')?.focus({ preventScroll: true }); }
   if (g > 0 && A.weekly && !A.weekly.claimed) maybeClaimWeekly();
 }
 
@@ -825,7 +850,7 @@ function viewLogros() {
   ${topBar('h-log', 'Logros', 'Las insignias marcan pasos reales hacia tu examen')}
   <div class="bento">
     <article class="tile c-6"><div class="lvl-card"><div class="date-block" style="background:var(--peach);color:var(--peach-ink);width:84px;height:84px"><small>NIVEL</small><b>${li.lvl}</b></div>
-      <div style="flex:1;min-width:0"><p class="big num">${fmt(p.xp_total)} XP</p><div class="xp-track"><i style="width:${(li.into / li.need * 100).toFixed(0)}%"></i></div><p class="muted num" style="font-size:13px;margin-top:8px">${li.need - li.into} XP para el nivel ${li.lvl + 1}</p></div></div></article>
+      <div style="flex:1;min-width:0"><p class="big num"><span data-roll="total-xp" data-value="${p.xp_total}">${fmt(p.xp_total)}</span> XP</p><div class="xp-track"><i style="width:${(li.into / li.need * 100).toFixed(0)}%"></i></div><p class="muted num" style="font-size:13px;margin-top:8px">${li.need - li.into} XP para el nivel ${li.lvl + 1}</p></div></div></article>
     <article class="tile butter c-3"><p class="label" style="color:var(--butter-ink)">Mejor racha</p><p class="huge num" style="margin-top:10px">${p.best_streak}</p><p style="font-weight:700;margin-top:4px">días · ahora ${liveStreak()}</p></article>
     <article class="tile mint c-3"><p class="label" style="color:var(--mint-ink)">Lecciones</p><p class="huge num" style="margin-top:10px">${A.runs.length}</p><p style="font-weight:700;margin-top:4px">${perfect} sin errores</p></article>
   </div>
@@ -3223,7 +3248,6 @@ document.addEventListener('click', async e => {
   if (a === 'logout') { await sb.auth.signOut(); return; }
   if (a === 'plan') { $('#menuSlot').innerHTML = ''; return openOnboarding(false); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'campusSearch') runSearch(e.target.value); });
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (!$('#lesson').hidden) return lessonKeys(e, tag);
@@ -3233,7 +3257,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && currentView() === 'mensajes' && teacherMode() && M.open) { e.preventDefault(); closeThread(); return; }
   if (e.key === 'Escape' && waView() && W.open && !W.editing) { e.preventDefault(); waClose(); return; }
   if (e.key === 'Escape') closeMenus();
-  if (e.key === 'Enter' && e.target.id === 'campusSearch') { const first = $('#searchSlot [data-start]'); if (first) first.click(); }
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
     if (e.key === ' ') { e.preventDefault(); flip(); }
     if (flipped && /^[1-4]$/.test(e.key)) rate(+e.key - 1);
@@ -3797,6 +3820,7 @@ for (const type of ['copy', 'cut', 'contextmenu']) {
   lessonEl.addEventListener(type, e => { if (L && !L.preview && !e.target.closest('input, textarea')) e.preventDefault(); });
 }
 function closeLesson() {
+  disposeEndMotion();
   try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
   lessonEl.hidden = true; document.body.classList.remove('no-scroll'); $('.preview-flag')?.remove(); L = null; render();
 }
@@ -4043,7 +4067,7 @@ async function finish() {
     if (!list.length) return '';
     return `<div class="debrief"><h3>Repasa tus errores</h3><ol>${list.map(ex => `<li><b>${esc(correctText(ex))}${L.slips && L.slips.has(ex.id) ? '<span class="pill ghost">Atención</span>' : ''}</b>${ex.explain ? `<p>${ex.explain}</p>` : ''}</li>`).join('')}</ol></div>`;
   };
-  const item = (c, ic, title, sub) => `<div class="end-item"><span class="medal" style="background:var(--${c});color:var(--${c}-ink)">${icon(ic)}</span><div><b>${title}</b><span class="muted">${sub}</span></div></div>`;
+  const item = (c, ic, title, sub) => ic === 'check' ? `<div class="end-item"><div>${checkMarkup(title, true, title, true)}<span class="muted">${sub}</span></div></div>` : `<div class="end-item"><span class="medal" style="background:var(--${c});color:var(--${c}-ink)">${icon(ic)}</span><div><b>${title}</b><span class="muted">${sub}</span></div></div>`;
   const header = (xp, extra) => `<div class="end">
     <span class="ex-kind">${icon('sparkle')}Unidad ${L.unit.number} terminada</span>
     <h2>${acc === 100 ? '¡Lección perfecta!' : acc >= 75 ? '¡Unidad superada!' : 'Aún no superada'}</h2>
@@ -4054,7 +4078,7 @@ async function finish() {
     </div><div class="end-list">${extra}</div>${debrief()}</div>`;
   if (L.preview) {
     body.innerHTML = header(L.xp, item('butter', 'book', 'Vista previa', 'Nada se guardó. Los alumnos verán esta unidad cuando la publiques.'));
-    setFoot('end'); return;
+    setFoot('end'); countUp($('#xpCount'), L.xp); return;
   }
   body.innerHTML = `<div class="saving"><span class="logo-mark"><svg class="icon"><use href="#i-route"/></svg></span>Guardando tu lección…</div>`;
   setFoot('saving');
@@ -4089,11 +4113,12 @@ async function finish() {
   refresh().then(() => { if (lessonEl.hidden) render(); return maybeClaimWeekly(); });
 }
 function countUp(el, to) {
-  if (reduced || !el) { if (el) el.textContent = '+' + to; return; }
-  const t0 = performance.now(), d = 900;
-  const step = t => { const p = Math.min(1, (t - t0) / d); el.textContent = '+' + Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
-  requestAnimationFrame(step);
+  disposeEndMotion();
+  const stopCounter = el ? rollNumber(el, to, { from: 0, prefix: '+' }) : () => {};
+  const stopChecks = mountMotion(body, new Map());
+  disposeEndMotion = () => { stopCounter(); stopChecks(); };
 }
+
 function confetti() {
   if (reduced) return;
   const cv = $('#confetti'), ctx = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
