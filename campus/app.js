@@ -3965,13 +3965,16 @@ function classify(d, ex = {}) {
 // The notes under the « Correcto » sentence: one per mistake, with its kind. With several mistakes,
 // each note names its word.
 function noteLines(diffs, ex) {
-  const many = diffs.length > 1, seen = new Set();
-  return diffs.slice(0, 6).map(d => {
+  const many = diffs.length > 1, groups = new Map();
+  diffs.slice(0, 6).forEach(d => {
     const c = classify(d, ex), word = d.to || d.from;
     // Without a rule to tell, the kind of mistake and the right word are enough.
-    const line = `<p class="fx-note"><span class="fx-tag">${c.cat}</span>${!c.text ? `<b>${esc(word)}</b>` : many && d.from && d.to ? `<b>${esc(word)}</b>: ${c.text}` : c.text}</p>`;
-    if (seen.has(line)) return ''; seen.add(line); return line;
-  }).join('');
+    const item = !c.text ? `<b>${esc(word)}</b>` : many && d.from && d.to ? `<b>${esc(word)}</b>: ${c.text.replace(/\.$/, '')}` : c.text;
+    if (!groups.has(c.cat)) groups.set(c.cat, []);
+    if (!groups.get(c.cat).includes(item)) groups.get(c.cat).push(item);
+  });
+  // One tag per kind of mistake, its words after it.
+  return [...groups].map(([cat, items]) => `<p class="fx-note"><span class="fx-tag">${cat}</span>${items.join(many ? ' ; ' : ' ')}</p>`).join('');
 }
 // The right sentence with the corrected words marked (letters for a misspelt word, the whole word
 // otherwise). Only the corrections stand out; the rest stays plain.
