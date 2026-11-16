@@ -3918,48 +3918,61 @@ const ELIDE = ['je', 'le', 'la', 'de', 'ne', 'me', 'te', 'se', 'que', 'ce'];
 // The closest accepted answer (fewest differences).
 const bestDiff = (given, answers, before = '') => answers.map(x => diffWords(given, x, before)).sort((p, q) => p.length - q.length)[0] || [];
 const VERB_ENDS = ['', 'e', 'es', 'ent', 'ons', 'ez', 'er', 's', 't', 'x'];
-// « wrong → right », letter by letter when it is the same word.
-function pairOf(d) {
-  if (!d.from) return `Falta <span class="fx-new"><mark class="fx">${esc(d.to)}</mark></span>.`;
-  if (!d.to) return `Sobra <s class="fx-old"><mark class="fx-x">${esc(d.from)}</mark></s>.`;
-  const same = oneWord(d) && closeDiff(d);
-  return `<s class="fx-old">${same ? markWrong(d.from, d.to) : esc(d.from)}</s> → <span class="fx-new">${same ? markRight(d.to, d.from) : `<mark class="fx">${esc(d.to)}</mark>`}</span>.`;
-}
-const fixNote = d => { const r = ruleOf(d); return pairOf(d) + (r ? ' ' + r : ''); };
-// The explanation only: the rule behind the mistake, or what the letters say.
-function ruleOf(d) {
-  if (!d.from || !d.to) return '';
+/* What kind of mistake, and the short explanation that goes with it. Categories: Conjugación (verb
+   ending, infinitive), Concordancia (feminine / plural ending of a noun or adjective), Ortografía
+   (letters), Acento, Apóstrofo, Vocabulario (another word), Construcción (missing or extra word).
+   ex.kind (« Conjugación »…) tells a verb exercise apart when the subject is not next to the verb. */
+function classify(d, ex = {}) {
+  if (!d.from) return { cat: 'Construcción', text: `Falta <b>${esc(d.to)}</b>.` };
+  if (!d.to) return { cat: 'Construcción', text: `Sobra «${esc(d.from)}».` };
   if (d.minor) {
-    const apos = noAcc(d.from) !== noAcc(d.to);
-    return [apos ? 'Apóstrofo: delante de vocal o h muda, je → j’, le/la → l’, de → d’, que → qu’.' : '', letterNote(d.from, d.to)].filter(Boolean).join(' ');
+    const apos = noAcc(d.from) !== noAcc(d.to), acc = letterNote(d.from, d.to);
+    return apos ? { cat: 'Apóstrofo', text: ['Delante de vocal o h muda: je → j’, le/la → l’, de → d’, que → qu’.', acc].filter(Boolean).join(' ') } : { cat: 'Acento', text: acc.replace(/^Acento: /, '') };
   }
   // « je écoute » for « j'écoute »: the elision, then whatever else differs in the word.
   const fw = d.from.split(' '), tw = d.to.split(' ');
   if (fw.length === 2 && tw.length === 1 && ELIDE.includes(fw[0]) && /^[aeiouyhâàäéèêëîïôöûùü]/.test(fw[1]) && tw[0].startsWith(fw[0].slice(0, -1) + "'")) {
     const rest = tw[0].slice(fw[0].length);
-    const more = fw[1] === rest ? '' : ' ' + ruleOf({ from: fw[1], to: rest, prev: fw[0], minor: bare(fw[1]) === bare(rest) });
-    return `Apóstrofo: ${esc(fw[0])} + vocal → <b>${esc(fw[0].slice(0, -1))}’</b>.${more}`;
+    const more = fw[1] === rest ? null : classify({ from: fw[1], to: rest, prev: fw[0], minor: bare(fw[1]) === bare(rest) }, ex);
+    return { cat: 'Apóstrofo', text: `${esc(fw[0])} + vocal → <b>${esc(fw[0].slice(0, -1))}’</b>.${more && more.text ? ' ' + more.text : ''}` };
   }
-  let note = '';
-  if (oneWord(d)) {
-    let k = 0; while (k < d.from.length && k < d.to.length && d.from[k] === d.to[k]) k++;
-    const sa = d.from.slice(k), sb = d.to.slice(k);
-    const inf = /(er|ir)$/.test(d.from) && (sa === 'r' || sa === 'er' || sa === 'ir');
-    // The subject in front of the verb (or the elided j'), and the ending the right form takes.
+  const verbish = SUBJECTS.includes(d.prev) || d.prev === "j'" || /^j'/.test(d.to) || /conjug|verbo/i.test(ex.kind || '');
+  if (!oneWord(d)) return { cat: verbish ? 'Conjugación' : closeDiff(d) ? 'Ortografía' : 'Vocabulario', text: `Aquí va <b>${esc(d.to)}</b>.` };
+  let k = 0; while (k < d.from.length && k < d.to.length && d.from[k] === d.to[k]) k++;
+  const sa = d.from.slice(k), sb = d.to.slice(k);
+  const inf = /(er|ir|re)$/.test(d.from) && (sa === 'r' || sa === 'er' || sa === 'ir' || sa === 're');
+  const end = ENDINGS.find(e => d.to.endsWith(e)) || '', fend = ENDINGS.find(e => d.from.endsWith(e)) || '';
+  const sameStem = end !== fend && d.to.slice(0, d.to.length - end.length) === d.from.slice(0, d.from.length - fend.length) && d.to.length - end.length >= 3;
+  // A verb: its ending, for the subject in front of it.
+  // (Same ending on both sides, as in « travailes / travailles »: the ending is right, it is spelling.)
+  if (verbish && k >= 3 && (inf || end !== fend) && (inf || sameStem || closeDiff(d) || (VERB_ENDS.includes(sa) && VERB_ENDS.includes(sb)))) {
     const subj = /^j'/.test(d.to) ? 'je' : SUBJECTS.includes(d.prev) ? d.prev : d.prev === "j'" ? 'je' : '';
-    const end = ENDINGS.find(e => d.to.endsWith(e)) || '', fend = ENDINGS.find(e => d.from.endsWith(e)) || '';
-    const sameStem = end !== fend && d.to.slice(0, d.to.length - end.length) === d.from.slice(0, d.from.length - fend.length) && d.to.length - end.length >= 3;
-    if (k >= 3 && (inf || sameStem || (VERB_ENDS.includes(sa) && VERB_ENDS.includes(sb)))) note += inf ? ` «${esc(d.from)}» es el infinitivo: aquí el verbo va conjugado.` : subj && end ? ` Con <b>${esc(subj)}</b>, la terminación es <b>-${esc(end)}</b>.` : ' Terminación del verbo: je → -e, tu → -es, il/elle → -e, nous → -ons, vous → -ez, ils/elles → -ent.';
-    // Not a verb ending: say what the letters are (« Doble l », « Falta la letra e »).
-    if (!note && closeDiff(d)) note = letterNote(d.from, d.to);
+    return { cat: 'Conjugación', text: inf ? `«${esc(d.from)}» es el infinitivo: aquí el verbo va conjugado.` : subj && end ? `Con <b>${esc(subj)}</b>, la terminación es <b>-${esc(end)}</b>.` : 'Terminación del verbo: je → -e, tu → -es, il/elle → -e, nous → -ons, vous → -ez, ils/elles → -ent.' };
   }
-  return note.trim();
+  if (!closeDiff(d)) return { cat: verbish ? 'Conjugación' : 'Vocabulario', text: verbish ? `Aquí va <b>${esc(d.to)}</b>.` : `Aquí va otra palabra: <b>${esc(d.to)}</b>.` };
+  // Feminine / plural ending on a noun or adjective (the shorter form must end like a real word:
+  // « musiqu » is not one, so « musiqu → musique » is spelling).
+  const [short, long] = d.from.length < d.to.length ? [d.from, d.to] : [d.to, d.from], suf = long.slice(short.length);
+  if (long.startsWith(short) && ['e', 's', 'x', 'es'].includes(suf) && short.length >= 3 && !/(qu|gu)$/.test(short) && !/([b-df-hj-np-tv-z])\1$/.test(short)) {
+    const add = d.to.length > d.from.length;
+    const what = suf === 'e' ? (add ? 'Femenino: se añade <b>-e</b>.' : 'Masculino: sin <b>-e</b>.') : suf === 'es' ? (add ? 'Femenino plural: <b>-es</b>.' : 'Masculino singular: sin <b>-es</b>.') : (add ? `Plural: <b>-${suf}</b>.` : `Singular: sin <b>-${suf}</b>.`);
+    return { cat: 'Concordancia', text: what };
+  }
+  // Short words (du / de, le / la): grammar, not letters.
+  if (Math.max(d.from.length, d.to.length) <= 3) return { cat: 'Gramática', text: '' };
+  return { cat: 'Ortografía', text: letterNote(d.from, d.to) };
 }
-// brief: only « wrong → right », when the teacher wrote the explanation for this option.
-const fixList = (diffs, brief) => diffs.length ? `<ul class="fix-list">${diffs.slice(0, 5).map(d => `<li>${brief ? pairOf(d) : fixNote(d)}</li>`).join('')}${diffs.length > 5 ? `<li>Y ${diffs.length - 5} error${diffs.length - 5 > 1 ? 'es' : ''} más: compara con la respuesta correcta.</li>` : ''}</ul>` : '';
-// When the correction is already shown in place (fill-in-the-blank, find the error): only the
-// explanations, without repeating « wrong → right ».
-const ruleText = diffs => diffs.map(ruleOf).filter(Boolean).map(t => `<p>${t}</p>`).join('');
+// The notes under the « Correcto » sentence: one per mistake, with its kind. With several mistakes,
+// each note names its word.
+function noteLines(diffs, ex) {
+  const many = diffs.length > 1, seen = new Set();
+  return diffs.slice(0, 6).map(d => {
+    const c = classify(d, ex), word = d.to || d.from;
+    // Without a rule to tell, the kind of mistake and the right word are enough.
+    const line = `<p class="fx-note"><span class="fx-tag">${c.cat}</span>${!c.text ? `<b>${esc(word)}</b>` : many && d.from && d.to ? `<b>${esc(word)}</b>: ${c.text}` : c.text}</p>`;
+    if (seen.has(line)) return ''; seen.add(line); return line;
+  }).join('');
+}
 // The right sentence with the corrected words marked (letters for a misspelt word, the whole word
 // otherwise). Only the corrections stand out; the rest stays plain.
 // wrong: mark the student's answer instead (its wrong words and letters, in red).
@@ -4163,6 +4176,26 @@ function check(skipped = false, miss = 0) {
     else if (ex.type === 'spot') fixHtml = markSentence(correctText(ex), diffs);
   } else if (!ok && skipped !== true && given && (ex.type === 'type' || ex.type === 'dictation')) youHtml = esc(ex.type === 'type' ? `${ex.before} ${given} ${ex.after}`.trim() : given);
   if (!ex.retry && (!ok || slip)) (L.notes = L.notes || new Map()).set(ex.id, { fix: fixHtml, you: youHtml, lbl: ex.type === 'choice' ? 'Elegiste' : ex.type === 'order' ? 'Formaste' : 'Escribiste' });
+  // The correction where the student answered, so the footer does not repeat it.
+  if (ex.type === 'choice' && !ok && skipped !== true && diffs.length) {
+    // The option picked, struck with its wrong letters; the right one with the letters it needed.
+    const opts = $$('[data-opt]', body), mine = ex.options[L.answer], right = ex.options[ex.answer];
+    const kbd = b => (b.querySelector('kbd') || {}).outerHTML || '';
+    if (opts[L.answer]) opts[L.answer].innerHTML = `${kbd(opts[L.answer])}<s class="fx-old">${markWrong(mine, right)}</s>`;
+    if (opts[ex.answer]) opts[ex.answer].innerHTML = `${kbd(opts[ex.answer])}<span>${markRight(right, mine)}</span>`;
+  }
+  if (ex.type === 'order' && skipped !== true) {
+    // Each block in its place: green when right, red and struck when wrong; the block that was
+    // needed instead turns green among the unused ones.
+    const placed = $$('#line [data-pos]', body), bank = $$('[data-tile]', body), missing = [];
+    L.answer.forEach((t, p) => { const good = ex.tiles[t] === ex.answer[p]; const b = placed[p]; if (!b) return; b.classList.add(good ? 'right' : 'wrong'); if (!good) { b.innerHTML = `<s>${esc(ex.tiles[t])}</s>`; if (ex.answer[p] != null) missing.push(ex.answer[p]); } });
+    bank.forEach(b => { if (!L.answer.includes(+b.dataset.tile) && missing.includes(ex.tiles[+b.dataset.tile])) { b.classList.add('right'); missing.splice(missing.indexOf(ex.tiles[+b.dataset.tile]), 1); } });
+  }
+  if (ex.type === 'dictation' && ti && (!ok || slip) && skipped !== true && given) {
+    // The student's sentence with its mistakes marked, in place of the text box.
+    ti.insertAdjacentHTML('afterend', `<div class="answer-area answer-fix ${slip ? 'warn' : ''}">${youHtml || esc(given)}</div>`);
+    ti.hidden = true;
+  }
   // Result per exercise: first attempt decides first_try; a later success sets correct.
   const r = L.res.get(ex.id) || { exercise_id: ex.id, first_try: false, correct: false };
   if (!ex.retry) { r.first_try = ok; r.correct = ok || (ex.type === 'match'); }
@@ -4175,18 +4208,19 @@ function check(skipped = false, miss = 0) {
   L.xp += g; setProgress(); if (g) floatXp(g);
   const T = ['¡Bien hecho!', '¡Exacto!', '¡Perfecto!', 'Muy bien'];
   if (ex.type === 'match') setFoot(miss ? 'warn' : 'good', { title: miss ? `Completado con ${miss} error${miss > 1 ? 'es' : ''}` : '¡Todo emparejado!', explain: ex.explain });
-  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), correctHtml: fixHtml, replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: (ex.type === 'type' ? ruleText(diffs) : fixList(diffs)) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
+  else if (slip) setFoot('warn', { title: 'Atención', correct: correctText(ex), correctHtml: fixHtml, replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: noteLines(diffs, ex) + '<p>Esta vez cuenta como correcta. La próxima falta de acento o de apóstrofo contará como error.</p>' });
   else if (ok) setFoot('good', { title: L.combo >= 3 ? `${L.combo} seguidas` : T[Math.floor(Math.random() * T.length)], explain: ex.explain });
   else {
     // Only what the student got wrong: the word-by-word corrections, or the teacher's note for the
     // option picked; the exercise's general explanation only when there is nothing more precise.
     const why = (ex.type === 'choice' || ex.type === 'listen') && Array.isArray(ex.why) ? (ex.why[L.answer] || '') : '';
-    // Find-the-error and word-order exercises: their explanation is about the very mistake, keep it.
-    const own = ex.type === 'order' && diffs.length && ex.explain ? `<p>${ex.explain}</p>` : '';
-    const exp = ex.explain ? `<p>${ex.explain}</p>` : '';
-    // Correction already shown in place (the blank, the faulty word): just the explanation.
-    const inPlace = ex.type === 'type' ? (ruleText(diffs) || exp) : ex.type === 'spot' ? (exp || ruleText(diffs)) : null;
-    const precise = skipped === true ? '' : otherSentence ? '<p>No es la misma frase: escúchala otra vez y compárala con la correcta.</p>' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + (inPlace !== null ? inPlace : fixList(diffs, !!why || !!own) + (why ? `<p>${why}</p>` : '') + own);
+    // The correction is shown where the student answered; under « Correcto », only the explanation:
+    // the teacher's (find the error, word order, the note for the option picked) or the kind of
+    // mistake with its rule.
+    const exp = ex.explain ? `<p>${ex.explain}</p>` : '', notes = noteLines(diffs, ex);
+    const explainFirst = ex.type === 'spot' || ex.type === 'order';
+    const body2 = why ? `<p>${why}</p>` : explainFirst ? (exp || notes) : (notes || exp);
+    const precise = skipped === true ? '' : otherSentence ? '<p>No es la misma frase: escúchala otra vez y compárala con la correcta.</p>' : (slipAgain ? '<p>Ya tuviste un aviso en esta lección: los acentos y los apóstrofos cuentan.</p>' : '') + body2;
     setFoot('bad', { title: skipped === true ? 'La respuesta era' : 'No es correcto', correct: correctText(ex), correctHtml: fixHtml, replay: ex.type === 'dictation' && canSpeak ? ex.audio : '', explain: (precise || (ex.explain ? `<p>${ex.explain}</p>` : '')) + (ex.retry ? '' : '<p class="fb-again">La vuelves a hacer al final de la lección.</p>') });
   }
 }
