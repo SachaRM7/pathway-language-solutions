@@ -4077,7 +4077,9 @@ function bind(ex) {
   if (ti) {
     ti.oninput = () => { L.answer = ti.value; enable(ti.value.trim().length > 0); };
     ti.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (L.answer && L.answer.trim() && !L.checked) check(); } };
-    setTimeout(() => ti.focus(), 60);
+    // Ready to type on a computer; on a phone, focusing without a tap shows the focus ring but no
+    // keyboard (the field looks selected when it is not): the student taps it.
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) setTimeout(() => ti.focus(), 60);
     $$('[data-key]', body).forEach(k => k.onclick = () => { const s = ti.selectionStart ?? ti.value.length, en = ti.selectionEnd ?? ti.value.length; ti.value = ti.value.slice(0, s) + k.dataset.key + ti.value.slice(en); ti.focus(); ti.setSelectionRange(s + 1, s + 1); ti.oninput(); });
   }
   if (ex.type === 'order') {
@@ -4204,12 +4206,14 @@ function check(skipped = false, miss = 0) {
   } else if (!ok && skipped !== true && given && (ex.type === 'type' || ex.type === 'dictation')) youHtml = esc(ex.type === 'type' ? `${ex.before} ${given} ${ex.after}`.trim() : given);
   if (!ex.retry && (!ok || slip)) (L.notes = L.notes || new Map()).set(ex.id, { fix: fixHtml, you: youHtml, lbl: ex.type === 'choice' ? 'Elegiste' : ex.type === 'order' ? 'Formaste' : 'Escribiste' });
   // The correction where the student answered, so the footer does not repeat it.
-  if (ex.type === 'choice' && !ok && skipped !== true && diffs.length) {
-    // The option picked, struck with its wrong letters; the right one with the letters it needed.
+  if ((ex.type === 'choice' || ex.type === 'listen') && !ok && skipped !== true && L.answer != null) {
+    // A wrong option is always red and struck. Close to the right one (a form error), its wrong
+    // letters are marked, and the right one shows the letters it needed.
     const opts = $$('[data-opt]', body), mine = ex.options[L.answer], right = ex.options[ex.answer];
     const kbd = b => (b.querySelector('kbd') || {}).outerHTML || '';
-    if (opts[L.answer]) opts[L.answer].innerHTML = `${kbd(opts[L.answer])}<s class="fx-old">${markWrong(mine, right)}</s>`;
-    if (opts[ex.answer]) opts[ex.answer].innerHTML = `${kbd(opts[ex.answer])}<span>${markRight(right, mine)}</span>`;
+    const close = ex.type === 'choice' && diffs.length;
+    if (opts[L.answer]) opts[L.answer].innerHTML = `${kbd(opts[L.answer])}<s class="fx-old">${close ? markWrong(mine, right) : esc(mine)}</s>`;
+    if (close && opts[ex.answer]) opts[ex.answer].innerHTML = `${kbd(opts[ex.answer])}<span>${markRight(right, mine)}</span>`;
   }
   if (ex.type === 'order' && skipped !== true) {
     // Each block in its place: green when right, red and struck when wrong; the block that was
