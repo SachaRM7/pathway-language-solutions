@@ -283,21 +283,25 @@ export function animateCheck(el, from, done) {
   return () => s.dispose();
 }
 
-export const cardSlot = k => `translate3d(${k * 34}px, ${-k * 26}px, ${-k * 70}px) skewY(6deg)`;
+// A deck: the card in front is straight; the next ones peek out underneath, a little smaller and
+// slightly turned, like real cards.
+export const cardSlot = k => `translate3d(0, ${k * 16}px, 0) scale(${1 - k * 0.05}) rotate(${k === 0 ? 0 : k % 2 ? -2.5 : 2}deg)`;
 
 // Rating is committed before playing the swap: never advance a card on a failed
 // save, and never infer a learning grade from a decorative swipe.
-export async function advanceDeck(deck) {
+// dir: 1 = known (the card leaves to the right), -1 = not known (to the left). The cards behind
+// move up one place.
+export async function advanceDeck(deck, dir = 1) {
   if (!deck || reducedMotion.matches || !Element.prototype.animate) return;
   const cards = [...deck.querySelectorAll('.review-card')];
-  if (cards.length < 2) return;
-  const animations = cards.map((card, i) => {
-    const next = i === 0 ? cards.length - 1 : i - 1;
-    card.style.zIndex = cards.length - next;
-    return card.animate([{ transform: cardSlot(i) }, { transform: cardSlot(next) }], {
-      duration: 600, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards'
-    });
-  });
+  if (!cards.length) return;
+  const animations = cards.map((card, i) => i === 0
+    ? card.animate([{ transform: cardSlot(0), opacity: 1 }, { transform: `translate3d(${dir * 115}%, -4%, 0) rotate(${dir * 12}deg)`, opacity: 0 }], {
+      duration: 420, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards'
+    })
+    : card.animate([{ transform: cardSlot(i) }, { transform: cardSlot(i - 1) }], {
+      duration: 460, delay: 90, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards'
+    }));
   const stop = () => animations.forEach(a => a.finish());
   reducedMotion.addEventListener('change', stop);
   await Promise.all(animations.map(a => a.finished.catch(() => {})));
