@@ -83,12 +83,15 @@ let booted = false;
 async function boot() {
   const hash = location.hash;
   const authError = /error_description=/.test(hash) ? decodeURIComponent((hash.match(/error_description=([^&]+)/) || [])[1] || '').replace(/\+/g, ' ') : '';
+  // The logo stays until the Campus is ready (no empty screen in between); after a few seconds it
+  // says it is loading.
+  const slow = setTimeout(() => { const m = $('#bootMsg'); if (m) m.hidden = false; }, 2500);
   const { data } = await sb.auth.getSession();
   A.session = data.session;
   if (/access_token=|error=/.test(location.hash)) history.replaceState(null, '', location.pathname);
-  $('#boot').hidden = true;
-  if (!A.session) return showLogin(authError ? 'El enlace ya no es válido. Pide uno nuevo.' : '');
+  if (!A.session) { clearTimeout(slow); $('#boot').hidden = true; return showLogin(authError ? 'El enlace ya no es válido. Pide uno nuevo.' : ''); }
   try { await loadAll(); } catch (e) { fail(e, 'No pudimos cargar tu campus. Revisa tu conexión.'); }
+  clearTimeout(slow); $('#boot').hidden = true;
   $('#login').hidden = true;
   if (A.profile.role === 'student' && !A.profile.onboarded_at) return openOnboarding(true);
   if (contractRequired()) return openContract({ mode: 'sign' });
@@ -276,22 +279,19 @@ async function loadAll() {
   A.badges = badges.data;
   A.myBadges = new Set(mine.data.map(b => b.badge_id));
   A.teacher = teacher.data || null;
-  // Their own placement test (db/019_test_nivel.sql), shown in the onboarding.
-  if (!isStaff()) { const pt = await sb.rpc('my_placement'); A.placement = pt.error ? null : (pt.data || null); }
-  // Units seen in class (db/018_informe_clase.sql): with the setting on, a unit opens once seen.
-  if (!isStaff()) {
-    const [tu, pg] = await Promise.all([sb.from('taught_units').select('unit_id'), sb.rpc('progression_settings')]);
-    A.taught = tu.error ? null : new Set((tu.data || []).map(x => x.unit_id));
-    A.gate = !pg.error && !!(pg.data && pg.data.taught_gate) && !!A.taught;
-    const tn = await sb.from('taught_numbers').select('level,number').eq('level', A.profile.level);
-    A.taughtNums = tn.error ? null : (tn.data || []).map(x => x.number); // needs db/020_manual.sql
-  }
-  await loadSchedule();
-  await loadWeekly();
-  await loadResumable();
-  await loadContract();
-  await loadMyThread();
-  if (isStaff()) await loadStaff();
+  // The rest loads in parallel (they do not depend on each other): one round trip instead of ten
+  // in a row, so the Campus opens quickly even on a slow connection.
+  const student = !isStaff() ? [
+    // Their own placement test (db/019_test_nivel.sql), shown in the onboarding.
+    sb.rpc('my_placement').then(pt => { A.placement = pt.error ? null : (pt.data || null); }),
+    // Units seen in class (db/018_informe_clase.sql): with the setting on, a unit opens once seen.
+    Promise.all([sb.from('taught_units').select('unit_id'), sb.rpc('progression_settings'), sb.from('taught_numbers').select('level,number').eq('level', A.profile.level)]).then(([tu, pg, tn]) => {
+      A.taught = tu.error ? null : new Set((tu.data || []).map(x => x.unit_id));
+      A.gate = !pg.error && !!(pg.data && pg.data.taught_gate) && !!A.taught;
+      A.taughtNums = tn.error ? null : (tn.data || []).map(x => x.number); // needs db/020_manual.sql
+    })
+  ] : [];
+  await Promise.all([...student, loadSchedule(), loadWeekly(), loadResumable(), loadContract(), loadMyThread(), isStaff() ? loadStaff() : null]);
 }
 // The account follows the device's time zone (classes, reminders and streaks are shown in it):
 // fixed at onboarding, and updated whenever the Campus opens on a device in another zone.
@@ -305,14 +305,13 @@ function syncTimezone() {
 // Group, fixed timetable and level documents (campus/db/008_horarios.sql). Without the
 // migration A.schedule and A.docs stay null and the campus works as before.
 async function loadSchedule() {
-  const [sch, docs, rec] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('*').order('position'), sb.rpc('my_recordings')]);
+  // All in one round trip.
+  const [sch, docs, rec, att, ma, val] = await Promise.all([sb.rpc('my_schedule'), sb.from('level_documents').select('*').order('position'), sb.rpc('my_recordings'),
+    sb.rpc('my_attendance'), isStaff() ? Promise.resolve({ error: true }) : sb.rpc('my_absences'), sb.from('level_validations').select('*').eq('student_id', A.session.user.id)]);
   A.schedule = sch.error ? null : (sch.data || null);
   A.recordings = rec.error ? null : (rec.data || []); // needs db/009_zoom.sql
-  const att = await sb.rpc('my_attendance');
   A.attendance = att.error ? null : (att.data || []); // needs db/013_asistencia.sql
-  const ma = isStaff() ? { error: true } : await sb.rpc('my_absences');
   A.myAbs = ma.error ? null : (ma.data || null); // needs db/017_reglas_clases.sql
-  const val = await sb.from('level_validations').select('*').eq('student_id', A.session.user.id);
   A.levelVal = val.error ? null : (val.data || []); // needs db/012_fin_nivel.sql
   A.docs = docs.error ? null : (docs.data || []);
   const next = nextSession();
@@ -339,9 +338,18 @@ async function maybeClaimWeekly() {
   await refresh(); render();
 }
 async function loadStaff() {
-  const [ov, er, inv, tea] = await Promise.all([
+  // Every staff list in one round trip (they do not depend on each other).
+  const admin = A.profile.role === 'admin';
+  const [ov, er, inv, tea, grp, chg, log, foc, cfg, sat, abs, rep, cts, th, lv, pl, mem, enr] = await Promise.all([
     sb.rpc('teacher_overview'), sb.rpc('teacher_common_errors'),
-    sb.from('invitations').select('*').order('created_at', { ascending: false }), sb.rpc('list_teachers')
+    sb.from('invitations').select('*').order('created_at', { ascending: false }), sb.rpc('list_teachers'),
+    sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log'), sb.rpc('teacher_focus_alerts'),
+    sb.rpc('get_campus_settings'), sb.rpc('staff_attendance'), sb.rpc('staff_absences'), sb.rpc('staff_session_reports'),
+    sb.rpc('staff_contracts'), sb.rpc('staff_threads'), sb.rpc('staff_level_status'),
+    admin ? sb.from('profiles').select('id,plan,plan_start').eq('role', 'student') : null,
+    admin ? sb.rpc('admin_members') : null,
+    admin ? sb.rpc('staff_enrollments') : null,
+    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null
   ]);
   if (ov.error) throw ov.error;
   A.staff.overview = ov.data || [];
@@ -350,35 +358,21 @@ async function loadStaff() {
   A.staff.invitesReady = !inv.error && !tea.error;
   A.staff.invitations = inv.data || [];
   A.staff.teachers = tea.data || [];
-  // Member management needs campus/db/004_admin_members.sql; without it the tile is hidden.
-  const [grp, chg, log, foc] = await Promise.all([sb.rpc('staff_groups'), sb.rpc('list_schedule_changes'), sb.rpc('staff_class_log'), sb.rpc('teacher_focus_alerts')]);
   A.staff.focus = foc.error ? [] : (foc.data || []); // needs db/010_integridad.sql
-  const [cfg, sat] = await Promise.all([sb.rpc('get_campus_settings'), sb.rpc('staff_attendance')]);
   A.staff.settings = cfg.error ? null : (cfg.data || null); // needs db/013_asistencia.sql
   A.staff.attendance = sat.error ? {} : (sat.data || {});
-  const abs = await sb.rpc('staff_absences');
   A.staff.absences = abs.error ? null : (abs.data || []); // needs db/016_avisos.sql
-  const rep = await sb.rpc('staff_session_reports');
   A.staff.reports = rep.error ? null : (rep.data || []); // needs db/018_informe_clase.sql
-  const cts = await sb.rpc('staff_contracts');
   A.staff.contracts = cts.error ? null : (cts.data || {}); // needs db/015_contrato.sql
-  const th = await sb.rpc('staff_threads');
   A.staff.threads = th.error ? null : (th.data || []); // needs db/025_mensajes.sql
-  const lv = await sb.rpc('staff_level_status');
   A.staff.levels = lv.error ? null : (lv.data || []); // needs db/012_fin_nivel.sql
   A.staff.groups = grp.error ? null : (grp.data || []);
   A.staff.log = log.error ? null : (log.data || { groups: {}, unmatched: [] }); // needs db/009_zoom.sql
   A.staff.changes = chg.error ? [] : (chg.data || []);
-  if (A.profile.role === 'admin') {
-    const pl = await sb.from('profiles').select('id,plan,plan_start').eq('role', 'student');
+  if (admin) {
     A.staff.plans = pl.error ? null : Object.fromEntries((pl.data || []).map(x => [x.id, x])); // needs db/017_reglas_clases.sql
-    const mem = await sb.rpc('admin_members');
     A.staff.members = mem.error ? null : (mem.data || []);
-    const enr = await sb.rpc('staff_enrollments');
     A.staff.enrollments = enr.error ? null : (enr.data || []); // needs db/021_solicitudes.sql
-    await loadAgents();
-    await loadCrm();
-    await loadWa();
   } else { A.staff.prospects = null; A.staff.wa = null; }
 }
 async function refresh() { try { await loadAll(); } catch (e) { fail(e); } }
