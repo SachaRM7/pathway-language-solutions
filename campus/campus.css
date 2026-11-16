@@ -514,6 +514,25 @@ kbd { width: 28px; height: 28px; flex: none; border-radius: 9px; display: grid; 
 .end-stats div { padding: 18px 14px; border-radius: 24px; text-align: left; }
 .end-stats small { display: block; font-size: 12px; font-weight: 700; }
 .end-stats b { display: block; font-size: clamp(26px, 4vw, 34px); font-weight: 800; letter-spacing: -.05em; margin-top: 10px; color: var(--ink); }
+.end-stats .end-acc { display: flex; align-items: baseline; }
+/* Time: an hourglass runs (sand drains, grains fall), then the time appears in its place. */
+.end-stats .end-time { position: relative; }
+.hourglass { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: grid; color: var(--sky-ink); animation: hg-out .25s ease 1.25s forwards; }
+.hourglass svg { display: block; overflow: visible; }
+.hg-frame { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.hg-top, .hg-bottom { fill: currentColor; opacity: .8; }
+.hg-top { transform-box: view-box; transform-origin: 12px 14.6px; animation: hg-drain 1.2s ease-in forwards; }
+.hg-bottom { transform-box: view-box; transform-origin: 12px 29px; transform: scaleY(0); animation: hg-fill 1.2s ease-out forwards; }
+.hg-grain { fill: currentColor; opacity: 0; animation: hg-fall .4s linear 3; }
+.hg-grain:nth-of-type(2) { animation-delay: .13s; }
+.hg-grain:nth-of-type(3) { animation-delay: .26s; }
+.end-time-v { display: inline-block; opacity: 0; animation: hg-in .35s var(--ease) 1.3s forwards; }
+@keyframes hg-drain { to { transform: scaleY(0); } }
+@keyframes hg-fill { to { transform: scaleY(1); } }
+@keyframes hg-fall { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(11px); } }
+@keyframes hg-out { to { opacity: 0; transform: translateY(-50%) scale(.6) rotate(180deg); } }
+@keyframes hg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hourglass { display: none; } .end-time-v { opacity: 1; animation: none; } }
 .end-list { width: 100%; display: grid; gap: 10px; text-align: left; }
 .end-item { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 20px; background: var(--soft); font-size: 14px; }
 .end-item .medal { width: 46px; height: 46px; flex: none; }
