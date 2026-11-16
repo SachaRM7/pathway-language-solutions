@@ -171,7 +171,14 @@ export function mountSearch(root, onSearch) {
     rest = setTimeout(() => { el.dataset.busy = 'false'; }, 340);
     onSearch(field.value);
   }, options);
-  wrap.addEventListener('focusout', event => { if (!wrap.contains(event.relatedTarget)) close(); }, options);
+  // A tap on a result: on iOS the button does not take the focus, so the field loses it to
+  // nothing and the results would close before the click. Keep them open during the tap.
+  let pressing = false;
+  results.addEventListener('pointerdown', () => { pressing = true; }, options);
+  const release = () => setTimeout(() => { pressing = false; }, 400);
+  results.addEventListener('pointerup', release, options);
+  results.addEventListener('pointercancel', release, options);
+  wrap.addEventListener('focusout', event => { if (!pressing && !wrap.contains(event.relatedTarget)) close(); }, options);
   wrap.addEventListener('keydown', event => {
     // Search results may contain buttons: their keys must not reach the review
     // player's Space / 1–4 shortcuts behind the search panel.
