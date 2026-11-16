@@ -3901,14 +3901,16 @@ function charOps(w, r) {
 const markLetters = (chars, flags, cls, gaps) => {
   let h = '', on = false;
   chars.forEach((c, k) => {
-    if (gaps && gaps.has(k)) { if (on) { h += '</mark>'; on = false; } h += '<span class="fx-gap" aria-hidden="true"></span>'; }
+    if (gaps && gaps.has(k)) { if (on) { h += '</mark>'; on = false; } h += GAP; }
     if (flags[k] && !on) { h += `<mark class="${cls}">`; on = true; } else if (!flags[k] && on) { h += '</mark>'; on = false; }
     h += esc(c);
   });
   if (on) h += '</mark>';
-  if (gaps && gaps.has(chars.length)) h += '<span class="fx-gap" aria-hidden="true"></span>';
+  if (gaps && gaps.has(chars.length)) h += GAP;
   return h;
 };
+// A missing letter: a blank the width of a letter, highlighted in red (U+3164, an empty letter).
+const GAP = '<span class="fx-gap" aria-label="falta una letra">ㅤ</span>';
 // The right form with the letters the student missed or changed marked (green), and the wrong form
 // with its wrong letters marked (red) and a caret where letters are missing.
 const markRight = (right, wrong) => { const o = charOps(wrong, right); return markLetters(o.b, o.rb, 'fx'); };
@@ -4230,17 +4232,35 @@ function check(skipped = false, miss = 0) {
       else if (j < m && (i >= n || T[i][j + 1] >= T[i + 1][j])) steps.push({ k: 'miss', w: want[j++] });
       else steps.push({ k: 'bad', i: i++ });
     }
-    const missing = steps.filter(s => s.k === 'miss').map(s => s.w);
+    // A wrong block standing where another was expected (« regardes » for « regarde »): one
+    // substitution, shown only as the red block; the right one turns green among the unused blocks.
+    for (let k = 0; k < steps.length - 1; k++) {
+      const x = steps[k], y = steps[k + 1];
+      const pr = x.k === 'miss' && y.k === 'bad' ? [x, y] : x.k === 'bad' && y.k === 'miss' ? [y, x] : null;
+      if (pr && got[pr[1].i] !== pr[0].w && !got.includes(pr[0].w)) { pr[1].sub = pr[0].w; pr[0].k = 'sub'; k++; }
+    }
+    const missing = steps.filter(s => s.k === 'miss' || s.k === 'sub').map(s => s.w);
     let html = '';
     steps.forEach(s => {
+      if (s.k === 'sub') return;
       if (s.k === 'miss') html += `<span class="tile-w ghost" aria-label="Faltaba: ${esc(s.w)}">${esc(s.w)}</span>`;
       else { const b = placed[s.i]; if (b) { b.classList.add(s.k === 'ok' ? 'right' : 'wrong'); if (s.k === 'bad') b.innerHTML = `<s>${esc(got[s.i])}</s>`; html += b.outerHTML; } }
     });
     if (!ok) line.innerHTML = html; else placed.forEach(b => b.classList.add('right'));
     // Missing or extra blocks named as written on them (« Falta Le soir »).
+    // The note: one line per mistake, by kind (a wrong word, a block out of place, missing, extra).
     if (orderNote && !orderNote.includes('orden')) {
-      const extra = steps.filter(s => s.k === 'bad').map(s => got[s.i]), clean = w => esc(w.replace(/[,.;:!?]+$/, ''));
-      orderNote = `<p class="fx-note"><span class="fx-tag">Construcción</span>${[...missing.map(w => `Falta <b>${clean(w)}</b>`), ...extra.map(w => `Sobra «${clean(w)}»`)].join(' · ')}.</p>`;
+      const clean = w => w.replace(/[,.;:!?]+$/, ''), lines = [];
+      steps.filter(s => s.sub).forEach(s => {
+        const c = classify({ from: norm(got[s.i]), to: norm(s.sub), prev: norm(want[want.indexOf(s.sub) - 1] || ''), minor: bare(got[s.i]) === bare(s.sub) }, ex);
+        lines.push([c.cat === 'Construcción' ? 'Vocabulario' : c.cat, `«${esc(clean(got[s.i]))}» en lugar de <b>${esc(clean(s.sub))}</b>.${c.text ? ' ' + c.text : ''}`]);
+      });
+      const miss = steps.filter(s => s.k === 'miss').map(s => s.w), extra = steps.filter(s => s.k === 'bad' && !s.sub).map(s => got[s.i]);
+      miss.filter(w => extra.includes(w)).forEach(w => lines.push(['Construcción', `<b>${esc(clean(w))}</b> no está en su lugar.`]));
+      miss.filter(w => !extra.includes(w)).forEach(w => lines.push(['Construcción', `Falta <b>${esc(clean(w))}</b>.`]));
+      extra.filter(w => !miss.includes(w)).forEach(w => lines.push(['Construcción', `Sobra «${esc(clean(w))}».`]));
+      const groups = new Map(); lines.forEach(([c, t]) => { if (!groups.has(c)) groups.set(c, []); groups.get(c).push(t); });
+      orderNote = [...groups].map(([c, ts]) => ts.length > 1 ? `<div class="fx-note"><span class="fx-tag">${c}</span><ul class="fx-items">${ts.map(t => `<li>${t}</li>`).join('')}</ul></div>` : `<p class="fx-note"><span class="fx-tag">${c}</span>${ts[0]}</p>`).join('');
     }
     bank.forEach(b => { if (!L.answer.includes(+b.dataset.tile) && missing.includes(ex.tiles[+b.dataset.tile])) { b.classList.add('right'); missing.splice(missing.indexOf(ex.tiles[+b.dataset.tile]), 1); } });
   }
