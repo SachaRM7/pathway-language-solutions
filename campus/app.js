@@ -1213,10 +1213,16 @@ function levelTile() {
   const name = id => (A.staff.overview.find(s => s.id === id) || {}).full_name || '—';
   const rows = list.slice().sort((a, b) => (b.units_done - a.units_done) || name(a.student_id).localeCompare(name(b.student_id))).map(x => {
     const recent = x.last_promotion && Date.now() - new Date(x.last_promotion) < 14 * 864e5;
+    // A level with no published unit: nothing to pass yet (not « all units passed »).
+    const published = A.units.some(u => u.level === x.level && !u.is_final && (A.unitInfo[u.id]?.validated || 0) > 0);
+    const done = x.units_done && published;
+    const validate = `<button class="btn ${done ? 'btn-dark' : 'btn-light'} btn-sm" type="button" data-validate-level="${x.student_id}" data-name="${esc(name(x.student_id))}" data-level="${x.level}" data-done="${done ? 1 : 0}" data-final="${x.has_final ? 1 : 0}" data-published="${published ? 1 : 0}">Validar el examen ${x.level}</button>`;
+    // Just moved up (within 14 days) and nothing validated since: it can be undone.
+    const undo = recent && x.last_promotion_to === x.level && !x.teacher_passed_at ? `<button class="btn btn-light btn-sm" type="button" data-undo-level="${x.student_id}" data-name="${esc(name(x.student_id))}" data-level="${x.level}">Deshacer</button>` : '';
     const state = x.teacher_passed_at
       ? (x.has_final ? (x.final_passed_at ? '<span class="status">Nivel superado</span>' : '<span class="status warn">Falta el examen del campus</span>') : '<span class="status">Validado</span>')
-      : `<button class="btn ${x.units_done ? 'btn-dark' : 'btn-light'} btn-sm" type="button" data-validate-level="${x.student_id}" data-name="${esc(name(x.student_id))}" data-level="${x.level}" data-done="${x.units_done ? 1 : 0}">Validar el examen ${x.level}</button>`;
-    return `<div class="err-row"><span><b>${esc(name(x.student_id))}</b> · ${x.level}<br><span class="muted" style="font-size:13px">${x.units_done ? 'Todas las unidades superadas' : 'Unidades en curso'}${x.has_final ? ' · examen final en el campus' : ''}${recent ? ` · pasó a ${esc(x.last_promotion_to || '')} hace poco` : ''}</span></span>${state}</div>`;
+      : `<span class="level-acts">${undo}${validate}</span>`;
+    return `<div class="err-row"><span><b>${esc(name(x.student_id))}</b> · ${x.level}<br><span class="muted" style="font-size:13px">${!published ? `Sin unidades publicadas en ${x.level}` : done ? 'Todas las unidades superadas' : 'Unidades en curso'}${x.has_final ? ' · examen final en el campus' : ''}${recent ? ` · pasó a ${esc(x.last_promotion_to || '')} hace poco` : ''}</span></span>${state}</div>`;
   }).join('');
   return `<article class="tile c-6"><div class="tile-head"><h2>Fin de nivel</h2></div>
     <p class="muted" style="font-size:14px;margin:-6px 0 12px">Paso 1: valida aquí el examen que el alumno hizo contigo. Paso 2: el examen final del campus, si el nivel tiene uno publicado. Con los dos, el alumno pasa solo al nivel siguiente.</p>${rows}</article>`;
@@ -2493,11 +2499,25 @@ function bindSchedule(id) {
     toast('Examen final creado: añade sus ejercicios y publícalo.'); await refresh(); render();
   });
   $$('[data-validate-level]').forEach(b => b.onclick = async () => {
-    if (b.dataset.done !== '1' && !confirm(`${b.dataset.name} todavía no superó todas las unidades del ${b.dataset.level}. ¿Validar de todos modos su examen con el profesor?`)) return;
+    // Always ask, and say what happens next: without a final exam in the Campus, the student moves
+    // up at once.
+    const lv = b.dataset.level, nxt = { A1: 'A2', A2: 'B1', B1: 'B2' }[lv];
+    const before = b.dataset.published !== '1' ? `Todavía no hay unidades publicadas en ${lv}. ` : b.dataset.done !== '1' ? `${b.dataset.name} todavía no superó todas las unidades del ${lv}. ` : '';
+    const after = b.dataset.final === '1' ? 'Después hará el examen final del campus.' : nxt ? `Pasará directamente a ${nxt}.` : '';
+    if (!confirm(`${before}¿Validar el examen ${lv} de ${b.dataset.name}? ${after}`)) return;
     b.disabled = true;
     const { data, error } = await sb.rpc('validate_teacher_exam', { p_student: b.dataset.validateLevel });
     if (error) { b.disabled = false; return fail(error); }
     toast(data.promoted ? `${b.dataset.name} pasa al nivel siguiente.` : `Examen validado. ${b.dataset.name} podrá hacer el examen final del campus${data.needs_final ? ' cuando termine sus unidades' : ''}.`);
+    await refresh(); render();
+  });
+  // A level change made by mistake (db/028_deshacer_nivel.sql).
+  $$('[data-undo-level]').forEach(b => b.onclick = async () => {
+    if (!confirm(`¿Deshacer el paso de ${b.dataset.name} a ${b.dataset.level}? Vuelve al nivel anterior y se borra la validación de ese nivel.`)) return;
+    b.disabled = true;
+    const { data, error } = await sb.rpc('undo_level_promotion', { p_student: b.dataset.undoLevel });
+    if (error) { b.disabled = false; return /function|schema cache/i.test(error.message || '') ? toast('Falta instalar el SQL 028 (campus/db/SQL_A_COPIER.md).') : fail(error); }
+    toast(`${b.dataset.name} vuelve a ${data.level}.`);
     await refresh(); render();
   });
   $$('[data-group-edit]').forEach(b => b.onclick = () => { A.staff.groupEditing = b.dataset.groupEdit; render(); });
