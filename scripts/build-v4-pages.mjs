@@ -139,7 +139,7 @@ function related(lang, { eyebrow, title, links }) {
   return `    <section class="pg-related">
       <div class="container">
         <div class="pg-related-head"><div><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2></div></div>
-        <div class="pg-links">${links.map(([key, label, text]) => `<a class="pg-link" href="${linkFor(lang, key)}"><small>${esc(label)}</small><strong>${esc(text)}</strong><span>${UI[lang].open} ${arrow}</span></a>`).join('')}</div>
+        <div class="pg-links${links.length === 4 ? ' pg-links-4' : ''}">${links.map(([key, label, text]) => `<a class="pg-link" href="${linkFor(lang, key)}"><small>${esc(label)}</small><strong>${esc(text)}</strong><span>${UI[lang].open} ${arrow}</span></a>`).join('')}</div>
       </div>
     </section>`;
 }
