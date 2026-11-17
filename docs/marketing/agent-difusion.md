@@ -1,6 +1,6 @@
 # Bot « Difusión Pathway » sur AppuBot
 
-Un sixième bot, à côté des cinq déjà configurés (Admisiones, Secretaría, Marketing, Seguimiento, Gestión). Il prépare le démarchage des sites, médias, forums et chaînes qui peuvent parler de Pathway ou mettre un lien vers ses guides. **Il n'envoie rien** : il dépose des brouillons dans le Campus (« Prospectos » → « Difusión »), et c'est toi qui envoies.
+Un sixième bot, à côté des cinq déjà configurés (Admisiones, Secretaría, Marketing, Seguimiento, Gestión). Il prépare le démarchage des sites, médias, forums et chaînes qui peuvent parler de Pathway ou mettre un lien vers ses guides. **Il n'envoie rien** : il dépose des brouillons dans le Campus (« Prospectos » → « Difusión »). Tu les relis, puis tu les envoies en un clic avec « Enviar desde ryan@ ».
 
 ## Ce qui est déjà en place
 
@@ -40,11 +40,10 @@ Un sixième bot, à côté des cinq déjà configurés (Admisiones, Secretaría,
 
 1. Campus → « Prospectos » → « Difusión ». Les fiches avec un brouillon portent « Borrador listo » ; le compteur de l'onglet et la cloche en donnent le nombre.
 2. Ouvre une fiche. Le brouillon est en haut, sous « Por enviar ».
-3. Relis-le, puis envoie-le toi-même :
-   - **par e-mail** : « Abrir en el correo », depuis contacto@pathway-languages.com ;
-   - **par formulaire** : « Copiar » puis « Abrir el contacto » ;
-   - **Facebook, YouTube ou Reddit** : « Copiar », puis écris depuis le compte de Pathway.
-4. Clique **« Marcar como enviado »**. La fiche passe à « Contactado » et une relance est prévue 7 jours plus tard.
+3. Relis-le. Pour le corriger, touche « Editar ».
+4. Envoie-le :
+   - **par e-mail** : « Enviar desde ryan@ », puis « Confirmar ». Le mail part depuis ryan@pathway-languages.com (Zoho), la fiche passe à « Contactado » et une relance est prévue 7 jours plus tard. 20 envois par jour au plus ;
+   - **par formulaire, Facebook, YouTube ou Reddit** : « Copiar », écris depuis le compte de Pathway, puis « Marcar como enviado ».
 5. Quand quelqu'un répond, mets la fiche sur « Respondió » ; s'il refuse, sur « Rechazado ». Un site qui ne convient pas : « Archivar la ficha », et le bot ne le reproposera pas.
 
 ---
