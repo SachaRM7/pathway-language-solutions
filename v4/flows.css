@@ -80,7 +80,7 @@
 .calculation-steps li.is-complete { color: var(--sage); }
 .calculation-steps li.is-complete::before { border-color: var(--sage); background: var(--sage); }
 
-.result-card { display: grid; gap: 24px; }
+.result-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
 .result-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: center; padding: clamp(32px, 5vw, 56px); border-radius: 20px; color: var(--paper); background: var(--ink); }
 .result-hero .eyebrow { color: rgb(255 250 242 / 72%); }
 .result-hero h2 { color: var(--paper); margin-bottom: 12px; }
@@ -193,7 +193,7 @@
   .level-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .level-rail li { padding: 6px 4px; font-size: 11px; text-align: center; }
   .skill-bars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .calculation-card, .result-hero { grid-template-columns: 1fr; }
+  .calculation-card, .result-hero { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
   .pg-test-panel .test-mode-choice, .fields, .calculator-fields, .toggle-grid, .capture, .locale-calculator-form fieldset { grid-template-columns: 1fr; }
@@ -219,8 +219,9 @@
 .result-hero .result-index { margin-top: 14px; font-size: 14px; line-height: 1.55; color: rgb(255 250 242 / 62%); }
 /* Choice of channel: WhatsApp or Messenger (result card and enrolment summary). */
 .result-channel-prompt { width: 100%; margin: 4px 0 0; color: rgb(255 250 242 / 78%); font-size: 15px; }
-.result-channels, .channel-pick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-.channel { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 16px; border: 1.5px solid currentColor; border-radius: 12px; font: 700 16px/1 inherit; text-decoration: none; cursor: pointer; background: transparent; }
+/* Side by side at equal width when both fit; otherwise each takes a full line. */
+.result-channels, .channel-pick-row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+.channel { flex: 1 1 calc(50% - 5px); min-width: max-content; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 16px; border: 1.5px solid currentColor; border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 700; line-height: 1; white-space: nowrap; text-decoration: none; cursor: pointer; background: transparent; }
 .channel svg { width: 22px; height: 22px; flex: none; }
 .result-channels .channel { color: var(--paper); }
 .result-channels .channel:hover { background: rgb(255 250 242 / 10%); }
