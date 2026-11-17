@@ -48,8 +48,12 @@ const A = {
   ed: { unit: null, items: [], open: null, confirm: null, busy: false }, seg: null, simExam: null, weekly: null, mode: 'profesor', search: ''
 };
 const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role);
-const teacherMode = () => isStaff() && A.mode === 'profesor';
-try { A.mode = localStorage.getItem('campus-mode') === 'alumno' ? 'alumno' : 'profesor'; } catch (e) { /* private mode */ }
+// Three spaces for the team: « Alumno » (the student's Campus), « Profesor » (teaching only) and,
+// for admins, « Admin » (leads, enrolments, groups, programme, settings). teacherMode() is true in
+// both team spaces; adminMode() only in « Admin ». The last space used is remembered.
+const teacherMode = () => isStaff() && A.mode !== 'alumno';
+const adminMode = () => isAdmin() && A.mode === 'admin';
+try { const m = localStorage.getItem('campus-mode'); A.mode = ['alumno', 'profesor', 'admin'].includes(m) ? m : 'profesor'; } catch (e) { /* private mode */ }
 
 const SEGMENTS = {
   A2: [
@@ -349,7 +353,7 @@ async function loadStaff() {
     admin ? sb.from('profiles').select('id,plan,plan_start').eq('role', 'student') : null,
     admin ? sb.rpc('admin_members') : null,
     admin ? sb.rpc('staff_enrollments') : null,
-    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null
+    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null, admin ? loadActivity() : null
   ]);
   if (ov.error) throw ov.error;
   A.staff.overview = ov.data || [];
@@ -447,21 +451,29 @@ const SNAV = [
   { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) || (A.contract && A.contract.signed) },
   { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => !isStaff() && M.ready, count: () => myUnread() }
 ];
-// Staff space: one tab per job, like the student side (Inicio first, settings last).
+// Profesor space: only what teaching needs. Admins find contents, accounts and settings in « Admin »;
+// a teacher who is not an admin keeps « Contenido » and « Cuentas » (to invite their students) here.
 const isAdmin = () => !!(A.profile && A.profile.role === 'admin');
 const TNAV = [
   { id: 'panel', label: 'Inicio', icon: 'home' },
   { id: 'alumnos', label: 'Alumnos', icon: 'users' },
-  { id: 'prospectos', label: 'Prospectos', icon: 'funnel', when: () => isAdmin() && Array.isArray(A.staff.prospects), count: () => crmDue().length + (waOn() ? waWaiting().length : 0) },
   { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => Array.isArray(A.staff.threads), count: () => threadsWaiting().length },
   { id: 'tareas', label: 'Tareas', icon: 'pen' },
-  { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null, count: () => isAdmin() ? A.staff.changes.filter(c => c.status === 'pending').length : 0 },
-  { id: 'contenido', label: 'Contenido', icon: 'book' },
-  { id: 'cuentas', label: 'Cuentas', icon: 'user-plus', when: () => A.staff.invitesReady || (isAdmin() && !!A.staff.members) },
-  { id: 'ajustes', label: 'Ajustes', icon: 'settings', when: () => isAdmin() && !!A.staff.settings }
+  { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null },
+  { id: 'contenido', label: 'Contenido', icon: 'book', when: () => !isAdmin() },
+  { id: 'cuentas', label: 'Cuentas', icon: 'user-plus', when: () => !isAdmin() && A.staff.invitesReady }
 ];
-const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
-const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
+// Admin space: one tab per job, grouped in the side bar (the counters are what waits for someone).
+const ANAV = [
+  { id: 'bandeja', label: 'Inicio', icon: 'home', count: () => adminTasks().filter(t => t.urgent).length },
+  { id: 'prospectos', label: 'Captación', icon: 'funnel', group: 'Ventas', when: () => Array.isArray(A.staff.prospects), count: () => adminTasks().filter(t => t.area === 'captacion').length },
+  { id: 'cuentas', label: 'Inscripciones', icon: 'user-plus', group: 'Ventas', when: () => A.staff.invitesReady || !!A.staff.members, count: () => adminTasks().filter(t => t.area === 'inscripciones' && t.urgent).length },
+  { id: 'horarios', label: 'Clases', icon: 'calendar', group: 'Escuela', when: () => A.staff.groups !== null, count: () => adminTasks().filter(t => t.area === 'clases').length },
+  { id: 'contenido', label: 'Programa', icon: 'book', group: 'Escuela' },
+  { id: 'ajustes', label: 'Ajustes', icon: 'settings', group: 'Configuración', when: () => !!A.staff.settings }
+];
+const navItems = () => (adminMode() ? ANAV : teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
+const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes, bandeja: viewBandeja };
 // Old links (#grupo) keep working.
 const ALIASES = { grupo: 'panel', whatsapp: 'prospectos', difusion: 'prospectos' };
 
@@ -471,12 +483,15 @@ function currentView() {
 }
 function renderNav(cur) {
   const items = navItems();
-  $('#sideNav').innerHTML = items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${it.label}${c ? `<span class="count num">${c > 99 ? '99+' : c}</span>` : ''}</a>`; }).join('');
+  $('#sideNav').innerHTML = items.map((it, i) => { const c = it.count ? it.count() : 0; return `${it.group && it.group !== (items[i - 1] || {}).group ? `<p class="nav-group">${it.group}</p>` : ''}<a href="#${it.id}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${it.label}${c ? `<span class="count num">${c > 99 ? '99+' : c}</span>` : ''}</a>`; }).join('');
   $('#tabbar').hidden = false;
-  tabbarMotion.update(items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join(''), `${A.profile.id}:${teacherMode()}`);
+  tabbarMotion.update(items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join(''), `${A.profile.id}:${A.mode}`);
   const p = A.profile;
-  $('#promo').innerHTML = teacherMode()
-    ? `<span>${p.role === 'admin' ? 'Administración' : 'Profesor'}</span><b>${esc(p.full_name)}</b><span>${A.staff.overview.length} alumno${A.staff.overview.length === 1 ? '' : 's'}</span>`
+  const todo = adminMode() ? adminTasks() : [];
+  $('#promo').innerHTML = adminMode()
+    ? `<span>Administración</span><b>${esc(p.full_name)}</b><span>${todo.length ? `${todo.length} tarea${todo.length === 1 ? '' : 's'} en espera` : 'Todo al día'}</span>`
+    : teacherMode()
+    ? `<span>Profesor</span><b>${esc(p.full_name)}</b><span>${A.staff.overview.length} alumno${A.staff.overview.length === 1 ? '' : 's'}</span>`
     : (p.next_class_at ? `<span>Próxima clase</span><b>${esc(cap(fmtDate(new Date(p.next_class_at), { weekday: 'long', day: 'numeric', month: 'short' })))}</b><span>${fmtDate(new Date(p.next_class_at), { hour: '2-digit', minute: '2-digit' })}${A.teacher ? ' · ' + esc(A.teacher.full_name) : ''}</span>`
       : `<span>Tu objetivo</span><b>NCLC 7</b><span>${esc(EXAMS[p.exam] || 'Examen por definir')}</span>`);
   $('#sideFoot').innerHTML = `<span>${esc(firstName(p.full_name))}</span><button type="button" data-action="menu">Mi cuenta</button>`;
@@ -488,7 +503,7 @@ function topBar(id, title, sub, extra = '') {
   return `<header class="top"><div><h1 id="${id}">${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">${extra}
       ${teacherMode() ? '' : searchMarkup(A.search)}
-      ${isStaff() ? `<div class="switch" role="group" aria-label="Vista"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode()}">Profesor</button></div>` : ''}
+      ${isStaff() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode() && !adminMode()}">Profesor</button>${isAdmin() ? `<button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button>` : ''}</div>` : ''}
       <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
       <div class="menu-wrap"><button type="button" class="round ava-btn" data-action="menu" aria-label="Mi cuenta" aria-haspopup="true"><span class="ava">${esc(initials(p.full_name))}</span></button><div id="menuSlot"></div></div>
@@ -496,23 +511,16 @@ function topBar(id, title, sub, extra = '') {
 }
 function notifications() {
   const out = [];
+  if (adminMode()) return adminTasks().slice(0, 12).map(t => ({ key: t.key, ic: t.ic, text: `${t.urgent ? '<b>Urgente:</b> ' : ''}${t.title}.`, href: t.href, attrs: t.attrs }));
   if (teacherMode()) {
     const inactive = A.staff.overview.filter(s => s.onboarded && (daysSince(s.last_activity) == null || daysSince(s.last_activity) >= 4)).length;
     const fresh = A.staff.overview.filter(s => !s.onboarded).length;
     if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#alumnos' });
     if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#alumnos' });
-    const requests = isAdmin() ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
-    if (requests) out.push({ key: 'enr' + requests, ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender.`, href: '#cuentas' });
-    const crmN = isAdmin() && A.staff.prospects ? crmDue().length : 0;
-    if (crmN) out.push({ key: 'crm' + crmToday() + crmN, ic: 'funnel', text: `${crmN} prospecto${crmN > 1 ? 's' : ''} con una acción para hoy o atrasada.`, href: '#prospectos', today: true });
-    const wa = waOn() ? waWaiting() : [];
-    if (wa.length) out.push({ key: 'wa' + wa.map(t => t.id + t.needs_reply_since).join(','), ic: 'chat', text: `${wa.length} ${wa.length > 1 ? 'conversaciones' : 'conversación'} de WhatsApp necesita${wa.length > 1 ? 'n' : ''} respuesta.`, href: '#whatsapp' });
-    const dfN = dfOn() ? dfDrafts().length : 0;
-    if (dfN) out.push({ key: 'df' + dfDrafts().map(c => c.id + c.last_event_at).join(','), ic: 'target', text: `${dfN} borrador${dfN > 1 ? 'es' : ''} de difusión list${dfN > 1 ? 'os' : 'o'} para revisar y enviar.`, href: '#difusion' });
     const waiting = threadsWaiting();
     if (waiting.length) out.push({ key: 'msg' + waiting.map(t => t.id + t.needs_staff_since).join(','), ic: 'chat', text: `${waiting.length} ${waiting.length > 1 ? 'conversaciones' : 'conversación'} de alumno${waiting.length > 1 ? 's' : ''} necesita${waiting.length > 1 ? 'n' : ''} respuesta.`, href: '#mensajes' });
-    const pending = A.staff.changes.filter(c => c.status === 'pending').length;
-    if (pending && A.profile.role === 'admin') out.push({ key: 'chg' + pending, ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar.`, href: '#horarios' });
+    const adm = isAdmin() ? adminTasks() : [];
+    if (adm.length) out.push(adminLink(adm, '.'));
     return out;
   }
   for (const v of A.levelVal || []) {
@@ -545,7 +553,7 @@ function toggleBell() {
   $('[data-action="bell"] .pip')?.remove();
   slot.innerHTML = `<div class="menu menu-wide" role="menu"><div class="who"><b>Notificaciones</b></div>${notes.length ? notes.map(n => n.start
     ? `<button type="button" role="menuitem" data-start="${n.start}">${icon(n.ic)}<span>${n.text}</span></button>`
-    : `<a role="menuitem" href="${n.href}"${n.today ? ' data-crm-today' : ''}>${icon(n.ic)}<span>${n.text}</span></a>`).join('') : '<p class="menu-empty">Nada nuevo por ahora.</p>'}</div>`;
+    : `<a role="menuitem" href="${n.href}"${n.today ? ' data-crm-today' : ''}${n.attrs || ''}>${icon(n.ic)}<span>${n.text}</span></a>`).join('') : '<p class="menu-empty">Nada nuevo por ahora.</p>'}</div>`;
   fitMenu(slot);
 }
 /* Keep an open menu inside the screen (16 px gutter): on phones the tool row wraps under the
@@ -588,7 +596,7 @@ function render(animateEntry = true) {
 // Used by tour.js: which tour applies, and whether this account has already seen it
 // (profiles.tours, db/007_tutorial.sql; the device keeps a copy if the column is missing).
 window.CampusApp = {
-  mode: () => teacherMode() ? 'teacher' : 'student',
+  mode: () => adminMode() ? 'admin' : teacherMode() ? 'teacher' : 'student',
   admin: () => isAdmin(),
   seen: name => {
     let local = false; try { local = !!localStorage.getItem('campus-tour-' + name); } catch (e) { /* ignore */ }
@@ -882,59 +890,149 @@ function staffAlerts() {
 const assignable = () => A.units.filter(u => (A.unitInfo[u.id]?.validated || 0) > 0);
 const noStudentsTile = () => `<article class="tile empty"><h2>Todavía no tienes alumnos</h2><p class="muted">${A.staff.invitesReady ? 'Invita a tu primer alumno en «Cuentas»: aparecerá aquí con su progreso en cuanto entre al campus.' : 'Cuando Pathway te asigne alumnos, aparecerán aquí con su progreso.'}</p>${A.staff.invitesReady ? `<a class="btn btn-dark" style="margin-top:14px" href="#cuentas">${icon('user-plus')}Invitar a un alumno</a>` : ''}</article>`;
 
-// What waits for a decision, each line with a link to the tab where it is handled.
-function todoItems() {
-  const out = [], admin = isAdmin();
+// « Hecho »: what the team did lately (db/033_actividad_admin.sql), with who and where.
+async function loadActivity() {
+  const r = await sb.rpc('admin_activity', { p_days: 7 });
+  A.staff.activity = r.error ? null : (r.data || []);
+}
+const bqDay = d => { const k = dayKey(new Date(d)), t = dayKey(new Date()), y = dayKey(new Date(Date.now() - 864e5)); return k === t ? 'Hoy' : k === y ? 'Ayer' : cap(fmtDate(new Date(d), { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '')); };
+function bqRow(t, area = true) {
+  const [an, ac] = ADMIN_AREAS[t.area] || ['', 'stone'];
+  return `<div class="bq-row${t.urgent ? ' urgent' : ''}"><span class="bq-ico" aria-hidden="true">${icon(t.ic)}</span>
+    <span class="bq-main">${area ? `<span class="bq-meta"><span class="crm-chip ${ac}">${an}</span></span>` : ''}<b>${t.title}</b>${t.detail ? `<small>${t.detail}</small>` : ''}</span>
+    <a class="btn ${t.urgent ? 'btn-coral' : 'btn-dark'} btn-sm bq-go" href="${t.href}"${t.attrs}>${esc(t.action)}${icon('arrow')}</a></div>`;
+}
+function doneTile() {
+  const list = A.staff.activity;
+  if (!list) return `<article class="tile" id="bqDone"><div class="tile-head"><h2>Hecho</h2></div><p class="muted">Cargando…</p></article>`;
+  let last = '';
+  const rows = list.slice(0, 30).map(a => {
+    const day = bqDay(a.at), head = day !== last ? `<p class="label bq-day">${day}</p>` : '';
+    last = day;
+    return `${head}<a class="bq-done" href="${esc(a.href || '#bandeja')}"><span class="num bq-time">${esc(fmtDate(new Date(a.at), { hour: '2-digit', minute: '2-digit' }))}</span><span><b>${esc(a.who ? firstName(a.who) : 'Automático')}</b> · ${esc(a.text)}</span></a>`;
+  }).join('');
+  return `<article class="tile" id="bqDone"><div class="tile-head"><h2>Hecho</h2><span class="pill ghost">Últimos 7 días</span></div>
+    <p class="muted bq-intro">Lo que el equipo ya hizo, con quién lo hizo: así nadie lo hace dos veces.</p>
+    ${rows || '<p class="muted">Nada todavía esta semana.</p>'}</article>`;
+}
+function viewBandeja() {
+  const tasks = adminTasks(), urgent = tasks.filter(t => t.urgent), rest = tasks.filter(t => !t.urgent);
+  const done = (A.staff.activity || []).length;
+  const byArea = Object.keys(ADMIN_AREAS).map(k => [k, rest.filter(t => t.area === k)]).filter(([, l]) => l.length);
+  const areaHref = { captacion: '#prospectos', inscripciones: '#cuentas', clases: '#horarios', programa: '#contenido' };
+  const kpi = (cls, label, n, sub) => `<article class="tile c-4 kpi bq-kpi ${cls}"><p class="label">${label}</p><p class="big num">${n}</p><p class="bq-sub">${sub}</p></article>`;
+  return `<section class="view" aria-labelledby="h-bandeja">
+  ${topBar('h-bandeja', 'Inicio', 'Lo que espera una acción de la administración, y lo que ya se hizo')}
+  <div class="bento staff">
+    ${kpi(urgent.length ? 'urgent' : 'calm', 'Urgente', urgent.length, urgent.length ? 'hacer hoy' : 'nada urgente')}
+    ${kpi('', 'Por hacer', rest.length, rest.length ? 'cuando puedas' : 'nada pendiente')}
+    ${kpi('done', 'Hecho', done, 'estos 7 días')}
+    ${tasks.length ? '' : `<article class="tile bq-clear"><h2>Todo al día</h2><p class="muted">Nada espera una acción de la administración. Las tareas nuevas (una solicitud, un mensaje, un cambio de horario…) aparecerán aquí solas.</p></article>`}
+    ${urgent.length ? `<article class="tile bq-list" id="bqUrgent"><div class="tile-head"><h2>Urgente</h2><span class="pill warn num">${urgent.length}</span></div>
+      <p class="muted bq-intro">Atrasado, o un alumno o un interesado está esperando. Empieza por aquí.</p>${urgent.map(t => bqRow(t)).join('')}</article>` : ''}
+    ${rest.length ? `<article class="tile bq-list" id="bqTodo"><div class="tile-head"><h2>Por hacer</h2><span class="pill ghost num">${rest.length}</span></div>
+      ${byArea.map(([k, l]) => `<p class="label bq-area">${ADMIN_AREAS[k][0]}</p>${l.slice(0, 5).map(t => bqRow(t, false)).join('')}${l.length > 5 ? `<a class="bq-more" href="${areaHref[k]}">y ${l.length - 5} más en «${ADMIN_AREAS[k][0]}» ${icon('arrow')}</a>` : ''}`).join('')}</article>` : ''}
+    ${doneTile()}
+  </div></section>`;
+}
+
+// Profesor « Por revisar »: what waits for the teacher, each line with a link to where it is handled.
+function teacherTodo() {
+  const out = [];
   const waiting = threadsWaiting().length;
-  if (waiting) out.push({ ic: 'chat', text: `${waiting} ${waiting > 1 ? 'conversaciones' : 'conversación'} por responder`, href: '#mensajes' });
-  const requests = admin ? (A.staff.enrollments || []).filter(r => !r.handled_at).length : 0;
-  if (requests) out.push({ ic: 'user-plus', text: `${requests} solicitud${requests > 1 ? 'es' : ''} de inscripción por atender`, href: '#cuentas' });
-  if (admin && A.staff.prospects) {
-    const due = crmDue(), late = due.filter(p => p.next_due < crmToday()).length;
-    if (due.length) out.push({ ic: 'funnel', text: `${due.length} prospecto${due.length > 1 ? 's' : ''} para hoy${late ? ` (${late} atrasado${late > 1 ? 's' : ''})` : ''}`, href: '#prospectos', today: true });
-  }
-  const wa = waOn() ? waWaiting().length : 0;
-  if (wa) out.push({ ic: 'chat', text: `${wa} ${wa > 1 ? 'conversaciones' : 'conversación'} de WhatsApp por responder`, href: '#whatsapp' });
-  const dfN = dfOn() ? dfDrafts().length : 0, dfH = dfOn() ? dfDue().length : 0;
-  if (dfN) out.push({ ic: 'target', text: `${dfN} borrador${dfN > 1 ? 'es' : ''} de difusión por enviar`, href: '#difusion' });
-  else if (dfH) out.push({ ic: 'target', text: `${dfH} relance${dfH > 1 ? 's' : ''} de difusión para hoy`, href: '#difusion' });
-  const pending = A.staff.changes.filter(c => c.status === 'pending').length;
-  if (admin && pending) out.push({ ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar`, href: '#horarios' });
-  if (admin && A.staff.groups && A.staff.members) {
-    const inGroup = new Set(A.staff.groups.flatMap(g => g.members.map(m => m.id)));
-    const n = A.staff.members.filter(m => m.role === 'student' && !inGroup.has(m.id)).length;
-    if (n) out.push({ ic: 'users', text: `${n} alumno${n > 1 ? 's' : ''} sin grupo, sin horario`, href: '#horarios' });
-  }
-  const noZoom = (A.staff.groups || []).filter(g => !g.zoom_link).length;
-  if (noZoom) out.push({ ic: 'video', text: `${noZoom} grupo${noZoom > 1 ? 's' : ''} sin enlace de Zoom`, href: '#horarios' });
-  const lost = (A.staff.log && A.staff.log.unmatched || []).length;
-  if (lost) out.push({ ic: 'video', text: `${lost} reunión${lost > 1 ? 'es' : ''} de Zoom sin grupo`, href: '#horarios' });
+  if (waiting) out.push({ ic: 'chat', text: `${waiting} ${waiting > 1 ? 'conversaciones' : 'conversación'} de alumno${waiting > 1 ? 's' : ''} por responder`, href: '#mensajes' });
+  const rIds = A.staff.groups ? myGroupIds() : null, noReport = (A.staff.reports || []).filter(x => !x.report && (!rIds || rIds.has(x.group_id))).length;
+  if (noReport) out.push({ ic: 'pen', text: `${noReport} clase${noReport > 1 ? 's' : ''} sin informe`, href: '#panel' });
   const ready = (A.staff.levels || []).filter(x => x.units_done && !x.teacher_passed_at).length;
   if (ready) out.push({ ic: 'trophy', text: `${ready} alumno${ready > 1 ? 's' : ''} con el nivel terminado: validar el examen`, href: '#alumnos' });
-  if (A.staff.invitesReady) {
-    const joined = new Set((A.staff.members || []).filter(m => m.onboarded).map(m => String(m.email).toLowerCase()));
-    const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
-    if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
-  }
-  const noReport = (A.staff.reports || []).filter(x => !x.report).length;
-  if (noReport) out.push({ ic: 'pen', text: `${noReport} clase${noReport > 1 ? 's' : ''} sin informe`, href: '#panel' });
   const abs = A.staff.absences || [];
   const toReview = abs.reduce((n, s) => n + s.record.filter(r => !r.reason && r.request && r.request.status === 'pending').length + (s.requests || []).filter(q => q.status === 'pending').length, 0);
   if (toReview) out.push({ ic: 'pen', text: `${toReview} justificativo${toReview > 1 ? 's' : ''} por revisar`, href: '#alumnos' });
   const toMake = abs.reduce((n, s) => n + s.record.filter(r => r.reason && !r.makeup).length, 0);
   if (toMake) out.push({ ic: 'calendar', text: `${toMake} clase${toMake > 1 ? 's' : ''} por recuperar`, href: '#alumnos' });
-  for (const s of abs) if (s.month && s.month.failed) out.push({ ic: 'users', text: `${s.name}: mes no validado`, href: '#alumnos' });
-  if (isAdmin() && A.staff.plans) {
-    const n = Object.values(A.staff.plans).filter(p => !p.plan).length;
-    if (n) out.push({ ic: 'user-plus', text: `${n} alumno${n > 1 ? 's' : ''} sin fórmula (mensual o ciclo)`, href: '#cuentas' });
-  }
+  for (const s of abs) if (s.month && s.month.failed) out.push({ ic: 'users', text: `${esc(s.name)}: mes no validado`, href: '#alumnos' });
   if (contractOn() && A.staff.contracts) {
     const n = A.staff.overview.filter(s => contractState(s.id) !== 'ok').length;
     if (n) out.push({ ic: 'pen', text: `${n} alumno${n > 1 ? 's' : ''} sin el contrato firmado`, href: '#alumnos' });
   }
-  const drafts = A.units.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated < inf.count; }).length;
-  if (admin && drafts) out.push({ ic: 'book', text: `${drafts} unidad${drafts > 1 ? 'es' : ''} en borrador`, href: '#contenido' });
+  if (!isAdmin() && A.staff.invitesReady) {
+    const joined = new Set((A.staff.members || []).filter(m => m.onboarded).map(m => String(m.email).toLowerCase()));
+    const open = A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase())).length;
+    if (open) out.push({ ic: 'user-plus', text: `${open} invitación${open > 1 ? 'es' : ''} sin respuesta`, href: '#cuentas' });
+  }
+  const adm = isAdmin() ? adminTasks() : [];
+  if (adm.length) out.push(adminLink(adm, ''));
   return out;
+}
+// In « Profesor », an admin who teaches sees only their groups; an admin who does not teach sees them all.
+const myGroups = () => { const all = A.staff.groups || []; if (!isAdmin() || adminMode()) return all; const mine = all.filter(g => g.teacher_id === A.profile.id); return mine.length ? mine : all; };
+const myGroupIds = () => new Set(myGroups().map(g => g.id));
+// A line, in the Profesor space, that opens the Admin space when something waits there.
+function adminLink(tasks, end) {
+  const u = tasks.filter(t => t.urgent).length;
+  return { key: 'adm' + tasks.map(t => t.key).join(','), ic: 'settings', href: '#bandeja', attrs: ' data-mode="admin"',
+    text: `${tasks.length} tarea${tasks.length > 1 ? 's' : ''} de administración en espera${u ? ` (${u} urgente${u > 1 ? 's' : ''})` : ''}: abrir el espacio Admin${end}` };
+}
+
+// Admin « Bandeja »: one line per thing to do, said plainly (who, what), with the button that opens
+// the right place. urgent = late, blocking a student, or about to expire. All texts are escaped here.
+const ADMIN_AREAS = { captacion: ['Captación', 'peach'], inscripciones: ['Inscripciones', 'mint'], clases: ['Clases', 'sky'], programa: ['Programa', 'lilac'] };
+const agoH = d => d ? Math.max(0, Math.round((Date.now() - Date.parse(d)) / 36e5)) : 0;
+const agoText = d => { const h = agoH(d); return h < 1 ? 'hace un momento' : h < 24 ? `hace ${h} h` : `hace ${Math.round(h / 24)} día${Math.round(h / 24) > 1 ? 's' : ''}`; };
+function adminTasks() {
+  if (!isAdmin()) return [];
+  const out = [], push = t => out.push({ ic: 'arrow', attrs: '', detail: '', urgent: false, ...t });
+  // Captación
+  if (waOn()) for (const t of waWaiting()) {
+    const w = waWindow(t);
+    push({ key: 'wa' + t.id + t.needs_reply_since, area: 'captacion', ic: 'chat', title: `Responder por WhatsApp a ${esc(waName(t))}`,
+      detail: `Escribió ${esc(agoText(t.needs_reply_since || t.last_inbound_at))} · ${esc(w.label)}`, action: 'Responder', href: '#whatsapp', attrs: ` data-wa-goto="${t.id}"`, urgent: true });
+  }
+  if (Array.isArray(A.staff.prospects)) for (const p of crmDue()) {
+    const late = p.next_due < crmToday();
+    push({ key: 'crm' + p.id + p.next_due, area: 'captacion', ic: 'funnel', title: `${esc(crmName(p))}: ${esc(p.next_action || 'próxima acción')}`,
+      detail: `${late ? `Atrasado desde el ${esc(crmDay(p.next_due))}` : 'Para hoy'}${p.owner ? ` · responsable: ${esc(firstName(p.owner))}` : ''}`, action: 'Abrir la ficha', href: '#prospectos', attrs: ` data-crm-goto="${p.id}"`, urgent: late });
+  }
+  if (dfOn()) {
+    for (const c of dfDrafts()) push({ key: 'df' + c.id + c.last_event_at, area: 'captacion', ic: 'target', title: `Revisar y enviar el mensaje para ${esc(c.name)}`,
+      detail: 'Borrador preparado por el asistente de difusión', action: 'Revisar', href: '#difusion', attrs: ` data-df-goto="${c.id}"` });
+    for (const c of dfDue().filter(c => !(c.drafts_pending > 0))) push({ key: 'dfr' + c.id + c.next_due, area: 'captacion', ic: 'target', title: `${esc(c.name)}: ${esc(c.next_action || 'relanzar')}`,
+      detail: c.next_due < crmToday() ? `Atrasado desde el ${esc(crmDay(c.next_due))}` : 'Para hoy', action: 'Abrir la ficha', href: '#difusion', attrs: ` data-df-goto="${c.id}"` });
+  }
+  // Inscripciones
+  for (const r of (A.staff.enrollments || []).filter(r => !r.handled_at)) push({ key: 'enr' + r.id, area: 'inscripciones', ic: 'user-plus',
+    title: `Responder a la solicitud de inscripción de ${esc(r.name)}`, detail: `${esc(enrPlan(r))}${r.level ? ` · test ${esc(r.level)}` : ''} · recibida ${esc(agoText(r.created_at))}`,
+    action: 'Ver la solicitud', href: '#cuentas', attrs: ` data-enr-goto="${r.id}"`, urgent: agoH(r.created_at) >= 24 });
+  if (A.staff.invitesReady) {
+    const joined = new Set((A.staff.members || []).filter(m => m.onboarded).map(m => String(m.email).toLowerCase()));
+    for (const i of A.staff.invitations.filter(i => !joined.has(String(i.email).toLowerCase()) && agoH(i.created_at) >= 72)) push({ key: 'inv' + i.email, area: 'inscripciones', ic: 'user-plus',
+      title: `${esc(i.full_name)} todavía no entró al Campus`, detail: `Invitación enviada ${esc(agoText(i.created_at))} a ${esc(i.email)}`, action: 'Reenviar o cancelar', href: '#cuentas' });
+  }
+  if (A.staff.plans && A.staff.members) for (const m of A.staff.members.filter(m => m.role === 'student' && A.staff.plans[m.id] && !A.staff.plans[m.id].plan)) push({ key: 'plan' + m.id, area: 'inscripciones', ic: 'user-plus',
+    title: `Definir la fórmula de ${esc(m.full_name)} (mensual o ciclo)`, detail: 'Sin fórmula, el Campus no puede contar sus ausencias del mes', action: 'Editar la cuenta', href: '#cuentas', attrs: ` data-member-goto="${m.id}"` });
+  // Clases
+  for (const c of A.staff.changes.filter(c => c.status === 'pending')) {
+    const soon = Date.parse(c.original_at) - Date.now() < 48 * 36e5;
+    push({ key: 'chg' + c.id, area: 'clases', ic: 'calendar', title: `${c.new_at ? 'Aprobar o rechazar: mover' : 'Aprobar o rechazar: cancelar'} la clase de «${esc(c.group)}»`,
+      detail: `${c.new_at ? `Del ${esc(sessionLabel(c.original_at))} al ${esc(sessionLabel(c.new_at))}` : `Clase del ${esc(sessionLabel(c.original_at))}`} · pedido por ${esc(c.requested_by || '—')}${c.reason ? ` · «${esc(c.reason)}»` : ''}`,
+      action: 'Decidir', href: '#horarios', urgent: soon });
+  }
+  if (A.staff.groups && A.staff.members) {
+    const inGroup = new Set(A.staff.groups.flatMap(g => g.members.map(m => m.id)));
+    for (const m of A.staff.members.filter(m => m.role === 'student' && !inGroup.has(m.id))) push({ key: 'grp' + m.id, area: 'clases', ic: 'users',
+      title: `Poner a ${esc(m.full_name)} en un grupo`, detail: 'Sin grupo no tiene horario, ni próxima clase, ni recordatorios', action: 'Ir a los grupos', href: '#horarios', urgent: !!m.onboarded });
+  }
+  for (const g of (A.staff.groups || []).filter(g => !g.zoom_link)) {
+    const next = (g.upcoming || []).find(x => x.status !== 'cancelled' && Date.parse(x.at) > Date.now());
+    push({ key: 'zoom' + g.id, area: 'clases', ic: 'video', title: `Añadir el enlace de Zoom de «${esc(g.name)}»`,
+      detail: next ? `Próxima clase: ${esc(sessionLabel(next.at))}` : 'Sin clases próximas', action: 'Editar el grupo', href: '#horarios', attrs: ` data-group-goto="${g.id}"`, urgent: !!next && Date.parse(next.at) - Date.now() < 24 * 36e5 });
+  }
+  const lost = (A.staff.log && A.staff.log.unmatched || []).length;
+  if (lost) push({ key: 'zlost' + lost, area: 'clases', ic: 'video', title: `Asociar ${lost} reunión${lost > 1 ? 'es' : ''} de Zoom a su grupo`, detail: 'Sin grupo, la asistencia de esas clases no se cuenta', action: 'Revisar', href: '#horarios' });
+  // Programa
+  const drafts = A.units.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated < inf.count; }).length;
+  if (drafts) push({ key: 'units' + drafts, area: 'programa', ic: 'book', title: `${drafts} unidad${drafts > 1 ? 'es' : ''} en borrador por revisar y publicar`, detail: 'Los alumnos solo ven las unidades publicadas', action: 'Ver el programa', href: '#contenido' });
+  return out.sort((a, b) => (b.urgent - a.urgent));
 }
 
 function viewPanel() {
@@ -943,8 +1041,8 @@ function viewPanel() {
   const open = ov.reduce((a, s) => a + s.homework_open, 0);
   const acc = ov.filter(s => s.week_accuracy != null);
   const avgAcc = acc.length ? Math.round(acc.reduce((a, s) => a + s.week_accuracy, 0) / acc.length) : null;
-  const alerts = staffAlerts(), todo = todoItems(), canAssign = assignable().length > 0;
-  const upcoming = (A.staff.groups || []).flatMap(g => g.upcoming.filter(x => x.status !== 'cancelled' && new Date(x.at) > Date.now()).map(x => ({ g, x })))
+  const alerts = staffAlerts(), todo = teacherTodo(), canAssign = assignable().length > 0;
+  const upcoming = myGroups().flatMap(g => g.upcoming.filter(x => x.status !== 'cancelled' && new Date(x.at) > Date.now()).map(x => ({ g, x })))
     .sort((a, b) => new Date(a.x.at) - new Date(b.x.at)).slice(0, 5);
   return `<section class="view" aria-labelledby="h-panel">
   ${topBar('h-panel', 'Inicio', 'Lo que pasó entre clases, antes de la próxima')}
@@ -956,7 +1054,7 @@ function viewPanel() {
     <article class="tile c-7"><div class="tile-head"><h2>Necesitan atención</h2>${alerts.length ? `<span class="pill ghost num">${alerts.length}</span>` : ''}</div>
       ${alerts.length ? `<div class="alerts">${alerts.map(a => `<div class="alert"><span class="ava">${esc(initials(a.s.full_name))}</span><p><b>${esc(a.s.full_name)}</b><br>${a.text}</p>${canAssign ? `<button class="btn btn-dark btn-sm" type="button" data-hw-student="${a.s.id}">Asignar tarea</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">Todo el grupo está al día.</p>'}</article>` : noStudentsTile()}
     <article class="tile ${ov.length ? 'c-5' : 'c-6'}"><div class="tile-head"><h2>Por revisar</h2>${todo.length ? `<span class="pill ghost num">${todo.length}</span>` : ''}</div>
-      ${todo.length ? `<div class="todo">${todo.map(t => `<a class="todo-row" href="${t.href}"${t.today ? ' data-crm-today' : ''}>${icon(t.ic)}<span>${t.text}</span>${icon('arrow')}</a>`).join('')}</div>` : '<p class="muted">Nada pendiente por ahora.</p>'}</article>
+      ${todo.length ? `<div class="todo">${todo.map(t => `<a class="todo-row" href="${t.href}"${t.attrs || ''}>${icon(t.ic)}<span>${t.text}</span>${icon('arrow')}</a>`).join('')}</div>` : '<p class="muted">Nada pendiente por ahora.</p>'}</article>
     ${A.staff.groups !== null ? `<article class="tile c-6"><div class="tile-head"><h2>Próximas clases</h2><a class="pill ghost" href="#horarios">Horarios</a></div>
       ${upcoming.length ? upcoming.map(({ g, x }) => `<div class="err-row"><span><b>${esc(cap(sessionLabel(x.at)))}</b><br><span class="muted" style="font-size:13px">${esc(g.name)}${g.teacher ? ' · ' + esc(g.teacher) : ''}</span></span>${x.status === 'moved' ? '<span class="status warn">Cambiada</span>' : ''}</div>`).join('') : '<p class="muted">Sin clases próximas.</p>'}</article>` : ''}
     ${ov.length ? `<article class="tile c-6"><div class="tile-head"><h2>Errores frecuentes</h2><span class="pill ghost">30 días</span></div>
@@ -966,8 +1064,9 @@ function viewPanel() {
 
 // End-of-class report (db/018_informe_clase.sql): the units seen today open for the student.
 function reportTile() {
-  const list = A.staff.reports;
-  if (!list || !list.length) return '';
+  const ids = A.staff.groups ? myGroupIds() : null;
+  const list = (A.staff.reports || []).filter(x => !ids || ids.has(x.group_id));
+  if (!list.length) return '';
   const due = list.filter(x => !x.report), done = list.filter(x => x.report).slice(0, 4);
   const k = x => `${x.group_id}|${x.scheduled_at}`;
   const who = x => esc(x.students.map(p => p.name).join(', ') || x.group);
@@ -1105,7 +1204,7 @@ function viewTareas() {
 function viewCuentas() {
   const admin = isAdmin();
   return `<section class="view" aria-labelledby="h-cuentas">
-  ${topBar('h-cuentas', 'Cuentas', admin ? 'Invitar a alumnos y profesores, y gestionar sus cuentas' : 'Invitar a tus alumnos al campus')}
+  ${topBar('h-cuentas', admin ? 'Inscripciones' : 'Cuentas', admin ? 'Las solicitudes del sitio, las invitaciones al Campus y las cuentas' : 'Invitar a tus alumnos al campus')}
   <div class="bento staff">${enrollTile()}${inviteTile()}${membersTile()}</div></section>`;
 }
 
@@ -1434,7 +1533,7 @@ function viewProspectos() {
   if (!C.view) C.view = crmPhone() ? 'list' : 'board';
   const owners = crmOwners();
   return `<section class="view" aria-labelledby="h-crm">
-  ${topBar('h-crm', 'Prospectos', 'Del primer contacto a la inscripción. Solo administración.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-crm-add>${icon('plus')}Añadir prospecto</button>`)}
+  ${topBar('h-crm', 'Captación', 'Las personas interesadas, del primer contacto a la inscripción.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-crm-add>${icon('plus')}Añadir prospecto</button>`)}
   ${crmSubNav('crm')}
   <section class="crm-kpis" aria-label="Resumen del mes">${crmKpis()}</section>
   <div class="crm-tools tile">
@@ -1712,7 +1811,7 @@ function crmSubNav(cur) {
   if (!waOn() && !dfOn()) return '';
   const n = waOn() ? waWaiting().length : 0, d = dfOn() ? dfDrafts().length : 0;
   return `<nav class="seg-tabs crm-sub" aria-label="Secciones de Prospectos">
-    <a href="#prospectos"${cur === 'crm' ? ' aria-current="page"' : ''}><b>${icon('funnel')}</b>Fichas</a>
+    <a href="#prospectos"${cur === 'crm' ? ' aria-current="page"' : ''}><b>${icon('funnel')}</b>Prospectos</a>
     ${waOn() ? `<a href="#whatsapp"${cur === 'wa' ? ' aria-current="page"' : ''}><b>${icon('chat')}</b>WhatsApp${n ? `<span class="count num">${n}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
     ${dfOn() ? `<a href="#difusion"${cur === 'df' ? ' aria-current="page"' : ''}><b>${icon('target')}</b>Difusión${d ? `<span class="count num">${d}<span class="sr-only"> borradores por enviar</span></span>` : ''}</a>` : ''}</nav>`;
 }
@@ -1795,7 +1894,7 @@ function viewWhatsapp() {
   if (W.open && !t) { W.open = null; W.thread = null; }
   const wait = waWaiting().length;
   return `<section class="view" aria-labelledby="h-crm">
-  ${topBar('h-crm', 'Prospectos', wait ? `${wait} ${wait > 1 ? 'conversaciones' : 'conversación'} de WhatsApp por responder` : 'Conversaciones de WhatsApp. Cada respuesta la revisa y la envía alguien del equipo.')}
+  ${topBar('h-crm', 'Captación', wait ? `${wait} ${wait > 1 ? 'conversaciones' : 'conversación'} de WhatsApp por responder` : 'Conversaciones de WhatsApp. Cada respuesta la revisa y la envía alguien del equipo.')}
   ${crmSubNav('wa')}
   <div class="msg-layout wa-layout${t ? ' has-open' : ''}">
     <article class="tile msg-list-tile"><div class="tile-head"><h2>Conversaciones</h2>${wait ? `<span class="pill warn num">${wait} por responder</span>` : ''}</div>
@@ -2054,7 +2153,7 @@ function dfKpis() {
 }
 function viewDifusion() {
   return `<section class="view" aria-labelledby="h-crm">
-  ${topBar('h-crm', 'Prospectos', 'Sitios, medios y comunidades para conseguir enlaces y menciones. El asistente prepara los mensajes; alguien del equipo los envía.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-df-add>${icon('plus')}Añadir contacto</button>`)}
+  ${topBar('h-crm', 'Captación', 'Sitios, medios y comunidades para conseguir enlaces y menciones. El asistente prepara los mensajes; alguien del equipo los envía.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-df-add>${icon('plus')}Añadir contacto</button>`)}
   ${crmSubNav('df')}
   <section class="crm-kpis" aria-label="Resumen de la difusión">${dfKpis()}</section>
   <div class="crm-tools tile">
@@ -2451,9 +2550,9 @@ function viewCurso() {
 }
 
 function viewHorarios() {
-  const admin = A.profile.role === 'admin';
-  const groups = A.staff.groups || [];
-  const changes = A.staff.changes;
+  const admin = adminMode();
+  const groups = myGroups();
+  const changes = admin ? A.staff.changes : A.staff.changes.filter(c => !isAdmin() || myGroupIds().has(c.group_id) || c.requested_by === A.profile.full_name);
   const pending = changes.filter(c => c.status === 'pending');
   const ed = A.staff.groupEditing;
   const inGroup = new Set(groups.flatMap(g => g.members.map(m => m.id)));
@@ -2476,25 +2575,25 @@ function viewHorarios() {
       ${noGroup.length ? `<p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}` : '<p class="muted">Todos los alumnos tienen un grupo.</p>'}</article>` : '';
   const now = new Date(Date.now() + 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T19:00`;
   return `<section class="view" aria-labelledby="h-horarios">
-  ${topBar('h-horarios', 'Horarios', admin ? 'Grupos, horarios fijos y cambios por validar' : 'Tus grupos y sus horarios fijos')}
+  ${topBar('h-horarios', admin ? 'Clases' : 'Horarios', admin ? 'Todos los grupos, sus horarios fijos y los cambios por validar' : 'Tus grupos y sus horarios fijos')}
   <div class="bento staff">
     ${(admin ? pending.length : changes.length) ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
       ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('')}</article>` : ''}
-    ${unmatchedTile()}
+    ${admin ? unmatchedTile() : ''}
     ${noGroup.length ? noGroupTile : ''}
-    ${askable.length ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Mover o cancelar una clase' : 'Solicitar un cambio'}</h2></div>
-      <p class="muted" style="font-size:14px;margin:-6px 0 16px">${admin ? 'Como admin, el cambio se aplica directamente.' : 'El horario es fijo: el cambio se aplica cuando Pathway lo aprueba.'}</p>
+    ${askable.length ? `<article class="tile c-6"><div class="tile-head"><h2>${isAdmin() ? 'Mover o cancelar una clase' : 'Solicitar un cambio'}</h2></div>
+      <p class="muted" style="font-size:14px;margin:-6px 0 16px">${isAdmin() ? 'Como administración, el cambio se aplica directamente y los alumnos lo ven al instante.' : 'El horario es fijo: el cambio se aplica cuando Pathway lo aprueba.'}</p>
       <form id="chgForm" class="form">
         <label class="field" for="chgSession">Clase<select id="chgSession" required>${askable.map(([g, l]) => `<optgroup label="${esc(g.name)}">${l.slice(0, 8).map(x => `<option value="${g.id}|${x.scheduled_at}">${esc(cap(sessionLabel(x.at)))}</option>`).join('')}</optgroup>`).join('')}</select></label>
         <div class="form-2"><label class="field" for="chgKind">Cambio<select id="chgKind"><option value="move">Mover</option><option value="cancel">Cancelar</option></select></label>
           <label class="field" for="chgAt">Nueva fecha y hora (tu hora local)<input id="chgAt" type="datetime-local" value="${localDefault}"></label></div>
         <label class="field" for="chgWhy">Motivo<input id="chgWhy" maxlength="300" required placeholder="Feriado, cita médica…"></label>
-        <button class="btn btn-dark" type="submit">${admin ? 'Aplicar el cambio' : 'Enviar la solicitud'}</button>
+        <button class="btn btn-dark" type="submit">${isAdmin() ? 'Aplicar el cambio' : 'Enviar la solicitud'}</button>
       </form></article>` : ''}
     ${groups.map(groupTile).join('')}
     ${noGroup.length ? '' : noGroupTile}
     ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Nuevo grupo</h2><p class="muted">Un grupo por horario: una clase privada es un grupo de un alumno.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Crear un grupo</button></article>`) : ''}
-    ${!groups.length && !admin ? '<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">Pathway crea los grupos con su horario fijo; aparecerán aquí.</p></article>' : ''}
+    ${!groups.length && !admin ? `<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">${isAdmin() ? 'Los grupos se crean en el espacio Admin, pestaña «Clases».' : 'Pathway crea los grupos con su horario fijo; aparecerán aquí.'}</p></article>` : ''}
   </div></section>`;
 }
 
@@ -2965,12 +3064,12 @@ function viewContenido() {
   const stat = l => { const list = A.units.filter(u => u.level === l); const live = list.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated === inf.count; }).length; return { n: list.length, live }; };
   const tabs = `<div class="seg-tabs" role="group" aria-label="Nivel">${LEVELS.map(l => { const st = stat(l); return `<button type="button" data-cont="${l}" aria-pressed="${tab === l}"><b>${l}</b>${st.n ? `${st.live} / ${st.n} publicadas` : 'Sin unidades'}</button>`; }).join('')}${docsOn ? `<button type="button" data-cont="docs" aria-pressed="${tab === 'docs'}"><b>${icon('book')}</b>Documentos</button>` : ''}</div>`;
   if (tab === 'docs') return `<section class="view" aria-labelledby="h-cont">
-  ${topBar('h-cont', 'Contenido', 'Los documentos del programa que cada alumno ve en «Mi curso».')}
+  ${topBar('h-cont', adminMode() ? 'Programa' : 'Contenido', 'Los documentos del programa que cada alumno ve en «Mi curso».')}
   ${tabs}
   ${docsTile()}
   </section>`;
   return `<section class="view" aria-labelledby="h-cont">
-  ${topBar('h-cont', 'Contenido', 'Los alumnos solo ven las unidades publicadas')}
+  ${topBar('h-cont', adminMode() ? 'Programa' : 'Contenido', 'Los alumnos solo ven las unidades publicadas')}
   ${tabs}
   ${levels.map(l => `<article class="tile"><div class="tile-head"><h2>Nivel ${l} · segmento ${seg}</h2>${segChips(l)}</div>
     ${A.units.some(u => u.level === l) ? '' : `<p class="muted">Todavía no hay unidades ${l}. Créalas abajo.</p>`}
@@ -3420,6 +3519,10 @@ function bindView(id) {
   pollMessages(id);
   if (id === 'contenido') bindEditor();
   if (id === 'prospectos') { bindCrm(); bindWa(); bindDf(); }
+  if (id === 'bandeja' && Date.now() - (A.staff.activityAt || 0) > 30000) {
+    A.staff.activityAt = Date.now();
+    loadActivity().then(() => { if (currentView() === 'bandeja' && !crmOverlayOpen()) render(false); });
+  }
   pollWa();
   if (id === 'ajustes') bindAgents();
   {
@@ -3571,6 +3674,18 @@ function bindView(id) {
 document.addEventListener('click', async e => {
   const wg = e.target.closest('[data-wa-goto]');
   if (wg) { W.open = wg.dataset.waGoto; W.thread = null; W.editing = null; W.error = null; if (location.hash === '#whatsapp') { e.preventDefault(); if (crmOverlayOpen()) crmClose(); render(); } }
+  // Links of the Admin « Bandeja »: open the right card, request, account or group on arrival.
+  const go = e.target.closest('[data-df-goto],[data-enr-goto],[data-member-goto],[data-group-goto]');
+  if (go) {
+    const here = location.hash === go.getAttribute('href');
+    if (go.dataset.dfGoto) setTimeout(() => dfOpen(go.dataset.dfGoto), 120);
+    if (go.dataset.enrGoto) { A.staff.enrOpen = go.dataset.enrGoto; A.staff.enrAll = false; }
+    if (go.dataset.memberGoto) A.staff.editing = go.dataset.memberGoto;
+    if (go.dataset.groupGoto) A.staff.groupEditing = go.dataset.groupGoto;
+    const anchor = go.dataset.enrGoto ? '#solicitudes' : go.dataset.memberGoto ? '.member-edit' : go.dataset.groupGoto ? '#groupForm' : '';
+    if (here) { e.preventDefault(); closeMenus(); render(); }
+    if (anchor) setTimeout(() => $(anchor)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 200);
+  }
   const ct = e.target.closest('[data-crm-today],[data-crm-goto]');
   if (ct) {
     if (ct.matches('[data-crm-today]')) { C.today = true; C.q = ''; C.origin = ''; C.owner = ''; }
