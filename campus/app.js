@@ -448,9 +448,9 @@ const SNAV = [
   { id: 'ruta', label: 'Mi ruta', icon: 'route' },
   { id: 'repasar', label: 'Repasar', icon: 'cards', count: () => A.due },
   { id: 'simulacros', label: 'Simulacros', icon: 'timer' },
-  { id: 'logros', label: 'Logros', icon: 'trophy' },
+  { id: 'logros', label: 'Logros', icon: 'trophy', bar: false }, // in « Mi cuenta » and on Inicio
   { id: 'curso', label: 'Mi curso', icon: 'calendar', when: () => A.schedule || (A.docs && A.docs.length) || (A.contract && A.contract.signed) },
-  { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => !isStaff() && M.ready, count: () => myUnread() }
+  { id: 'mensajes', label: 'Mensajes', icon: 'chat', bar: false, when: () => !isStaff() && M.ready, count: () => myUnread() } // top bar button
 ];
 // Profesor space: only what teaching needs. Admins find contents, accounts and settings in « Admin »;
 // a teacher who is not an admin keeps « Contenido » and « Cuentas » (to invite their students) here.
@@ -483,7 +483,7 @@ function currentView() {
   return navItems().some(n => n.id === id) ? id : navItems()[0].id;
 }
 function renderNav(cur) {
-  const items = navItems();
+  const items = navItems().filter(it => it.bar !== false);
   $('#sideNav').innerHTML = items.map((it, i) => { const c = it.count ? it.count() : 0; return `${it.group && it.group !== (items[i - 1] || {}).group ? `<p class="nav-group">${it.group}</p>` : ''}<a href="#${it.id}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${it.label}${c ? `<span class="count num">${c > 99 ? '99+' : c}</span>` : ''}</a>`; }).join('');
   $('#tabbar').hidden = false;
   tabbarMotion.update(items.map(it => { const c = it.count ? it.count() : 0; return `<a href="#${it.id}" aria-label="${it.label}" ${it.id === cur ? 'aria-current="page"' : ''}>${icon(it.icon)}${c && it.id !== cur ? '<span class="dot"></span>' : ''}</a>`; }).join(''), `${A.profile.id}:${A.mode}`);
@@ -516,7 +516,7 @@ const HELP = {
   mensajes: ['Las preguntas de los alumnos', ['Cada alumno tiene una conversación con su profesor y el equipo.', 'El asistente prepara una respuesta. Según «Ajustes», sale sola o queda como borrador con «Enviar» y «Editar».', 'Las conversaciones que esperan respuesta van arriba y aparecen en la campana.']],
   zoomlink: ['El enlace de Zoom personal', ['Cada alumno tiene su propio enlace de Zoom, el mismo durante toda su formación.', 'Pégalo aquí una sola vez.', 'Cada clase hecha con ese enlace se reconoce sola: la asistencia y la grabación llegan a la ficha del alumno («Tus clases grabadas»).', 'Graba siempre en la nube de Zoom, no en la computadora.']],
   zoomsin: ['¿Por qué aparecen aquí?', ['Son reuniones de Zoom cuyo enlace no corresponde a ningún alumno.', 'Suele ser un enlace mal pegado, o un alumno todavía sin programar.', 'Pega el enlace correcto en las clases del alumno: sus próximas reuniones se asociarán solas.']],
-  inicio: ['Tu día en el Campus', ['«Meta de hoy»: los XP que ganas practicando. Cumple tu meta cada día para no perder tu racha.', '«Racha»: los días seguidos en que cumpliste tu meta.', '«Próxima clase»: la fecha y la hora de tu clase, en tu hora local.', 'Lo más útil: unos minutos cada día valen más que una hora una vez por semana.']],
+  inicio: ['Tu día en el Campus', ['«Meta de hoy»: los XP que ganas practicando. Cumple tu meta cada día para no perder tu racha.', '«Racha»: los días seguidos en que cumpliste tu meta.', '«Próxima clase»: la fecha y la hora de tu clase, en tu hora local.', 'Tus logros (nivel e insignias) y tus mensajes están arriba: en tu cuenta y en el icono de conversación.']],
   ruta: ['Tu camino, unidad por unidad', ['Cada unidad tiene ejercicios. Para pasar a la siguiente, necesitas al menos 75 %.', 'Si no llegas, puedes volver a intentarlo un poco más tarde.', 'Algunas unidades se abren cuando las ves en clase con tu profesor.', 'Al terminar las 16 unidades de un segmento, se abre su examen.']],
   repasar: ['Para no olvidar', ['Las tarjetas vienen del vocabulario de tus unidades, de tus errores en los ejercicios y de los que tu profesor anota en clase.', 'Piensa en la respuesta y luego da vuelta a la tarjeta.', 'Di qué tal la sabías: «Otra vez», «Difícil», «Bien» o «Fácil».', 'Cuanto mejor la sabes, más tarde vuelve. Así cada tarjeta regresa justo antes de que la olvides.']],
   simulacros: ['Practicar el examen', ['Las cuatro pruebas del examen (TCF o TEF Canada), con su duración real.', 'Por ahora, tu profesor organiza los simulacros en clase. La versión en línea llega pronto.', 'Después de un simulacro, ves una estimación de tu nivel NCLC en cada prueba. Tu meta es NCLC 7.', 'Es una estimación para guiarte: no reemplaza el resultado oficial.']],
@@ -559,6 +559,7 @@ function topBar(id, title, sub, extra = '') {
     <div class="top-tools">${extra}
       ${teacherMode() ? '' : searchMarkup(A.search)}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode() && !adminMode()}">Profesor</button>${isAdmin() ? `<button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button>` : ''}</div>` : ''}
+      ${!teacherMode() && navItems().some(n => n.id === 'mensajes') ? (() => { const u = myUnread(); return `<a class="round msg-top" href="#mensajes" data-msg-top aria-label="Mensajes${u ? ` (${u} sin leer)` : ''}" ${currentView() === 'mensajes' ? 'aria-current="page"' : ''}>${icon('chat')}${u ? `<span class="pip-n num">${u > 9 ? '9+' : u}</span>` : ''}</a>`; })() : ''}
       <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
       <div class="menu-wrap"><button type="button" class="round ava-btn" data-action="menu" aria-label="Mi cuenta" aria-haspopup="true"><span class="ava">${esc(initials(p.full_name))}</span></button><div id="menuSlot"></div></div>
@@ -676,7 +677,7 @@ function toggleMenu() {
   closeMenus();
   const p = A.profile;
   slot.innerHTML = `<div class="menu" role="menu"><div class="who"><b>${esc(p.full_name)}</b>${esc(A.session.user.email)}</div>
-    ${isStaff() ? '' : `<button type="button" role="menuitem" data-action="plan">${icon('target')}Mi plan</button>`}
+    ${isStaff() ? '' : `<button type="button" role="menuitem" data-action="logros">${icon('trophy')}<span><b>Mis logros</b><small>Nivel ${levelInfo(p.xp_total).lvl} · ${fmt(p.xp_total)} XP</small></span></button><button type="button" role="menuitem" data-action="plan">${icon('target')}Mi plan</button>`}
     <button type="button" role="menuitem" data-action="logout">${icon('x')}Cerrar sesión</button></div>`;
   fitMenu(slot);
 }
@@ -745,7 +746,7 @@ function viewInicio() {
       <div class="goal-check">${checkMarkup(`Gana ${p.daily_goal} XP hoy`, tx >= p.daily_goal, `daily-${t}`)}</div>
     </article>
     <article class="tile c-8">
-      <div class="tile-head"><h2>Camino al NCLC 7</h2><a class="pill ghost" href="https://pathway-languages.com/calculador.html" target="_blank" rel="noopener">Calculadora CRS ${icon('arrow-up')}</a></div>
+      <div class="tile-head"><h2>Camino al NCLC 7</h2><span class="head-links"><a class="pill ghost" href="#logros">${icon('trophy')}Mis logros</a><a class="pill ghost" href="https://pathway-languages.com/calculador.html" target="_blank" rel="noopener">Calculadora CRS ${icon('arrow-up')}</a></span></div>
       <div class="levels">${LEVELS.map((l, i) => {
         const n = A.units.filter(u => u.level === l && done.has(u.id)).length;
         const pct = i < lvIdx ? 100 : n / 64 * 100;
@@ -4058,6 +4059,7 @@ document.addEventListener('click', async e => {
   if (a === 'bell') { e.stopPropagation(); toggleBell(); return; }
   if (a === 'logout') { await sb.auth.signOut(); return; }
   if (a === 'plan') { $('#menuSlot').innerHTML = ''; return openOnboarding(false); }
+  if (a === 'logros') { closeMenus(); if (location.hash === '#logros') render(); else location.hash = 'logros'; return; }
 });
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();

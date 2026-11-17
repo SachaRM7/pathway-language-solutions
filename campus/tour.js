@@ -39,10 +39,10 @@
     { view: 'repasar', target: () => pick('#main .flash-wrap', '#main .face'), title: 'Tus repasos', text: 'Las palabras nuevas, los verbos y tus errores vuelven aquí, en tarjetas, hasta que los domines. Toca la tarjeta para ver la respuesta.' },
     { view: 'repasar', target: () => navLink('simulacros'), title: 'Simulacros', text: 'Exámenes de práctica como el TEF y el TCF. Entremos.', pad: 6 },
     { view: 'simulacros', target: () => pick('#main .exam-grid', '#main .view'), title: 'Tus simulacros', text: 'Cada prueba se hace como el día del examen, con el tiempo limitado. Al final ves tu nivel NCLC estimado.' },
-    { view: 'simulacros', target: () => navLink('logros'), title: 'Logros', text: 'Tu nivel y tus insignias. Entremos.', pad: 6 },
+    { view: 'simulacros', target: () => pick('#main .top .ava-btn'), title: 'Tu cuenta', text: 'Aquí están tu plan y tus logros: tu nivel y tus insignias. Entremos en tus logros.', pad: 6 },
     { view: 'logros', target: () => pick('#main .badges')?.closest('.tile') || pick('#main .badges', '#main .view'), title: 'Tus insignias', text: 'Cada insignia marca un paso real hacia tu examen: tu primera lección, tu racha, tus repasos…' },
     // Mensajes (db/025_mensajes.sql): skipped when the tab is not there.
-    { view: 'logros', target: () => navLink('mensajes'), title: 'Mensajes', text: MSG_STUDENT[0], pad: 6 },
+    { view: 'logros', target: () => pick('#main .top [data-msg-top]'), title: 'Mensajes', text: MSG_STUDENT[0], pad: 6 },
     { view: 'mensajes', target: chatZone, title: 'Tus mensajes', text: MSG_STUDENT[1] },
     { target: () => navLink('inicio'), title: 'Inicio', text: 'Para volver aquí desde cualquier pantalla.', pad: 6 },
     { view: 'inicio', target: () => pick('#main .search'), title: 'El buscador', text: 'Escribe una unidad o un verbo para encontrarlo al instante.', pad: 6, desktopOnly: true },
@@ -106,7 +106,7 @@
   const NEWS = {
     'student-mensajes': [
       { center: true, title: 'Nuevo: Mensajes', text: 'Una nueva pestaña en tu Campus. Te la mostramos en unos segundos.', next: 'Ver', skip: 'Ahora no' },
-      { target: () => navLink('mensajes'), title: 'Mensajes', text: MSG_STUDENT[0], pad: 6 },
+      { target: () => pick('#main .top [data-msg-top]'), title: 'Mensajes', text: MSG_STUDENT[0], pad: 6 },
       { view: 'mensajes', target: chatZone, title: 'Tus mensajes', text: MSG_STUDENT[1], next: 'Entendido', last: true }
     ],
     'teacher-mensajes': [
@@ -140,6 +140,7 @@
     card.addEventListener('click', e => {
       const b = e.target.closest('[data-tt]');
       if (!b) return;
+      if (!steps[step]) return; // a second click on « Terminar » while the card fades out
       if (b.dataset.tt === 'next') steps[step].last ? finish() : show(step + 1);
       if (b.dataset.tt === 'prev') show(step - 1);
       if (b.dataset.tt === 'skip') finish();

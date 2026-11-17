@@ -74,6 +74,10 @@ update public.profiles set role = 'admin', full_name = 'Sacha'
 where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
 ```
 
+## Espace « Alumno »
+
+Cinq onglets : **Inicio**, **Mi ruta**, **Repasar**, **Simulacros** et **Mi curso** (ce dernier dès que l'élève a un horaire, des documents ou un engagement signé). **Mensajes** est l'icône de conversation en haut, avec le nombre de messages non lus ; **Logros** (niveau, XP, insignes) s'ouvre depuis « Mi cuenta » (l'avatar) et depuis « Mis logros » sur la carte « Camino al NCLC 7 ». Le « i » à côté de chaque titre explique l'onglet en quelques étapes, comme pour l'équipe.
+
 ## Espace « Profesor »
 
 Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses élèves et ses cours ; un admin qui n'enseigne pas les voit tous. Dans Inicio, Alumnos et Tareas, un filtre « Mis alumnos / Todos los alumnos » (admins qui ont des élèves) choisit les élèves affichés : les siens (dont il est le professeur, ou qui sont dans un de ses groupes) ou tous. Le choix est retenu sur l'appareil.
