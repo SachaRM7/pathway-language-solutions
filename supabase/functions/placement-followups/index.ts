@@ -5,7 +5,7 @@
 //
 // Déploiement : nom « placement-followups », « Verify JWT » désactivé (pg_cron l'appelle avec le
 // secret partagé ; tout autre appel automatique est refusé).
-// Secrets : RESEND_API_KEY (déjà ajouté). Facultatif : MESSENGER_URL (lien m.me de la page
+// Secrets : RESEND_API_KEY (déjà ajouté). Facultatif : MESSENGER_URL (autre lien m.me de la page
 // Facebook), pour proposer Messenger à côté de WhatsApp.
 // Test (admin du Campus uniquement) : POST { "test": true, "level": "B1", "lang": "es" } envoie les
 // trois e-mails d'exemple à l'adresse de l'admin connecté.
@@ -22,7 +22,8 @@ const json = (status: number, body: Record<string, unknown>) =>
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 function links() {
-  const m = (Deno.env.get('MESSENGER_URL') || '').trim();
+  // Pathway's Facebook page (no username yet: its numeric id). MESSENGER_URL can override it.
+  const m = (Deno.env.get('MESSENGER_URL') || 'https://m.me/61589267362316').trim();
   return { site: SITE, whatsapp: WHATSAPP, messenger: /^https:\/\/(m\.me|www\.messenger\.com)\//.test(m) ? m : '' };
 }
 

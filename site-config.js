@@ -3,5 +3,5 @@ window.PATHWAY_CONFIG = Object.freeze({
   analyticsProvider: '',
   analyticsKey: '',
   // Facebook page Messenger link (e.g. https://m.me/pathway.page). Empty: only WhatsApp is offered.
-  messengerUrl: ''
+  messengerUrl: 'https://m.me/61589267362316'
 });
