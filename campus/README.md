@@ -33,7 +33,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
 
-Les professeurs et l'admin peuvent passer en vue « Alumno » (bouton en haut) pour utiliser le campus comme un élève avec leur propre compte.
+L'équipe a des espaces, choisis avec le sélecteur en haut : « Alumno » (le campus comme un élève, avec son propre compte), « Profesor » (l'enseignement) et, pour les admins, « Admin » (la gestion). Le campus retient le dernier espace utilisé.
 
 ## Mise en route (une seule fois)
 
@@ -74,22 +74,31 @@ update public.profiles set role = 'admin', full_name = 'Sacha'
 where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
 ```
 
-## Espace professeur et admin
+## Espace « Profesor »
 
-En vue « Profesor », un onglet par usage :
+Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses groupes et ses cours ; un admin qui n'enseigne pas les voit tous.
 
-- **Inicio** : le rapport de fin de cours (unités vues, qui s'ouvrent pour l'élève : `db/018_informe_clase.sql`), les chiffres de la semaine, les élèves à relancer et « Por revisar » (ce qui attend une décision, avec un lien vers l'onglet concerné).
+- **Inicio** : le rapport de fin de cours (unités vues, qui s'ouvrent pour l'élève : `db/018_informe_clase.sql`), les chiffres de la semaine, les élèves à relancer et « Por revisar » (messages, informes, justificatifs, examens à valider). Pour un admin, la dernière ligne ouvre l'espace Admin s'il y a des tâches en attente.
 - **Alumnos** : l'avance de chaque élève, ses absences (justificatifs à accepter, rattrapages à programmer, mois non validés : `db/017_reglas_clases.sql`) et la validation de fin de niveau.
-- **Tareas** : assigner une unité et noter une erreur entendue en cours.
-- **Horarios** : les groupes, leurs cours et les changements d'horaire.
-- **Contenido** : les unités, un niveau et un segment à la fois, et les documents du programme (lus dans le Campus ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`). Amélioration possible : aujourd'hui le navigateur reçoit le PDF entier et le Campus n'affiche que les pages ouvertes ; pour un blocage strict, servir les pages unité par unité.
-- **Cuentas** : inviter des élèves et des profs ; l'admin y gère aussi tous les comptes.
-- **Ajustes** (admin) : les règles d'assistance, le rappel avant les cours, le contrat de l'élève (`db/015_contrato.sql`) et les e-mails de test.
+- **Mensajes**, **Tareas** : les conversations avec les élèves ; assigner une unité et noter une erreur entendue en cours.
+- **Horarios** : ses groupes et la demande de changement d'un cours (appliquée directement pour un admin).
+- **Contenido** et **Cuentas** : seulement pour un professeur qui n'est pas admin (voir les unités, inviter ses élèves). Les admins les trouvent dans l'espace Admin.
+
+## Espace « Admin »
+
+La gestion, regroupée par métier dans la barre latérale ; le compteur rouge d'un onglet dit ce qui attend quelqu'un. Un point rouge sur « Admin » dans le sélecteur signale une tâche urgente quand on est dans un autre espace.
+
+- **Inicio (bandeja)** : une ligne par tâche, dite simplement (qui, quoi) avec un bouton qui ouvre le bon endroit, en trois blocs : « Urgente » (en retard, un élève ou un intéressé qui attend, un cours imminent), « Por hacer » (par métier) et « Hecho » (ce que l'équipe a fait ces 7 derniers jours et qui l'a fait : `db/033_actividad_admin.sql`).
+- **Ventas** : **Captación** (Prospectos, WhatsApp, Difusión) et **Inscripciones** (solicitudes du site, invitations, comptes et formules).
+- **Escuela** : **Clases** (tous les groupes, les changements à valider, les élèves sans groupe, les réunions Zoom sans groupe) et **Programa** (les unités et les documents du programme ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`).
+- **Configuración** : **Ajustes** (règles d'assistance, rappel avant les cours, contrat de l'élève `db/015_contrato.sql`, ouverture des unités, réponses de l'assistant, accès des assistants IA, e-mails de test).
+
+Chaque espace a son tutoriel (bouton « ? »), ouvert tout seul la première fois (`db/034_tutorial_admin.sql`).
 
 ## Publier une unité
 
 Les exercices arrivent en **brouillon** : les élèves ne les voient pas.
-Dans le campus, un professeur ou l'admin ouvre **Contenido**, clique sur **Probar** pour faire la leçon en vue préalable (rien n'est enregistré), puis sur **Publicar**.
+Dans le campus, un professeur ouvre **Contenido** (un admin : espace Admin → **Programa**), clique sur **Probar** pour faire la leçon en vue préalable (rien n'est enregistré), puis sur **Publicar**.
 
 ## Ce que fait la base
 
