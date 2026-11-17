@@ -53,7 +53,7 @@
 
   const TEACHER = [
     { center: true, title: 'Tu espacio de profesor', text: 'En un minuto te mostramos cómo seguir a tus alumnos entre clases. Puedes volver a ver este recorrido con el botón «?» de la parte de arriba.', next: 'Empezar', skip: 'Ahora no' },
-    { view: 'panel', target: () => { const k = [...document.querySelectorAll('#main .tile.kpi')].filter(visible); return k.length ? k : null; }, title: 'Tu grupo de un vistazo', text: 'Alumnos activos esta semana, tareas pendientes y porcentaje de aciertos a la primera.' },
+    { view: 'panel', target: () => { const k = [...document.querySelectorAll('#main .tile.kpi')].filter(visible); return k.length ? k : null; }, title: 'Tus alumnos de un vistazo', text: 'Alumnos activos esta semana, tareas pendientes y porcentaje de aciertos a la primera.' },
     { view: 'panel', target: () => tileWithTitle('Necesitan atención'), title: 'Necesitan atención', text: 'Los alumnos que no practican desde hace días o que fallan mucho. «Asignar tarea» te lleva directo a la pestaña Tareas.' },
     { view: 'panel', target: () => tileWithTitle('Por revisar'), title: 'Por revisar', text: 'Lo que espera algo de ti: mensajes por responder, informes de clase, justificativos, exámenes por validar… Cada línea te lleva a la pestaña donde se resuelve. Si eres administración, la última línea abre el espacio Admin.' },
     { view: 'panel', target: () => navLink('alumnos'), title: 'Alumnos', text: 'El avance de cada alumno. Entremos.', pad: 6 },
@@ -65,7 +65,7 @@
     { view: 'mensajes', target: () => navLink('tareas'), title: 'Tareas', text: 'Lo que tus alumnos practican entre dos clases. Entremos.', pad: 6 },
     { view: 'tareas', target: () => tileWithTitle('Asignar una tarea'), title: 'Asignar una tarea', text: 'Elige una unidad y una fecha: el alumno la ve en su inicio y en sus avisos.' },
     { view: 'tareas', target: () => tileWithTitle('Anotar un error de la clase'), title: 'Anotar un error de la clase', text: 'Un error que oyes en clase se convierte en una tarjeta en la zona «Repasar» del alumno.' },
-    { view: 'tareas', target: () => navLink('horarios'), title: 'Horarios', text: 'Tus grupos y sus clases fijas. Entremos.', pad: 6 },
+    { view: 'tareas', target: () => navLink('horarios'), title: 'Horarios', text: 'Tus alumnos y sus clases fijas. Entremos.', pad: 6 },
     { view: 'horarios', target: () => tileWithTitle('Solicitar un cambio') || tileWithTitle('Mover o cancelar una clase'), title: 'Mover o cancelar una clase', text: 'El horario es fijo: si una clase no puede tener lugar, pide aquí el cambio. Si eres administración, se aplica al instante.' },
     // Contenido and Cuentas: in the Profesor space only for teachers who are not admins.
     { view: 'horarios', target: () => navLink('contenido'), title: 'Contenido', text: 'Las unidades y sus ejercicios, nivel por nivel. Entremos.', pad: 6, admin: false },
@@ -73,7 +73,7 @@
     { view: 'contenido', target: () => pick('#main .unit-row'), title: 'Tus unidades', text: 'Cada unidad con su estado: «Probar» como un alumno (no se guarda nada).', admin: false },
     { view: 'contenido', target: () => navLink('cuentas'), title: 'Cuentas', text: 'Para invitar a tus alumnos al campus. Entremos.', pad: 6, admin: false },
     { view: 'cuentas', target: () => tileWithTitle('Invitar a un alumno'), title: 'Invitar a un alumno', text: 'Por correo: su nombre, su nivel y su profesor quedan configurados antes de que entre.', admin: false },
-    { target: () => pick('#main .top .switch'), title: 'Tus espacios', text: 'Alumno: el Campus como lo ven tus alumnos. Profesor: tus clases y tus alumnos. Admin (solo administración): los interesados, las inscripciones, los grupos y los ajustes. El Campus recuerda el último que usaste.', pad: 6 },
+    { target: () => pick('#main .top .switch'), title: 'Tus espacios', text: 'Alumno: el Campus como lo ven tus alumnos. Profesor: tus clases y tus alumnos. Admin (solo administración): los interesados, las inscripciones, las clases de cada alumno y los ajustes. El Campus recuerda el último que usaste.', pad: 6 },
     { target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los mensajes que necesitan respuesta, los alumnos inactivos y, si eres administración, lo que espera en el espacio Admin.', pad: 6 },
     { target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];
@@ -81,7 +81,7 @@
 
   // Admin space: what waits, where it is handled, who did what.
   const ADMIN = [
-    { center: true, title: 'Tu espacio de administración', text: 'Aquí está todo lo que no es dar clase: los interesados, las inscripciones, los grupos y los horarios, el programa y los ajustes. En un minuto te mostramos cómo saber qué hacer cada día.', next: 'Empezar', skip: 'Ahora no' },
+    { center: true, title: 'Tu espacio de administración', text: 'Aquí está todo lo que no es dar clase: los interesados, las inscripciones, los horarios de cada alumno, el programa y los ajustes. En un minuto te mostramos cómo saber qué hacer cada día.', next: 'Empezar', skip: 'Ahora no' },
     { view: 'bandeja', target: () => { const k = [...document.querySelectorAll('#main .bq-kpi')].filter(visible); return k.length ? k : null; }, title: 'De un vistazo', text: 'Lo urgente, lo que queda por hacer y lo que el equipo ya hizo estos 7 días. Si «Urgente» está en cero, puedes respirar.' },
     { view: 'bandeja', target: () => pick('#main #bqUrgent', '#main #bqTodo', '#main .bq-clear'), title: 'Una línea, una tarea', text: 'Cada línea dice qué hacer y para quién. El botón de la derecha te lleva directo al lugar donde se hace. Cuando está hecho, la línea desaparece sola.' },
     { view: 'bandeja', target: () => pick('#main #bqDone'), title: 'Lo que ya se hizo', text: 'Quién hizo qué estos últimos días: así nadie responde dos veces a la misma persona.' },
@@ -90,9 +90,9 @@
     { view: 'prospectos', target: () => navLink('cuentas'), title: 'Inscripciones', text: 'Las solicitudes que llegan del sitio, las invitaciones al Campus y las cuentas. Entremos.', pad: 6 },
     { view: 'cuentas', target: () => tileWithTitle('Solicitudes de inscripción'), title: 'Solicitudes de inscripción', text: 'Cada persona que envió el formulario del sitio. «Invitar» prepara su invitación al Campus; «Marcar como atendida» la quita de la lista.' },
     { view: 'cuentas', target: () => tileWithTitle('Miembros'), title: 'Cuentas', text: 'Cambia el nombre, el nivel, el profesor o la fórmula de una cuenta.' },
-    { view: 'cuentas', target: () => navLink('horarios'), title: 'Clases', text: 'Los grupos de todos los profesores, sus horarios y los cambios por validar. Entremos.', pad: 6 },
-    { view: 'horarios', target: () => tileWithTitle('Cambios por validar') || tileWithTitle('Alumnos sin grupo') || tileWithTitle('Nuevo grupo'), title: 'Lo que se decide aquí', text: 'Cuando un profesor pide mover o cancelar una clase, aparece aquí con «Aprobar» y «Rechazar». Un alumno sin grupo no tiene horario: ponlo en un grupo.' },
-    { view: 'horarios', target: () => tileWithTitle('Nuevo grupo'), title: 'Nuevo grupo', text: 'Un grupo por horario: su nivel, su profesor, sus días y horas, el enlace de Zoom y sus alumnos. Una clase privada es un grupo de un alumno.' },
+    { view: 'cuentas', target: () => navLink('horarios'), title: 'Clases', text: 'Las clases de cada alumno (profesor, enlace de Zoom, horario) y los cambios por validar. Entremos.', pad: 6 },
+    { view: 'horarios', target: () => tileWithTitle('Cambios por validar') || tileWithTitle('Alumnos sin horario') || tileWithTitle('Programar a un alumno'), title: 'Lo que se decide aquí', text: 'Cuando un profesor pide mover o cancelar una clase, aparece aquí con «Aprobar» y «Rechazar». Un alumno sin horario no tiene próxima clase: pulsa «Programar» a su lado.' },
+    { view: 'horarios', target: () => tileWithTitle('Programar a un alumno'), title: 'Programar a un alumno', text: 'Las clases son particulares: eliges al alumno, su profesor, sus días y horas fijos y su enlace de Zoom personal, que conserva durante toda su formación.' },
     { view: 'horarios', target: () => navLink('contenido'), title: 'Programa', text: 'Las unidades del manual y los documentos del programa, nivel por nivel.', pad: 6 },
     { target: () => navLink('ajustes'), title: 'Ajustes', text: 'Las reglas del campus: asistencia, contrato, correos automáticos y accesos de los asistentes IA. Se tocan poco.', pad: 6 },
     { target: () => pick('#main .top .switch'), title: 'Cambiar de espacio', text: 'Profesor para tus clases y tus alumnos, Alumno para ver el Campus como ellos. Un punto rojo en «Admin» avisa cuando algo urgente espera aquí.', pad: 6 },
