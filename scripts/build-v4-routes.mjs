@@ -43,7 +43,7 @@ const PAGES = [
 ];
 
 const ADAPTER_ASSET = 'inscription-v4.js';
-const INSCRIPTION_SCRIPT_MARKER = '<script src="inscription.js?v=20261114-crm"></script>';
+const INSCRIPTION_SCRIPT_MARKER = '<script src="inscription.js?v=20261117-funnel"></script>';
 const SELECTION_STORAGE_KEY = 'pathwayV4Selection';
 
 export const PLAN_VALUES = ['Esencial', 'Acelerado', 'Intensivo'];

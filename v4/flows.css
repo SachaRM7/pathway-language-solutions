@@ -203,3 +203,14 @@
   .calculate-bar .button, .locale-calculator-form > button { width: 100%; min-width: 0; }
   .calculation-ring { width: 150px; height: 150px; }
 }
+
+/* Phone funnel: start the test and take the next step without scrolling past the explanations. */
+.test-quick-start { display: none; }
+.result-quick-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px; }
+.result-quick-actions .result-whatsapp { color: var(--paper); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 760px) {
+  .pg-flow-hero .pg-steps { display: none; }
+  .test-quick-start { display: inline-flex; width: 100%; justify-content: center; margin-top: 20px; }
+  .result-quick-actions .button { width: 100%; justify-content: center; }
+  .result-hero .result-level { padding: 12px 20px; font-size: 40px; justify-self: start; }
+}

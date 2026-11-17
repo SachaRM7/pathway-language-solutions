@@ -30,6 +30,10 @@
       leadInvalid: 'Escribe un correo electrónico válido.',
       leadConsent: 'Usamos tu correo solo para preparar tu curso. Más detalles en nuestra <a href="/privacidad.html">política de privacidad</a>.',
       leadButton: 'Ver mi resultado',
+      quickStart: 'Empezar el test exprés · 12–15 min',
+      resultCta: 'Elegir mi ritmo y mis horarios',
+      resultWhatsapp: '¿Una duda? Escríbenos por WhatsApp',
+      waMessage: level => `Hola Pathway, acabo de hacer el test de nivel (resultado estimado: ${level}). Quisiera más información.`,
       resultTitle: level => `Tu francés se sitúa alrededor de ${level}.`,
       status: { construction: 'Tu nivel está en construcción.', functional: 'Tu nivel es funcional.', independent: 'Tu nivel es independiente.', solid: 'Tu nivel es sólido.' },
       confidence: { express: 'Orientativo: confirma tu nivel en una clase en vivo.', intensive: 'Más preciso: combina cuatro niveles y pondera la dificultad.' },
@@ -58,6 +62,10 @@
       leadInvalid: 'Saisissez une adresse e-mail valide.',
       leadConsent: 'Votre adresse ne sert qu’à préparer votre cours. Plus de détails dans notre <a href="/fr/politique-confidentialite.html">politique de confidentialité</a>.',
       leadButton: 'Voir mon résultat',
+      quickStart: 'Commencer le test express · 12–15 min',
+      resultCta: 'Choisir mon rythme et mes horaires',
+      resultWhatsapp: 'Une question ? Écrivez-nous sur WhatsApp',
+      waMessage: level => `Bonjour Pathway, je viens de faire le test de niveau (résultat estimé : ${level}). J’aimerais plus d’informations.`,
       resultTitle: level => `Votre français se situe autour de ${level}.`,
       status: { construction: 'Votre niveau est en construction.', functional: 'Votre niveau est fonctionnel.', independent: 'Votre niveau est autonome.', solid: 'Votre niveau est solide.' },
       confidence: { express: 'Indication prudente : confirmez votre niveau lors d’un cours en direct.', intensive: 'Estimation plus précise : quatre niveaux et la difficulté sont pondérés.' },
@@ -86,6 +94,10 @@
       leadInvalid: 'Enter a valid email address.',
       leadConsent: 'We only use your email address to prepare your course. More in our <a href="/en/privacy-policy.html">privacy policy</a>.',
       leadButton: 'See my result',
+      quickStart: 'Start the express test · 12–15 min',
+      resultCta: 'Choose my pace and schedule',
+      resultWhatsapp: 'A question? Message us on WhatsApp',
+      waMessage: level => `Hello Pathway, I just took the level test (estimated result: ${level}). I would like more information.`,
       resultTitle: level => `Your French is estimated at around ${level}.`,
       status: { construction: 'Your level is still developing.', functional: 'Your level is functional.', independent: 'Your level is independent.', solid: 'Your level is solid.' },
       confidence: { express: 'Guidance only: confirm your level in a live class.', intensive: 'More precise: four levels and difficulty weighting are included.' },
@@ -114,6 +126,10 @@
       leadInvalid: 'Geben Sie eine gültige E-Mail-Adresse ein.',
       leadConsent: 'Wir nutzen Ihre Adresse nur zur Vorbereitung Ihres Kurses. Mehr dazu in unserer <a href="/de/datenschutz.html">Datenschutzerklärung</a>.',
       leadButton: 'Ergebnis anzeigen',
+      quickStart: 'Express-Test starten · 12–15 Min.',
+      resultCta: 'Rhythmus und Zeiten wählen',
+      resultWhatsapp: 'Eine Frage? Schreiben Sie uns auf WhatsApp',
+      waMessage: level => `Hallo Pathway, ich habe gerade den Einstufungstest gemacht (geschätztes Ergebnis: ${level}). Ich hätte gern mehr Informationen.`,
       resultTitle: level => `Ihr Französisch liegt ungefähr auf Niveau ${level}.`,
       status: { construction: 'Ihr Niveau befindet sich im Aufbau.', functional: 'Ihr Niveau ist funktional.', independent: 'Ihr Niveau ist selbstständig.', solid: 'Ihr Niveau ist sicher.' },
       confidence: { express: 'Orientierung: Bestätigen Sie Ihr Niveau in einer Live-Stunde.', intensive: 'Präzisere Einschätzung: vier Niveaus und die Schwierigkeit werden gewichtet.' },
@@ -468,8 +484,38 @@
     `].join('');
     const enrollLink = document.querySelector('[data-enroll-link]');
     if (enrollLink) enrollLink.href = `inscription.html?mode=${encodeURIComponent(mode)}`;
+    // On a phone the button at the bottom sits three screens below the level: the next step and a
+    // way to ask a question go right under the level, where the visitor is looking.
+    const heroCopy = document.querySelector('[data-result-copy]');
+    if (heroCopy && enrollLink) {
+      let quick = document.querySelector('[data-result-quick]');
+      if (!quick) {
+        quick = document.createElement('div');
+        quick.className = 'result-quick-actions';
+        quick.dataset.resultQuick = '';
+        heroCopy.insertAdjacentElement('afterend', quick);
+      }
+      const wa = `https://wa.me/51989887516?text=${encodeURIComponent(T.waMessage(estimatedLevel))}`;
+      quick.innerHTML = `<a class="button button-coral" href="${enrollLink.getAttribute('href')}">${T.resultCta} <span aria-hidden="true">→</span></a><a class="result-whatsapp" href="${wa}" target="_blank" rel="noopener">${T.resultWhatsapp}</a>`;
+    }
     runCalculationAnimation();
   };
+
+  // On a phone « Empezar el test » sits two screens down, under the explanations: a direct start
+  // (express test) right under the title, shown on small screens only.
+  const introLead = intro && intro.querySelector('.pg-lead, .intro-copy p');
+  if (introLead && !intro.querySelector('[data-quick-start]')) {
+    const quickStart = document.createElement('button');
+    quickStart.type = 'button';
+    quickStart.className = 'button button-coral test-quick-start';
+    quickStart.dataset.quickStart = '';
+    quickStart.innerHTML = `${T.quickStart} <span aria-hidden="true">→</span>`;
+    quickStart.addEventListener('click', () => {
+      intro.querySelector('[data-test-mode="express"]')?.click();
+      intro.querySelector('[data-start-test]')?.click();
+    });
+    introLead.insertAdjacentElement('afterend', quickStart);
+  }
 
   document.querySelector('[data-start-test]').addEventListener('click', () => {
     intro.hidden = true;

@@ -12,7 +12,7 @@ import { esc, prefix } from './build-v4-programs.mjs';
 import { ROUTES, UI } from './v4-pages-content.mjs';
 import { localeFile } from '../i18n/locale-pages.mjs';
 
-const VERSION = 'flows-1';
+const VERSION = 'flows-2';
 
 // Source page of each flow: `es` in the repository, `locale` the page key of
 // i18n/locale-pages.mjs (its file name in each language is localeFile()).
