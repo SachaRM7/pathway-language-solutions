@@ -145,7 +145,10 @@ export function mountSearch(root, onSearch) {
     if (head) { const h = head.getBoundingClientRect(), t = tools.getBoundingClientRect(); if (t.top < h.bottom - 4) free += t.left - h.right - 24; }
     return Math.max(base(), Math.min(240, r.width + Math.max(0, free)));
   };
-  const width = spring(open ? span() : base(), w => {
+  // The spring bounces: never let it pass the free room, or the row wraps for a frame.
+  let cap = Infinity;
+  const width = spring(open ? span() : base(), raw => {
+    const w = Math.min(raw, cap);
     const p = clamp((w - base()) / Math.max(1, span() - base()), 0, 1);
     wrap.style.setProperty('--seek-w', `${w.toFixed(2)}px`);
     el.style.setProperty('--seek-say', clamp((p - .55) / .45, 0, 1).toFixed(3));
@@ -173,7 +176,7 @@ export function mountSearch(root, onSearch) {
     clearTimeout(beat);
     beat = setTimeout(() => {
       el.dataset.press = 'false'; el.dataset.open = 'true';
-      width.to(span());
+      cap = span(); width.to(cap);
     }, reducedMotion.matches ? 0 : 90);
   }
   button.addEventListener('click', start, options);
@@ -227,7 +230,7 @@ export function mountSearch(root, onSearch) {
       el.style.setProperty('--seek-x', `${x.toFixed(2)}px`); el.style.setProperty('--seek-y', `${y.toFixed(2)}px`);
     });
   }, options);
-  addEventListener('resize', () => { if (open) width.to(span()); }, options);
+  addEventListener('resize', () => { if (open) { cap = Infinity; cap = span(); width.to(cap); } }, options);
   return () => { abort.abort(); width.dispose(); clearTimeout(beat); clearTimeout(rest); cancelAnimationFrame(pointerFrame); };
 }
 
