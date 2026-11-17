@@ -56,6 +56,7 @@ const assets = [
   'index.html', 'index-v2.html', 'pathway-v3.css', 'pathway-v3.js', 'programa.css', 'programa.js', 'manual-a2.css', 'manual-a2.js', 'calculador.html', 'calculateur-crs.html', 'gracias.html', 'merci.html',
   'privacidad.html', 'politique-confidentialite.html', 'condiciones.html', 'conditions-nclc7.html',
   'preparacion-tef-canada.html', 'recursos.html', 'nclc-7.html', 'tefaq-quebec.html', 'tef-vs-tcf.html',
+  'tef-tcf-canada-peru.html', 'tef-tcf-canada-colombia.html', 'tef-tcf-canada-chile.html', 'puntos-crs-frances.html', 'cuanto-tiempo-nclc-7.html',
   'pathway-mark.svg', 'theme.css', 'guide.css', 'theme.js', 'site-config.js', 'analytics.js', 'campaign.js', 'meta-pixel.js',
   'og-pathway.png', 'og-pathway-es.jpg', 'og-pathway-fr.jpg', 'og-pathway-en.jpg', 'og-pathway-de.jpg',
   'favicon.ico', 'apple-touch-icon.png', 'pathway-logo-512.png', '404.html', 'robots.txt', 'llms.txt', 'crs-engine.js', 'ircc-data.js',
