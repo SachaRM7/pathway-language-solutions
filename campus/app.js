@@ -349,7 +349,7 @@ async function loadStaff() {
     admin ? sb.from('profiles').select('id,plan,plan_start').eq('role', 'student') : null,
     admin ? sb.rpc('admin_members') : null,
     admin ? sb.rpc('staff_enrollments') : null,
-    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null
+    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null
   ]);
   if (ov.error) throw ov.error;
   A.staff.overview = ov.data || [];
@@ -463,7 +463,7 @@ const TNAV = [
 const navItems = () => (teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
 const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes };
 // Old links (#grupo) keep working.
-const ALIASES = { grupo: 'panel', whatsapp: 'prospectos' };
+const ALIASES = { grupo: 'panel', whatsapp: 'prospectos', difusion: 'prospectos' };
 
 function currentView() {
   const raw = location.hash.slice(1), id = ALIASES[raw] || raw;
@@ -507,6 +507,8 @@ function notifications() {
     if (crmN) out.push({ key: 'crm' + crmToday() + crmN, ic: 'funnel', text: `${crmN} prospecto${crmN > 1 ? 's' : ''} con una acción para hoy o atrasada.`, href: '#prospectos', today: true });
     const wa = waOn() ? waWaiting() : [];
     if (wa.length) out.push({ key: 'wa' + wa.map(t => t.id + t.needs_reply_since).join(','), ic: 'chat', text: `${wa.length} ${wa.length > 1 ? 'conversaciones' : 'conversación'} de WhatsApp necesita${wa.length > 1 ? 'n' : ''} respuesta.`, href: '#whatsapp' });
+    const dfN = dfOn() ? dfDrafts().length : 0;
+    if (dfN) out.push({ key: 'df' + dfDrafts().map(c => c.id + c.last_event_at).join(','), ic: 'target', text: `${dfN} borrador${dfN > 1 ? 'es' : ''} de difusión list${dfN > 1 ? 'os' : 'o'} para revisar y enviar.`, href: '#difusion' });
     const waiting = threadsWaiting();
     if (waiting.length) out.push({ key: 'msg' + waiting.map(t => t.id + t.needs_staff_since).join(','), ic: 'chat', text: `${waiting.length} ${waiting.length > 1 ? 'conversaciones' : 'conversación'} de alumno${waiting.length > 1 ? 's' : ''} necesita${waiting.length > 1 ? 'n' : ''} respuesta.`, href: '#mensajes' });
     const pending = A.staff.changes.filter(c => c.status === 'pending').length;
@@ -893,6 +895,9 @@ function todoItems() {
   }
   const wa = waOn() ? waWaiting().length : 0;
   if (wa) out.push({ ic: 'chat', text: `${wa} ${wa > 1 ? 'conversaciones' : 'conversación'} de WhatsApp por responder`, href: '#whatsapp' });
+  const dfN = dfOn() ? dfDrafts().length : 0, dfH = dfOn() ? dfDue().length : 0;
+  if (dfN) out.push({ ic: 'target', text: `${dfN} borrador${dfN > 1 ? 'es' : ''} de difusión por enviar`, href: '#difusion' });
+  else if (dfH) out.push({ ic: 'target', text: `${dfH} relance${dfH > 1 ? 's' : ''} de difusión para hoy`, href: '#difusion' });
   const pending = A.staff.changes.filter(c => c.status === 'pending').length;
   if (admin && pending) out.push({ ic: 'calendar', text: `${pending} cambio${pending > 1 ? 's' : ''} de horario por validar`, href: '#horarios' });
   if (admin && A.staff.groups && A.staff.members) {
@@ -1133,9 +1138,10 @@ const AG_SCOPES = {
   admisiones: ['Admisiones', 'Prospectos: leer las fichas, añadir notas, guardar borradores de mensaje y fijar la próxima acción. Nunca invita, archiva, cambia la etapa ni envía nada.'],
   seguimiento: ['Seguimiento', 'Alumnos en riesgo y resumen semanal por profesor. Solo lectura, con nombres pero sin correos ni teléfonos.'],
   gestion: ['Gestión', 'Cifras del mes: alumnos activos, inscripciones, clases dadas o perdidas y horas por profesor. Sin datos personales.'],
-  marketing: ['Marketing', 'Cifras por origen y campaña: prospectos, tests e inscripciones por semana. Sin nombres, correos ni teléfonos.']
+  marketing: ['Marketing', 'Cifras por origen y campaña: prospectos, tests e inscripciones por semana. Sin nombres, correos ni teléfonos.'],
+  difusion: ['Difusión', 'Lista de sitios y comunidades a contactar: completar las fichas, proponer sitios nuevos, guardar borradores y fijar relances. Nunca envía nada ni marca un contacto como contactado.']
 };
-const AG_CHIP = { admisiones: 'peach', seguimiento: 'mint', gestion: 'sky', marketing: 'lilac' };
+const AG_CHIP = { admisiones: 'peach', seguimiento: 'mint', gestion: 'sky', marketing: 'lilac', difusion: 'butter' };
 const AG_STATUS = { active: ['Activa', ''], revoked: ['Revocada', 'bad'], expired: ['Caducada', 'warn'] };
 const AG_RESULT = { ok: ['Hecho', ''], invalid: ['Datos inválidos', 'warn'], not_found: ['No encontrado', 'warn'], rate_limited: ['Límite por hora', 'warn'],
   forbidden: ['Rechazado', 'bad'], unknown_tool: ['Herramienta desconocida', 'bad'], error: ['Error', 'bad'] };
@@ -1423,6 +1429,7 @@ function crmKpis() {
   ].map(([l, v, s], i) => `<div class="tile crm-kpi${i === 3 && due ? ' due' : ''}"><span class="label">${l}</span><strong class="${typeof v === 'string' ? 'txt' : 'num'}">${esc(v)}</strong><small>${esc(s)}</small></div>`).join('');
 }
 function viewProspectos() {
+  if (dfView()) return viewDifusion();
   if (waView()) return viewWhatsapp();
   if (!C.view) C.view = crmPhone() ? 'list' : 'board';
   const owners = crmOwners();
@@ -1576,11 +1583,12 @@ function crmRedrawSheet() {
 function crmClose() {
   const sheet = $('#crmSheet'), modal = $('#crmModal');
   if (sheet.hidden && modal.hidden) return;
-  const id = C.open, back = C.lastFocus;
+  const id = C.open || DF.open, back = C.lastFocus;
   sheet.hidden = true; modal.hidden = true; $('#crmScrim').hidden = true; sheet.innerHTML = ''; modal.innerHTML = '';
   $('#app').inert = false; $('#tabbar').inert = false; document.body.classList.remove('no-scroll');
   C.open = null; C.detail = null; C.editing = false; C.lastFocus = null;
-  const card = id && $(`[data-crm-open="${id}"]`);
+  DF.open = null; DF.detail = null; DF.editing = false;
+  const card = id && $(`[data-crm-open="${id}"],[data-df-open="${id}"]`);
   (card || (back && back.isConnected ? back : null) || $('#main'))?.focus({ preventScroll: !!card });
 }
 const crmOverlayOpen = () => !$('#crmSheet').hidden || !$('#crmModal').hidden;
@@ -1701,11 +1709,12 @@ function waWindow(t) {
 }
 const WA_STATUS = { pending: ['Enviando…', '…'], sent: ['Enviado', '✓'], delivered: ['Entregado', '✓✓'], read: ['Leído', '✓✓'], failed: ['No enviado', '!'] };
 function crmSubNav(cur) {
-  if (!waOn()) return '';
-  const n = waWaiting().length;
+  if (!waOn() && !dfOn()) return '';
+  const n = waOn() ? waWaiting().length : 0, d = dfOn() ? dfDrafts().length : 0;
   return `<nav class="seg-tabs crm-sub" aria-label="Secciones de Prospectos">
     <a href="#prospectos"${cur === 'crm' ? ' aria-current="page"' : ''}><b>${icon('funnel')}</b>Fichas</a>
-    <a href="#whatsapp"${cur === 'wa' ? ' aria-current="page"' : ''}><b>${icon('chat')}</b>WhatsApp${n ? `<span class="count num">${n}<span class="sr-only"> por responder</span></span>` : ''}</a></nav>`;
+    ${waOn() ? `<a href="#whatsapp"${cur === 'wa' ? ' aria-current="page"' : ''}><b>${icon('chat')}</b>WhatsApp${n ? `<span class="count num">${n}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
+    ${dfOn() ? `<a href="#difusion"${cur === 'df' ? ' aria-current="page"' : ''}><b>${icon('target')}</b>Difusión${d ? `<span class="count num">${d}<span class="sr-only"> borradores por enviar</span></span>` : ''}</a>` : ''}</nav>`;
 }
 function waRow(t) {
   const last = t.last || {}, on = t.id === W.open;
@@ -1975,6 +1984,308 @@ function bindAgents() {
 // The new key and the log never outlive the visit to Ajustes.
 window.addEventListener('hashchange', () => { if (A.staff && location.hash !== '#ajustes') { A.staff.agentNew = null; A.staff.agentLog = null; } });
 
+/* ───────────── Difusión (db/030_difusion.sql): « Prospectos » → « Difusión », only admins ───────────── */
+// Sites, media, forums and channels to ask for a link or a mention. The « difusion » assistant
+// (pathway-mcp) completes the cards and leaves drafts; nothing leaves the Campus: someone of the
+// team sends the message and marks the card « Contactado », which plans a follow-up 7 days later.
+const DF_STATUS = [
+  { id: 'por_contactar', name: 'Por contactar', color: 'var(--coral)' },
+  { id: 'contactado', name: 'Contactado', color: 'var(--sky-ink)' },
+  { id: 'respondio', name: 'Respondió', color: 'var(--lilac-ink)' },
+  { id: 'enlace', name: 'Enlace obtenido', color: 'var(--mint-ink)' },
+  { id: 'rechazado', name: 'Rechazado', color: 'var(--ink-3)' },
+  { id: 'descartado', name: 'Descartado', color: 'var(--ink-3)' }
+];
+const DF_KINDS = { blog: ['Blog', 'peach'], medio: ['Medio', 'sky'], foro: ['Foro', 'butter'], youtube: ['YouTube', 'peach'], podcast: ['Podcast', 'lilac'],
+  facebook: ['Facebook', 'sky'], reddit: ['Reddit', 'butter'], red: ['Red o asociación', 'mint'], otro: ['Otro', 'stone'] };
+const DF_CHANNEL = { email: 'de correo', formulario: 'para el formulario', facebook: 'para Facebook', youtube: 'para YouTube', instagram: 'para Instagram', foro: 'para el foro', reddit: 'para Reddit', otro: '' };
+const DF_LIVE = ['por_contactar', 'contactado', 'respondio'];
+const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false };
+const dfOn = () => isAdmin() && Array.isArray(A.staff.outreach);
+const dfList = () => A.staff.outreach || [];
+const dfView = () => dfOn() && location.hash === '#difusion';
+const dfById = id => dfList().find(c => c.id === id);
+const dfDrafts = () => dfList().filter(c => c.drafts_pending > 0 && DF_LIVE.includes(c.status));
+const dfDue = () => dfList().filter(c => c.next_due && c.next_due <= crmToday() && DF_LIVE.includes(c.status));
+const dfHost = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
+const dfEmail = c => (/[\w.+-]+@[\w-]+(\.[\w-]+)+/.exec(c.contact || '') || [''])[0];
+const dfLink = c => (/https?:\/\/[^\s<>"']+/.exec(c.contact || '') || [''])[0];
+async function loadOutreach() {
+  const r = await sb.rpc('outreach_list');
+  A.staff.outreach = r.error ? null : (r.data || []); // needs db/030_difusion.sql
+}
+function dfVisible() {
+  const q = DF.q.trim().toLowerCase(), due = dfDue();
+  return dfList().filter(c => (!DF.kind || c.kind === DF.kind)
+    && (!DF.filter || (DF.filter === 'borrador' ? c.drafts_pending > 0 && DF_LIVE.includes(c.status) : due.includes(c)))
+    && (!q || [c.name, c.url, c.country, c.contact].join(' ').toLowerCase().includes(q)));
+}
+function dfCard(c) {
+  const [kn, kc] = DF_KINDS[c.kind] || DF_KINDS.otro, ready = c.drafts_pending > 0 && DF_LIVE.includes(c.status);
+  return `<div class="crm-card" role="button" tabindex="0" data-df-open="${c.id}" aria-label="Abrir la ficha de ${esc(c.name)}">
+    <span class="crm-card-top"><span class="crm-card-name">${esc(c.name)}</span><span class="crm-lvl" title="Prioridad ${c.priority} (1 = la más alta)">P${c.priority}</span></span>
+    <span class="crm-chips"><span class="crm-chip ${kc}">${kn}</span>${c.country ? `<span class="crm-chip stone">${esc(c.country)}</span>` : ''}${ready ? '<span class="crm-chip lilac">Borrador listo</span>' : ''}</span>
+    <span class="crm-next">${esc(dfHost(c.url))}${c.audience ? ' · ' + esc(c.audience) : ''}</span>
+    ${c.next_action ? `<span class="crm-next ${crmDue1(c.next_due)}"><span aria-hidden="true">→</span><span>${esc(c.next_action)}${c.next_due ? ` · ${crmDueLabel(c.next_due)}` : ''}</span></span>` : ''}
+  </div>`;
+}
+function dfBody() {
+  if (!dfList().length) return `<article class="tile empty"><h2>Todavía no hay contactos</h2><p class="muted">Añade un sitio con «Añadir contacto», o deja que el asistente de difusión proponga los que encuentre.</p></article>`;
+  const list = dfVisible(), by = id => list.filter(c => c.status === id), groups = DF_STATUS.filter(s => by(s.id).length);
+  return groups.length ? `<div class="crm-list">${groups.map(s => `<section class="crm-group" aria-labelledby="df-g-${s.id}"><h2 id="df-g-${s.id}"><span class="crm-dot" style="background:${s.color}" aria-hidden="true"></span><span>${s.name}</span><span class="crm-n num">${by(s.id).length}</span></h2>
+    <div class="crm-col-list">${by(s.id).map(dfCard).join('')}</div></section>`).join('')}</div>` : '<p class="crm-empty">Ningún contacto con estos filtros.</p>';
+}
+function dfKpis() {
+  const l = dfList(), n = s => l.filter(c => c.status === s).length, drafts = dfDrafts().length, due = dfDue().length;
+  return [
+    ['Por contactar', n('por_contactar'), 'sitios en la lista'],
+    ['Borradores listos', drafts, drafts ? 'por revisar y enviar' : 'nada por enviar'],
+    ['Esperando respuesta', n('contactado'), due ? `${due} relance${due > 1 ? 's' : ''} para hoy` : 'sin relances para hoy'],
+    ['Enlaces obtenidos', n('enlace'), `${n('respondio')} ${n('respondio') === 1 ? 'respuesta' : 'respuestas'} en curso`]
+  ].map(([lb, v, s], i) => `<div class="tile crm-kpi${i === 1 && v ? ' due' : ''}"><span class="label">${lb}</span><strong class="num">${v}</strong><small>${esc(s)}</small></div>`).join('');
+}
+function viewDifusion() {
+  return `<section class="view" aria-labelledby="h-crm">
+  ${topBar('h-crm', 'Prospectos', 'Sitios, medios y comunidades para conseguir enlaces y menciones. El asistente prepara los mensajes; alguien del equipo los envía.', `<button class="btn btn-dark btn-sm crm-add-top" type="button" data-df-add>${icon('plus')}Añadir contacto</button>`)}
+  ${crmSubNav('df')}
+  <section class="crm-kpis" aria-label="Resumen de la difusión">${dfKpis()}</section>
+  <div class="crm-tools tile">
+    <label class="crm-search" for="dfQ">${icon('search')}<input id="dfQ" type="search" autocomplete="off" placeholder="Nombre, sitio o país" aria-label="Buscar un contacto" value="${esc(DF.q)}"></label>
+    <select id="dfKind" aria-label="Tipo"><option value="">Todos los tipos</option>${Object.entries(DF_KINDS).map(([k, [n]]) => `<option value="${k}" ${DF.kind === k ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <select id="dfFilter" aria-label="Mostrar"><option value="">Todos los contactos</option><option value="borrador" ${DF.filter === 'borrador' ? 'selected' : ''}>Con borrador listo</option><option value="hoy" ${DF.filter === 'hoy' ? 'selected' : ''}>Relance para hoy</option></select>
+    <button class="btn btn-dark btn-sm crm-add" type="button" data-df-add>${icon('plus')}Añadir contacto</button>
+  </div>
+  <div id="dfBody">${dfBody()}</div>
+  <p class="muted crm-foot">Cuando envíes un mensaje, pulsa «Marcar como enviado»: la ficha pasa a «Contactado» y el Campus prevé una relance a los 7 días. Facebook, YouTube y Reddit se escriben a mano desde la cuenta de Pathway.</p>
+  </section>`;
+}
+const dfRefresh = () => {
+  const b = $('#dfBody'); if (b) b.innerHTML = dfBody();
+  const k = dfView() && $('.crm-kpis'); if (k) k.innerHTML = dfKpis();
+  const s = $('.crm-sub'); if (s) s.outerHTML = crmSubNav(dfView() ? 'df' : waView() ? 'wa' : 'crm');
+  renderNav(currentView());
+};
+// Keeps the list in step with a card the server just returned.
+function dfStore(c) {
+  const row = { ...c }; delete row.events; delete row.existing;
+  const l = dfList(), i = l.findIndex(x => x.id === c.id);
+  if (i >= 0) l[i] = row; else l.unshift(row);
+  dfRefresh();
+}
+const dfSent = (c, e) => !!c.contacted_at && Date.parse(c.contacted_at) >= Date.parse(e.created_at);
+// One line of the history; a draft comes with « Copiar », a way to open it, and « Marcar como enviado ».
+function dfEvent(c, e) {
+  const day = esc(crmDay(e.created_at)), who = e.agent ? `asistente «${esc(e.agent)}»` : e.author ? esc(firstName(e.author)) : 'automático';
+  if (e.kind === 'draft') {
+    const d = crmDraftParts({ topic: 'email', body: e.body }), mail = dfEmail(c), link = dfLink(c);
+    const sent = dfSent(c, e);
+    const open = e.topic === 'email' && mail ? `<a class="btn btn-light btn-sm" href="mailto:${esc(mail)}?subject=${encodeURIComponent(d.subject)}&amp;body=${encodeURIComponent(d.body)}">${icon('arrow-up')}Abrir en el correo</a>`
+      : link ? `<a class="btn btn-light btn-sm" href="${esc(link)}" target="_blank" rel="noopener">${icon('arrow-up')}Abrir el contacto</a>`
+      : `<a class="btn btn-light btn-sm" href="${esc(c.url)}" target="_blank" rel="noopener">${icon('arrow-up')}Abrir el sitio</a>`;
+    return `<li class="crm-draft"><span class="crm-t-ico sky" aria-hidden="true">${icon('chat')}</span><span>
+      <span class="crm-draft-k">Borrador ${DF_CHANNEL[e.topic] ?? ''} · ${sent ? 'enviado' : 'por revisar y enviar'}</span>
+      ${d.subject ? `<span class="crm-draft-s">Asunto: ${esc(d.subject)}</span>` : ''}<span class="crm-draft-b">${esc(d.body)}</span>
+      <span class="crm-row"><button class="btn btn-dark btn-sm" type="button" data-df-copy="${e.id}" aria-label="Copiar el borrador del ${day}">Copiar</button>${open}${sent ? '' : `<button class="btn btn-light btn-sm" type="button" data-df-status="contactado">${icon('check')}Marcar como enviado</button>`}</span>
+      <small>${day} · ${who}</small></span></li>`;
+  }
+  const ic = e.kind === 'note' ? `<span class="crm-t-ico stone" aria-hidden="true">${icon('pen')}</span>` : `<span class="crm-t-ico lilac" aria-hidden="true">${icon('sparkle')}</span>`;
+  return `<li>${ic}<span>${esc(e.body)}<small>${day} · ${e.kind === 'note' ? 'nota de ' + who : `<span class="crm-auto">automático</span>${e.agent || e.author ? ' · ' + who : ''}`}</small></span></li>`;
+}
+function dfSheet() {
+  const c = DF.detail || dfById(DF.open);
+  if (!c) return '';
+  const [kn, kc] = DF_KINDS[c.kind] || DF_KINDS.otro, mail = dfEmail(c), link = dfLink(c);
+  const pending = DF_LIVE.includes(c.status) ? ((DF.detail && DF.detail.events) || []).filter(e => e.kind === 'draft' && !dfSent(c, e)) : [];
+  const contact = !c.contact ? 'Por encontrar: el asistente lo busca en el sitio.'
+    : mail ? `<a href="mailto:${esc(mail)}">${esc(c.contact)}</a>` : link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(c.contact)}</a>` : esc(c.contact);
+  const kv = [
+    ['Sitio', `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(dfHost(c.url))}</a>`], ['Contacto', contact],
+    ['País', esc(c.country || '—')], ['Audiencia', esc(c.audience || '—')], ['Ángulo', esc(c.angle || '—')],
+    ['Prioridad', `${c.priority} (${['', 'alta', 'media', 'baja'][c.priority]})`],
+    ...(c.link_url ? [['Enlace obtenido', `<a href="${esc(c.link_url)}" target="_blank" rel="noopener">${esc(dfHost(c.link_url))}</a>${c.link_at ? ' · ' + crmDay(c.link_at) : ''}`]] : []),
+    ['Contactado', c.contacted_at ? crmDay(c.contacted_at) : 'Todavía no'],
+    ['Añadido', `${crmDay(c.created_at)}${c.added_by_agent ? ` · propuesto por el asistente «${esc(c.added_by_agent)}»` : ''}`]
+  ];
+  const edit = DF.editing ? `<form class="form crm-edit" id="dfEditForm" novalidate>
+      <div class="form-2"><label class="field" for="deName">Nombre<input id="deName" maxlength="120" value="${esc(c.name)}"></label>
+        <label class="field" for="deUrl">Dirección<input id="deUrl" type="url" maxlength="500" value="${esc(c.url)}"></label></div>
+      <div class="form-2"><label class="field" for="deKind">Tipo<select id="deKind">${Object.entries(DF_KINDS).map(([k, [n]]) => `<option value="${k}" ${c.kind === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        <label class="field" for="dePrio">Prioridad<select id="dePrio">${[1, 2, 3].map(p => `<option value="${p}" ${c.priority === p ? 'selected' : ''}>${p} · ${['', 'alta', 'media', 'baja'][p]}</option>`).join('')}</select></label></div>
+      <div class="form-2"><label class="field" for="deCountry">País o ciudad<input id="deCountry" maxlength="60" value="${esc(c.country || '')}"></label>
+        <label class="field" for="deAud">Audiencia<input id="deAud" maxlength="120" value="${esc(c.audience || '')}" placeholder="Ej.: 25 mil suscriptores"></label></div>
+      <label class="field" for="deContact">Contacto<input id="deContact" maxlength="300" value="${esc(c.contact || '')}" placeholder="Correo o página de contacto"></label>
+      <label class="field" for="deAngle">Ángulo<textarea id="deAngle" maxlength="800" rows="3">${esc(c.angle || '')}</textarea></label>
+      <label class="field" for="deLink">Página con nuestro enlace<input id="deLink" type="url" maxlength="500" value="${esc(c.link_url || '')}" placeholder="Cuando lo publiquen"></label>
+      <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Guardar la ficha</button><button class="btn btn-light btn-sm" type="button" data-df-edit="0">Cancelar</button></div>
+    </form>` : `<dl class="crm-kv">${kv.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+    <div class="crm-row"><button class="btn btn-light btn-sm" type="button" data-df-edit="1">${icon('pen')}Editar la ficha</button></div>`;
+  return `<div class="crm-sheet-head"><span class="ava crm-av ${kc}" aria-hidden="true">${esc(initials(c.name))}</span>
+      <div style="min-width:0"><h2 id="crmName">${esc(c.name)}</h2><p><span class="crm-chip ${kc}">${kn}</span>${c.country ? `<span>${esc(c.country)}</span>` : ''}</p></div>
+      <button class="round" type="button" data-crm-close aria-label="Cerrar la ficha">${icon('x')}</button></div>
+    ${pending.length ? `<section class="crm-box" aria-labelledby="dfDraftT"><h3 id="dfDraftT">Por enviar</h3>
+      <ul class="crm-timeline">${pending.map(e => dfEvent(c, e)).join('')}</ul></section>` : ''}
+    <section class="crm-box" aria-labelledby="dfStatusT"><h3 id="dfStatusT">Estado</h3>
+      <div class="crm-stage-pick" role="group" aria-labelledby="dfStatusT">${DF_STATUS.map(s => `<button type="button" data-df-status="${s.id}" aria-pressed="${s.id === c.status}">${s.name}</button>`).join('')}</div>
+      <p class="muted crm-note">«Contactado» guarda la fecha del envío y prevé una relance a los 7 días. Nada se envía desde el Campus.</p></section>
+    <section class="crm-box" aria-labelledby="dfNextT"><h3 id="dfNextT">Próxima acción</h3>
+      <form class="form" id="dfNextForm" novalidate>
+        <div class="crm-row"><label class="field crm-grow" for="dnWhat">Qué hacer<input id="dnWhat" maxlength="200" value="${esc(c.next_action || '')}" placeholder="Ej.: relanzar por correo"></label>
+          <label class="field" for="dnDue">Fecha<input id="dnDue" type="date" value="${esc(c.next_due || '')}"></label></div>
+        <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Guardar</button>${c.next_action || c.next_due ? `<button class="btn btn-light btn-sm" type="button" data-df-done>${icon('check')}Hecho</button>` : ''}</div>
+      </form></section>
+    <section class="crm-box" aria-labelledby="dfFichaT"><h3 id="dfFichaT">Ficha</h3>${edit}</section>
+    <section class="crm-box" aria-labelledby="dfHistT"><h3 id="dfHistT">Historial y borradores</h3>
+      ${DF.detail ? `<ul class="crm-timeline">${(DF.detail.events || []).filter(e => !pending.includes(e)).map(e => dfEvent(c, e)).join('') || '<li class="muted">Sin movimientos todavía.</li>'}</ul>` : '<p class="muted">Cargando…</p>'}
+      <form class="form" id="dfNoteForm" novalidate><label class="field" for="dfNote">Añadir una nota<textarea id="dfNote" maxlength="2000" rows="3" placeholder="Ej.: respondieron que publican guías invitadas en enero"></textarea></label>
+        <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Añadir la nota</button></div></form></section>
+    <div class="crm-row crm-sheet-foot"><button class="btn btn-light btn-sm" type="button" data-df-archive>${icon('archive')}Archivar la ficha</button><span class="muted">El asistente no volverá a proponer este sitio.</span></div>`;
+}
+function dfRedraw() {
+  const sheet = $('#crmSheet'); if (!sheet || sheet.hidden || !DF.open) return;
+  const f = document.activeElement, key = f && sheet.contains(f) ? (f.id ? '#' + f.id : [...f.attributes].filter(a => a.name.startsWith('data-df') || a.name.startsWith('data-crm')).map(a => `[${a.name}="${a.value}"]`).join('')) : '';
+  const top = sheet.scrollTop;
+  sheet.innerHTML = dfSheet(); sheet.scrollTop = top;
+  if (key) { try { $(key, sheet)?.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+}
+async function dfReload(id) {
+  const { data, error } = await sb.rpc('outreach_contact', { p_id: id });
+  if (DF.open !== id) return;
+  if (error) return fail(error, 'No se pudo cargar la ficha.');
+  if (!data) { crmClose(); await loadOutreach(); return render(); }
+  DF.detail = data; dfStore(data); dfRedraw();
+}
+async function dfOpen(id) {
+  if (!dfById(id)) return;
+  if (DF.open !== id) { DF.editing = false; DF.detail = null; }
+  if (!DF.open) C.lastFocus = document.activeElement;
+  DF.open = id;
+  const sheet = $('#crmSheet');
+  sheet.innerHTML = dfSheet();
+  if (sheet.hidden) {
+    sheet.hidden = false; $('#crmScrim').hidden = false; $('#crmModal').hidden = true;
+    document.body.classList.add('no-scroll'); $('#app').inert = true; $('#tabbar').inert = true;
+    sheet.scrollTop = 0; $('[data-crm-close]', sheet)?.focus();
+  }
+  await dfReload(id);
+}
+const dfError = (error, msg) => fail(error, /url already used/.test(String(error.message || '')) ? 'Esa dirección ya está en otra ficha.'
+  : /invalid url|invalid link_url/.test(String(error.message || '')) ? 'Escribe una dirección completa (https://…).' : msg);
+async function dfSave(id, patch, msg) {
+  const { data, error } = await sb.rpc('outreach_save', { p_id: id, p: patch });
+  if (error) { dfError(error, 'No se pudo guardar el cambio.'); return null; }
+  if (msg) toast(msg);
+  if (DF.open === id) await dfReload(id); else dfStore(data);
+  return data;
+}
+function dfModalOpen() {
+  const modal = $('#crmModal');
+  C.lastFocus = document.activeElement;
+  modal.innerHTML = `<div class="crm-modal-head"><h2 id="crmModalTitle">Añadir contacto</h2><button class="round" type="button" data-crm-close aria-label="Cerrar">${icon('x')}</button></div>
+    <p class="muted">Un blog, medio, foro, canal o página donde un enlace o una mención a Pathway le sirva al lector.</p>
+    <form class="form" id="dfAddForm" novalidate>
+      <label class="field" for="daName">Nombre<input id="daName" required maxlength="120" placeholder="Ej.: Latinos en Montreal" aria-describedby="daErr"></label>
+      <label class="field" for="daUrl">Dirección<input id="daUrl" type="url" required maxlength="500" placeholder="https://…" aria-describedby="daErr"></label>
+      <div class="form-2"><label class="field" for="daKind">Tipo<select id="daKind">${Object.entries(DF_KINDS).map(([k, [n]]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
+        <label class="field" for="daPrio">Prioridad<select id="daPrio"><option value="1">1 · alta</option><option value="2" selected>2 · media</option><option value="3">3 · baja</option></select></label></div>
+      <label class="field" for="daCountry">País o ciudad<input id="daCountry" maxlength="60" placeholder="opcional"></label>
+      <label class="field" for="daAngle">Ángulo<input id="daAngle" maxlength="800" placeholder="Ej.: proponer la guía de puntos CRS por el francés"></label>
+      <p class="form-error" id="daErr" hidden></p>
+      <div class="crm-row"><button class="btn btn-dark" type="submit">${icon('plus')}Añadir</button><button class="btn btn-light" type="button" data-crm-close>Cancelar</button></div>
+    </form>`;
+  modal.hidden = false; $('#crmScrim').hidden = false;
+  document.body.classList.add('no-scroll'); $('#app').inert = true; $('#tabbar').inert = true;
+  $('#daName').focus();
+  $('#dfAddForm').onsubmit = async e => {
+    e.preventDefault();
+    const err = $('#daErr'), name = $('#daName').value.trim(), url = $('#daUrl').value.trim();
+    const say = (m, el) => { err.textContent = m; err.hidden = false; el.setAttribute('aria-invalid', 'true'); el.focus(); };
+    if (!name) return say('Escribe el nombre.', $('#daName'));
+    if (!/^https?:\/\/\S+$/i.test(url)) return say('Escribe la dirección completa, con https://', $('#daUrl'));
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    const { data, error } = await sb.rpc('outreach_save', { p_id: null, p: { name, url, kind: $('#daKind').value, priority: $('#daPrio').value, country: $('#daCountry').value, angle: $('#daAngle').value } });
+    btn.disabled = false;
+    if (error) return dfError(error, 'No se pudo añadir el contacto.');
+    await loadOutreach();
+    crmClose(); render();
+    if (data.existing) { toast(`${data.name} ya estaba en la lista: abrimos su ficha.`); dfOpen(data.id); }
+    else toast(`${data.name} añadido a «Por contactar».`);
+  };
+}
+function bindDf() {
+  const q = $('#dfQ');
+  if (!q) return;
+  q.oninput = () => { DF.q = q.value; $('#dfBody').innerHTML = dfBody(); };
+  $('#dfKind').onchange = e => { DF.kind = e.target.value; $('#dfBody').innerHTML = dfBody(); };
+  $('#dfFilter').onchange = e => { DF.filter = e.target.value; $('#dfBody').innerHTML = dfBody(); };
+  $$('[data-df-add]').forEach(b => b.onclick = dfModalOpen);
+  const body = $('#dfBody');
+  body.onclick = e => { const c = e.target.closest('[data-df-open]'); if (c) dfOpen(c.dataset.dfOpen); };
+  body.onkeydown = e => { const c = e.target.closest('[data-df-open]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dfOpen(c.dataset.dfOpen); } };
+}
+function bindDfOverlay(sheet) {
+  sheet.addEventListener('click', async e => {
+    const t = e.target.closest('[data-df-status],[data-df-copy],[data-df-edit],[data-df-done],[data-df-archive]');
+    if (!t || !DF.open) return;
+    const id = DF.open, c = DF.detail || dfById(id);
+    if (t.matches('[data-df-copy]')) {
+      const ev = ((DF.detail && DF.detail.events) || []).find(x => String(x.id) === t.dataset.dfCopy);
+      if (!ev) return;
+      const d = crmDraftParts({ topic: 'email', body: ev.body });
+      const ok = await copyText(d.body);
+      toast(ok ? 'Borrador copiado: revísalo antes de enviarlo.' : 'No se pudo copiar: selecciona el texto a mano.');
+      if (ok) { t.textContent = 'Copiado'; setTimeout(() => { if (t.isConnected) t.textContent = 'Copiar'; }, 2000); }
+      return;
+    }
+    if (t.matches('[data-df-status]')) {
+      const s = t.dataset.dfStatus;
+      if (!c || (c.status === s && s !== 'contactado')) return;
+      t.disabled = true;
+      const { error } = await sb.rpc('outreach_set_status', { p_id: id, p_status: s });
+      if (error) { t.disabled = false; return fail(error, 'No se pudo cambiar el estado.'); }
+      toast(s === 'contactado' ? `${c.name}: marcado como contactado. Relance prevista en 7 días.` : `${c.name} → ${DF_STATUS.find(x => x.id === s).name}`);
+      return dfReload(id);
+    }
+    if (t.matches('[data-df-edit]')) { DF.editing = t.dataset.dfEdit === '1'; dfRedraw(); if (DF.editing) $('#deName')?.focus(); else $('[data-df-edit="1"]')?.focus(); return; }
+    if (t.matches('[data-df-done]')) {
+      t.disabled = true;
+      await sb.rpc('outreach_note', { p_id: id, p_text: `Hecho: ${c.next_action || 'próxima acción'}.` });
+      return dfSave(id, { next_action: '', next_due: '' }, 'Próxima acción marcada como hecha.');
+    }
+    if (t.matches('[data-df-archive]')) {
+      t.disabled = true;
+      const { error } = await sb.rpc('outreach_archive', { p_id: id });
+      if (error) { t.disabled = false; return fail(error, 'No se pudo archivar la ficha.'); }
+      A.staff.outreach = dfList().filter(x => x.id !== id);
+      toast(`Ficha de ${c.name} archivada.`); crmClose(); render();
+    }
+  });
+  sheet.addEventListener('submit', async e => {
+    if (!DF.open) return;
+    e.preventDefault();
+    const id = DF.open, f = e.target, btn = f.querySelector('button[type=submit]');
+    if (f.id === 'dfNextForm') {
+      btn.disabled = true;
+      await dfSave(id, { next_action: $('#dnWhat').value, next_due: $('#dnDue').value }, 'Próxima acción guardada.');
+    } else if (f.id === 'dfNoteForm') {
+      const v = $('#dfNote').value.trim();
+      if (!v) { $('#dfNote').focus(); return toast('Escribe la nota.'); }
+      btn.disabled = true;
+      const { error } = await sb.rpc('outreach_note', { p_id: id, p_text: v });
+      if (error) { btn.disabled = false; return fail(error, 'No se pudo añadir la nota.'); }
+      toast('Nota añadida.');
+      await dfReload(id); $('#dfNote')?.focus();
+    } else if (f.id === 'dfEditForm') {
+      const url = $('#deUrl').value.trim(), link = $('#deLink').value.trim();
+      if (!/^https?:\/\/\S+$/i.test(url)) { $('#deUrl').focus(); return toast('Escribe la dirección completa, con https://'); }
+      if (link && !/^https?:\/\/\S+$/i.test(link)) { $('#deLink').focus(); return toast('Escribe la página del enlace completa, con https://'); }
+      btn.disabled = true;
+      DF.editing = false;
+      const ok = await dfSave(id, { name: $('#deName').value, url, kind: $('#deKind').value, priority: $('#dePrio').value, country: $('#deCountry').value, audience: $('#deAud').value, contact: $('#deContact').value, angle: $('#deAngle').value, link_url: link }, 'Ficha guardada.');
+      if (!ok) { DF.editing = true; btn.disabled = false; }
+    }
+  });
+}
+
 // Sheet and dialog: clicks, forms and keyboard (they live outside #main).
 function bindCrmOverlay() {
   const sheet = $('#crmSheet'), modal = $('#crmModal');
@@ -2049,6 +2360,7 @@ function bindCrmOverlay() {
       if (!ok) { C.editing = true; btn.disabled = false; }
     }
   });
+  bindDfOverlay(sheet);
 }
 
 /* ───────────── Horarios fijos y programa (db/008_horarios.sql) ───────────── */
@@ -3055,7 +3367,7 @@ function bindView(id) {
   if (id === 'mensajes') bindMessages();
   pollMessages(id);
   if (id === 'contenido') bindEditor();
-  if (id === 'prospectos') { bindCrm(); bindWa(); }
+  if (id === 'prospectos') { bindCrm(); bindWa(); bindDf(); }
   pollWa();
   if (id === 'ajustes') bindAgents();
   {

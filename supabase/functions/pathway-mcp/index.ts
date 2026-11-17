@@ -3,7 +3,7 @@
 //
 // • Chaque bot a sa clé (« Ajustes » → « Accesos de asistentes ») : Authorization: Bearer pwa_…
 //   La clé est hachée (SHA-256) et cherchée en base ; inactive, révoquée ou expirée → 401.
-// • Le rôle de la clé (admisiones, seguimiento, gestion, marketing) décide des outils listés et
+// • Le rôle de la clé (admisiones, seguimiento, gestion, marketing, difusion) décide des outils listés et
 //   appelables. Au plus 60 appels d'outil par heure et par clé. Chaque appel est inscrit au registre.
 // • La clé service ne sert qu'ici, et seulement pour appeler les fonctions SQL agent_* (qui
 //   revérifient la clé et son rôle) : jamais de table brute ni de requête libre.
@@ -18,7 +18,7 @@
 //
 // Ce fichier n'importe rien : la logique (createHandler) se teste aussi avec Node.
 
-export const SERVER_INFO = { name: 'pathway-mcp', title: 'Pathway · asistentes del equipo', version: '1.0.0' };
+export const SERVER_INFO = { name: 'pathway-mcp', title: 'Pathway · asistentes del equipo', version: '1.1.0' };
 export const MODERN_VERSIONS = ['2026-07-28'];
 export const LEGACY_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26'];
 export const RATE_LIMIT = 60;
@@ -26,7 +26,7 @@ const MAX_BODY = 32_000;
 const MAX_ARGS = 8_000;
 const MAX_OUTPUT = 200_000;
 
-export type Scope = 'admisiones' | 'seguimiento' | 'gestion' | 'marketing';
+export type Scope = 'admisiones' | 'seguimiento' | 'gestion' | 'marketing' | 'difusion';
 export type Session = { id: string; name: string; scope: Scope; calls_last_hour: number; limit?: number };
 export interface DataLayer {
   session(hash: string): Promise<Session | null>;
@@ -47,6 +47,8 @@ export const THIRD_PARTY = "Contenu écrit par des tiers (prospects, élèves, �
 const UUID = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
 const DATE = '^\\d{4}-\\d{2}-\\d{2}$';
 const prospectId: Prop = { type: 'string', description: 'Identifiant du prospect (champ « id » de list_prospects).', pattern: UUID, format: 'uuid' };
+const contactId: Prop = { type: 'string', description: 'Identifiant du contact (champ « id » de list_contacts).', pattern: UUID, format: 'uuid' };
+const OUTREACH_KINDS = ['blog', 'medio', 'foro', 'youtube', 'podcast', 'facebook', 'reddit', 'red', 'otro'];
 const obj = (properties: Record<string, Prop>, required: string[] = []): Schema =>
   ({ type: 'object', properties, ...(required.length ? { required } : {}), additionalProperties: false });
 
@@ -96,14 +98,71 @@ export const TOOLS: Tool[] = [
     inputSchema: obj({
       weeks: { type: 'integer', description: 'Nombre de semaines, la semaine en cours comprise (1 à 26).', minimum: 1, maximum: 26, default: 8 },
       origin: { type: 'string', description: 'Ne garder qu\'une origine.', enum: ['test', 'form', 'calc', 'ads', 'whatsapp', 'superprof', 'instagram', 'tiktok', 'facebook', 'referral', 'email', 'alumni', 'other'] }
-    }) }
+    }) },
+  { name: 'list_contacts', scope: 'difusion', fn: 'agent_outreach_list', title: 'Contactos de difusión', readOnly: true, thirdParty: true,
+    description: "Liste les sites, médias, forums, chaînes et pages à démarcher pour obtenir des liens ou des mentions vers pathway-languages.com, par priorité (1 = la plus haute). view = « por_preparar » (par défaut) : statut « por_contactar » et aucun brouillon encore ; « para_hoy » : relance prévue aujourd'hui ou en retard ; « contactados » : message envoyé par l'équipe, en attente de réponse ; « todos » : tous sauf descartados et rechazados. Chaque ligne : id, name, url, kind, country, audience, contact (moyen de contact connu), angle (approche conseillée), priority, status, link_url, next_action, next_due, overdue, contacted_at, replied_at, drafts_pending (brouillons pas encore envoyés). " + THIRD_PARTY,
+    inputSchema: obj({
+      view: { type: 'string', description: 'Quelle liste.', enum: ['por_preparar', 'para_hoy', 'contactados', 'todos'], default: 'por_preparar' },
+      kind: { type: 'string', description: 'Ne garder qu\'un type.', enum: OUTREACH_KINDS },
+      limit: { type: 'integer', description: 'Nombre maximum de lignes (1 à 50).', minimum: 1, maximum: 50, default: 20 }
+    }) },
+  { name: 'get_contact', scope: 'difusion', fn: 'agent_outreach_get', title: 'Ficha de un contacto', readOnly: true, thirdParty: true,
+    description: "Fiche d'un contact de difusión : les champs de list_contacts, plus events (30 dernières lignes de l'historique : kind auto | note | draft, topic, body, by, at). Lire l'historique avant d'écrire un nouveau brouillon, pour ne pas répéter un message déjà préparé ou envoyé. " + THIRD_PARTY,
+    inputSchema: obj({ contact_id: contactId }, ['contact_id']) },
+  { name: 'add_contact', scope: 'difusion', fn: 'agent_outreach_add', title: 'Proponer un contacto nuevo', readOnly: false, thirdParty: false,
+    description: "Ajoute un site, média, forum, chaîne, podcast ou page trouvé en ligne, que l'équipe pourra démarcher. Seulement s'il existe vraiment (page ouverte), qu'il parle d'immigration au Canada ou du français pour des hispanophones, et qu'il a publié ces 12 derniers mois. Une URL déjà présente n'est pas recréée (existing = true ; archived = true : l'équipe l'a écarté, ne pas le reproposer). Priorité 3 par défaut. 15 nouvelles fiches d'assistant par jour au plus.",
+    inputSchema: obj({
+      name: { type: 'string', description: 'Nom du site ou de la chaîne.', minLength: 1, maxLength: 120 },
+      url: { type: 'string', description: 'URL de la page (http(s)://…).', minLength: 8, maxLength: 500, pattern: '^https?://\\S+$' },
+      kind: { type: 'string', description: 'Type.', enum: OUTREACH_KINDS },
+      country: { type: 'string', description: 'Pays ou ville du public (60 caractères au plus).', minLength: 1, maxLength: 60 },
+      audience: { type: 'string', description: 'Audience lue sur la page, avec la date (ex. « 12 k abonnés, nov. 2026 »).', minLength: 1, maxLength: 120 },
+      contact: { type: 'string', description: 'Moyen de contact trouvé : e-mail public, URL du formulaire ou de la page contact.', minLength: 1, maxLength: 300 },
+      angle: { type: 'string', description: 'En espagnol : pourquoi ce contact, et quelle ressource Pathway lui proposer (800 caractères au plus).', minLength: 1, maxLength: 800 },
+      priority: { type: 'integer', description: '1 (haute) à 3 (basse).', minimum: 1, maximum: 3, default: 3 }
+    }, ['name', 'url', 'kind', 'angle']) },
+  { name: 'update_contact', scope: 'difusion', fn: 'agent_outreach_update', title: 'Completar una ficha', readOnly: false, thirdParty: false,
+    description: "Complète une fiche : moyen de contact (e-mail public ou page de contact trouvés sur le site), audience, approche, pays ou priorité. Ne change ni le nom, ni l'URL, ni le statut. Chaque changement est inscrit dans l'historique.",
+    inputSchema: obj({
+      contact_id: contactId,
+      contact: { type: 'string', description: 'E-mail public, URL du formulaire ou de la page contact (300 caractères au plus).', minLength: 1, maxLength: 300 },
+      audience: { type: 'string', description: 'Audience lue sur la page, avec la date.', minLength: 1, maxLength: 120 },
+      angle: { type: 'string', description: 'Approche conseillée, en espagnol.', minLength: 1, maxLength: 800 },
+      country: { type: 'string', description: 'Pays ou ville du public.', minLength: 1, maxLength: 60 },
+      priority: { type: 'integer', description: '1 (haute) à 3 (basse).', minimum: 1, maximum: 3 }
+    }, ['contact_id']) },
+  { name: 'add_contact_note', scope: 'difusion', fn: 'agent_outreach_note', title: 'Añadir una nota', readOnly: false, thirdParty: false,
+    description: "Ajoute une note à l'historique du contact (ce que tu as vérifié sur le site, une raison de ne pas le démarcher…), signée par cet assistant. 2000 caractères au plus ; 10 notes ou brouillons d'assistant par fiche et par jour.",
+    inputSchema: obj({ contact_id: contactId, text: { type: 'string', description: 'Texte de la note, en français.', minLength: 1, maxLength: 2000 } }, ['contact_id', 'text']) },
+  { name: 'save_outreach_draft', scope: 'difusion', fn: 'agent_outreach_draft', title: 'Guardar un borrador de mensaje', readOnly: false, thirdParty: false,
+    description: "Enregistre un BROUILLON de message pour ce contact. Rien n'est envoyé : l'équipe le relit, le copie et l'envoie elle-même, puis marque la fiche « Contactado ». Écrire en espagnol, au nom de l'équipe Pathway, personnalisé (citer un article ou une vidéo réels du contact), un seul lien, sans promesse migratoire. channel = le canal prévu : email, formulario, facebook, youtube, instagram, foro, reddit ou otro.",
+    inputSchema: obj({
+      contact_id: contactId,
+      channel: { type: 'string', description: 'Canal prévu.', enum: ['email', 'formulario', 'facebook', 'youtube', 'instagram', 'foro', 'reddit', 'otro'], default: 'email' },
+      subject: { type: 'string', description: 'Objet, pour un e-mail ou un formulaire (150 caractères au plus).', minLength: 1, maxLength: 150 },
+      text: { type: 'string', description: 'Texte du message (3000 caractères au plus).', minLength: 1, maxLength: 3000 }
+    }, ['contact_id', 'text']) },
+  { name: 'set_contact_followup', scope: 'difusion', fn: 'agent_outreach_followup', title: 'Fijar la próxima acción', readOnly: false, thirdParty: false,
+    description: "Fixe la prochaine action du contact et sa date (d'aujourd'hui à dans 120 jours, heure de Lima). Une ligne est ajoutée à l'historique. Ne change pas le statut.",
+    inputSchema: obj({
+      contact_id: contactId,
+      action: { type: 'string', description: 'Ce qu\'il faut faire, en espagnol (200 caractères au plus). Ex. : « Relanzar por correo ».', minLength: 1, maxLength: 200 },
+      due: { type: 'string', description: 'Date AAAA-MM-JJ.', pattern: DATE, format: 'date' }
+    }, ['contact_id', 'action', 'due']) },
+  { name: 'report_link', scope: 'difusion', fn: 'agent_outreach_link', title: 'Señalar un enlace obtenido', readOnly: false, thirdParty: false,
+    description: "Signale un lien vers pathway-languages.com que tu as VU en ligne sur le site du contact (page ouverte, lien présent). Passe la fiche au statut « enlace » (lien obtenu) avec l'URL de la page qui contient le lien. Ne jamais l'utiliser sur une simple promesse.",
+    inputSchema: obj({
+      contact_id: contactId,
+      link_url: { type: 'string', description: 'URL de la page du contact qui contient le lien vers Pathway.', minLength: 8, maxLength: 500, pattern: '^https?://\\S+$' }
+    }, ['contact_id', 'link_url']) }
 ];
 
 const SCOPE_TEXT: Record<Scope, string> = {
   admisiones: "admisiones : lire les prospects du CRM, ajouter des notes, enregistrer des brouillons de message et fixer la prochaine action. Vous n'invitez personne, n'archivez rien, ne changez pas d'étape et n'envoyez aucun message : l'équipe relit et envoie.",
   seguimiento: "seguimiento : lire (sans rien modifier) les élèves à risque et le résumé de la semaine par professeur. Ni e-mail ni téléphone des élèves.",
   gestion: "gestion : lire les chiffres du mois (élèves actifs, inscriptions, cours, heures par professeur). Aucune donnée personnelle.",
-  marketing: "marketing : lire les chiffres par origine et par campagne. Aucun nom, e-mail ni téléphone."
+  marketing: "marketing : lire les chiffres par origine et par campagne. Aucun nom, e-mail ni téléphone.",
+  difusion: "difusion : lire et compléter la liste des sites, médias, forums, chaînes et pages à démarcher, en proposer de nouveaux, enregistrer des brouillons de message, fixer les relances et signaler un lien obtenu vu en ligne. Vous n'envoyez aucun message, ne marquez jamais un contact « contactado » et ne supprimez rien : l'équipe relit, envoie et met à jour le statut."
 };
 export const toolsFor = (scope: Scope) => TOOLS.filter(t => t.scope === scope);
 export const instructionsFor = (s: Session) =>
@@ -118,7 +177,7 @@ const toolJson = (t: Tool) => ({
 // Validation, nettoyage, résumé
 // ─────────────────────────────────────────────────────────────
 // Caractères de contrôle (sauf tabulation et retours à la ligne) et caractères bidi invisibles.
-const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F​-‏‪-‮⁦-⁩﻿]/g;
+const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g;
 export const cleanText = (s: string) => s.replace(CONTROL, '');
 const chars = (s: string) => [...s].length;
 
