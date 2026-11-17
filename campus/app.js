@@ -557,10 +557,10 @@ function topBar(id, title, sub, extra = '') {
   const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
   return `<header class="top"><div><div class="h-info"><h1 id="${id}">${title}</h1>${infoBtn(helpKey(id))}</div>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">${extra}
-      ${teacherMode() ? '' : searchMarkup(A.search)}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode() && !adminMode()}">Profesor</button>${isAdmin() ? `<button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button>` : ''}</div>` : ''}
-      ${!teacherMode() && navItems().some(n => n.id === 'mensajes') ? (() => { const u = myUnread(); return `<a class="round msg-top" href="#mensajes" data-msg-top aria-label="Mensajes${u ? ` (${u} sin leer)` : ''}" ${currentView() === 'mensajes' ? 'aria-current="page"' : ''}>${icon('chat')}${u ? `<span class="pip-n num">${u > 9 ? '9+' : u}</span>` : ''}</a>`; })() : ''}
       <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
+      ${teacherMode() ? '' : searchMarkup(A.search)}
+      ${!teacherMode() && navItems().some(n => n.id === 'mensajes') ? (() => { const u = myUnread(); return `<a class="round msg-top" href="#mensajes" data-msg-top aria-label="Mensajes${u ? ` (${u} sin leer)` : ''}" ${currentView() === 'mensajes' ? 'aria-current="page"' : ''}>${icon('chat')}${u ? `<span class="pip-n num">${u > 9 ? '9+' : u}</span>` : ''}</a>`; })() : ''}
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
       <div class="menu-wrap"><button type="button" class="round ava-btn" data-action="menu" aria-label="Mi cuenta" aria-haspopup="true"><span class="ava">${esc(initials(p.full_name))}</span></button><div id="menuSlot"></div></div>
     </div></header>`;
@@ -678,7 +678,7 @@ function toggleMenu() {
   const p = A.profile;
   slot.innerHTML = `<div class="menu" role="menu"><div class="who"><b>${esc(p.full_name)}</b>${esc(A.session.user.email)}</div>
     ${isStaff() ? '' : `<button type="button" role="menuitem" data-action="logros">${icon('trophy')}<span><b>Mis logros</b><small>Nivel ${levelInfo(p.xp_total).lvl} · ${fmt(p.xp_total)} XP</small></span></button><button type="button" role="menuitem" data-action="plan">${icon('target')}Mi plan</button>`}
-    <button type="button" role="menuitem" data-action="logout">${icon('x')}Cerrar sesión</button></div>`;
+    ${isStaff() ? `<button type="button" role="menuitem" data-action="logout">${icon('x')}Cerrar sesión</button>` : ''}</div>`;
   fitMenu(slot);
 }
 
