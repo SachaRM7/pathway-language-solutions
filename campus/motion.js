@@ -132,9 +132,12 @@ export function mountSearch(root, onSearch) {
   const button = wrap.querySelector('.seek-hit'), results = wrap.querySelector('#searchSlot');
   const abort = new AbortController(), options = { signal: abort.signal };
   let open = !!field.value, beat = 0, rest = 0, pointerFrame = 0;
-  const span = () => Math.min(240, el.clientWidth - 26);
-  const width = spring(open ? span() : 48, w => {
-    const p = clamp((w - 48) / Math.max(1, span() - 48), 0, 1);
+  // Closed, the search is a round button the size of its neighbours; open, it grows to the right
+  // over them, as far as the screen allows.
+  const base = () => wrap.getBoundingClientRect().width || 46;
+  const span = () => Math.max(base(), Math.min(240, innerWidth - 16 - wrap.getBoundingClientRect().left));
+  const width = spring(open ? span() : base(), w => {
+    const p = clamp((w - base()) / Math.max(1, span() - base()), 0, 1);
     el.style.setProperty('--seek-w', `${w.toFixed(2)}px`);
     el.style.setProperty('--seek-say', clamp((p - .55) / .45, 0, 1).toFixed(3));
   }, 20);
@@ -146,7 +149,7 @@ export function mountSearch(root, onSearch) {
     if (field.value.trim()) return;
     open = false; el.dataset.open = 'false';
     field.tabIndex = -1; button.hidden = false; button.setAttribute('aria-expanded', 'false');
-    width.to(48);
+    width.to(base());
     if (focus) button.focus({ preventScroll: true });
   }
   function start() {
