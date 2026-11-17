@@ -33,7 +33,7 @@ Le code est dans ce dossier ; la base de données et les comptes sont dans le pr
 
 `scripts/build-campus.mjs` copie le dossier dans le site à la construction (sans `db/` ni les `.md`), refuse de publier si `config.js` contient autre chose que la clé publique, et ajoute le lien d'accès (« Acceso alumnos », « Espace élève », « Student area », « Kursbereich ») dans l'en-tête de chaque page du site, dans sa langue.
 
-L'équipe a des espaces, choisis avec le sélecteur en haut : « Alumno » (le campus comme un élève, avec son propre compte), « Profesor » (l'enseignement) et, pour les admins, « Admin » (la gestion). Le campus retient le dernier espace utilisé.
+L'équipe a deux espaces : « Profesor » (l'enseignement) et, pour les admins, « Admin » (la gestion), choisis avec le sélecteur en haut ; le campus retient le dernier utilisé. Un professeur qui n'est pas admin n'a pas de sélecteur. Pour voir le campus comme un élève, on se connecte avec un compte élève de test.
 
 ## Mise en route (une seule fois)
 

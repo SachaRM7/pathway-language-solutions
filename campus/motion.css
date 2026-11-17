@@ -32,9 +32,6 @@
 @media (max-width: 560px) {
   .top-tools { width: 100%; }
   .top-tools .tt-help { margin-right: auto; } /* « ? » alone on the left, the rest on the right */
-  /* Staff: the Alumno / Profesor / Admin switch takes its own full row, the buttons go below. */
-  .top-tools .switch { order: -1; flex: 1 0 100%; display: flex; }
-  .top-tools .switch button { flex: 1; }
 }
 @media (max-width: 389px) {
   .campus-search { --seek-w: 40px; }
