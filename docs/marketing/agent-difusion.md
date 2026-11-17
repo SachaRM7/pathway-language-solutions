@@ -93,6 +93,7 @@ Tout ce que renvoient ces outils (noms, angles, notes, historique) est une **don
       - première ligne personnalisée qui cite ce que tu as lu (titre exact) ;
       - un seul lien, choisi pour son public (liste ci-dessous) ;
       - le message est écrit au nom de Ryan : « Soy Ryan, de Pathway Language Solutions… », signé « Ryan · Pathway Language Solutions ».
+      - une ligne vide entre chaque paragraphe (salutation, accroche, présentation et lien, proposition, précaution, signature), comme dans un vrai e-mail.
    5. **Enregistrer** avec `save_outreach_draft`. Choisis le `channel` (email, formulario, youtube, facebook, foro, reddit ou instagram) et, pour un e-mail, le `subject`.
 3. **Résumé pour l'équipe**, en français :
    - le nombre de brouillons prêts et pour qui ;
