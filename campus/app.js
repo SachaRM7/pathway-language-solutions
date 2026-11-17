@@ -923,7 +923,8 @@ function viewLogros() {
   </div>
   <article class="tile"><div class="tile-head"><h2>Insignias</h2><span class="pill ghost num">${A.myBadges.size} de ${A.badges.length}</span></div>
     <div class="badges">${A.badges.map(b => { const has = A.myBadges.has(b.id); return `<div class="badge ${has ? '' : 'locked'}"><span class="medal" style="background:var(--${b.color});color:var(--${b.color}-ink)">${icon(has ? b.icon : 'lock')}</span><b>${esc(b.name)}</b><span>${esc(b.description)}</span></div>`; }).join('')}</div>
-  </article></section>`;
+  </article>
+  ${isStaff() ? '' : `<p class="logout-foot"><button type="button" data-action="logout">Cerrar sesión</button></p>`}</section>`;
 }
 
 /* ───────────── Staff views ───────────── */

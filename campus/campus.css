@@ -1305,3 +1305,8 @@ a.pill.warn { text-decoration: none; }
 .head-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .menu button:has(small) { height: auto; min-height: 44px; padding: 8px 14px; }
 .menu button small { display: block; font-weight: 500; font-size: 12px; color: var(--ink-3); margin-top: 1px; }
+
+/* Discreet sign-out at the bottom of « Mis logros » (students have none in « Mi cuenta »). */
+.logout-foot { text-align: center; margin: 28px 0 8px; }
+.logout-foot button { background: none; border: 0; padding: 10px 14px; color: var(--ink-3); font: 500 13px var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.logout-foot button:hover { color: var(--ink); }
