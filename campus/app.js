@@ -354,7 +354,7 @@ async function loadStaff() {
     admin ? sb.from('profiles').select('id,plan,plan_start').eq('role', 'student') : null,
     admin ? sb.rpc('admin_members') : null,
     admin ? sb.rpc('staff_enrollments') : null,
-    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null, admin ? loadActivity() : null
+    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null, admin ? loadActivity() : null, admin ? loadMail() : null
   ]);
   if (ov.error) throw ov.error;
   A.staff.overview = ov.data || [];
@@ -476,7 +476,7 @@ const ANAV = [
 const navItems = () => (adminMode() ? ANAV : teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
 const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes, bandeja: viewBandeja };
 // Old links (#grupo) keep working.
-const ALIASES = { grupo: 'panel', whatsapp: 'prospectos', difusion: 'prospectos' };
+const ALIASES = { grupo: 'panel', whatsapp: 'prospectos', difusion: 'prospectos', correo: 'prospectos' };
 
 function currentView() {
   const raw = location.hash.slice(1), id = ALIASES[raw] || raw;
@@ -1009,6 +1009,11 @@ function adminTasks() {
     const late = p.next_due < crmToday();
     push({ key: 'crm' + p.id + p.next_due, area: 'captacion', ic: 'funnel', title: `${esc(crmName(p))}: ${esc(p.next_action || 'próxima acción')}`,
       detail: `${late ? `Atrasado desde el ${esc(crmDay(p.next_due))}` : 'Para hoy'}${p.owner ? ` · responsable: ${esc(firstName(p.owner))}` : ''}`, action: 'Abrir la ficha', href: '#prospectos', attrs: ` data-crm-goto="${p.id}"`, urgent: late });
+  }
+  if (mailOn()) for (const t of mailWaiting()) {
+    const late = agoH(t.needs_reply_since || t.last_inbound_at) >= 24;
+    push({ key: 'mail' + t.id + t.needs_reply_since, area: 'captacion', ic: 'bell', title: `Responder al correo de ${esc(mailName(t))}`,
+      detail: `«${esc(t.subject || 'sin asunto')}» · escribió ${esc(agoText(t.needs_reply_since || t.last_inbound_at))}${t.drafts ? ' · borrador listo' : ''}`, action: 'Responder', href: '#correo', attrs: ` data-mail-goto="${t.id}"`, urgent: late || !!t.flagged });
   }
   if (dfOn()) {
     for (const c of dfDrafts()) push({ key: 'df' + c.id + c.last_event_at, area: 'captacion', ic: 'target', title: `Revisar y enviar el mensaje para ${esc(c.name)}`,
@@ -1545,6 +1550,7 @@ function crmKpis() {
   ].map(([l, v, s], i) => `<div class="tile crm-kpi${i === 3 && due ? ' due' : ''}"><span class="label">${l}</span><strong class="${typeof v === 'string' ? 'txt' : 'num'}">${esc(v)}</strong><small>${esc(s)}</small></div>`).join('');
 }
 function viewProspectos() {
+  if (mailView()) return viewCorreo();
   if (dfView()) return viewDifusion();
   if (waView()) return viewWhatsapp();
   if (!C.view) C.view = crmPhone() ? 'list' : 'board';
@@ -1825,11 +1831,12 @@ function waWindow(t) {
 }
 const WA_STATUS = { pending: ['Enviando…', '…'], sent: ['Enviado', '✓'], delivered: ['Entregado', '✓✓'], read: ['Leído', '✓✓'], failed: ['No enviado', '!'] };
 function crmSubNav(cur) {
-  if (!waOn() && !dfOn()) return '';
-  const n = waOn() ? waWaiting().length : 0, d = dfOn() ? dfDrafts().length : 0;
+  if (!waOn() && !dfOn() && !mailOn()) return '';
+  const n = waOn() ? waWaiting().length : 0, d = dfOn() ? dfDrafts().length : 0, ml = mailOn() ? mailWaiting().length : 0;
   return `<nav class="seg-tabs crm-sub" aria-label="Secciones de Prospectos">
     <a href="#prospectos"${cur === 'crm' ? ' aria-current="page"' : ''}><b>${icon('funnel')}</b>Prospectos</a>
     ${waOn() ? `<a href="#whatsapp"${cur === 'wa' ? ' aria-current="page"' : ''}><b>${icon('chat')}</b>WhatsApp${n ? `<span class="count num">${n}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
+    ${mailOn() ? `<a href="#correo"${cur === 'mail' ? ' aria-current="page"' : ''}><b>${icon('bell')}</b>Correo${ml ? `<span class="count num">${ml}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
     ${dfOn() ? `<a href="#difusion"${cur === 'df' ? ' aria-current="page"' : ''}><b>${icon('target')}</b>Difusión${d ? `<span class="count num">${d}<span class="sr-only"> borradores por enviar</span></span>` : ''}</a>` : ''}</nav>`;
 }
 function waRow(t) {
@@ -2100,6 +2107,209 @@ function bindAgents() {
 // The new key and the log never outlive the visit to Ajustes.
 window.addEventListener('hashchange', () => { if (A.staff && location.hash !== '#ajustes') { A.staff.agentNew = null; A.staff.agentLog = null; } });
 
+/* ───────────── Correo (db/035_correo.sql, function « mail »): « Captación » → « Correo », only admins ───────────── */
+// The team's mailbox (Zoho), read every 2 minutes: each email from a person comes with a reply draft
+// from the assistant. Nothing leaves without « Enviar » (twice), from the address chosen in
+// « Enviar desde »; changing it also changes the signature at the end of the draft.
+const ML = { open: null, thread: null, busy: false, confirm: null };
+const MAIL_SENDERS = {
+  'ryan@pathway-languages.com': ['Ryan', 'Ryan · Pathway Language Solutions'],
+  'abdrahim@pathway-languages.com': ['Abdrahim', 'Abdrahim · Pathway Language Solutions'],
+  'contacto@pathway-languages.com': ['Pathway · contacto@', 'Equipo Pathway Language Solutions'],
+  'contact@pathway-languages.com': ['Pathway · contact@', 'Equipo Pathway Language Solutions']
+};
+const MAIL_ERR = { not_configured: 'El correo todavía no está conectado a Zoho.', smtp_auth: 'Zoho rechazó la contraseña de aplicación: revisa el secreto ZOHO_SMTP_PASSWORD.',
+  smtp_failed: 'Zoho no aceptó el envío. Inténtalo de nuevo en un momento.', already_sending: 'El envío ya está en curso.', daily_limit: 'Límite diario de correos alcanzado.',
+  invalid_sender: 'Elige una dirección de envío válida.', not_found: 'Este borrador ya no está: actualiza la conversación.' };
+const mailOn = () => isAdmin() && Array.isArray(A.staff.mail);
+const mailList = () => A.staff.mail || [];
+const mailWaiting = () => mailList().filter(t => t.needs_reply);
+const mailView = () => mailOn() && location.hash === '#correo';
+const mailName = t => t.name || t.email;
+const mailSender = (t, m) => (m && MAIL_SENDERS[m.from_email]) ? m.from_email : MAIL_SENDERS[t.mailbox] ? t.mailbox : 'contacto@pathway-languages.com';
+async function loadMail() {
+  const r = await sb.rpc('mail_threads_list');
+  A.staff.mail = r.error ? null : (r.data || []); // needs db/035_correo.sql
+}
+async function mailLoadThread() {
+  const id = ML.open;
+  const r = await sb.rpc('mail_thread', { p_id: id });
+  if (ML.open !== id) return;
+  if (r.error || !r.data) { if (r.error) fail(r.error, 'No se pudo abrir la conversación.'); ML.thread = { id, messages: [] }; return; }
+  ML.thread = r.data;
+  const t = mailList().find(x => x.id === id); if (t) t.unread = 0;
+}
+async function mailRefresh() { await loadMail(); if (ML.open) await mailLoadThread(); }
+function mailRow(t) {
+  const last = t.last || {}, on = t.id === ML.open;
+  const state = t.flagged ? '<span class="status bad">Revisar la nota</span>' : t.drafts ? '<span class="status warn">Borrador listo</span>' : t.needs_reply ? '<span class="status warn">Por responder</span>' : '';
+  return `<button type="button" class="msg-row wa-row${on ? ' on' : ''}" data-mail-thread="${t.id}"${on ? ' aria-current="true"' : ''}>
+    <span class="ava sm">${esc(initials(mailName(t)))}</span>
+    <span class="msg-row-main"><b>${esc(mailName(t))}</b><small class="wa-phone">${esc(t.subject || '(sin asunto)')}</small><small>${esc((last.direction === 'out' ? 'Pathway: ' : '') + (last.body || ''))}</small></span>
+    <span class="msg-row-side">${t.last_message_at ? `<small>${esc(msgWhen(t.last_message_at))}</small>` : ''}${state}${t.unread ? `<span class="count num" title="Sin leer">${t.unread}<span class="sr-only"> sin leer</span></span>` : ''}</span></button>`;
+}
+function mailListHtml() {
+  const list = mailList();
+  if (!list.length) return '<p class="muted">Todavía no hay correos. Los que lleguen a contacto@, ryan@ o abdrahim@ aparecerán aquí (las newsletters y las notificaciones se quedan en Zoho).</p>';
+  const wait = list.filter(t => t.needs_reply), rest = list.filter(t => !t.needs_reply);
+  return `${wait.length ? `<p class="label">Por responder</p><div class="msg-list">${wait.map(mailRow).join('')}</div>` : ''}
+    ${rest.length ? `<p class="label"${wait.length ? ' style="margin-top:14px"' : ''}>${wait.length ? 'Otras conversaciones' : 'Todas al día'}</p><div class="msg-list">${rest.map(mailRow).join('')}</div>` : ''}`;
+}
+function mailMsg(m, t) {
+  const when = `<time datetime="${esc(m.sent_at || m.created_at)}">${esc(msgWhen(m.sent_at || m.created_at))}</time>`;
+  if (m.kind === 'draft') {
+    const from = mailSender(t, m), confirming = ML.confirm === m.id;
+    return `<form class="mail-draft" data-mail-draft="${m.id}" novalidate>
+      <p class="msg-who">${icon('sparkle')}${m.drafted_by_ai && !m.edited ? 'Borrador del asistente' : 'Borrador'} · la persona todavía no lo ve</p>
+      ${m.note ? `<p class="msg-flag wa-note">${icon(m.flagged ? 'users' : 'sparkle')}<span><span class="sr-only">Nota para el equipo: </span>${esc(m.note)}</span></p>` : ''}
+      <div class="form-2"><label class="field" for="mdFrom${m.id}">Enviar desde<select id="mdFrom${m.id}" name="from">${Object.entries(MAIL_SENDERS).map(([k, [n]]) => `<option value="${k}" ${k === from ? 'selected' : ''}>${esc(n)} (${k.split('@')[0]}@)</option>`).join('')}</select></label>
+        <label class="field" for="mdSubj${m.id}">Asunto<input id="mdSubj${m.id}" name="subject" maxlength="250" value="${esc(m.subject || ('Re: ' + (t.subject || '')))}"></label></div>
+      <label class="field" for="mdBody${m.id}">Mensaje para ${esc(t.email)}<textarea id="mdBody${m.id}" name="body" rows="11" maxlength="20000">${esc(m.body)}</textarea></label>
+      ${m.error ? `<p class="wa-error" role="alert">${icon('x')}<span>${esc(m.error)}</span></p>` : ''}
+      <div class="msg-draft-acts"><button class="btn btn-coral btn-sm" type="submit">${icon('arrow')}${confirming ? `Confirmar: enviar a ${esc(t.email)}` : 'Enviar'}</button>
+        <button class="btn btn-light btn-sm" type="button" data-mail-save>Guardar sin enviar</button><button class="btn btn-light btn-sm" type="button" data-mail-discard="${m.id}">Descartar</button></div>
+    </form>`;
+  }
+  const ours = m.direction === 'out';
+  const who = ours ? `${esc(m.author ? firstName(m.author) : 'Pathway')} · desde ${esc((m.from_email || '').split('@')[0])}@` : `${esc(m.from_name || t.name || t.email)} <span class="muted">&lt;${esc(m.from_email || t.email)}&gt;</span>`;
+  return `<article class="mail-card${ours ? ' ours' : ''}"><p class="mail-head"><b>${who}</b>${!ours && m.to_email ? `<span class="muted">para ${esc(m.to_email)}</span>` : ''}${when}</p>
+    ${m.subject ? `<p class="mail-subj">${esc(m.subject)}</p>` : ''}<div class="mail-body">${esc(m.body)}</div></article>`;
+}
+function mailThreadTile(t) {
+  const th = ML.thread && ML.thread.id === t.id ? ML.thread : null;
+  const msgs = th ? th.messages || [] : [], hasDraft = msgs.some(m => m.kind === 'draft');
+  const links = [t.prospect ? `<a href="#prospectos" data-crm-goto="${t.prospect.id}">Ficha de ${esc(t.prospect.name || 'prospecto')}</a>` : '',
+    t.outreach ? `<a href="#difusion" data-df-goto="${t.outreach.id}">Difusión: ${esc(t.outreach.name)}</a>` : ''].filter(Boolean).join(' · ');
+  return `<article class="tile msg-thread-tile mail-thread" aria-labelledby="mailThreadName">
+    <div class="tile-head msg-thread-head"><button type="button" class="round msg-back" data-mail-close aria-label="Volver a los correos">${icon('arrow')}</button>
+      <div class="msg-thread-title"><h2 id="mailThreadName" tabindex="-1">${esc(mailName(t))}</h2><p class="muted">${esc(t.email)}${links ? ' · ' + links : ''}</p></div></div>
+    ${t.flagged ? `<p class="msg-reason">${icon('users')}<span><b>Antes de enviar:</b> hay algo que decidir. Lee la nota del borrador.</span></p>` : ''}
+    <div class="mail-log" id="mailLog">${th ? msgs.map(m => mailMsg(m, t)).join('') || '<p class="muted">Sin mensajes.</p>' : '<p class="muted">Cargando…</p>'}</div>
+    ${th && !hasDraft ? `<div class="msg-draft-acts mail-new"><button class="btn btn-dark btn-sm" type="button" data-mail-write>${icon('pen')}Escribir una respuesta</button><button class="btn btn-light btn-sm" type="button" data-mail-redraft>${icon('sparkle')}Pedir un borrador al asistente</button></div>` : ''}
+    <div class="msg-actions">${t.needs_reply ? `<button class="btn btn-light btn-sm" type="button" data-mail-done>${icon('check')}Marcar como resuelto</button><span class="muted">Si ya se respondió por otro medio o no hace falta responder.</span>` : `<span class="muted">${t.handled_at ? `Resuelto${t.handled_by ? ' por ' + esc(firstName(t.handled_by)) : ''} · ${esc(msgWhen(t.handled_at))}` : 'Al día'}</span>`}</div>
+  </article>`;
+}
+function viewCorreo() {
+  const list = mailList(), t = ML.open ? list.find(x => x.id === ML.open) : null;
+  if (ML.open && !t) { ML.open = null; ML.thread = null; }
+  const wait = mailWaiting().length;
+  return `<section class="view" aria-labelledby="h-crm">
+  ${topBar('h-crm', 'Captación', wait ? `${wait} correo${wait > 1 ? 's' : ''} por responder` : 'Los correos de contacto@, ryan@ y abdrahim@. Cada respuesta la revisa y la envía alguien del equipo.')}
+  ${crmSubNav('mail')}
+  <div class="msg-layout wa-layout mail-layout${t ? ' has-open' : ''}">
+    <article class="tile msg-list-tile"><div class="tile-head"><h2>Correos</h2>${wait ? `<span class="pill warn num">${wait} por responder</span>` : ''}</div>
+      <div id="mailList">${mailListHtml()}</div></article>
+    ${t ? mailThreadTile(t) : `<article class="tile msg-thread-tile empty"><h2>Elige un correo</h2><p class="muted">Cada correo que llega tiene un borrador de respuesta: revísalo, cámbialo si hace falta, elige desde qué dirección sale y envíalo. Nada se envía solo.</p></article>`}
+  </div></section>`;
+}
+function mailPaint() {
+  if (!mailView()) return;
+  const t = ML.open && mailList().find(x => x.id === ML.open);
+  const l = $('#mailList'); if (l) l.innerHTML = mailListHtml();
+  const tile = $('.mail-thread');
+  if (t && tile) { tile.outerHTML = mailThreadTile(t); bindMailThread(); }
+  else if (!!t !== !!tile) { render(); return; }
+  bindMailRows(); renderNav(currentView());
+}
+async function mailOpen(id) {
+  ML.open = id; ML.thread = null; ML.confirm = null;
+  render();
+  await mailLoadThread();
+  if (ML.open !== id || !mailView()) return;
+  mailPaint();
+  $('#mailThreadName')?.focus({ preventScroll: true });
+}
+function mailClose() { const id = ML.open; ML.open = null; ML.thread = null; ML.confirm = null; render(); $(`[data-mail-thread="${id}"]`)?.focus(); }
+// Swaps the signature at the end of a draft when « Enviar desde » changes.
+function mailResign(text, from) {
+  const sigs = [...new Set(Object.values(MAIL_SENDERS).map(v => v[1]))], body = text.replace(/\s+$/, '');
+  const old = sigs.find(s => body.endsWith(s));
+  return old ? body.slice(0, body.length - old.length) + MAIL_SENDERS[from][1] : body + '\n\n' + MAIL_SENDERS[from][1];
+}
+const mailFormData = f => ({ from: f.from.value, subject: f.subject.value.trim(), body: f.body.value });
+function bindMailRows() { $$('[data-mail-thread]').forEach(b => b.onclick = () => mailOpen(b.dataset.mailThread)); }
+function bindMailThread() {
+  const back = $('[data-mail-close]'); if (back) back.onclick = mailClose;
+  $$('form[data-mail-draft]').forEach(f => {
+    const id = +f.dataset.mailDraft;
+    f.from.onchange = () => { f.body.value = mailResign(f.body.value, f.from.value); ML.confirm = null; };
+    f.body.oninput = () => { if (ML.confirm === id) { ML.confirm = null; const b = f.querySelector('button[type=submit]'); b.innerHTML = `${icon('arrow')}Enviar`; } };
+    f.onsubmit = async e => {
+      e.preventDefault();
+      const d = mailFormData(f), btn = f.querySelector('button[type=submit]');
+      if (!d.body.trim()) { f.body.focus(); return toast('Escribe el mensaje.'); }
+      if (ML.confirm !== id) { ML.confirm = id; btn.innerHTML = `${icon('arrow')}Confirmar: enviar a ${esc(ML.thread.email)}`; setTimeout(() => { if (ML.confirm === id && btn.isConnected) { ML.confirm = null; btn.innerHTML = `${icon('arrow')}Enviar`; } }, 8000); return; }
+      if (ML.busy) return;
+      ML.busy = true; ML.confirm = null; btn.disabled = true; btn.textContent = 'Enviando…';
+      try {
+        const s = await sb.rpc('mail_draft_save', { p_id: id, p_subject: d.subject, p_body: d.body, p_from: d.from });
+        if (s.error) { fail(s.error, 'No se pudo guardar el borrador antes de enviarlo.'); return; }
+        const { data, error } = await sb.functions.invoke('mail', { body: { action: 'send', id, from: d.from } });
+        let code = data && data.error;
+        if (error) { try { code = (await error.context.json()).error; } catch (x) { code = 'error'; } }
+        if (code) toast(MAIL_ERR[code] || 'No se pudo enviar el correo. Inténtalo de nuevo.');
+        else toast(`Correo enviado a ${data.to} desde ${data.from}.`);
+        await mailRefresh(); mailPaint();
+      } finally { ML.busy = false; }
+    };
+    $('[data-mail-save]', f).onclick = async () => {
+      const d = mailFormData(f);
+      if (!d.body.trim()) return toast('Escribe el mensaje.');
+      const { error } = await sb.rpc('mail_draft_save', { p_id: id, p_subject: d.subject, p_body: d.body, p_from: d.from });
+      if (error) return fail(error, 'No se pudo guardar el borrador.');
+      toast('Borrador guardado. Todavía no se envió.'); await mailRefresh(); mailPaint();
+    };
+  });
+  $$('[data-mail-discard]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await sb.rpc('mail_draft_discard', { p_id: +b.dataset.mailDiscard });
+    if (error) { b.disabled = false; return fail(error, 'No se pudo descartar el borrador.'); }
+    toast('Borrador descartado: no se enviará.'); await mailRefresh(); mailPaint();
+  });
+  const w = $('[data-mail-write]');
+  if (w) w.onclick = async () => {
+    const t = ML.thread, from = mailSender(t);
+    const first = (t.name || '').split(/\s+/)[0];
+    const { error } = await sb.rpc('mail_draft_new', { p_thread: t.id, p_subject: 'Re: ' + (t.subject || ''), p_body: `Hola${first ? ', ' + first : ''}:\n\n\n\n${MAIL_SENDERS[from][1]}`, p_from: from });
+    if (error) return fail(error, 'No se pudo crear el borrador.');
+    await mailRefresh(); mailPaint(); const ta = $('form[data-mail-draft] textarea'); if (ta) { ta.focus(); const p = ta.value.indexOf('\n\n') + 2; ta.setSelectionRange(p, p); }
+  };
+  const rd = $('[data-mail-redraft]');
+  if (rd) rd.onclick = async () => {
+    rd.disabled = true; rd.textContent = 'Preparando…';
+    const { error } = await sb.functions.invoke('mail', { body: { action: 'redraft', thread_id: ML.open } });
+    if (error) toast('El asistente no pudo preparar un borrador: escribe la respuesta.');
+    await mailRefresh(); mailPaint();
+    if (!(ML.thread && (ML.thread.messages || []).some(m => m.kind === 'draft'))) toast('El asistente no propuso borrador para este correo: escribe la respuesta.');
+  };
+  const done = $('[data-mail-done]');
+  if (done) done.onclick = async () => {
+    done.disabled = true;
+    const { error } = await sb.rpc('mail_thread_done', { p_id: ML.open, p_done: true });
+    if (error) { done.disabled = false; return fail(error, 'No se pudo marcar el correo.'); }
+    await mailRefresh(); mailPaint(); toast('Correo marcado como resuelto.');
+  };
+}
+function bindMail() {
+  if (!mailView()) return;
+  bindMailRows();
+  if (ML.open && (!ML.thread || ML.thread.id !== ML.open)) mailLoadThread().then(mailPaint);
+  else bindMailThread();
+}
+// While « Correo » is open: the list every 30 s (only when the tab is visible and nothing is being typed).
+let mailPoll = 0;
+function pollMail() {
+  clearInterval(mailPoll);
+  if (!mailView()) return;
+  mailPoll = setInterval(async () => {
+    if (!mailView()) return clearInterval(mailPoll);
+    if (document.hidden || ML.busy || (document.activeElement && document.activeElement.closest && document.activeElement.closest('form[data-mail-draft]'))) return;
+    const before = JSON.stringify([A.staff.mail, ML.thread]);
+    await mailRefresh();
+    if (mailView() && JSON.stringify([A.staff.mail, ML.thread]) !== before) mailPaint();
+  }, 30000);
+}
+
 /* ───────────── Difusión (db/030_difusion.sql): « Prospectos » → « Difusión », only admins ───────────── */
 // Sites, media, forums and channels to ask for a link or a mention. The « difusion » assistant
 // (pathway-mcp) completes the cards and leaves drafts; nothing leaves the Campus: someone of the
@@ -2116,7 +2326,7 @@ const DF_KINDS = { blog: ['Blog', 'peach'], medio: ['Medio', 'sky'], foro: ['For
   facebook: ['Facebook', 'sky'], reddit: ['Reddit', 'butter'], red: ['Red o asociación', 'mint'], otro: ['Otro', 'stone'] };
 const DF_CHANNEL = { email: 'de correo', formulario: 'para el formulario', facebook: 'para Facebook', youtube: 'para YouTube', instagram: 'para Instagram', foro: 'para el foro', reddit: 'para Reddit', otro: '' };
 const DF_LIVE = ['por_contactar', 'contactado', 'respondio'];
-const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false, draftEdit: null, confirm: null, quota: null };
+const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false, draftEdit: null, confirm: null, quota: null, from: {} };
 const DF_SEND_ERR = {
   not_configured: 'El envío directo todavía no está configurado (falta la contraseña de Zoho). Usa «Copiar» mientras tanto.',
   smtp_auth: 'Zoho rechazó la contraseña de aplicación: revisa el secreto ZOHO_SMTP_PASSWORD en Supabase.',
@@ -2216,7 +2426,8 @@ function dfEvent(c, e) {
     }
     const canSend = !sent && e.topic === 'email' && mail && d.subject && DF_LIVE.includes(c.status);
     const q = DF.quota, full = q && q.used >= q.limit;
-    const sendBtn = canSend ? `<button class="btn btn-coral btn-sm" type="button" data-df-send="${e.id}"${full ? ' disabled' : ''}>${icon('arrow')}Enviar desde ryan@</button>
+    const from = DF.from[e.id] || 'ryan@pathway-languages.com';
+    const sendBtn = canSend ? `<label class="df-from">Desde<select data-df-from="${e.id}" aria-label="Enviar desde">${Object.entries(MAIL_SENDERS).map(([k, [n]]) => `<option value="${k}" ${k === from ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label><button class="btn btn-coral btn-sm" type="button" data-df-send="${e.id}"${full ? ' disabled' : ''}>${icon('arrow')}Enviar</button>
       ${q ? `<small class="df-quota">${full ? `Límite de ${q.limit} correos en 24 h alcanzado: el siguiente podrá salir el ${esc(sessionLabel(q.next_at))}.` : `Quedan ${q.limit - q.used} de ${q.limit} envíos en las próximas 24 h.`}</small>` : ''}` : '';
     return `<li class="crm-draft"><span class="crm-t-ico sky" aria-hidden="true">${icon('chat')}</span><span>
       <span class="crm-draft-k">Borrador ${DF_CHANNEL[e.topic] ?? ''} · ${sent ? 'enviado' : 'por revisar y enviar'}</span>
@@ -2362,6 +2573,21 @@ function bindDf() {
   body.onkeydown = e => { const c = e.target.closest('[data-df-open]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dfOpen(c.dataset.dfOpen); } };
 }
 function bindDfOverlay(sheet) {
+  sheet.addEventListener('change', async e => {
+    const sel = e.target.closest('[data-df-from]');
+    if (!sel || !DF.open) return;
+    const id = sel.dataset.dfFrom, from = sel.value, prev = DF.from[id] || 'ryan@pathway-languages.com';
+    DF.from[id] = from; DF.confirm = null;
+    const ev = ((DF.detail && DF.detail.events) || []).find(x => String(x.id) === id);
+    if (!ev) return;
+    const d = crmDraftParts({ topic: 'email', body: ev.body }), body = mailResign(d.body, from);
+    const { error } = await sb.rpc('outreach_draft_update', { p_event: Number(id), p_subject: d.subject, p_body: body });
+    if (error) return fail(error, 'No se pudo cambiar la firma del borrador.');
+    await dfReload(DF.open);
+    const was = MAIL_SENDERS[prev][0].split(' ')[0];
+    if (was !== 'Pathway' && body.replace(MAIL_SENDERS[from][1], '').includes(was)) toast(`Firma cambiada. El texto todavía menciona a ${was}: corrígelo con «Editar».`);
+    else toast(`Firma cambiada: sale desde ${from}.`);
+  });
   sheet.addEventListener('click', async e => {
     const t = e.target.closest('[data-df-status],[data-df-copy],[data-df-edit],[data-df-done],[data-df-archive],[data-df-send],[data-df-dedit]');
     if (!t || !DF.open) return;
@@ -2375,16 +2601,16 @@ function bindDfOverlay(sheet) {
       if (DF.confirm !== ev) {
         DF.confirm = ev;
         t.innerHTML = `${icon('arrow')}Confirmar: enviar a ${esc(dfEmail(c))}`;
-        setTimeout(() => { if (DF.confirm === ev) { DF.confirm = null; if (t.isConnected) t.innerHTML = `${icon('arrow')}Enviar desde ryan@`; } }, 6000);
+        setTimeout(() => { if (DF.confirm === ev) { DF.confirm = null; if (t.isConnected) t.innerHTML = `${icon('arrow')}Enviar`; } }, 6000);
         return;
       }
       DF.confirm = null; t.disabled = true; t.textContent = 'Enviando…';
-      const { data, error } = await sb.functions.invoke('outreach-send', { body: { event_id: Number(ev) } });
+      const { data, error } = await sb.functions.invoke('outreach-send', { body: { event_id: Number(ev), from: DF.from[ev] || 'ryan@pathway-languages.com' } });
       let code = data && data.error, retry = data && data.retry_at;
       if (error) { try { const j = await error.context.json(); code = j.error; retry = j.retry_at; } catch (x) { code = 'error'; } }
       if (code === 'daily_limit' && retry) toast(`Límite de 20 correos en 24 h alcanzado. Podrás enviar el siguiente el ${sessionLabel(retry)}.`);
       else if (code) toast(DF_SEND_ERR[code] || 'No se pudo enviar el correo. Inténtalo de nuevo o usa «Copiar».');
-      else toast(`Correo enviado a ${data.to}. Relance prevista en 7 días.`);
+      else toast(`Correo enviado a ${data.to} desde ${data.from || DF.from[ev] || 'ryan@pathway-languages.com'}. Relance prevista en 7 días.`);
       return dfReload(id);
     }
     if (t.matches('[data-df-copy]')) {
@@ -3535,12 +3761,12 @@ function bindView(id) {
   if (id === 'mensajes') bindMessages();
   pollMessages(id);
   if (id === 'contenido') bindEditor();
-  if (id === 'prospectos') { bindCrm(); bindWa(); bindDf(); }
+  if (id === 'prospectos') { bindCrm(); bindWa(); bindDf(); bindMail(); }
   if (id === 'bandeja' && Date.now() - (A.staff.activityAt || 0) > 30000) {
     A.staff.activityAt = Date.now();
     loadActivity().then(() => { if (currentView() === 'bandeja' && !crmOverlayOpen()) render(false); });
   }
-  pollWa();
+  pollWa(); pollMail();
   if (id === 'ajustes') bindAgents();
   {
     const inf = $('#invForm');
@@ -3694,6 +3920,8 @@ document.addEventListener('click', async e => {
   const wg = e.target.closest('[data-wa-goto]');
   if (wg) { W.open = wg.dataset.waGoto; W.thread = null; W.editing = null; W.error = null; if (location.hash === '#whatsapp') { e.preventDefault(); if (crmOverlayOpen()) crmClose(); render(); } }
   // Links of the Admin « Bandeja »: open the right card, request, account or group on arrival.
+  const mg = e.target.closest('[data-mail-goto]');
+  if (mg) { ML.open = mg.dataset.mailGoto; ML.thread = null; ML.confirm = null; if (location.hash === '#correo') { e.preventDefault(); closeMenus(); render(); } }
   const go = e.target.closest('[data-df-goto],[data-enr-goto],[data-member-goto],[data-group-goto]');
   if (go) {
     const here = location.hash === go.getAttribute('href');
@@ -3774,6 +4002,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && (document.querySelector('#bellSlot .menu, #menuSlot .menu, #searchSlot .menu'))) { closeMenus(); return; }
   if (e.key === 'Escape' && currentView() === 'mensajes' && teacherMode() && M.open) { e.preventDefault(); closeThread(); return; }
   if (e.key === 'Escape' && waView() && W.open && !W.editing) { e.preventDefault(); waClose(); return; }
+  if (e.key === 'Escape' && mailView() && ML.open && !(document.activeElement && document.activeElement.closest('form[data-mail-draft]'))) { e.preventDefault(); mailClose(); return; }
   if (e.key === 'Escape') closeMenus();
   if (currentView() === 'repasar' && R.cards.length && !['input', 'textarea', 'select'].includes(tag)) {
     if (e.key === ' ') { e.preventDefault(); flip(); }

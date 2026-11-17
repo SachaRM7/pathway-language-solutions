@@ -89,7 +89,9 @@ Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses group
 La gestion, regroupée par métier dans la barre latérale ; le compteur rouge d'un onglet dit ce qui attend quelqu'un. Un point rouge sur « Admin » dans le sélecteur signale une tâche urgente quand on est dans un autre espace.
 
 - **Inicio (bandeja)** : une ligne par tâche, dite simplement (qui, quoi) avec un bouton qui ouvre le bon endroit, en trois blocs : « Urgente » (en retard, un élève ou un intéressé qui attend, un cours imminent), « Por hacer » (par métier) et « Hecho » (ce que l'équipe a fait ces 7 derniers jours et qui l'a fait : `db/033_actividad_admin.sql`).
-- **Ventas** : **Captación** (Prospectos, WhatsApp, Difusión) et **Inscripciones** (solicitudes du site, invitations, comptes et formules).
+- **Ventas** : **Captación** (Prospectos, WhatsApp, **Correo**, Difusión) et **Inscripciones** (solicitudes du site, invitations, comptes et formules).
+  - **Correo** (`db/035_correo.sql`, fonction `mail`) : la boîte Zoho de l'équipe, lue toutes les 2 minutes (IMAP). Seuls les e-mails de vraies personnes arrivent (pas les newsletters, notifications, rebonds, réponses automatiques ni nos propres adresses), rangés par conversation et reliés à la fiche Prospectos ou Difusión de la personne. Chacun reçoit un brouillon de réponse de l'IA. L'équipe choisit « Enviar desde » (ryan@, abdrahim@, contacto@ ou contact@ ; la signature suit), relit, puis « Enviar » deux fois : la réponse part par Zoho (SMTP) dans le même fil et est rangée dans les « Envoyés » de Zoho.
+  - **Difusión** : même liste « Desde » pour l'envoi d'un brouillon de démarchage.
 - **Escuela** : **Clases** (tous les groupes, les changements à valider, les élèves sans groupe, les réunions Zoom sans groupe) et **Programa** (les unités et les documents du programme ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`).
 - **Configuración** : **Ajustes** (règles d'assistance, rappel avant les cours, contrat de l'élève `db/015_contrato.sql`, ouverture des unités, réponses de l'assistant, accès des assistants IA, e-mails de test).
 

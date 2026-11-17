@@ -6,7 +6,8 @@
 //   20 envois sur 24 h glissantes au plus (retry_at : quand le suivant pourra partir), verrou de
 //   2 minutes contre le double clic.
 // • Envoi SMTP (TLS implicite, port 465) avec le compte principal Zoho ; l'expéditeur est l'alias
-//   ryan@. Texte brut UTF-8, avec une ligne de désinscription.
+//   choisi dans le Campus (« from » : ryan@ par défaut, abdrahim@, contacto@ ou contact@). Texte
+//   brut UTF-8, avec une ligne de désinscription.
 // • outreach_send_done : la fiche passe à « Contactado » (relance à 7 jours). En cas d'échec,
 //   outreach_send_failed lève le verrou et garde la raison dans l'historique.
 //
@@ -119,10 +120,10 @@ if (D && typeof D.serve === 'function') {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
     if (req.method !== 'POST') return reply(405, { error: 'method_not_allowed' });
     const env = (k: string, d = '') => D.env.get(k) || d;
-    const password = env('ZOHO_SMTP_PASSWORD');
+    const password = env('ZOHO_SMTP_PASSWORD').trim();
     if (!password) return reply(503, { error: 'not_configured' });
-    let eventId = 0;
-    try { eventId = Number((await req.json()).event_id); } catch { /* invalid body */ }
+    let eventId = 0, wanted = '';
+    try { const b = await req.json(); eventId = Number(b.event_id); wanted = String(b.from || '').trim().toLowerCase(); } catch { /* invalid body */ }
     if (!Number.isInteger(eventId) || eventId <= 0) return reply(400, { error: 'invalid_event' });
 
     const url = env('SUPABASE_URL'), anon = env('SUPABASE_ANON_KEY'), auth = req.headers.get('Authorization') || '';
@@ -139,7 +140,11 @@ if (D && typeof D.serve === 'function') {
       const retryAt = code === 'daily_limit' ? (/daily limit (\S+)/.exec(msg) || [])[1] || null : null;
       return reply(code === 'forbidden' ? 403 : code === 'not_found' ? 404 : code === 'daily_limit' ? 429 : 409, { error: code, retry_at: retryAt });
     }
-    const fromEmail = env('OUTREACH_FROM_EMAIL', 'ryan@pathway-languages.com'), fromName = env('OUTREACH_FROM_NAME', 'Ryan - Pathway LS');
+    // « Desde » in the Campus: one of the team's aliases (Ryan by default).
+    const SENDERS: Record<string, string> = { 'ryan@pathway-languages.com': 'Ryan - Pathway LS', 'abdrahim@pathway-languages.com': 'Abdrahim - Pathway LS',
+      'contacto@pathway-languages.com': 'Pathway LS', 'contact@pathway-languages.com': 'Pathway LS' };
+    if (wanted && !SENDERS[wanted]) { await rpc('outreach_send_failed', { p_event: eventId, p_error: 'Dirección de envío no válida' }).catch(() => {}); return reply(400, { error: 'invalid_sender' }); }
+    const fromEmail = wanted || env('OUTREACH_FROM_EMAIL', 'ryan@pathway-languages.com'), fromName = SENDERS[fromEmail] || env('OUTREACH_FROM_NAME', 'Ryan - Pathway LS');
     try {
       const conn = await D.connectTls({ hostname: env('ZOHO_SMTP_HOST', 'smtppro.zoho.com'), port: Number(env('ZOHO_SMTP_PORT', '465')) });
       await smtpSend(conn, { user: env('ZOHO_SMTP_USER', 'contact@pathway-languages.com'), password, from: fromEmail, to: job.to,
