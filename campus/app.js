@@ -516,13 +516,20 @@ const HELP = {
   mensajes: ['Las preguntas de los alumnos', ['Cada alumno tiene una conversación con su profesor y el equipo.', 'El asistente prepara una respuesta. Según «Ajustes», sale sola o queda como borrador con «Enviar» y «Editar».', 'Las conversaciones que esperan respuesta van arriba y aparecen en la campana.']],
   zoomlink: ['El enlace de Zoom personal', ['Cada alumno tiene su propio enlace de Zoom, el mismo durante toda su formación.', 'Pégalo aquí una sola vez.', 'Cada clase hecha con ese enlace se reconoce sola: la asistencia y la grabación llegan a la ficha del alumno («Tus clases grabadas»).', 'Graba siempre en la nube de Zoom, no en la computadora.']],
   zoomsin: ['¿Por qué aparecen aquí?', ['Son reuniones de Zoom cuyo enlace no corresponde a ningún alumno.', 'Suele ser un enlace mal pegado, o un alumno todavía sin programar.', 'Pega el enlace correcto en las clases del alumno: sus próximas reuniones se asociarán solas.']],
+  inicio: ['Tu día en el Campus', ['«Meta de hoy»: los XP que ganas practicando. Cumple tu meta cada día para no perder tu racha.', '«Racha»: los días seguidos en que cumpliste tu meta.', '«Próxima clase»: la fecha y la hora de tu clase, en tu hora local.', 'Lo más útil: unos minutos cada día valen más que una hora una vez por semana.']],
+  ruta: ['Tu camino, unidad por unidad', ['Cada unidad tiene ejercicios. Para pasar a la siguiente, necesitas al menos 75 %.', 'Si no llegas, puedes volver a intentarlo un poco más tarde.', 'Algunas unidades se abren cuando las ves en clase con tu profesor.', 'Al terminar las 16 unidades de un segmento, se abre su examen.']],
+  repasar: ['Para no olvidar', ['Las tarjetas vienen del vocabulario de tus unidades, de tus errores en los ejercicios y de los que tu profesor anota en clase.', 'Piensa en la respuesta y luego da vuelta a la tarjeta.', 'Di qué tal la sabías: «Otra vez», «Difícil», «Bien» o «Fácil».', 'Cuanto mejor la sabes, más tarde vuelve. Así cada tarjeta regresa justo antes de que la olvides.']],
+  simulacros: ['Practicar el examen', ['Las cuatro pruebas del examen (TCF o TEF Canada), con su duración real.', 'Por ahora, tu profesor organiza los simulacros en clase. La versión en línea llega pronto.', 'Después de un simulacro, ves una estimación de tu nivel NCLC en cada prueba. Tu meta es NCLC 7.', 'Es una estimación para guiarte: no reemplaza el resultado oficial.']],
+  logros: ['Tus logros', ['Cada ejercicio te da XP. Con los XP subes de nivel en el Campus.', 'Las insignias marcan pasos reales hacia tu examen.']],
+  curso: ['Tus clases', ['«Tus próximas clases»: tu horario fijo, en tu hora local. Si una clase cambia, lo ves aquí y en tus avisos.', '«Entrar a la clase»: abre tu enlace de Zoom. Es siempre el mismo.', '«Tus clases grabadas»: cada clase aparece aquí poco después de terminar, para volver a verla.', 'Si no puedes venir, avisa con tiempo. Las reglas exactas de asistencia están en «Tu compromiso».']],
+  mensajesAl: ['Tus preguntas', ['Escribe aquí tus dudas sobre el curso, los ejercicios o tus clases.', 'Te respondemos en esta misma conversación.']],
   finnivel: ['Pasar de nivel', ['Paso 1: el alumno hace el examen contigo. Si lo aprueba, pulsa «Validar el examen».', 'Paso 2: si el nivel tiene un examen final en el Campus, el alumno debe aprobarlo también.', 'Con los dos, pasa solo al nivel siguiente.']]
 };
 function helpKey(id) {
   const crm = location.hash.slice(1);
-  return { 'h-bandeja': 'bandeja', 'h-panel': 'panel', 'h-alumnos': 'alumnos', 'h-tareas': 'tareas', 'h-ajustes': 'ajustes', 'h-cont': 'programa',
+  return { 'h-inicio': 'inicio', 'h-ruta': 'ruta', 'h-rep': 'repasar', 'h-sim': 'simulacros', 'h-log': 'logros', 'h-curso': 'curso', 'h-bandeja': 'bandeja', 'h-panel': 'panel', 'h-alumnos': 'alumnos', 'h-tareas': 'tareas', 'h-ajustes': 'ajustes', 'h-cont': 'programa',
     'h-cuentas': isAdmin() ? 'inscripciones' : 'cuentas', 'h-horarios': adminMode() ? 'clases' : 'horarios',
-    'h-crm': ['whatsapp', 'correo', 'difusion'].includes(crm) ? crm : 'prospectos', 'h-mensajes': teacherMode() ? 'mensajes' : '' }[id] || '';
+    'h-crm': ['whatsapp', 'correo', 'difusion'].includes(crm) ? crm : 'prospectos', 'h-mensajes': teacherMode() ? 'mensajes' : 'mensajesAl' }[id] || '';
 }
 function infoBtn(key) {
   if (!key || !HELP[key]) return '';
@@ -548,7 +555,7 @@ function topBar(id, title, sub, extra = '') {
   const p = A.profile, notes = notifications();
   let seen = ''; try { seen = localStorage.getItem('campus-seen') || ''; } catch (e) { /* ignore */ }
   const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
-  return `<header class="top"><div><div class="h-info"><h1 id="${id}">${title}</h1>${teacherMode() ? infoBtn(helpKey(id)) : ''}</div>${sub ? `<p>${sub}</p>` : ''}</div>
+  return `<header class="top"><div><div class="h-info"><h1 id="${id}">${title}</h1>${infoBtn(helpKey(id))}</div>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">${extra}
       ${teacherMode() ? '' : searchMarkup(A.search)}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode() && !adminMode()}">Profesor</button>${isAdmin() ? `<button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button>` : ''}</div>` : ''}
@@ -2821,7 +2828,7 @@ function viewCurso() {
   return `<section class="view" aria-labelledby="h-curso">
   ${topBar('h-curso', 'Mi curso', `Nivel ${esc(A.profile.level)} · tus clases y los documentos de tu programa`)}
   <div class="bento">
-    <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2>${s ? `<span class="pill ghost">${esc(s.group.name)}</span>` : ''}</div>
+    <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2></div>
       ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(studentSessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
         <p class="muted" style="font-size:13px;margin-top:12px">Tu horario fijo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
         ${next ? `<button class="btn btn-dark" style="margin-top:14px" type="button" data-join>${icon('video')}Entrar a la clase</button>${attendanceOn() ? `<p class="muted" style="font-size:13px;margin-top:10px">El enlace se abre ${esc(minutesText(s.attendance.open_min))} antes de la clase. Entra siempre por aquí: tu asistencia se registra con tu clic, y después de ${s.attendance.absent_after_min} minutos de clase cuenta como ausencia.</p>` : ''}` : ''}`
