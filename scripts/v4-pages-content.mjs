@@ -18,7 +18,8 @@ export const ROUTES = {
   calculator: { es: 'calculador.html', fr: 'calculateur-crs.html', en: 'crs-calculator.html', de: 'crs-rechner.html' },
   inscription: { es: 'inscription.html', fr: 'inscription.html', en: 'inscription.html', de: 'inscription.html' },
   resources: { es: 'recursos.html', fr: 'ressources.html', en: 'resources.html', de: 'ressourcen.html' },
-  tefaq: { es: 'tefaq-quebec.html', fr: 'tefaq-quebec.html', en: 'tefaq-quebec.html', de: 'tefaq-quebec.html' }
+  tefaq: { es: 'tefaq-quebec.html', fr: 'tefaq-quebec.html', en: 'tefaq-quebec.html', de: 'tefaq-quebec.html' },
+  tefvstcf: { es: 'tef-vs-tcf.html' }
 };
 
 export const UI = {
@@ -69,7 +70,7 @@ export const GUIDES = {
         ['cambia', 'Qué puede cambiar en tu perfil', ['Según la combinación de idiomas y el resto del expediente, el francés puede aportar puntos como segunda lengua oficial, activar puntos adicionales o contribuir a la elegibilidad de una categoría francófona.', 'El impacto real depende de todo el perfil. La cifra visible en una ronda anterior sirve para comprender un escenario, no para predecir una invitación futura.']],
         ['limites', 'Lo que NCLC 7 no garantiza', ['Un nivel lingüístico no reemplaza los demás criterios de un programa. Pathway acompaña la preparación lingüística; no decide la vía migratoria ni representa expedientes.', '<p class="pg-note"><strong>Para una decisión migratoria:</strong> valida tu situación con las fuentes oficiales o con un profesional regulado. Para una decisión de aprendizaje, comienza por medir el punto de partida.</p>']]
       ],
-      related: { eyebrow: 'Para seguir', title: 'Del nivel al próximo paso.', links: [['tef', 'Guía', 'Preparar el TEF Canada'], ['tefaq', 'Quebec', 'Proyecto Quebec: TEFAQ y TCF Québec'], ['calculator', 'Herramienta', 'Calcular mi puntaje CRS']] },
+      related: { eyebrow: 'Para seguir', title: 'Del nivel al próximo paso.', links: [['tef', 'Guía', 'Preparar el TEF Canada'], ['tefvstcf', 'Guía', 'TEF Canada vs TCF Canada: cuál elegir'], ['tefaq', 'Quebec', 'Proyecto Quebec: TEFAQ y TCF Québec'], ['calculator', 'Herramienta', 'Calcular mi puntaje CRS']] },
       cta: { title: '¿Tu objetivo lingüístico es viable?', text: 'El test progresivo sitúa tu nivel actual y ayuda a elegir un ritmo de trabajo coherente, que se confirmará durante la primera clase.' }
     },
     fr: {
@@ -127,7 +128,7 @@ export const GUIDES = {
         ['metodo', 'Cómo prepara Pathway', ['El plan se construye desde el nivel actual, el objetivo y el tiempo disponible. La intensidad cambia; la exigencia y el seguimiento no.', '<ul><li>Clases individuales en vivo por Zoom, con un profesor nativo.</li><li>Diagnóstico de las cuatro competencias y plan por prioridades.</li><li>Práctica oral activa, correcciones y seguimiento.</li><li>El Campus Pathway: ejercicios por unidad, tu manual en línea que se abre clase a clase y las grabaciones de tus clases.</li><li>Dos simulacros TEF Canada o TCF Canada, en el formato de tu examen, para medir el progreso.</li></ul>', 'Pathway también acompaña otros objetivos y exámenes de francés. Para Express Entry, el foco de esta ruta es el TEF Canada o el TCF Canada.']],
         ['plazo', 'Cuánto tiempo necesitas', ['Depende del punto de partida, de las horas semanales y, sobre todo, de la regularidad. Los ritmos de 2 a 6 horas por semana sirven para construir escenarios, no promesas automáticas.', '<p class="pg-note"><strong>El buen primer paso:</strong> medir el nivel de partida. Sin un diagnóstico, no damos un plazo preciso ni inventamos equivalencias entre CECRL y NCLC.</p>']]
       ],
-      related: { eyebrow: 'Para seguir', title: 'Tu próximo punto de referencia, sin volver al inicio.', links: [['nclc', 'Guía', 'Comprender NCLC 7'], ['tefaq', 'Quebec', 'Proyecto Quebec: TEFAQ y TCF Québec'], ['home#planes', 'Planes', 'Comparar los planes']] },
+      related: { eyebrow: 'Para seguir', title: 'Tu próximo punto de referencia, sin volver al inicio.', links: [['nclc', 'Guía', 'Comprender NCLC 7'], ['tefvstcf', 'Guía', 'TEF Canada vs TCF Canada: cuál elegir'], ['tefaq', 'Quebec', 'Proyecto Quebec: TEFAQ y TCF Québec'], ['home#planes', 'Planes', 'Comparar los planes']] },
       cta: { title: 'Convierte la meta en un plan.', text: 'Completa el test progresivo. El resultado orienta la intensidad y se confirma durante la primera clase.' }
     },
     fr: {
@@ -309,6 +310,7 @@ export const RESOURCES = {
       { id: 'guias', title: 'Guías', text: 'Para entender el objetivo antes de elegir un ritmo.', links: [
         ['nclc', 'Guía', 'NCLC 7, explicado', 'Qué significa, cómo se demuestra y lo que no garantiza.'],
         ['tef', 'Guía', 'Preparar el TEF Canada', 'Las cuatro competencias, el formato y cómo prepara Pathway.'],
+        ['tefvstcf', 'Guía', 'TEF Canada vs TCF Canada', 'Formato, puntajes NCLC 7 y disponibilidad en Latinoamérica.'],
         ['tefaq', 'Quebec', 'Proyecto Quebec', 'TEFAQ y TCF Québec: primero la vía, después el examen.']] },
       { id: 'herramientas', title: 'Herramientas', text: 'Para saber dónde estás y qué te conviene.', links: [
         ['test', 'Herramienta', 'Test de nivel', 'Tu nivel estimado de A1 a B2, para empezar en el lugar correcto.'],

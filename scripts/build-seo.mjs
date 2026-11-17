@@ -270,6 +270,34 @@ function icons(markup) {
   return tags.length ? insertInHead(out, tags) : out;
 }
 
+// Questions and answers of the visible FAQ of a home (<details> in the FAQ list).
+function faqEntries(markup) {
+  const start = markup.indexOf('class="faq-list');
+  if (start < 0) return [];
+  const text = html => decode(html.replace(/<a class="source-link"[\s\S]*?<\/a>/g, '').replace(/<\/p>\s*<p[^>]*>/g, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+  return [...markup.slice(start).matchAll(/<details\b[^>]*>\s*<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/g)]
+    .map(([, question, answer]) => ({ '@type': 'Question', name: text(question), acceptedAnswer: { '@type': 'Answer', text: text(answer) } }))
+    .filter(entry => entry.name && entry.acceptedAnswer.text);
+}
+
+// The homes carry their own Organization JSON-LD: the FAQPage is a second script.
+function homeFaq(markup, route, lang) {
+  if (route !== HOME[lang] || markup.includes('"FAQPage"')) return markup;
+  const mainEntity = faqEntries(markup);
+  if (!mainEntity.length) return markup;
+  const data = { '@context': 'https://schema.org', '@type': 'FAQPage', '@id': `${SITE_ORIGIN}${HOME[lang]}#faq`, inLanguage: lang, mainEntity };
+  return insertInHead(markup, [`<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`]);
+}
+
+// A current-site page rebuilt in V4 keeps the FAQPage JSON-LD of its source file.
+async function sourceFaq(markup, route, rootDir) {
+  if (markup.includes('"FAQPage"') || !/^\/[\w-]+\.html$/.test(route)) return markup;
+  const source = join(rootDir, route.slice(1));
+  if (!(await exists(source))) return markup;
+  const script = (await readFile(source, 'utf8')).match(/<script type="application\/ld\+json">[^<]*"FAQPage"[^<]*<\/script>/);
+  return script ? insertInHead(markup, [script[0]]) : markup;
+}
+
 function structuredData(markup, route, lang, prices) {
   if (markup.includes('application/ld+json')) return markup;
   const organization = {
@@ -456,6 +484,8 @@ export async function finalizeSite({ outDir, rootDir, v4Destinations }) {
     markup = shareTags(markup, route, lang);
     markup = icons(markup);
     markup = structuredData(markup, route, lang, prices);
+    markup = homeFaq(markup, route, lang);
+    markup = await sourceFaq(markup, route, rootDir);
     markup = landscapePicture(markup);
     page.markup = markup;
     await writeFile(page.file, markup, 'utf8');
