@@ -497,11 +497,58 @@ function renderNav(cur) {
       : `<span>Tu objetivo</span><b>NCLC 7</b><span>${esc(EXAMS[p.exam] || 'Examen por definir')}</span>`);
   $('#sideFoot').innerHTML = `<span>${esc(firstName(p.full_name))}</span><button type="button" data-action="menu">Mi cuenta</button>`;
 }
+// « i » next to each staff tool: what it is for and how to use it, in a few plain steps.
+const HELP = {
+  bandeja: ['Tu lista del día', ['Arriba, lo que espera una acción del equipo. Lo «Urgente» va primero.', 'Cada línea tiene un botón que te lleva directo al lugar donde se hace.', 'Cuando está hecho, la línea desaparece sola: no hay nada que marcar.', 'Abajo, «Hecho»: lo que el equipo ya hizo estos días, y quién.']],
+  panel: ['Antes de cada clase', ['Arriba, las cifras de la semana: cuánto practican tus alumnos y cuánto aciertan.', '«Necesitan atención»: quien no practica o falla mucho. Puedes asignarle una tarea desde ahí.', '«Informe de clase»: al terminar cada clase, marca las unidades que vieron.', '«Errores frecuentes»: lo que conviene repasar en la próxima clase.']],
+  alumnos: ['Tus alumnos', ['Cada alumno con su nivel, su práctica y su avance.', '«Ausencias»: justifica una falta cuando el alumno trae un motivo.', '«Fin de nivel»: cuando el alumno aprueba el examen contigo, valídalo aquí para que pase al nivel siguiente.']],
+  tareas: ['Entre dos clases', ['«Asignar una tarea»: elige una unidad y los alumnos. La ven en su inicio y en sus avisos.', '«Anotar un error de la clase»: escribe lo que dijo el alumno y la corrección. Se convierte en una tarjeta de repaso para él.']],
+  cuentas: ['Dar acceso al Campus', ['Escribe el correo, el nombre y el nivel del alumno, y pulsa «Enviar la invitación».', 'El alumno recibe un correo con un código para entrar. No necesita contraseña.', 'En «Invitaciones» ves si ya entró («Activa») o todavía no («Enviada»).']],
+  inscripciones: ['Del formulario al Campus', ['«Solicitudes de inscripción»: las personas que llenaron el formulario del sitio. Pulsa «Ver» y luego «Invitar».', 'El alumno recibe un correo con un código para entrar al Campus, con su nivel y su profesor ya puestos.', 'Después, prográmale sus clases en «Clases».', '«Miembros»: todas las cuentas, para corregir sus datos.']],
+  ajustes: ['Las reglas de la escuela', ['Aquí se configura lo que vale para todos: asistencia, recordatorios, apertura de las unidades, respuestas del asistente.', 'Cada cambio se aplica a todos los alumnos en cuanto pulsas «Guardar».', '«Correos automáticos»: los correos que el Campus envía solo, y cuándo.']],
+  prospectos: ['Las personas interesadas', ['Cada tarjeta es una persona que pidió información (WhatsApp, el sitio, el test de nivel…).', 'Cámbiala de columna a medida que avanza: del primer contacto a la inscripción.', 'Ábrela para ver su historial, añadir una nota o fijar la próxima acción.']],
+  whatsapp: ['Responder en WhatsApp', ['A la izquierda, las conversaciones. Las que esperan respuesta van arriba.', 'El asistente prepara un borrador de respuesta.', 'Léelo: «Enviar» si está bien, «Editar» para cambiarlo antes, «Descartar» si no sirve.', 'Nada sale sin que alguien del equipo pulse «Enviar».']],
+  correo: ['Responder los correos', ['Aquí llegan los correos de contacto@, ryan@ y abdrahim@ (cada 2 minutos).', 'El asistente prepara un borrador de respuesta.', 'Elige en «Enviar desde» quién firma, revisa el texto y pulsa «Enviar».', 'La respuesta sale del buzón de Zoho y queda también en sus «Enviados».']],
+  difusion: ['Conseguir enlaces y menciones', ['La lista: sitios, medios y canales que pueden hablar de Pathway.', 'El asistente prepara el mensaje para cada uno.', 'Abre la ficha, revisa el borrador, elige «Desde» y pulsa «Enviar». Como máximo 20 envíos al día.', 'Si responden o publican el enlace, cambia el estado de la ficha.']],
+  clases: ['Cada alumno, sus clases', ['Las clases son particulares: cada alumno tiene su profesor, sus días y horas fijos y su propio enlace de Zoom.', '«Programar a un alumno»: elige al alumno, su profesor y su horario, y pega su enlace de Zoom personal.', 'Ese enlace es el mismo durante toda su formación: cada clase en Zoom se reconoce sola, y la asistencia y la grabación llegan a la ficha del alumno.', '«Cambios por validar»: cuando un profesor pide mover o cancelar una clase, apruébalo o recházalo aquí.']],
+  horarios: ['Tus clases fijas', ['Cada alumno tiene sus días y horas fijos y su enlace de Zoom personal.', 'Da siempre la clase con el enlace del alumno: así la asistencia y la grabación se guardan solas.', 'Para mover o cancelar una clase, usa «Solicitar un cambio»: se aplica cuando Pathway lo aprueba.']],
+  programa: ['El contenido del curso', ['Las unidades de cada nivel, con sus ejercicios.', 'Una unidad en borrador no la ve ningún alumno. «Probar» para verla como alumno, «Publicar» para abrirla.', '«Documentos del programa»: los archivos que cada alumno ve en «Mi curso».']],
+  mensajes: ['Las preguntas de los alumnos', ['Cada alumno tiene una conversación con su profesor y el equipo.', 'El asistente prepara una respuesta. Según «Ajustes», sale sola o queda como borrador con «Enviar» y «Editar».', 'Las conversaciones que esperan respuesta van arriba y aparecen en la campana.']],
+  zoomlink: ['El enlace de Zoom personal', ['Cada alumno tiene su propio enlace de Zoom, el mismo durante toda su formación.', 'Pégalo aquí una sola vez.', 'Cada clase hecha con ese enlace se reconoce sola: la asistencia y la grabación llegan a la ficha del alumno («Tus clases grabadas»).', 'Graba siempre en la nube de Zoom, no en la computadora.']],
+  zoomsin: ['¿Por qué aparecen aquí?', ['Son reuniones de Zoom cuyo enlace no corresponde a ningún alumno.', 'Suele ser un enlace mal pegado, o un alumno todavía sin programar.', 'Pega el enlace correcto en las clases del alumno: sus próximas reuniones se asociarán solas.']],
+  finnivel: ['Pasar de nivel', ['Paso 1: el alumno hace el examen contigo. Si lo aprueba, pulsa «Validar el examen».', 'Paso 2: si el nivel tiene un examen final en el Campus, el alumno debe aprobarlo también.', 'Con los dos, pasa solo al nivel siguiente.']]
+};
+function helpKey(id) {
+  const crm = location.hash.slice(1);
+  return { 'h-bandeja': 'bandeja', 'h-panel': 'panel', 'h-alumnos': 'alumnos', 'h-tareas': 'tareas', 'h-ajustes': 'ajustes', 'h-cont': 'programa',
+    'h-cuentas': isAdmin() ? 'inscripciones' : 'cuentas', 'h-horarios': adminMode() ? 'clases' : 'horarios',
+    'h-crm': ['whatsapp', 'correo', 'difusion'].includes(crm) ? crm : 'prospectos', 'h-mensajes': teacherMode() ? 'mensajes' : '' }[id] || '';
+}
+function infoBtn(key) {
+  if (!key || !HELP[key]) return '';
+  return `<button type="button" class="info-btn" data-info="${key}" aria-expanded="false" aria-label="¿Cómo funciona? ${esc(HELP[key][0])}" title="¿Cómo funciona?">i</button>`;
+}
+const withInfo = (h2, key) => `<div class="h-info">${h2}${infoBtn(key)}</div>`;
+function closeInfo() { $$('.info-pop').forEach(p => p.remove()); $$('.info-btn[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false')); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-info]');
+  if (!b) { if (!e.target.closest('.info-pop')) closeInfo(); return; }
+  const open = b.getAttribute('aria-expanded') === 'true';
+  closeInfo();
+  if (open) return;
+  const [t, steps] = HELP[b.dataset.info];
+  const pop = document.createElement('div');
+  pop.className = 'info-pop'; pop.id = 'infoPop'; pop.setAttribute('role', 'note');
+  pop.innerHTML = `<p class="info-t">${esc(t)}</p><ol>${steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol>`;
+  b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-controls', 'infoPop');
+  b.parentElement.appendChild(pop);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('.info-pop')) { const b = $('.info-btn[aria-expanded="true"]'); closeInfo(); b?.focus(); } });
 function topBar(id, title, sub, extra = '') {
   const p = A.profile, notes = notifications();
   let seen = ''; try { seen = localStorage.getItem('campus-seen') || ''; } catch (e) { /* ignore */ }
   const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
-  return `<header class="top"><div><h1 id="${id}">${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>
+  return `<header class="top"><div><div class="h-info"><h1 id="${id}">${title}</h1>${teacherMode() ? infoBtn(helpKey(id)) : ''}</div>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">${extra}
       ${teacherMode() ? '' : searchMarkup(A.search)}
       ${isStaff() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode() && !adminMode()}">Profesor</button>${isAdmin() ? `<button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button>` : ''}</div>` : ''}
@@ -1352,7 +1399,7 @@ function levelTile() {
       : `<span class="level-acts">${undo}${validate}</span>`;
     return `<div class="err-row"><span><b>${esc(name(x.student_id))}</b> · ${x.level}<br><span class="muted" style="font-size:13px">${!published ? `Sin unidades publicadas en ${x.level}` : done ? 'Todas las unidades superadas' : 'Unidades en curso'}${x.has_final ? ' · examen final en el campus' : ''}${recent ? ` · pasó a ${esc(x.last_promotion_to || '')} hace poco` : ''}</span></span>${state}</div>`;
   }).join('');
-  return `<article class="tile c-6"><div class="tile-head"><h2>Fin de nivel</h2></div>
+  return `<article class="tile c-6"><div class="tile-head">${withInfo('<h2>Fin de nivel</h2>', 'finnivel')}</div>
     <p class="muted" style="font-size:14px;margin:-6px 0 12px">Paso 1: valida aquí el examen que el alumno hizo contigo. Paso 2: el examen final del campus, si el nivel tiene uno publicado. Con los dos, el alumno pasa solo al nivel siguiente.</p>${rows}</article>`;
 }
 
@@ -2835,7 +2882,7 @@ function viewHorarios() {
       </form></article>` : ''}
     ${groups.map(groupTile).join('')}
     ${noGroup.length ? '' : noGroupTile}
-    ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Programar a un alumno</h2><p class="muted">Su profesor, su enlace de Zoom personal (el mismo durante toda su formación) y sus días y horas fijos.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Programar</button></article>`) : ''}
+    ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty">${withInfo('<h2>Programar a un alumno</h2>', 'zoomlink')}<p class="muted">Su profesor, su enlace de Zoom personal (el mismo durante toda su formación) y sus días y horas fijos.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Programar</button></article>`) : ''}
     ${!groups.length && !admin ? `<article class="tile empty"><h2>Todavía no tienes alumnos con horario</h2><p class="muted">${isAdmin() ? 'Los horarios se programan en el espacio Admin, pestaña «Clases».' : 'Pathway programa las clases de cada alumno con su horario fijo; aparecerán aquí.'}</p></article>` : ''}
   </div></section>`;
 }
@@ -2860,7 +2907,7 @@ function logBlock(g) {
 function unmatchedTile() {
   const list = A.staff.log && A.staff.log.unmatched;
   if (!list || !list.length) return '';
-  return `<article class="tile c-6"><div class="tile-head"><h2>Reuniones Zoom sin alumno</h2><span class="pill ghost num">${list.length}</span></div>
+  return `<article class="tile c-6"><div class="tile-head">${withInfo('<h2>Reuniones Zoom sin alumno</h2>', 'zoomsin')}<span class="pill ghost num">${list.length}</span></div>
     <p class="muted" style="font-size:14px;margin:-6px 0 10px">Su enlace no corresponde a ningún alumno: pega el enlace de Zoom correcto en las clases del alumno para que cuenten.</p>
     ${list.map(m => `<div class="err-row"><span><b>${esc(m.topic || 'Reunión ' + m.meeting_id)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(m.started_at)))} · ${esc(m.host_email || '—')} · n.º ${esc(m.meeting_id)}</span></span>${m.recorded ? '<span class="status">Grabada</span>' : ''}</div>`).join('')}</article>`;
 }
@@ -2978,7 +3025,7 @@ function groupForm(g) {
   const who = students.find(m => m.id === current);
   const slots = g ? g.slots : [];
   const slotRow = i => { const s = slots[i] || {}; return `<div class="form-2" style="grid-template-columns:1.3fr 1fr 1fr"><label class="field" for="gsDay${i}">Día ${i + 1}<select id="gsDay${i}"><option value="">—</option>${WEEKDAYS.slice(1).map((d, k) => `<option value="${k + 1}" ${s.weekday === k + 1 ? 'selected' : ''}>${d}</option>`).join('')}</select></label><label class="field" for="gsTime${i}">Hora<input id="gsTime${i}" type="time" value="${esc(s.start_time || '19:00')}"></label><label class="field" for="gsDur${i}">Minutos<input id="gsDur${i}" type="number" min="15" max="240" step="15" value="${s.duration_min || 60}"></label></div>`; };
-  return `<article class="tile"><div class="tile-head"><h2>${g ? 'Clases de ' + esc(who ? who.full_name : g.name) : 'Programar a un alumno'}</h2></div>
+  return `<article class="tile"><div class="tile-head">${withInfo(`<h2>${g ? 'Clases de ' + esc(who ? who.full_name : g.name) : 'Programar a un alumno'}</h2>`, 'zoomlink')}</div>
     <form id="groupForm" class="form" data-group-id="${g ? g.id : ''}">
       <div class="form-2"><label class="field" for="gStudent">Alumno<select id="gStudent" required><option value="">Elige al alumno</option>${pick.map(m => `<option value="${m.id}" data-level="${esc(m.level || '')}" ${m.id === current ? 'selected' : ''}>${esc(m.full_name)}</option>`).join('')}</select></label>
         <label class="field" for="gTeacher">Profesor<select id="gTeacher">${A.staff.teachers.map(t => `<option value="${t.id}" ${(g ? g.teacher_id : A.profile.id) === t.id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label></div>
