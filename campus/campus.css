@@ -1285,3 +1285,16 @@ a.pill.warn { text-decoration: none; }
 .df-from select { height: 36px; padding: 0 10px; border-radius: 999px; background: var(--panel); }
 .view > .crm-sub { flex-wrap: wrap; max-width: 100%; }
 @media (max-width: 719px) { .view > .crm-sub { gap: 6px; } .view > .crm-sub a { padding-right: 12px; } }
+
+/* « i » help next to each tool's title (HELP in app.js). */
+.h-info { position: relative; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.h-info > h1, .h-info > h2 { min-width: 0; }
+.tile.empty > .h-info { margin-bottom: 4px; }
+.info-btn { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; color: var(--ink-2); font: italic 700 13px/1 Georgia, 'Times New Roman', serif; display: inline-grid; place-items: center; cursor: pointer; padding: 0; position: relative; }
+.info-btn::after { content: ''; position: absolute; inset: -11px; }
+.info-btn:hover, .info-btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.info-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.info-pop { position: absolute; z-index: 40; top: calc(100% + 8px); left: 0; width: min(360px, calc(100vw - 48px)); background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 32px rgba(0,0,0,.14); padding: 14px 16px 12px; font-size: 14px; line-height: 1.45; font-weight: 400; letter-spacing: 0; }
+.info-pop .info-t { font-weight: 700; margin: 0 0 6px; color: var(--ink); font-size: 15px; }
+.info-pop ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.top .info-pop p.info-t { margin-top: 0; }
