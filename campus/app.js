@@ -2000,7 +2000,7 @@ const DF_KINDS = { blog: ['Blog', 'peach'], medio: ['Medio', 'sky'], foro: ['For
   facebook: ['Facebook', 'sky'], reddit: ['Reddit', 'butter'], red: ['Red o asociación', 'mint'], otro: ['Otro', 'stone'] };
 const DF_CHANNEL = { email: 'de correo', formulario: 'para el formulario', facebook: 'para Facebook', youtube: 'para YouTube', instagram: 'para Instagram', foro: 'para el foro', reddit: 'para Reddit', otro: '' };
 const DF_LIVE = ['por_contactar', 'contactado', 'respondio'];
-const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false, draftEdit: null, confirm: null };
+const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false, draftEdit: null, confirm: null, quota: null };
 const DF_SEND_ERR = {
   not_configured: 'El envío directo todavía no está configurado (falta la contraseña de Zoho). Usa «Copiar» mientras tanto.',
   smtp_auth: 'Zoho rechazó la contraseña de aplicación: revisa el secreto ZOHO_SMTP_PASSWORD en Supabase.',
@@ -2099,7 +2099,9 @@ function dfEvent(c, e) {
         </form></span></li>`;
     }
     const canSend = !sent && e.topic === 'email' && mail && d.subject && DF_LIVE.includes(c.status);
-    const sendBtn = canSend ? `<button class="btn btn-coral btn-sm" type="button" data-df-send="${e.id}">${icon('arrow')}Enviar desde ryan@</button>` : '';
+    const q = DF.quota, full = q && q.used >= q.limit;
+    const sendBtn = canSend ? `<button class="btn btn-coral btn-sm" type="button" data-df-send="${e.id}"${full ? ' disabled' : ''}>${icon('arrow')}Enviar desde ryan@</button>
+      ${q ? `<small class="df-quota">${full ? `Límite de ${q.limit} correos en 24 h alcanzado: el siguiente podrá salir el ${esc(sessionLabel(q.next_at))}.` : `Quedan ${q.limit - q.used} de ${q.limit} envíos en las próximas 24 h.`}</small>` : ''}` : '';
     return `<li class="crm-draft"><span class="crm-t-ico sky" aria-hidden="true">${icon('chat')}</span><span>
       <span class="crm-draft-k">Borrador ${DF_CHANNEL[e.topic] ?? ''} · ${sent ? 'enviado' : 'por revisar y enviar'}</span>
       ${canSend ? `<span class="crm-draft-s">Para: ${esc(mail)}</span>` : ''}
@@ -2168,7 +2170,8 @@ function dfRedraw() {
   if (key) { try { $(key, sheet)?.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
 }
 async function dfReload(id) {
-  const { data, error } = await sb.rpc('outreach_contact', { p_id: id });
+  const [{ data, error }, q] = await Promise.all([sb.rpc('outreach_contact', { p_id: id }), sb.rpc('outreach_send_quota')]);
+  DF.quota = q.error ? null : q.data;
   if (DF.open !== id) return;
   if (error) return fail(error, 'No se pudo cargar la ficha.');
   if (!data) { crmClose(); await loadOutreach(); return render(); }
@@ -2261,9 +2264,10 @@ function bindDfOverlay(sheet) {
       }
       DF.confirm = null; t.disabled = true; t.textContent = 'Enviando…';
       const { data, error } = await sb.functions.invoke('outreach-send', { body: { event_id: Number(ev) } });
-      let code = data && data.error;
-      if (error) { try { code = (await error.context.json()).error; } catch (x) { code = 'error'; } }
-      if (code) toast(DF_SEND_ERR[code] || 'No se pudo enviar el correo. Inténtalo de nuevo o usa «Copiar».');
+      let code = data && data.error, retry = data && data.retry_at;
+      if (error) { try { const j = await error.context.json(); code = j.error; retry = j.retry_at; } catch (x) { code = 'error'; } }
+      if (code === 'daily_limit' && retry) toast(`Límite de 20 correos en 24 h alcanzado. Podrás enviar el siguiente el ${sessionLabel(retry)}.`);
+      else if (code) toast(DF_SEND_ERR[code] || 'No se pudo enviar el correo. Inténtalo de nuevo o usa «Copiar».');
       else toast(`Correo enviado a ${data.to}. Relance prevista en 7 días.`);
       return dfReload(id);
     }

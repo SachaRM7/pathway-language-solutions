@@ -3,7 +3,8 @@
 // « Enviar desde ryan@ ») avec la session de l'admin ; les fonctions SQL revérifient le rôle.
 //
 // • outreach_send_prepare : brouillon de correo pas encore envoyé, contact actif avec une adresse,
-//   20 envois par jour au plus, verrou de 2 minutes contre le double clic.
+//   20 envois sur 24 h glissantes au plus (retry_at : quand le suivant pourra partir), verrou de
+//   2 minutes contre le double clic.
 // • Envoi SMTP (TLS implicite, port 465) avec le compte principal Zoho ; l'expéditeur est l'alias
 //   ryan@. Texte brut UTF-8, avec une ligne de désinscription.
 // • outreach_send_done : la fiche passe à « Contactado » (relance à 7 jours). En cas d'échec,
@@ -134,8 +135,9 @@ if (D && typeof D.serve === 'function') {
 
     let job: { to: string; subject: string; text: string; name: string };
     try { job = await rpc('outreach_send_prepare', { p_event: eventId }); } catch (e) {
-      const code = errorCode(e instanceof Error ? e.message : String(e));
-      return reply(code === 'forbidden' ? 403 : code === 'not_found' ? 404 : 409, { error: code });
+      const msg = e instanceof Error ? e.message : String(e), code = errorCode(msg);
+      const retryAt = code === 'daily_limit' ? (/daily limit (\S+)/.exec(msg) || [])[1] || null : null;
+      return reply(code === 'forbidden' ? 403 : code === 'not_found' ? 404 : code === 'daily_limit' ? 429 : 409, { error: code, retry_at: retryAt });
     }
     const fromEmail = env('OUTREACH_FROM_EMAIL', 'ryan@pathway-languages.com'), fromName = env('OUTREACH_FROM_NAME', 'Ryan - Pathway LS');
     try {

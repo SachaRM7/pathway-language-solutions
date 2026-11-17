@@ -1221,3 +1221,4 @@ a.pill.warn { text-decoration: none; }
 .wa-msg.is-draft .msg-bubble { background: var(--lilac); color: #141414; }
 /* Phones: the state keeps its coloured dot (the text stays for screen readers) so the preview has room. */
 @media (max-width: 480px) { .wa-row .msg-row-side .status { font-size: 0; gap: 0; } .wa-row .msg-row-side .status::before { width: 10px; height: 10px; } }
+.df-quota { flex-basis: 100%; font-size: 12px; color: var(--ink-3); }
