@@ -1035,22 +1035,22 @@ function adminTasks() {
   // Clases
   for (const c of A.staff.changes.filter(c => c.status === 'pending')) {
     const soon = Date.parse(c.original_at) - Date.now() < 48 * 36e5;
-    push({ key: 'chg' + c.id, area: 'clases', ic: 'calendar', title: `${c.new_at ? 'Aprobar o rechazar: mover' : 'Aprobar o rechazar: cancelar'} la clase de «${esc(c.group)}»`,
+    push({ key: 'chg' + c.id, area: 'clases', ic: 'calendar', title: `${c.new_at ? 'Aprobar o rechazar: mover' : 'Aprobar o rechazar: cancelar'} la clase de ${esc(c.group)}`,
       detail: `${c.new_at ? `Del ${esc(sessionLabel(c.original_at))} al ${esc(sessionLabel(c.new_at))}` : `Clase del ${esc(sessionLabel(c.original_at))}`} · pedido por ${esc(c.requested_by || '—')}${c.reason ? ` · «${esc(c.reason)}»` : ''}`,
       action: 'Decidir', href: '#horarios', urgent: soon });
   }
   if (A.staff.groups && A.staff.members) {
     const inGroup = new Set(A.staff.groups.flatMap(g => g.members.map(m => m.id)));
     for (const m of A.staff.members.filter(m => m.role === 'student' && !inGroup.has(m.id))) push({ key: 'grp' + m.id, area: 'clases', ic: 'users',
-      title: `Poner a ${esc(m.full_name)} en un grupo`, detail: 'Sin grupo no tiene horario, ni próxima clase, ni recordatorios', action: 'Ir a los grupos', href: '#horarios', urgent: !!m.onboarded });
+      title: `Programar las clases de ${esc(m.full_name)}`, detail: 'Profesor, enlace de Zoom y horario: sin eso no tiene próxima clase ni recordatorios', action: 'Programar', href: '#horarios', attrs: ` data-schedule-goto="${m.id}"`, urgent: !!m.onboarded });
   }
   for (const g of (A.staff.groups || []).filter(g => !g.zoom_link)) {
     const next = (g.upcoming || []).find(x => x.status !== 'cancelled' && Date.parse(x.at) > Date.now());
-    push({ key: 'zoom' + g.id, area: 'clases', ic: 'video', title: `Añadir el enlace de Zoom de «${esc(g.name)}»`,
-      detail: next ? `Próxima clase: ${esc(sessionLabel(next.at))}` : 'Sin clases próximas', action: 'Editar el grupo', href: '#horarios', attrs: ` data-group-goto="${g.id}"`, urgent: !!next && Date.parse(next.at) - Date.now() < 24 * 36e5 });
+    push({ key: 'zoom' + g.id, area: 'clases', ic: 'video', title: `Añadir el enlace de Zoom de ${esc(g.name)}`,
+      detail: next ? `Próxima clase: ${esc(sessionLabel(next.at))}` : 'Sin clases próximas', action: 'Editar sus clases', href: '#horarios', attrs: ` data-group-goto="${g.id}"`, urgent: !!next && Date.parse(next.at) - Date.now() < 24 * 36e5 });
   }
   const lost = (A.staff.log && A.staff.log.unmatched || []).length;
-  if (lost) push({ key: 'zlost' + lost, area: 'clases', ic: 'video', title: `Asociar ${lost} reunión${lost > 1 ? 'es' : ''} de Zoom a su grupo`, detail: 'Sin grupo, la asistencia de esas clases no se cuenta', action: 'Revisar', href: '#horarios' });
+  if (lost) push({ key: 'zlost' + lost, area: 'clases', ic: 'video', title: `Asociar ${lost} reunión${lost > 1 ? 'es' : ''} de Zoom a su alumno`, detail: 'Sin alumno, la asistencia de esas clases no se cuenta', action: 'Revisar', href: '#horarios' });
   // Programa
   const drafts = A.units.filter(u => { const inf = A.unitInfo[u.id]; return inf && inf.count && inf.validated < inf.count; }).length;
   if (drafts) push({ key: 'units' + drafts, area: 'programa', ic: 'book', title: `${drafts} unidad${drafts > 1 ? 'es' : ''} en borrador por revisar y publicar`, detail: 'Los alumnos solo ven las unidades publicadas', action: 'Ver el programa', href: '#contenido' });
@@ -2776,9 +2776,9 @@ function viewCurso() {
   <div class="bento">
     <article class="tile c-6"><div class="tile-head"><h2>Tus próximas clases</h2>${s ? `<span class="pill ghost">${esc(s.group.name)}</span>` : ''}</div>
       ${s ? `${s.sessions.length ? s.sessions.slice(0, 6).map(studentSessionRow).join('') : '<p class="muted">Tu horario aparecerá aquí.</p>'}
-        <p class="muted" style="font-size:13px;margin-top:12px">Horario fijo de tu grupo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
+        <p class="muted" style="font-size:13px;margin-top:12px">Tu horario fijo, en tu hora local. Si una clase cambia, lo verás aquí y en tus avisos.</p>
         ${next ? `<button class="btn btn-dark" style="margin-top:14px" type="button" data-join>${icon('video')}Entrar a la clase</button>${attendanceOn() ? `<p class="muted" style="font-size:13px;margin-top:10px">El enlace se abre ${esc(minutesText(s.attendance.open_min))} antes de la clase. Entra siempre por aquí: tu asistencia se registra con tu clic, y después de ${s.attendance.absent_after_min} minutos de clase cuenta como ausencia.</p>` : ''}` : ''}`
-        : '<p class="muted">Pathway te asignará pronto a un grupo con su horario.</p>'}</article>
+        : '<p class="muted">Pathway te propondrá pronto tu horario.</p>'}</article>
     <article class="tile c-6"><div class="tile-head"><h2>Tu programa</h2><span class="pill ghost">${esc(A.profile.level)}</span></div>
       ${docs.length ? docs.map(d => { const open = manualOpenNums(d); const n = d.unit_pages ? d.unit_pages.filter(Boolean).length : 0; return `<div class="err-row"><span>${icon('book')} <b>${esc(d.title)}</b>${open && n ? `<br><span class="muted" style="font-size:13px">${[...open].filter(x => d.unit_pages[x - 1]).length} de ${n} unidades abiertas · se abren al verlas en clase</span>` : ''}</span><button class="btn btn-light btn-sm" type="button" data-doc="${esc(d.path)}">Leer</button></div>`; }).join('')
         : '<p class="muted">Los documentos de tu nivel aparecerán aquí.</p>'}</article>
@@ -2803,22 +2803,22 @@ function viewHorarios() {
   const changeRow = c => `<div class="err-row"><span><b>${esc(c.group)}</b> · ${c.new_at ? `mover la clase del ${esc(sessionLabel(c.original_at))} al ${esc(sessionLabel(c.new_at))}` : `cancelar la clase del ${esc(sessionLabel(c.original_at))}`}<br><span class="muted" style="font-size:13px">${esc(c.requested_by || '—')}${c.reason ? ' · ' + esc(c.reason) : ''}</span></span>
     ${c.status === 'pending' ? (admin ? `<span style="display:flex;gap:6px"><button class="btn btn-dark btn-sm" type="button" data-chg="${c.id}" data-ok="1">Aprobar</button><button class="btn btn-light btn-sm" type="button" data-chg="${c.id}" data-ok="0">Rechazar</button></span>` : '<span class="status warn">Pendiente</span>')
       : c.status === 'approved' ? '<span class="status">Aprobado</span>' : '<span class="status bad">Rechazado</span>'}</div>`;
-  const groupTile = g => ed === g.id ? groupForm(g) : `<article class="tile c-6"><div class="tile-head"><h2>${esc(g.name)}</h2><span class="pill ghost">${esc(g.level)}</span></div>
+  const groupTile = g => ed === g.id ? groupForm(g) : `<article class="tile c-6"><div class="tile-head"><h2>${esc(g.members.length ? g.members.map(m => m.full_name).join(', ') : g.name)}</h2><span class="pill ghost">${esc(g.level)}</span></div>
       <p style="font-weight:600">${esc(slotsText(g))}</p>
-      <p class="muted" style="font-size:14px;margin-top:6px">${esc(g.teacher || 'Sin profesor')} · ${g.members.length ? g.members.map(m => esc(m.full_name)).join(', ') : 'sin alumnos'}</p>
+      <p class="muted" style="font-size:14px;margin-top:6px">${g.teacher ? 'Profesor: ' + esc(g.teacher) : 'Sin profesor'}${g.members.length ? '' : ' · sin alumno'}</p>
       <div class="chips" style="margin-top:12px"><span class="pill ghost num">${g.month.planned} clases este mes</span>${A.staff.log ? '' : `<span class="pill ghost num">${g.month.done} pasadas</span>`}${g.month.moved ? `<span class="pill ghost num">${g.month.moved} movida${g.month.moved > 1 ? 's' : ''}</span>` : ''}${g.month.cancelled ? `<span class="pill ghost num">${g.month.cancelled} cancelada${g.month.cancelled > 1 ? 's' : ''}</span>` : ''}</div>
       ${groupAttendance(g)}
       ${logBlock(g)}
       <div style="margin-top:10px">${g.upcoming.filter(x => new Date(x.at) > Date.now()).slice(0, 3).map(sessionRow).join('') || '<p class="muted">Sin clases próximas.</p>'}</div>
       ${g.zoom_link ? '' : '<p class="form-error" style="margin-top:8px">Falta el enlace de Zoom.</p>'}
-      ${admin ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-group-edit="${g.id}">Editar</button>` : ''}</article>`;
+      ${admin ? `<button class="btn btn-light btn-sm" style="margin-top:12px" type="button" data-group-edit="${g.id}">Editar sus clases</button>` : ''}</article>`;
   const askable = groups.map(g => [g, g.upcoming.filter(x => x.status === 'planned' && new Date(x.at) > Date.now())]).filter(([, l]) => l.length);
   // Shown on top when someone is missing a group; otherwise a quiet confirmation after the groups.
-  const noGroupTile = admin && A.staff.members ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin grupo</h2><span class="pill ghost num">${noGroup.length}</span></div>
-      ${noGroup.length ? `<p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin grupo no tienen horario ni próxima clase.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span></div>`).join('')}` : '<p class="muted">Todos los alumnos tienen un grupo.</p>'}</article>` : '';
+  const noGroupTile = admin && A.staff.members ? `<article class="tile c-6"><div class="tile-head"><h2>Alumnos sin horario</h2><span class="pill ghost num">${noGroup.length}</span></div>
+      ${noGroup.length ? `<p class="muted" style="font-size:14px;margin:-6px 0 10px">Sin horario no tienen próxima clase ni recordatorios.</p>${noGroup.map(m => `<div class="err-row"><span><b>${esc(m.full_name)}</b> · ${m.level}</span><button class="btn btn-dark btn-sm" type="button" data-schedule-for="${m.id}">Programar</button></div>`).join('')}` : '<p class="muted">Todos los alumnos tienen sus clases programadas.</p>'}</article>` : '';
   const now = new Date(Date.now() + 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T19:00`;
   return `<section class="view" aria-labelledby="h-horarios">
-  ${topBar('h-horarios', admin ? 'Clases' : 'Horarios', admin ? 'Todos los grupos, sus horarios fijos y los cambios por validar' : 'Tus grupos y sus horarios fijos')}
+  ${topBar('h-horarios', admin ? 'Clases' : 'Horarios', admin ? 'Las clases de cada alumno (profesor, enlace de Zoom, horario fijo) y los cambios por validar' : 'Las clases de tus alumnos y sus horarios fijos')}
   <div class="bento staff">
     ${(admin ? pending.length : changes.length) ? `<article class="tile c-6"><div class="tile-head"><h2>${admin ? 'Cambios por validar' : 'Tus solicitudes'}</h2><span class="pill ghost num">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span></div>
       ${(admin ? pending : changes.slice(0, 8)).map(changeRow).join('')}</article>` : ''}
@@ -2835,8 +2835,8 @@ function viewHorarios() {
       </form></article>` : ''}
     ${groups.map(groupTile).join('')}
     ${noGroup.length ? '' : noGroupTile}
-    ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Nuevo grupo</h2><p class="muted">Un grupo por horario: una clase privada es un grupo de un alumno.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Crear un grupo</button></article>`) : ''}
-    ${!groups.length && !admin ? `<article class="tile empty"><h2>Todavía no tienes grupos</h2><p class="muted">${isAdmin() ? 'Los grupos se crean en el espacio Admin, pestaña «Clases».' : 'Pathway crea los grupos con su horario fijo; aparecerán aquí.'}</p></article>` : ''}
+    ${admin ? (ed === 'new' ? groupForm(null) : `<article class="tile c-6 empty"><h2>Programar a un alumno</h2><p class="muted">Su profesor, su enlace de Zoom personal (el mismo durante toda su formación) y sus días y horas fijos.</p><button class="btn btn-dark" style="margin-top:14px" type="button" data-group-edit="new">${icon('plus')}Programar</button></article>`) : ''}
+    ${!groups.length && !admin ? `<article class="tile empty"><h2>Todavía no tienes alumnos con horario</h2><p class="muted">${isAdmin() ? 'Los horarios se programan en el espacio Admin, pestaña «Clases».' : 'Pathway programa las clases de cada alumno con su horario fijo; aparecerán aquí.'}</p></article>` : ''}
   </div></section>`;
 }
 
@@ -2860,8 +2860,8 @@ function logBlock(g) {
 function unmatchedTile() {
   const list = A.staff.log && A.staff.log.unmatched;
   if (!list || !list.length) return '';
-  return `<article class="tile c-6"><div class="tile-head"><h2>Reuniones Zoom sin grupo</h2><span class="pill ghost num">${list.length}</span></div>
-    <p class="muted" style="font-size:14px;margin:-6px 0 10px">Su enlace no corresponde a ningún grupo: pega el enlace de Zoom correcto en el grupo para que cuenten.</p>
+  return `<article class="tile c-6"><div class="tile-head"><h2>Reuniones Zoom sin alumno</h2><span class="pill ghost num">${list.length}</span></div>
+    <p class="muted" style="font-size:14px;margin:-6px 0 10px">Su enlace no corresponde a ningún alumno: pega el enlace de Zoom correcto en las clases del alumno para que cuenten.</p>
     ${list.map(m => `<div class="err-row"><span><b>${esc(m.topic || 'Reunión ' + m.meeting_id)}</b><br><span class="muted" style="font-size:13px">${esc(cap(sessionLabel(m.started_at)))} · ${esc(m.host_email || '—')} · n.º ${esc(m.meeting_id)}</span></span>${m.recorded ? '<span class="status">Grabada</span>' : ''}</div>`).join('')}</article>`;
 }
 
@@ -2961,28 +2961,34 @@ async function joinClass() {
   }
   if (!data.open) {
     if (win) win.close();
-    return toast(data.reason === 'closed' && data.opens_at ? `El enlace se abre el ${sessionLabel(data.opens_at)}.` : data.reason === 'no_link' ? 'Tu grupo todavía no tiene enlace de clase.' : 'Todavía no tienes grupo.');
+    return toast(data.reason === 'closed' && data.opens_at ? `El enlace se abre el ${sessionLabel(data.opens_at)}.` : data.reason === 'no_link' ? 'Tu clase todavía no tiene enlace de Zoom.' : 'Todavía no tienes horario.');
   }
   if (win) win.location = data.link; else location.href = data.link;
   if (data.status === 'absent') toast('Entraste después del límite: esta clase cuenta como ausencia.');
   else if (data.status === 'late') toast('Entraste tarde: queda registrado.');
 }
 
+// Private lessons: one student per « group » (the database still says group). The form schedules a
+// student: their teacher, their personal Zoom link (kept for the whole course) and fixed days and hours.
 function groupForm(g) {
   const students = (A.staff.members || []).filter(m => m.role === 'student');
-  const members = new Set(g ? g.members.map(m => m.id) : []);
+  const taken = new Set((A.staff.groups || []).filter(x => !g || x.id !== g.id).flatMap(x => x.members.map(m => m.id)));
+  const current = g && g.members[0] ? g.members[0].id : A.staff.groupFor || '';
+  const pick = students.filter(m => !taken.has(m.id) || m.id === current);
+  const who = students.find(m => m.id === current);
   const slots = g ? g.slots : [];
   const slotRow = i => { const s = slots[i] || {}; return `<div class="form-2" style="grid-template-columns:1.3fr 1fr 1fr"><label class="field" for="gsDay${i}">Día ${i + 1}<select id="gsDay${i}"><option value="">—</option>${WEEKDAYS.slice(1).map((d, k) => `<option value="${k + 1}" ${s.weekday === k + 1 ? 'selected' : ''}>${d}</option>`).join('')}</select></label><label class="field" for="gsTime${i}">Hora<input id="gsTime${i}" type="time" value="${esc(s.start_time || '19:00')}"></label><label class="field" for="gsDur${i}">Minutos<input id="gsDur${i}" type="number" min="15" max="240" step="15" value="${s.duration_min || 60}"></label></div>`; };
-  return `<article class="tile"><div class="tile-head"><h2>${g ? 'Editar ' + esc(g.name) : 'Nuevo grupo'}</h2></div>
+  return `<article class="tile"><div class="tile-head"><h2>${g ? 'Clases de ' + esc(who ? who.full_name : g.name) : 'Programar a un alumno'}</h2></div>
     <form id="groupForm" class="form" data-group-id="${g ? g.id : ''}">
-      <div class="form-2"><label class="field" for="gName">Nombre<input id="gName" required maxlength="80" value="${esc(g ? g.name : '')}" placeholder="Lucía · A2 · lun y mié"></label>
+      <div class="form-2"><label class="field" for="gStudent">Alumno<select id="gStudent" required><option value="">Elige al alumno</option>${pick.map(m => `<option value="${m.id}" data-level="${esc(m.level || '')}" ${m.id === current ? 'selected' : ''}>${esc(m.full_name)}</option>`).join('')}</select></label>
         <label class="field" for="gTeacher">Profesor<select id="gTeacher">${A.staff.teachers.map(t => `<option value="${t.id}" ${(g ? g.teacher_id : A.profile.id) === t.id ? 'selected' : ''}>${esc(t.full_name)}</option>`).join('')}</select></label></div>
-      <div class="form-2"><label class="field" for="gLevel">Nivel<select id="gLevel">${LEVELS.map(l => `<option ${l === (g ? g.level : 'A2') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <div class="form-2"><label class="field" for="gLevel">Nivel<select id="gLevel">${LEVELS.map(l => `<option ${l === (g ? g.level : (who && who.level) || 'A2') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
         <label class="field" for="gTz">Zona horaria del horario<select id="gTz">${TIMEZONES.map(([v, n]) => `<option value="${v}" ${v === (g ? g.timezone : 'America/Lima') ? 'selected' : ''}>${n}</option>`).join('')}</select></label></div>
-      <label class="field" for="gZoom">Enlace de Zoom<input id="gZoom" type="url" value="${esc(g && g.zoom_link || '')}" placeholder="https://zoom.us/j/…"></label>
+      <label class="field" for="gZoom">Enlace de Zoom personal del alumno<input id="gZoom" type="url" value="${esc(g && g.zoom_link || '')}" placeholder="https://zoom.us/j/…" aria-describedby="gZoomHelp"></label>
+      <p class="muted" id="gZoomHelp" style="font-size:13px;margin-top:-6px">El mismo enlace durante toda su formación: el Campus reconoce así sus clases en Zoom (asistencia y grabaciones).</p>
       ${[0, 1, 2, 3].map(slotRow).join('')}
-      <div class="field">Alumnos <span class="muted" style="font-weight:400">(pasan al nivel y al profesor del grupo)</span><div class="chips">${students.map((m, i) => `<label for="gm${i}"><input type="checkbox" id="gm${i}" value="${m.id}" ${members.has(m.id) ? 'checked' : ''}><span>${esc(m.full_name)}</span></label>`).join('') || '<span class="muted">Todavía no hay alumnos.</span>'}</div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-group-cancel>Cancelar</button>${g ? `<button class="btn btn-light" type="button" data-group-delete="${g.id}" style="margin-left:auto">Eliminar el grupo</button>` : ''}</div>
+      ${!pick.length ? '<p class="muted">Todos los alumnos ya tienen sus clases programadas.</p>' : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-dark" type="submit">Guardar</button><button class="btn btn-light" type="button" data-group-cancel>Cancelar</button>${g ? `<button class="btn btn-light" type="button" data-group-delete="${g.id}" style="margin-left:auto">Quitar el horario</button>` : ''}</div>
     </form></article>`;
 }
 
@@ -3228,12 +3234,13 @@ function bindSchedule(id) {
     await refresh(); render();
   });
   $$('[data-group-edit]').forEach(b => b.onclick = () => { A.staff.groupEditing = b.dataset.groupEdit; render(); });
-  $$('[data-group-cancel]').forEach(b => b.onclick = () => { A.staff.groupEditing = null; render(); });
+  $$('[data-group-cancel]').forEach(b => b.onclick = () => { A.staff.groupEditing = null; A.staff.groupFor = null; render(); });
+  $$('[data-schedule-for]').forEach(b => b.onclick = () => { A.staff.groupEditing = 'new'; A.staff.groupFor = b.dataset.scheduleFor; render(); setTimeout(() => $('#groupForm')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); });
   $$('[data-group-delete]').forEach(b => b.onclick = async () => {
-    if (!confirm('¿Eliminar este grupo? Sus alumnos se quedan sin horario.')) return;
+    if (!confirm('¿Quitar el horario de este alumno? Ya no tendrá próxima clase ni recordatorios. Su cuenta y su progreso no se borran.')) return;
     const { error } = await sb.rpc('delete_group', { p_id: b.dataset.groupDelete });
     if (error) return fail(error);
-    A.staff.groupEditing = null; toast('Grupo eliminado.'); await refresh(); render();
+    A.staff.groupEditing = null; toast('Horario quitado.'); await refresh(); render();
   });
   $$('[data-chg]').forEach(b => b.onclick = async () => {
     b.disabled = true;
@@ -3260,16 +3267,19 @@ function bindSchedule(id) {
     toast('Reglas guardadas.'); await refresh(); render();
   };
   const gf = $('#groupForm');
+  if (gf) $('#gStudent').onchange = () => { const o = $('#gStudent').selectedOptions[0]; if (o && o.dataset.level) $('#gLevel').value = o.dataset.level; };
   if (gf) gf.onsubmit = async e => {
     e.preventDefault();
+    const st = $('#gStudent').selectedOptions[0];
+    if (!st || !st.value) { $('#gStudent').focus(); return toast('Elige al alumno.'); }
     const slots = [0, 1, 2, 3].map(i => ({ weekday: +$('#gsDay' + i).value, start_time: $('#gsTime' + i).value, duration_min: +$('#gsDur' + i).value || 60 })).filter(s => s.weekday && s.start_time);
     if (!slots.length) return toast('Añade al menos un día con su hora.');
     const { error } = await sb.rpc('save_group', {
-      p_id: gf.dataset.groupId || null, p_name: $('#gName').value.trim(), p_teacher: $('#gTeacher').value || null, p_level: $('#gLevel').value,
-      p_zoom: $('#gZoom').value.trim(), p_timezone: $('#gTz').value, p_slots: slots, p_members: $$('#groupForm .chips input:checked').map(c => c.value)
+      p_id: gf.dataset.groupId || null, p_name: st.textContent.trim().slice(0, 80), p_teacher: $('#gTeacher').value || null, p_level: $('#gLevel').value,
+      p_zoom: $('#gZoom').value.trim(), p_timezone: $('#gTz').value, p_slots: slots, p_members: [st.value]
     });
-    if (error) return fail(error, 'No se pudo guardar el grupo.');
-    A.staff.groupEditing = null; toast('Grupo guardado: el horario ya aparece a sus alumnos.'); await refresh(); render();
+    if (error) return fail(error, 'No se pudieron guardar las clases.');
+    A.staff.groupEditing = null; A.staff.groupFor = null; toast(`Clases de ${st.textContent.trim()} guardadas: ya ve su horario.`); await refresh(); render();
   };
   const cf = $('#chgForm');
   if (cf) {
@@ -3922,14 +3932,15 @@ document.addEventListener('click', async e => {
   // Links of the Admin « Bandeja »: open the right card, request, account or group on arrival.
   const mg = e.target.closest('[data-mail-goto]');
   if (mg) { ML.open = mg.dataset.mailGoto; ML.thread = null; ML.confirm = null; if (location.hash === '#correo') { e.preventDefault(); closeMenus(); render(); } }
-  const go = e.target.closest('[data-df-goto],[data-enr-goto],[data-member-goto],[data-group-goto]');
+  const go = e.target.closest('[data-df-goto],[data-enr-goto],[data-member-goto],[data-group-goto],[data-schedule-goto]');
   if (go) {
     const here = location.hash === go.getAttribute('href');
     if (go.dataset.dfGoto) setTimeout(() => dfOpen(go.dataset.dfGoto), 120);
     if (go.dataset.enrGoto) { A.staff.enrOpen = go.dataset.enrGoto; A.staff.enrAll = false; }
     if (go.dataset.memberGoto) A.staff.editing = go.dataset.memberGoto;
     if (go.dataset.groupGoto) A.staff.groupEditing = go.dataset.groupGoto;
-    const anchor = go.dataset.enrGoto ? '#solicitudes' : go.dataset.memberGoto ? '.member-edit' : go.dataset.groupGoto ? '#groupForm' : '';
+    if (go.dataset.scheduleGoto) { A.staff.groupEditing = 'new'; A.staff.groupFor = go.dataset.scheduleGoto; }
+    const anchor = go.dataset.enrGoto ? '#solicitudes' : go.dataset.memberGoto ? '.member-edit' : go.dataset.groupGoto || go.dataset.scheduleGoto ? '#groupForm' : '';
     if (here) { e.preventDefault(); closeMenus(); render(); }
     if (anchor) setTimeout(() => $(anchor)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 200);
   }

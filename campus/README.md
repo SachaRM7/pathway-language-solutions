@@ -76,12 +76,12 @@ where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
 
 ## Espace « Profesor »
 
-Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses groupes et ses cours ; un admin qui n'enseigne pas les voit tous. Dans Inicio, Alumnos et Tareas, un filtre « Mis alumnos / Todos los alumnos » (admins qui ont des élèves) choisit les élèves affichés : les siens (dont il est le professeur, ou qui sont dans un de ses groupes) ou tous. Le choix est retenu sur l'appareil.
+Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses élèves et ses cours ; un admin qui n'enseigne pas les voit tous. Dans Inicio, Alumnos et Tareas, un filtre « Mis alumnos / Todos los alumnos » (admins qui ont des élèves) choisit les élèves affichés : les siens (dont il est le professeur, ou qui sont dans un de ses groupes) ou tous. Le choix est retenu sur l'appareil.
 
 - **Inicio** : le rapport de fin de cours (unités vues, qui s'ouvrent pour l'élève : `db/018_informe_clase.sql`), les chiffres de la semaine, les élèves à relancer et « Por revisar » (messages, informes, justificatifs, examens à valider). Pour un admin, la dernière ligne ouvre l'espace Admin s'il y a des tâches en attente.
 - **Alumnos** : l'avance de chaque élève, ses absences (justificatifs à accepter, rattrapages à programmer, mois non validés : `db/017_reglas_clases.sql`) et la validation de fin de niveau.
 - **Mensajes**, **Tareas** : les conversations avec les élèves ; assigner une unité et noter une erreur entendue en cours.
-- **Horarios** : ses groupes et la demande de changement d'un cours (appliquée directement pour un admin).
+- **Horarios** : ses élèves, leurs horaires fixes et la demande de changement d'un cours (appliquée directement pour un admin).
 - **Contenido** et **Cuentas** : seulement pour un professeur qui n'est pas admin (voir les unités, inviter ses élèves). Les admins les trouvent dans l'espace Admin.
 
 ## Espace « Admin »
@@ -92,7 +92,7 @@ La gestion, regroupée par métier dans la barre latérale ; le compteur rouge d
 - **Ventas** : **Captación** (Prospectos, WhatsApp, **Correo**, Difusión) et **Inscripciones** (solicitudes du site, invitations, comptes et formules).
   - **Correo** (`db/035_correo.sql`, fonction `mail`) : la boîte Zoho de l'équipe, lue toutes les 2 minutes (IMAP). Seuls les e-mails de vraies personnes arrivent (pas les newsletters, notifications, rebonds, réponses automatiques ni nos propres adresses), rangés par conversation et reliés à la fiche Prospectos ou Difusión de la personne. Chacun reçoit un brouillon de réponse de l'IA. L'équipe choisit « Enviar desde » (ryan@, abdrahim@, contacto@ ou contact@ ; la signature suit), relit, puis « Enviar » deux fois : la réponse part par Zoho (SMTP) dans le même fil et est rangée dans les « Envoyés » de Zoho.
   - **Difusión** : même liste « Desde » pour l'envoi d'un brouillon de démarchage.
-- **Escuela** : **Clases** (tous les groupes, les changements à valider, les élèves sans groupe, les réunions Zoom sans groupe) et **Programa** (les unités et les documents du programme ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`).
+- **Escuela** : **Clases** (cours particuliers : « Programar a un alumno » fixe son professeur, son lien Zoom personnel gardé toute la formation et ses jours et heures ; les changements à valider, les élèves sans horaire avec un bouton « Programar », les réunions Zoom sans élève). En base, chaque élève reste un « groupe » d'une personne (`class_groups`) et **Programa** (les unités et les documents du programme ; un manuel s'ouvre unité par unité au fil des cours : `db/020_manual.sql`).
 - **Configuración** : **Ajustes** (règles d'assistance, rappel avant les cours, contrat de l'élève `db/015_contrato.sql`, ouverture des unités, réponses de l'assistant, accès des assistants IA, e-mails de test).
 
 Chaque espace a son tutoriel (bouton « ? »), ouvert tout seul la première fois (`db/034_tutorial_admin.sql`).
