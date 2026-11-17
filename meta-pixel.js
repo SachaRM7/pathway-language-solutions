@@ -27,16 +27,17 @@
   const MAP = {
     placement_completed: ['Lead', { content_name: 'placement_test' }],
     enrollment_whatsapp_prepared: ['Lead', { content_name: 'enrollment_request' }],
+    enrollment_messenger_prepared: ['Lead', { content_name: 'enrollment_request' }],
     lead_whatsapp_prepared: ['Lead', { content_name: 'crs_calculator' }],
     program_viewed: ['ViewContent', { content_name: 'program' }],
     crs_calculated: ['ViewContent', { content_name: 'crs_calculator' }]
   };
-  // A click on a WhatsApp, email or phone link (works on every page, with or without analytics.js).
+  // A click on a WhatsApp, Messenger, email or phone link (works on every page, with or without analytics.js).
   document.addEventListener('click', event => {
     const link = event.target.closest && event.target.closest('a[href]');
     if (!link) return;
     const href = link.getAttribute('href') || '';
-    const way = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href) ? 'whatsapp' : href.startsWith('mailto:') ? 'email' : href.startsWith('tel:') ? 'phone' : '';
+    const way = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href) ? 'whatsapp' : /^https?:\/\/(m\.me|(www\.)?messenger\.com)\//i.test(href) ? 'messenger' : href.startsWith('mailto:') ? 'email' : href.startsWith('tel:') ? 'phone' : '';
     if (!way) return;
     try { fbq('track', 'Contact', { content_name: way }); } catch (_) { /* never blocks the page */ }
   }, true);

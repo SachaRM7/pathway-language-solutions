@@ -35,6 +35,22 @@
   const line = (label, value) => `${label}${L.colon} ${value}`;
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const track = (name, data) => { try { window.PathwayAnalytics?.track(name, data); } catch (_) { /* never blocks */ } };
+  // Anonymous journey steps (campaign.js, campus/db/029): campaign.js loads after this script.
+  const funnel = (event, detail) => {
+    try {
+      if (window.PathwayFunnel) window.PathwayFunnel.log(event, detail);
+      else document.addEventListener('DOMContentLoaded', () => window.PathwayFunnel?.log(event, detail), { once: true });
+    } catch (_) { /* never blocks */ }
+  };
+  funnel('enroll_view');
+  // Texts added for the local prices and the choice of channel (Spanish by default).
+  const X = {
+    es: { localTitle: 'Equivalente aproximado en tu moneda', perMonth: '/mes', localNote: 'Referencia: el pago se hace en CAD y tu banco aplica su propio tipo de cambio.', ratesBy: 'Tipos de cambio', others: 'Otros países', channelTitle: '¿Por dónde seguimos?', channelCopy: 'Recibe la confirmación de tu horario por el canal que prefieras.', submitWa: 'Enviar por WhatsApp', submitMsg: 'Enviar por Messenger', copied: 'Resumen copiado: pégalo en Messenger.' },
+    fr: { localTitle: 'Équivalent approximatif dans votre monnaie', perMonth: '/mois', localNote: 'À titre indicatif : le paiement se fait en CAD et votre banque applique son propre taux de change.', ratesBy: 'Taux de change', others: 'Autres pays', channelTitle: 'Par où continuons-nous ?', channelCopy: 'Recevez la confirmation de votre horaire par le canal de votre choix.', submitWa: 'Envoyer par WhatsApp', submitMsg: 'Envoyer par Messenger', copied: 'Résumé copié : collez-le dans Messenger.' },
+    en: { localTitle: 'Approximate amount in your currency', perMonth: '/month', localNote: 'For reference: payment is made in CAD and your bank applies its own exchange rate.', ratesBy: 'Exchange rates', others: 'Other countries', channelTitle: 'How should we continue?', channelCopy: 'Get your schedule confirmation on the channel you prefer.', submitWa: 'Send via WhatsApp', submitMsg: 'Send via Messenger', copied: 'Summary copied: paste it into Messenger.' },
+    de: { localTitle: 'Ungefährer Betrag in Ihrer Währung', perMonth: '/Monat', localNote: 'Zur Orientierung: Die Zahlung erfolgt in CAD, Ihre Bank wendet ihren eigenen Wechselkurs an.', ratesBy: 'Wechselkurse', others: 'Andere Länder', channelTitle: 'Wie geht es weiter?', channelCopy: 'Erhalten Sie die Bestätigung Ihres Termins über den Kanal Ihrer Wahl.', submitWa: 'Per WhatsApp senden', submitMsg: 'Per Messenger senden', copied: 'Zusammenfassung kopiert: in Messenger einfügen.' }
+  }[L.lang] || null;
+  const XT = X || { localTitle: 'Equivalente aproximado en tu moneda', perMonth: '/mes', localNote: 'Referencia: el pago se hace en CAD y tu banco aplica su propio tipo de cambio.', ratesBy: 'Tipos de cambio', others: 'Otros países', channelTitle: '¿Por dónde seguimos?', channelCopy: 'Recibe la confirmación de tu horario por el canal que prefieras.', submitWa: 'Enviar por WhatsApp', submitMsg: 'Enviar por Messenger', copied: 'Resumen copiado: pégalo en Messenger.' };
 
   /* =========================================================================
      Recepción de la solicitud (campus/db/021_solicitudes.sql): la solicitud
@@ -64,7 +80,9 @@
   let storedResult = null;
   try { storedResult = JSON.parse(sessionStorage.getItem('pathwayPlacementResult') || 'null'); } catch (_) { storedResult = null; }
   const levelOrder = ['A1', 'A2', 'B1', 'B2'];
-  const testLevel = levelOrder.includes(storedResult?.level) ? storedResult.level : '';
+  // From the test in this tab, or from the link in a follow-up email (?level=B1).
+  const urlLevel = new URLSearchParams(location.search).get('level');
+  const testLevel = levelOrder.includes(storedResult?.level) ? storedResult.level : (levelOrder.includes(urlLevel) ? urlLevel : '');
   const resultLevel = testLevel ? `${testLevel} ${L.levelSuffix}` : L.byConfirm;
 
   const q = sel => form.querySelector(sel);
@@ -283,13 +301,13 @@
     prevBtn.disabled = cur === 0;
     const lastStep = cur === flow.length - 1;
     nextBtn.textContent = lastStep ? L.review : L.next;
-    if (mbarBtn) mbarBtn.textContent = lastStep ? L.submitMobile : L.next;
+    if (mbarBtn) mbarBtn.textContent = lastStep ? (channel === 'messenger' ? XT.submitMsg : L.submitMobile) : L.next;
     if (!moved) return;
     // The next step starts at the top of the form (below the fixed header), not at the top of the page.
     (rail || form).scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' });
     form.querySelector(`[data-panel="${flow[cur]}"] > legend`)?.focus({ preventScroll: true });
   }
-  function goTo(i) { cur = Math.max(0, Math.min(flow.length - 1, i)); render(true); }
+  function goTo(i) { cur = Math.max(0, Math.min(flow.length - 1, i)); funnel('enroll_step', String(cur + 1)); render(true); }
 
   nextBtn.addEventListener('click', () => {
     if (!validatePanel(flow[cur])) return;
@@ -318,6 +336,41 @@
 
   /* ---------------- Envío ---------------- */
   let sending = false;
+  // Channel for the rest of the process: WhatsApp, or Messenger once the Facebook page address is
+  // set in site-config.js (messengerUrl). Without it, only WhatsApp is offered, as before.
+  let channel = 'whatsapp';
+  const messengerUrl = () => {
+    const m = String((window.PATHWAY_CONFIG || {}).messengerUrl || '');
+    return /^https:\/\/(m\.me|www\.messenger\.com)\//.test(m) ? m : '';
+  };
+  const ICON_WHATSAPP = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9.2 8.6c-.4 2.9 2.6 6 5.6 5.6l.7-1.5-1.8-.9-.9.8a4.6 4.6 0 0 1-2-2l.8-.9-.9-1.8Z"/></svg>';
+  const ICON_MESSENGER = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4.7 0-8.5 3.5-8.5 7.9 0 2.4 1.1 4.6 3 6v3.1l2.9-1.6c.8.2 1.7.3 2.6.3 4.7 0 8.5-3.5 8.5-7.8S16.7 3.5 12 3.5Z"/><path d="m7.5 13.6 3-3.2 2 2 3.9-2.2-3 3.2-2-2Z"/></svg>';
+  const addChannelChoice = () => {
+    // In the last step of the form, so it is seen on phones too (there the summary button is hidden
+    // and the bottom bar sends the request).
+    const lastPanel = form.querySelector(`[data-panel="${flow[flow.length - 1]}"]`);
+    const submits = [...document.querySelectorAll('[data-submit-request]')];
+    if (!lastPanel || !messengerUrl() || document.querySelector('[data-channel-pick]')) return;
+    const pick = document.createElement('div');
+    pick.className = 'channel-pick';
+    pick.dataset.channelPick = '';
+    pick.setAttribute('role', 'group');
+    pick.setAttribute('aria-label', XT.channelTitle);
+    pick.innerHTML = `<p class="channel-pick-title">${XT.channelTitle}</p><p class="channel-pick-copy">${XT.channelCopy}</p>
+      <div class="channel-pick-row"><button type="button" class="channel channel-whatsapp" data-channel="whatsapp" aria-pressed="true">${ICON_WHATSAPP}<span>WhatsApp</span></button><button type="button" class="channel channel-messenger" data-channel="messenger" aria-pressed="false">${ICON_MESSENGER}<span>Messenger</span></button></div>`;
+    lastPanel.append(pick);
+    const labels = submits.map(b => b.textContent);
+    pick.addEventListener('click', event => {
+      const b = event.target.closest('[data-channel]');
+      if (!b) return;
+      channel = b.dataset.channel;
+      pick.querySelectorAll('[data-channel]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      submits.forEach((x, i) => { x.textContent = channel === 'messenger' ? XT.submitMsg : labels[i]; });
+      render();
+    });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addChannelChoice, { once: true });
+  else addChannelChoice();
   function submitRequest() {
     if (sending) return;
     for (let i = 0; i < flow.length; i++) {
@@ -385,11 +438,25 @@
       '',
       L.msgClose
     ].join('\n');
-    const whatsappUrl = `https://wa.me/51989887516?text=${encodeURIComponent(message)}`;
-    try { sessionStorage.setItem('pathwayWhatsAppUrl', whatsappUrl); } catch (_) { /* the thanks page keeps a plain WhatsApp link */ }
-    const opened = window.open(whatsappUrl, '_blank');
+    const viaMessenger = channel === 'messenger' && !!messengerUrl();
+    let opened = null;
+    if (viaMessenger) {
+      // Messenger cannot receive a prepared text: the summary is copied for the student to paste
+      // (the request itself is already saved for Pathway).
+      const m = messengerUrl();
+      const target = `${m}${m.includes('?') ? '&' : '?'}ref=inscripcion`;
+      try { navigator.clipboard?.writeText(message).catch(() => {}); } catch (_) { /* the request is saved anyway */ }
+      try { sessionStorage.setItem('pathwayMessengerUrl', target); } catch (_) { /* the thanks page has no button then */ }
+      opened = window.open(target, '_blank');
+      track('enrollment_messenger_prepared', { plan: plan?.value || '', billing: billing?.value || '' });
+    } else {
+      const whatsappUrl = `https://wa.me/51989887516?text=${encodeURIComponent(message)}`;
+      try { sessionStorage.setItem('pathwayWhatsAppUrl', whatsappUrl); } catch (_) { /* the thanks page keeps a plain WhatsApp link */ }
+      opened = window.open(whatsappUrl, '_blank');
+      track('enrollment_whatsapp_prepared', { plan: plan?.value || '', billing: billing?.value || '' });
+    }
     if (opened) { try { opened.opener = null; } catch (_) { /* cross-origin already */ } }
-    track('enrollment_whatsapp_prepared', { plan: plan?.value || '', billing: billing?.value || '' });
+    funnel('enroll_sent', viaMessenger ? 'messenger' : 'whatsapp');
 
     // Then the thanks page (it can reopen WhatsApp). The request has a moment to reach Pathway;
     // a failed save is only logged and never blocks the student.
@@ -399,22 +466,105 @@
     const timeout = new Promise(resolve => setTimeout(() => resolve(null), 2500));
     Promise.race([saved, timeout]).then(ok => {
       if (ok === false) track('enrollment_save_failed');
-      location.href = `${L.thanksPage}?channel=whatsapp&from=inscription${ok === true ? '&saved=1' : ''}${opened ? '' : '&blocked=1'}`;
+      location.href = `${L.thanksPage}?channel=${viaMessenger ? 'messenger' : 'whatsapp'}&from=inscription${ok === true ? '&saved=1' : ''}${opened ? '' : '&blocked=1'}`;
     });
   }
-  document.querySelectorAll('[data-submit-request]').forEach(b => b.addEventListener('click', submitRequest));
+  document.querySelectorAll('[data-submit-request]').forEach(b => b.addEventListener('click', () => submitRequest()));
   // Back from the thanks page (page cache): the buttons work again.
   const submitLabels = [...document.querySelectorAll('[data-submit-request]')].map(b => b.textContent);
   window.addEventListener('pageshow', e => {
     if (!e.persisted) return;
     sending = false;
-    document.querySelectorAll('[data-submit-request]').forEach((b, i) => { b.disabled = false; b.textContent = submitLabels[i]; });
+    document.querySelectorAll('[data-submit-request]').forEach((b, i) => { b.disabled = false; b.textContent = channel === 'messenger' ? XT.submitMsg : submitLabels[i]; });
     if (mbarBtn) mbarBtn.disabled = false;
     render();
   });
 
   const sumDetails = document.querySelector('.sum details');
   if (sumDetails && matchMedia('(max-width:640px)').matches) sumDetails.removeAttribute('open');
+
+  /* =========================================================================
+     Equivalent of the chosen plan in Latin American currencies (round flags), for
+     Spanish pages and for visitors whose time zone is in Latin America. Today's rates
+     (ExchangeRate-API, kept 12 h in this browser), or the rates below if offline.
+     ========================================================================= */
+  const FALLBACK_RATES = { date: '2026-11-17', PEN: 2.3865, MXN: 12.977, COP: 2321.6, CLP: 697.25, ARS: 1084.2, BOB: 8.1692, USD: 0.69961 };
+  const FLAG = {
+    PE: '<rect width="8" height="24" fill="#d91023"/><rect x="8" width="8" height="24" fill="#fff"/><rect x="16" width="8" height="24" fill="#d91023"/>',
+    MX: '<rect width="8" height="24" fill="#006847"/><rect x="8" width="8" height="24" fill="#fff"/><rect x="16" width="8" height="24" fill="#ce1126"/><circle cx="12" cy="12" r="2.4" fill="#8c5a2b"/>',
+    CO: '<rect width="24" height="12" fill="#fcd116"/><rect y="12" width="24" height="6" fill="#003893"/><rect y="18" width="24" height="6" fill="#ce1126"/>',
+    CL: '<rect width="24" height="12" fill="#fff"/><rect y="12" width="24" height="12" fill="#d52b1e"/><rect width="10" height="12" fill="#0039a6"/><path d="m5 3.3.9 2.6h2.7l-2.2 1.6.8 2.6L5 8.5l-2.2 1.6.8-2.6-2.2-1.6h2.7Z" fill="#fff"/>',
+    AR: '<rect width="24" height="8" fill="#74acdf"/><rect y="8" width="24" height="8" fill="#fff"/><rect y="16" width="24" height="8" fill="#74acdf"/><circle cx="12" cy="12" r="2.2" fill="#f6b40e"/>',
+    BO: '<rect width="24" height="8" fill="#d52b1e"/><rect y="8" width="24" height="8" fill="#f9e300"/><rect y="16" width="24" height="8" fill="#007934"/>',
+    EC: '<rect width="24" height="12" fill="#ffdd00"/><rect y="12" width="24" height="6" fill="#034ea2"/><rect y="18" width="24" height="6" fill="#ed1c24"/><circle cx="12" cy="12" r="2.4" fill="#6b8e23"/>',
+    VE: '<rect width="24" height="8" fill="#ffcc00"/><rect y="8" width="24" height="8" fill="#00247d"/><rect y="16" width="24" height="8" fill="#cf142b"/><g fill="#fff"><circle cx="7" cy="12.8" r=".9"/><circle cx="9.4" cy="11.2" r=".9"/><circle cx="12" cy="10.6" r=".9"/><circle cx="14.6" cy="11.2" r=".9"/><circle cx="17" cy="12.8" r=".9"/></g>',
+    US: '<rect width="24" height="24" fill="#e9e4da"/><text x="12" y="15.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#122b26">US$</text>'
+  };
+  const PRICE_COUNTRIES = [
+    { id: 'PE', name: { es: 'Perú', fr: 'Pérou', en: 'Peru', de: 'Peru' }, cur: 'PEN', loc: 'es-PE', step: 1, tz: /^America\/Lima$/ },
+    { id: 'MX', name: { es: 'México', fr: 'Mexique', en: 'Mexico', de: 'Mexiko' }, cur: 'MXN', loc: 'es-MX', step: 10, tz: /^America\/(Mexico_City|Monterrey|Merida|Cancun|Chihuahua|Hermosillo|Mazatlan|Tijuana|Matamoros|Bahia_Banderas|Ciudad_Juarez|Ojinaga)$/ },
+    { id: 'CO', name: { es: 'Colombia', fr: 'Colombie', en: 'Colombia', de: 'Kolumbien' }, cur: 'COP', loc: 'es-CO', step: 1000, tz: /^America\/Bogota$/ },
+    { id: 'CL', name: { es: 'Chile', fr: 'Chili', en: 'Chile', de: 'Chile' }, cur: 'CLP', loc: 'es-CL', step: 100, tz: /^(America\/(Santiago|Punta_Arenas)|Pacific\/Easter)$/ },
+    { id: 'AR', name: { es: 'Argentina', fr: 'Argentine', en: 'Argentina', de: 'Argentinien' }, cur: 'ARS', loc: 'es-AR', step: 1000, tz: /^America\/(Argentina\/|Buenos_Aires)/ },
+    { id: 'BO', name: { es: 'Bolivia', fr: 'Bolivie', en: 'Bolivia', de: 'Bolivien' }, cur: 'BOB', loc: 'es-BO', step: 1, tz: /^America\/La_Paz$/ },
+    { id: 'EC', name: { es: 'Ecuador', fr: 'Équateur', en: 'Ecuador', de: 'Ecuador' }, cur: 'USD', loc: 'es-EC', step: 1, tz: /^(America\/Guayaquil|Pacific\/Galapagos)$/ },
+    { id: 'VE', name: { es: 'Venezuela', fr: 'Venezuela', en: 'Venezuela', de: 'Venezuela' }, cur: 'USD', loc: 'es-VE', step: 1, tz: /^America\/Caracas$/ },
+    { id: 'US', name: { es: 'Otros países', fr: 'Autres pays', en: 'Other countries', de: 'Andere Länder' }, cur: 'USD', loc: 'en-US', step: 1, tz: /^$/ }
+  ];
+  const visitorTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) { return ''; } })();
+  const home = PRICE_COUNTRIES.find(c => c.tz.test(visitorTz));
+  const latinTz = !!home || /^America\/(Guatemala|El_Salvador|Tegucigalpa|Managua|Costa_Rica|Panama|Santo_Domingo|Asuncion|Montevideo|Havana|Puerto_Rico)$/.test(visitorTz);
+  const localBox = (L.lang === 'es' || latinTz) && form.querySelector('[data-panel="0"] .choices.rhythm');
+  if (localBox) {
+    const box = document.createElement('div');
+    box.className = 'local-prices';
+    box.dataset.localPrices = '';
+    const order = home ? [home, ...PRICE_COUNTRIES.filter(c => c !== home)] : PRICE_COUNTRIES;
+    box.innerHTML = `<p class="local-prices-title">${XT.localTitle} · <span data-local-plan></span></p>
+      <ul class="local-prices-list">${order.map(c => `<li class="${c === home ? 'is-home' : ''}" data-country="${c.id}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><clipPath id="flag-${c.id}"><circle cx="12" cy="12" r="12"/></clipPath><g clip-path="url(#flag-${c.id})">${FLAG[c.id]}</g><circle cx="12" cy="12" r="11.5" fill="none" stroke="rgb(0 0 0 / 12%)"/></svg><span class="country">${c.name[L.lang] || c.name.es}</span><b data-local-amount>—</b></li>`).join('')}</ul>
+      <p class="local-prices-note">${XT.localNote} <span data-local-source></span></p>`;
+    localBox.after(box);
+    let rates = FALLBACK_RATES;
+    const cadOf = plan => {
+      const n = String(plan?.dataset.monthly || '').match(/\d+(?:[.,]\d{1,2})?/);
+      return n ? Number(n[0].replace(',', '.')) : 0;
+    };
+    const paint = () => {
+      const plan = getSelected('plan');
+      const cad = cadOf(plan);
+      box.querySelector('[data-local-plan]').textContent = plan ? `${plan.dataset.hours} · ${plan.dataset.monthly}` : '';
+      PRICE_COUNTRIES.forEach(c => {
+        const cell = box.querySelector(`[data-country="${c.id}"] [data-local-amount]`);
+        const rate = Number(rates[c.cur]);
+        if (!cell || !cad || !rate) return;
+        const value = Math.round((cad * rate) / c.step) * c.step;
+        let text;
+        try {
+          text = c.cur === 'USD' ? `US$ ${new Intl.NumberFormat('es-PE').format(value)}`
+            : new Intl.NumberFormat(c.loc, { style: 'currency', currency: c.cur, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 }).format(value);
+        } catch (_) { text = `${value} ${c.cur}`; }
+        cell.textContent = `≈ ${text}${XT.perMonth}`;
+      });
+      const day = rates.date ? new Date(`${rates.date}T12:00:00Z`) : null;
+      box.querySelector('[data-local-source]').innerHTML = `${XT.ratesBy}: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">ExchangeRate-API</a>${day ? `, ${day.toLocaleDateString(L.lang === 'es' ? 'es-PE' : L.lang, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}.`;
+    };
+    form.addEventListener('change', e => { if (e.target.name === 'plan') paint(); });
+    paint();
+    // Today's rates, kept 12 h in this browser.
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem('pathwayRatesCAD') || 'null'); } catch (_) { cached = null; }
+    if (cached && Date.now() - cached.at < 12 * 3600e3 && cached.rates) { rates = cached.rates; paint(); }
+    else {
+      fetch('https://open.er-api.com/v6/latest/CAD').then(r => (r.ok ? r.json() : null)).then(d => {
+        if (!d || d.result !== 'success' || !d.rates) return;
+        const pick = { date: new Date((d.time_last_update_unix || Date.now() / 1000) * 1000).toISOString().slice(0, 10) };
+        ['PEN', 'MXN', 'COP', 'CLP', 'ARS', 'BOB', 'USD'].forEach(k => { if (Number(d.rates[k]) > 0) pick[k] = Number(d.rates[k]); });
+        if (Object.keys(pick).length < 8) return;
+        rates = pick; paint();
+        try { localStorage.setItem('pathwayRatesCAD', JSON.stringify({ at: Date.now(), rates })); } catch (_) { /* fine */ }
+      }).catch(() => { /* the saved rates stay */ });
+    }
+  }
 
   updateSummary();
   render();

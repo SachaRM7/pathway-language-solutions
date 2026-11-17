@@ -39,6 +39,7 @@ const day = (iso: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTime
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 type Group = { name: string; teacher: string | null; level: string; has_zoom: boolean; planned: number; held: number; recorded: number; late: number; moved: number; cancelled: number; missing: string[] };
+type Funnel = { steps: Record<string, number>; devices: Record<string, number>; devices_done: Record<string, number>; campaigns: { campaign: string; views: number; done: number; enrolled: number }[]; emails_sent: number; emails_failed: number; unsubscribed: number };
 type Report = { from: string; to: string; week: string; groups: Group[]; pending_changes: number; inactive: { name: string; teacher: string | null }[]; units_done: number; focus: { name: string; unit: string; times: number }[]; no_group: number; unmatched: number };
 
 // Same look as the Campus login email (supabase/templates/magic-link.html): Pathway logo, white
@@ -87,7 +88,28 @@ const small = (t: string) => `<p style="margin:0;font:400 13px/1.6 ${FONT};color
 const panel = (inner: string, bg = '#f6f6f5') => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr><td style="padding:20px;background:${bg};border-radius:20px;">${inner}</td></tr></table>`;
 const button = (href: string, label: string) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr><td style="background:#141414;border-radius:999px;"><a href="${href}" style="display:inline-block;padding:16px 30px;font:700 16px/1 ${FONT};color:#ffffff;text-decoration:none;white-space:nowrap;border-radius:999px;">${label} &rarr;</a></td></tr></table>`;
 
-export function renderReport(r: Report): { subject: string; html: string } {
+// Site journey of the week (campus/db/029): where visitors of the level test stop, on which device,
+// from which campaign, and the follow-up emails. Without the SQL 029 the block is left out.
+function funnelBlock(f: Funnel): string {
+  const n = (k: string) => Number(f.steps?.[k] || 0);
+  const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)} %` : '—');
+  const rows: [string, number, number][] = [
+    ['Ont ouvert le test', n('test_view'), n('test_view')], ['L’ont commencé', n('test_start'), n('test_view')], ['Arrivés à la moitié', n('test_half'), n('test_start')],
+    ['Arrivés à l’e-mail', n('test_email'), n('test_half')], ['Ont vu leur résultat', n('test_done'), n('test_email')], ['Ont cliqué « s’inscrire »', n('result_cta'), n('test_done')],
+    ['Ont ouvert l’inscription', n('enroll_view'), n('enroll_view')], ['Ont envoyé leur demande', n('enroll_sent'), n('enroll_view')]
+  ];
+  const line = ([label, v, base]: [string, number, number], i: number) => `<tr><td style="padding:6px 0;font:400 14px/1.4 ${FONT};color:#5f5f66;">${esc(label)}</td><td align="right" style="padding:6px 0;font:700 14px/1.4 ${FONT};color:#141414;">${v}</td><td align="right" width="64" style="padding:6px 0;font:400 13px/1.4 ${FONT};color:#9b9ba3;">${i === 0 || i === 6 ? '' : pct(v, base)}</td></tr>`;
+  const names: Record<string, string> = { android: 'Android', iphone: 'iPhone', ipad: 'iPad', tablet: 'Tablette', pc: 'PC', mac: 'Mac', other: 'Autre' };
+  const devices = Object.entries(f.devices || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${names[k] || esc(k)} ${v} (${f.devices_done?.[k] || 0} résultats)`).join(' · ');
+  const camps = (f.campaigns || []).map(c => `${esc(c.campaign)} : ${c.views} → ${c.done} résultats → ${c.enrolled} demandes`).join('<br>');
+  return `<h2 style="margin:4px 0 10px;font:800 18px/1.3 ${FONT};color:#141414;">Site : test de niveau et inscriptions</h2>`
+    + panel(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows.map(line).join('')}</table>`)
+    + (devices ? para(`<b style="color:#141414;">Appareils :</b> ${devices}`, 'font-size:14px;') : '')
+    + (camps ? para(`<b style="color:#141414;">Par campagne :</b><br>${camps}`, 'font-size:14px;') : '')
+    + para(`<b style="color:#141414;">E-mails de suivi :</b> ${f.emails_sent} envoyés${f.emails_failed ? `, <b style="color:#c2410c;">${f.emails_failed} échecs</b>` : ''}, ${f.unsubscribed} désinscriptions.`, 'font-size:14px;');
+}
+
+export function renderReport(r: Report, funnel: Funnel | null = null): { subject: string; html: string } {
   const last = new Date(Date.parse(r.to) - 1000).toISOString();
   const period = `du ${day(r.from, { day: 'numeric', month: 'long' })} au ${day(last, { day: 'numeric', month: 'long' })}`;
   const total = r.groups.reduce((a, g) => ({ planned: a.planned + g.planned, held: a.held + g.held, recorded: a.recorded + g.recorded, late: a.late + g.late }), { planned: 0, held: 0, recorded: 0, late: 0 });
@@ -113,6 +135,7 @@ export function renderReport(r: Report): { subject: string; html: string } {
     + (r.groups.length ? r.groups.map(group).join('') : panel(`<p style="margin:0;font:400 14px/1.5 ${FONT};color:#5f5f66;">Aucun groupe pour l’instant : créez-les dans « Horarios ».</p>`))
     + h2('Élèves sans activité sur le Campus')
     + para(r.inactive.length ? r.inactive.map(s => `${esc(s.name)}${s.teacher ? ` <span style="color:#9b9ba3;">(${esc(s.teacher)})</span>` : ''}`).join(', ') : 'Aucun : tout le monde a travaillé.', 'font-size:15px;')
+    + (funnel ? funnelBlock(funnel) : '')
     + (r.focus.length ? h2('Sorties d’onglet pendant une unité') + para(r.focus.map(f => `${esc(f.name)} : ${plural(f.times, 'fois', 'fois')}`).join(', '), 'font-size:15px;') : '')
     + para(`${plural(r.units_done, 'unité terminée', 'unités terminées')} sur le Campus cette semaine.`, 'font-size:15px;')
     + button(CAMPUS, 'Ouvrir « Horarios »')
@@ -137,7 +160,8 @@ Deno.serve(async req => {
     if (!caller) return json(403, { error: 'admin_only' });
     const { data: report, error } = await supabase.rpc('weekly_report_data', { p_from: null });
     if (error || !report) return json(500, { error: 'report_failed' });
-    const { subject, html } = renderReport(report);
+    const { data: funnel } = await supabase.rpc('funnel_report', { p_days: 7 });
+    const { subject, html } = renderReport(report, funnel || null);
     const sent = await sendMail(key, [caller.email], `[Prueba] ${subject}`, html);
     return sent.ok ? json(200, { ok: true, test: true, to: caller.email }) : json(502, { error: 'send_failed', status: sent.status });
   }
@@ -156,7 +180,8 @@ Deno.serve(async req => {
   const { data: claimed } = await supabase.rpc('claim_weekly_report', { p_week: report.week, p_recipients: to.length });
   if (claimed !== true) return json(200, { skipped: 'already_sent', week: report.week });
 
-  const { subject, html } = renderReport(report);
+  const { data: funnel } = await supabase.rpc('funnel_report', { p_days: 7 });
+  const { subject, html } = renderReport(report, funnel || null);
   const sent = await sendMail(key, to, subject, html);
   if (!sent.ok) {
     await supabase.from('weekly_reports').delete().eq('week_start', report.week); // lets the next call retry

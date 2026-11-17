@@ -36,3 +36,58 @@
     }
   });
 })();
+
+// Site journey (campus/db/029_relances_embudo.sql): anonymous steps of the level test and the
+// enrolment (page opened, test started, half-way, email asked, result, request sent…) with the kind
+// of device, to see where visitors leave. No name, email or IP address: a random visit id kept for
+// this tab only. Off for visitors who send « Do Not Track » or Global Privacy Control, and outside
+// pathway-languages.com. Never blocks the page.
+(() => {
+  const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+  const nav = navigator;
+  const off = location.hostname.replace(/^www\./, '') !== 'pathway-languages.com'
+    || nav.globalPrivacyControl === true || nav.doNotTrack === '1' || window.doNotTrack === '1';
+  const ua = nav.userAgent || '';
+  const device = /Android/i.test(ua) ? (/Mobile/i.test(ua) ? 'android' : 'tablet')
+    : /iPhone|iPod/i.test(ua) ? 'iphone'
+      : /iPad/i.test(ua) || (/Macintosh/i.test(ua) && nav.maxTouchPoints > 1) ? 'ipad'
+        : /Macintosh/i.test(ua) ? 'mac'
+          : /Windows|CrOS|Linux|X11/i.test(ua) ? 'pc' : 'other';
+  let visit = '';
+  try { visit = sessionStorage.getItem('pathwayVisit') || ''; } catch (_) { /* storage blocked */ }
+  if (!/^[a-z0-9]{8,40}$/.test(visit)) {
+    visit = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join('');
+    try { sessionStorage.setItem('pathwayVisit', visit); } catch (_) { /* one id per page then */ }
+  }
+  const lang = (document.documentElement.lang || 'es').slice(0, 2);
+  const sent = new Set();
+  const log = (event, detail) => {
+    const id = `${event}|${detail || ''}`;
+    if (off || sent.has(id)) return;
+    sent.add(id);
+    try {
+      const touch = window.PathwayCampaign?.get() || {};
+      fetch(`${SUPABASE.url}/rest/v1/rpc/log_funnel`, {
+        method: 'POST', keepalive: true,
+        headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_visit: visit, p_event: event, p_detail: detail ? String(detail).slice(0, 40) : null, p_lang: lang,
+          p_device: device, p_campaign: touch.campaign || null, p_source: touch.source || null })
+      }).catch(() => {});
+    } catch (_) { /* never blocks the page */ }
+  };
+  window.PathwayFunnel = Object.freeze({ log, device });
+  // Arrived from one of our emails (utm_source=email).
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('utm_source') === 'email') log('email_click', q.get('utm_campaign') || '');
+  } catch (_) { /* no query */ }
+  // A click on WhatsApp or Messenger, wherever it is on the page.
+  document.addEventListener('click', event => {
+    const link = event.target.closest && event.target.closest('a[href]');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    const where = link.dataset.funnelPlace || location.pathname.replace(/^\/(fr|en|de)\//, '/').replace(/\.html$/, '').slice(0, 40);
+    if (/^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href)) log('contact_whatsapp', where);
+    else if (/^https?:\/\/(m\.me|(www\.)?messenger\.com)\//i.test(href)) log('contact_messenger', where);
+  }, true);
+})();

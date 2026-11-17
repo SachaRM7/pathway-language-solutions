@@ -62,7 +62,7 @@ const assets = [
   'pathway-v2.css', 'pathway-page-shell.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
   'placement-test.css', 'test.css', 'placement-test.js', 'test.js', 'placement-scoring.js',
   'inscription.html', 'inscription.js', 'inscription.css', 'resource.css', 'resource.js',
-  'calculator.css', 'calculator.js', 'conditions-nclc7.css', 'conditions-nclc7.js'
+  'calculator.css', 'calculator.js', 'conditions-nclc7.css', 'conditions-nclc7.js', 'baja.html'
 ];
 
 await rm(dist, { recursive: true, force: true });
@@ -163,7 +163,7 @@ async function addMetaPixel(dir) {
     if (entry.isDirectory()) { if (entry.name !== 'campus' && entry.name !== 'assets') count += await addMetaPixel(path); continue; }
     if (!entry.name.endsWith('.html')) continue;
     const markup = await readFile(path, 'utf8');
-    if (markup.includes('/meta-pixel.js') || !markup.includes('</head>')) continue;
+    if (markup.includes('/meta-pixel.js') || markup.includes('data-no-pixel') || !markup.includes('</head>')) continue;
     // A page that only redirects (meta refresh) does not need it.
     if (/<meta[^>]+http-equiv=["']refresh["']/i.test(markup)) continue;
     await writeFile(path, markup.replace('</head>', '  <script src="/meta-pixel.js" defer></script>\n</head>'), 'utf8');
