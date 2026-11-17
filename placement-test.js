@@ -23,8 +23,8 @@
       next: 'Siguiente',
       showResult: 'Ver mi resultado',
       leadKicker: 'Tu resultado está listo',
-      leadTitle: '¿Con qué correo guardamos tu resultado?',
-      leadCopy: 'Guardamos tu nivel con tu correo: tu profesor lo tendrá listo para tu primera clase, y tu Campus empezará en el nivel correcto. No te enviamos ningún correo.',
+      leadTitle: '¿A qué correo te enviamos tu resultado?',
+      leadCopy: 'Te enviamos tu resultado y tu plan por correo, y tu profesor lo tendrá listo para tu primera clase. Después, solo dos o tres correos útiles para empezar: te das de baja en un clic.',
       leadLabel: 'Tu correo electrónico',
       leadPlaceholder: 'tu.nombre@correo.com',
       leadInvalid: 'Escribe un correo electrónico válido.',
@@ -34,12 +34,20 @@
       resultCta: 'Elegir mi ritmo y mis horarios',
       resultWhatsapp: '¿Una duda? Escríbenos por WhatsApp',
       waMessage: level => `Hola Pathway, acabo de hacer el test de nivel (resultado estimado: ${level}). Quisiera más información.`,
-      resultTitle: level => `Tu francés se sitúa alrededor de ${level}.`,
+      resultTitle: level => ({ A1: 'Tu nivel: A1. El mejor momento para construir bien.', A2: 'Tu nivel: A2. Tus bases ya están: falta el método.', B1: 'Tu nivel: B1. Ya hiciste la mitad del camino.', B2: 'Tu nivel: B2. El NCLC 7 está a tu alcance.' })[level] || `Tu nivel: ${level}.`,
+      levelCopy: {
+        A1: date => `Empezar con un profesor particular desde la primera clase evita los errores que luego cuestan meses corregir. Con 3 h por semana, tu NCLC 7 podría llegar hacia ${date}*. Cada mes que esperas, esa fecha se aleja un mes.`,
+        A2: date => `En A2 un profesor particular marca la diferencia: corrige lo que se fijó mal y acelera lo que ya sabes. Con 3 h por semana, tu NCLC 7 podría llegar hacia ${date}*. Cada mes que esperas, esa fecha se aleja un mes.`,
+        B1: date => `Entre B1 y B2 es donde más gente se estanca estudiando sola. Con un plan semanal y correcciones personalizadas, tu NCLC 7 podría llegar hacia ${date}*. Cada mes que esperas, esa fecha se aleja un mes.`,
+        B2: date => `Ahora se trata de dominar el formato del TEF o del TCF y asegurar cada competencia el día del examen. Con una preparación enfocada, podrías presentarte hacia ${date}*: cuanto antes empiezas, antes sumas tus puntos de francés.`
+      },
+      dateLocale: 'es-PE',
+      channelPrompt: '¿Prefieres hablarlo antes con nosotros?',
       status: { construction: 'Tu nivel está en construcción.', functional: 'Tu nivel es funcional.', independent: 'Tu nivel es independiente.', solid: 'Tu nivel es sólido.' },
       confidence: { express: 'Orientativo: confirma tu nivel en una clase en vivo.', intensive: 'Más preciso: combina cuatro niveles y pondera la dificultad.' },
-      diagnostic: { priority: 'prioridad', consolidating: 'por consolidar', operational: 'operativa', strength: 'fortaleza' },
+      diagnostic: { priority: 'a reforzar primero', consolidating: 'en progreso', operational: 'operativa', strength: 'punto fuerte' },
       speakingScore: 'No evaluada en este test', speakingCopy: 'Se confirma en una clase en vivo.', speakingDiagnostic: 'por confirmar',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Índice global del test: ${overall}/100 (${totalCorrect} respuestas correctas de ${totalQuestions}). ${status} La competencia que más limita tu avance es ${weakest}. ${confidence}`
+      resultCopy: ({ overall, totalCorrect, totalQuestions, weakest, confidence }) => `Índice del test: ${overall}/100 (${totalCorrect} respuestas correctas de ${totalQuestions}). A reforzar primero: ${weakest}. ${confidence} *Estimación con 3 h por semana; tu profesor confirma el plan en tu primera clase.`
     },
     fr: {
       skills: { reading: 'Compréhension écrite', listening: 'Compréhension orale', grammarVocabulary: 'Grammaire et vocabulaire', speaking: 'Expression orale' },
@@ -55,8 +63,8 @@
       next: 'Suivante',
       showResult: 'Voir mon résultat',
       leadKicker: 'Votre résultat est prêt',
-      leadTitle: 'Avec quelle adresse e-mail enregistrons-nous votre résultat ?',
-      leadCopy: 'Nous enregistrons votre niveau avec votre adresse e-mail : votre professeur l’aura sous les yeux dès votre premier cours, et votre Campus commencera au bon niveau. Nous ne vous envoyons aucun e-mail.',
+      leadTitle: 'À quelle adresse vous envoyons-nous votre résultat ?',
+      leadCopy: 'Nous vous envoyons votre résultat et votre plan par e-mail, et votre professeur l’aura sous les yeux dès votre premier cours. Ensuite, seulement deux ou trois e-mails utiles pour démarrer : désinscription en un clic.',
       leadLabel: 'Votre adresse e-mail',
       leadPlaceholder: 'prenom.nom@exemple.com',
       leadInvalid: 'Saisissez une adresse e-mail valide.',
@@ -66,12 +74,20 @@
       resultCta: 'Choisir mon rythme et mes horaires',
       resultWhatsapp: 'Une question ? Écrivez-nous sur WhatsApp',
       waMessage: level => `Bonjour Pathway, je viens de faire le test de niveau (résultat estimé : ${level}). J’aimerais plus d’informations.`,
-      resultTitle: level => `Votre français se situe autour de ${level}.`,
+      resultTitle: level => ({ A1: 'Votre niveau : A1. Le meilleur moment pour bien construire.', A2: 'Votre niveau : A2. Les bases sont là : il manque la méthode.', B1: 'Votre niveau : B1. La moitié du chemin est faite.', B2: 'Votre niveau : B2. Le NCLC 7 est à votre portée.' })[level] || `Votre niveau : ${level}.`,
+      levelCopy: {
+        A1: date => `Commencer avec un professeur particulier dès le premier cours évite les erreurs qui coûtent ensuite des mois à corriger. Avec 3 h par semaine, votre NCLC 7 pourrait arriver vers ${date}*. Chaque mois d’attente repousse cette date d’un mois.`,
+        A2: date => `En A2, un professeur particulier fait la différence : il corrige ce qui s’est mal fixé et accélère ce que vous savez déjà. Avec 3 h par semaine, votre NCLC 7 pourrait arriver vers ${date}*. Chaque mois d’attente repousse cette date d’un mois.`,
+        B1: date => `C’est entre B1 et B2 que l’on stagne le plus en travaillant seul. Avec un plan hebdomadaire et des corrections personnalisées, votre NCLC 7 pourrait arriver vers ${date}*. Chaque mois d’attente repousse cette date d’un mois.`,
+        B2: date => `Il s’agit maintenant de maîtriser le format du TEF ou du TCF et d’assurer chaque compétence le jour de l’examen. Avec une préparation ciblée, vous pourriez le passer vers ${date}* : plus tôt vous commencez, plus tôt vos points de français comptent.`
+      },
+      dateLocale: 'fr-CA',
+      channelPrompt: 'Vous préférez en parler avec nous d’abord ?',
       status: { construction: 'Votre niveau est en construction.', functional: 'Votre niveau est fonctionnel.', independent: 'Votre niveau est autonome.', solid: 'Votre niveau est solide.' },
       confidence: { express: 'Indication prudente : confirmez votre niveau lors d’un cours en direct.', intensive: 'Estimation plus précise : quatre niveaux et la difficulté sont pondérés.' },
-      diagnostic: { priority: 'priorité', consolidating: 'à consolider', operational: 'opérationnel', strength: 'point fort' },
+      diagnostic: { priority: 'à renforcer en premier', consolidating: 'en progrès', operational: 'opérationnel', strength: 'point fort' },
       speakingScore: 'Non évaluée par ce test', speakingCopy: 'À confirmer pendant un cours en direct.', speakingDiagnostic: 'à confirmer',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Indice global du test : ${overall}/100 (${totalCorrect} bonnes réponses sur ${totalQuestions}). ${status} La compétence qui limite le plus votre progression est ${weakest}. ${confidence}`
+      resultCopy: ({ overall, totalCorrect, totalQuestions, weakest, confidence }) => `Indice du test : ${overall}/100 (${totalCorrect} bonnes réponses sur ${totalQuestions}). À renforcer en premier : ${weakest}. ${confidence} *Estimation avec 3 h par semaine ; votre professeur confirme le plan dès votre premier cours.`
     },
     en: {
       skills: { reading: 'Reading comprehension', listening: 'Listening comprehension', grammarVocabulary: 'Grammar & vocabulary', speaking: 'Speaking' },
@@ -87,8 +103,8 @@
       next: 'Next',
       showResult: 'See my result',
       leadKicker: 'Your result is ready',
-      leadTitle: 'Which email address should we save your result with?',
-      leadCopy: 'We save your level with your email address: your teacher will have it ready for your first class, and your Campus will start at the right level. We do not send you any email.',
+      leadTitle: 'Where should we email your result?',
+      leadCopy: 'We email you your result and your plan, and your teacher will have it ready for your first class. After that, just two or three useful emails to get started: unsubscribe in one click.',
       leadLabel: 'Your email address',
       leadPlaceholder: 'name@example.com',
       leadInvalid: 'Enter a valid email address.',
@@ -98,12 +114,20 @@
       resultCta: 'Choose my pace and schedule',
       resultWhatsapp: 'A question? Message us on WhatsApp',
       waMessage: level => `Hello Pathway, I just took the level test (estimated result: ${level}). I would like more information.`,
-      resultTitle: level => `Your French is estimated at around ${level}.`,
+      resultTitle: level => ({ A1: 'Your level: A1. The best time to build it right.', A2: 'Your level: A2. The basics are there: now you need a method.', B1: 'Your level: B1. You are halfway there.', B2: 'Your level: B2. NCLC 7 is within reach.' })[level] || `Your level: ${level}.`,
+      levelCopy: {
+        A1: date => `Starting with a private teacher from the first class avoids the mistakes that take months to fix later. At 3 h a week, your NCLC 7 could come around ${date}*. Every month you wait pushes that date back a month.`,
+        A2: date => `At A2 a private teacher makes the difference: fixing what was learned wrong and speeding up what you already know. At 3 h a week, your NCLC 7 could come around ${date}*. Every month you wait pushes that date back a month.`,
+        B1: date => `Between B1 and B2 is where most people stall studying alone. With a weekly plan and personal corrections, your NCLC 7 could come around ${date}*. Every month you wait pushes that date back a month.`,
+        B2: date => `Now it is about mastering the TEF or TCF format and securing every skill on exam day. With focused preparation, you could sit the exam around ${date}*: the sooner you start, the sooner your French points count.`
+      },
+      dateLocale: 'en-CA',
+      channelPrompt: 'Prefer to talk it over with us first?',
       status: { construction: 'Your level is still developing.', functional: 'Your level is functional.', independent: 'Your level is independent.', solid: 'Your level is solid.' },
       confidence: { express: 'Guidance only: confirm your level in a live class.', intensive: 'More precise: four levels and difficulty weighting are included.' },
-      diagnostic: { priority: 'priority', consolidating: 'to consolidate', operational: 'operational', strength: 'strength' },
+      diagnostic: { priority: 'work on first', consolidating: 'in progress', operational: 'operational', strength: 'strength' },
       speakingScore: 'Not assessed by this test', speakingCopy: 'To be confirmed in a live class.', speakingDiagnostic: 'to confirm',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Overall test index: ${overall}/100 (${totalCorrect} correct answers out of ${totalQuestions}). ${status} The skill holding back your progress most is ${weakest}. ${confidence}`
+      resultCopy: ({ overall, totalCorrect, totalQuestions, weakest, confidence }) => `Test index: ${overall}/100 (${totalCorrect} correct answers out of ${totalQuestions}). Work on first: ${weakest}. ${confidence} *Estimate at 3 h a week; your teacher confirms the plan in your first class.`
     },
     de: {
       skills: { reading: 'Leseverstehen', listening: 'Hörverstehen', grammarVocabulary: 'Grammatik und Wortschatz', speaking: 'Sprechen' },
@@ -119,8 +143,8 @@
       next: 'Weiter',
       showResult: 'Ergebnis anzeigen',
       leadKicker: 'Ihr Ergebnis ist bereit',
-      leadTitle: 'Unter welcher E-Mail-Adresse speichern wir Ihr Ergebnis?',
-      leadCopy: 'Wir speichern Ihr Niveau mit Ihrer E-Mail-Adresse: Ihre Lehrkraft hat es zur ersten Stunde vorliegen, und Ihr Campus beginnt auf dem richtigen Niveau. Wir senden Ihnen keine E-Mail.',
+      leadTitle: 'An welche E-Mail-Adresse senden wir Ihr Ergebnis?',
+      leadCopy: 'Wir senden Ihnen Ihr Ergebnis und Ihren Plan per E-Mail, und Ihre Lehrkraft hat es zur ersten Stunde vorliegen. Danach nur zwei oder drei nützliche E-Mails für den Start: Abmeldung mit einem Klick.',
       leadLabel: 'Ihre E-Mail-Adresse',
       leadPlaceholder: 'name@beispiel.de',
       leadInvalid: 'Geben Sie eine gültige E-Mail-Adresse ein.',
@@ -130,12 +154,20 @@
       resultCta: 'Rhythmus und Zeiten wählen',
       resultWhatsapp: 'Eine Frage? Schreiben Sie uns auf WhatsApp',
       waMessage: level => `Hallo Pathway, ich habe gerade den Einstufungstest gemacht (geschätztes Ergebnis: ${level}). Ich hätte gern mehr Informationen.`,
-      resultTitle: level => `Ihr Französisch liegt ungefähr auf Niveau ${level}.`,
+      resultTitle: level => ({ A1: 'Ihr Niveau: A1. Der beste Moment, es richtig aufzubauen.', A2: 'Ihr Niveau: A2. Die Grundlagen sind da: jetzt fehlt die Methode.', B1: 'Ihr Niveau: B1. Die Hälfte des Weges ist geschafft.', B2: 'Ihr Niveau: B2. NCLC 7 ist in Reichweite.' })[level] || `Ihr Niveau: ${level}.`,
+      levelCopy: {
+        A1: date => `Mit einer Privatlehrkraft ab der ersten Stunde vermeiden Sie Fehler, deren Korrektur später Monate kostet. Mit 3 Std. pro Woche könnte Ihr NCLC 7 um ${date}* erreicht sein. Jeder Monat Warten verschiebt dieses Datum um einen Monat.`,
+        A2: date => `Auf A2 macht eine Privatlehrkraft den Unterschied: Sie korrigiert, was sich falsch eingeprägt hat, und beschleunigt, was Sie schon können. Mit 3 Std. pro Woche könnte Ihr NCLC 7 um ${date}* erreicht sein. Jeder Monat Warten verschiebt dieses Datum um einen Monat.`,
+        B1: date => `Zwischen B1 und B2 bleiben die meisten beim Selbstlernen stecken. Mit einem Wochenplan und persönlichen Korrekturen könnte Ihr NCLC 7 um ${date}* erreicht sein. Jeder Monat Warten verschiebt dieses Datum um einen Monat.`,
+        B2: date => `Jetzt geht es darum, das Format von TEF oder TCF zu beherrschen und jede Kompetenz am Prüfungstag zu sichern. Mit gezielter Vorbereitung könnten Sie um ${date}* antreten: Je früher Sie beginnen, desto früher zählen Ihre Französischpunkte.`
+      },
+      dateLocale: 'de-DE',
+      channelPrompt: 'Lieber vorher mit uns sprechen?',
       status: { construction: 'Ihr Niveau befindet sich im Aufbau.', functional: 'Ihr Niveau ist funktional.', independent: 'Ihr Niveau ist selbstständig.', solid: 'Ihr Niveau ist sicher.' },
       confidence: { express: 'Orientierung: Bestätigen Sie Ihr Niveau in einer Live-Stunde.', intensive: 'Präzisere Einschätzung: vier Niveaus und die Schwierigkeit werden gewichtet.' },
-      diagnostic: { priority: 'Priorität', consolidating: 'zu festigen', operational: 'funktional', strength: 'Stärke' },
+      diagnostic: { priority: 'zuerst stärken', consolidating: 'im Aufbau', operational: 'funktional', strength: 'Stärke' },
       speakingScore: 'Von diesem Test nicht bewertet', speakingCopy: 'Wird in einer Live-Stunde bestätigt.', speakingDiagnostic: 'zu bestätigen',
-      resultCopy: ({ overall, totalCorrect, totalQuestions, status, weakest, confidence }) => `Gesamtindex des Tests: ${overall}/100 (${totalCorrect} richtige Antworten von ${totalQuestions}). ${status} Die Kompetenz, die Ihren Fortschritt am stärksten begrenzt, ist ${weakest}. ${confidence}`
+      resultCopy: ({ overall, totalCorrect, totalQuestions, weakest, confidence }) => `Testindex: ${overall}/100 (${totalCorrect} richtige Antworten von ${totalQuestions}). Zuerst stärken: ${weakest}. ${confidence} *Schätzung bei 3 Std. pro Woche; Ihre Lehrkraft bestätigt den Plan in der ersten Stunde.`
     }
   };
   const T = UI[locale] || UI.es;
@@ -388,6 +420,15 @@
   // The result is saved with the email so the teacher finds the level when creating the account
   // (campus/db/019_test_nivel.sql). A network failure never blocks the result.
   const track = (name, data) => { try { window.PathwayAnalytics?.track(name, data); } catch (error) { /* never blocks */ } };
+  // Anonymous journey steps (campaign.js, campus/db/029): campaign.js loads after this script.
+  const funnel = (event, detail) => {
+    try {
+      if (window.PathwayFunnel) window.PathwayFunnel.log(event, detail);
+      else document.addEventListener('DOMContentLoaded', () => window.PathwayFunnel?.log(event, detail), { once: true });
+    } catch (error) { /* never blocks */ }
+  };
+  const ICON_WHATSAPP = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9.2 8.6c-.4 2.9 2.6 6 5.6 5.6l.7-1.5-1.8-.9-.9.8a4.6 4.6 0 0 1-2-2l.8-.9-.9-1.8Z"/></svg>';
+  const ICON_MESSENGER = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4.7 0-8.5 3.5-8.5 7.9 0 2.4 1.1 4.6 3 6v3.1l2.9-1.6c.8.2 1.7.3 2.6.3 4.7 0 8.5-3.5 8.5-7.8S16.7 3.5 12 3.5Z"/><path d="m7.5 13.6 3-3.2 2 2 3.9-2.2-3 3.2-2-2Z"/></svg>';
   const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
   // First touch (campaign.js): where this visitor first came from, if known.
   const firstTouch = () => { try { const t = window.PathwayCampaign?.get() || {}; return { p_campaign: t.campaign || null, p_source: t.source || null }; } catch (error) { return { p_campaign: null, p_source: null }; } };
@@ -439,6 +480,7 @@
         calculateResult(email);
       });
     }
+    funnel('test_email', mode);
     form.hidden = true;
     lead.hidden = false;
     lead.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
@@ -455,11 +497,25 @@
     const statusKey = levelIndexForStatus(resultData.levelIndex);
     const statusLabel = T.status[statusKey];
     document.querySelector('[data-result-title]').textContent = T.resultTitle(estimatedLevel);
-    document.querySelector('[data-result-copy]').textContent = T.resultCopy({
+    // A message for each level, with the month the NCLC 7 could come at 3 h a week (one CEFR
+    // level per 5-month cycle, as on the enrolment page), then the test figures in small.
+    const monthsLeft = { A1: 20, A2: 15, B1: 10, B2: 5 }[estimatedLevel] || 20;
+    const target = new Date(); target.setMonth(target.getMonth() + monthsLeft);
+    let targetLabel = '';
+    try { targetLabel = new Intl.DateTimeFormat(T.dateLocale || locale, { month: 'long', year: 'numeric' }).format(target); } catch (error) { targetLabel = String(target.getFullYear()); }
+    const levelMessage = T.levelCopy && T.levelCopy[estimatedLevel];
+    document.querySelector('[data-result-copy]').textContent = levelMessage ? levelMessage(targetLabel) : '';
+    let indexLine = document.querySelector('[data-result-index]');
+    if (!indexLine) {
+      indexLine = document.createElement('p');
+      indexLine.className = 'result-index';
+      indexLine.dataset.resultIndex = '';
+      document.querySelector('[data-result-copy]').insertAdjacentElement('afterend', indexLine);
+    }
+    indexLine.textContent = T.resultCopy({
       overall,
       totalCorrect,
       totalQuestions,
-      status: statusLabel,
       weakest: T.skillsInSentence[weakestSkill],
       confidence: T.confidence[mode]
     });
@@ -487,6 +543,7 @@
     // On a phone the button at the bottom sits three screens below the level: the next step and a
     // way to ask a question go right under the level, where the visitor is looking.
     const heroCopy = document.querySelector('[data-result-copy]');
+    funnel('test_done', estimatedLevel);
     if (heroCopy && enrollLink) {
       let quick = document.querySelector('[data-result-quick]');
       if (!quick) {
@@ -496,7 +553,13 @@
         heroCopy.insertAdjacentElement('afterend', quick);
       }
       const wa = `https://wa.me/51989887516?text=${encodeURIComponent(T.waMessage(estimatedLevel))}`;
-      quick.innerHTML = `<a class="button button-coral" href="${enrollLink.getAttribute('href')}">${T.resultCta} <span aria-hidden="true">→</span></a><a class="result-whatsapp" href="${wa}" target="_blank" rel="noopener">${T.resultWhatsapp}</a>`;
+      // Messenger as well once the Facebook page address is set (site-config.js, messengerUrl).
+      const messenger = String((window.PATHWAY_CONFIG || {}).messengerUrl || '');
+      const channels = /^https:\/\/(m\.me|www\.messenger\.com)\//.test(messenger)
+        ? `<p class="result-channel-prompt">${T.channelPrompt}</p><div class="result-channels"><a class="channel channel-whatsapp" href="${wa}" target="_blank" rel="noopener" data-funnel-place="result">${ICON_WHATSAPP}<span>WhatsApp</span></a><a class="channel channel-messenger" href="${messenger}${messenger.includes('?') ? '&' : '?'}ref=test_${estimatedLevel}" target="_blank" rel="noopener" data-funnel-place="result">${ICON_MESSENGER}<span>Messenger</span></a></div>`
+        : `<a class="result-whatsapp" href="${wa}" target="_blank" rel="noopener" data-funnel-place="result">${T.resultWhatsapp}</a>`;
+      quick.innerHTML = `<a class="button button-coral" href="${enrollLink.getAttribute('href')}" data-result-cta>${T.resultCta} <span aria-hidden="true">→</span></a>${channels}`;
+      quick.querySelector('[data-result-cta]').addEventListener('click', () => funnel('result_cta', estimatedLevel));
     }
     runCalculationAnimation();
   };
@@ -517,7 +580,9 @@
     introLead.insertAdjacentElement('afterend', quickStart);
   }
 
+  funnel('test_view');
   document.querySelector('[data-start-test]').addEventListener('click', () => {
+    funnel('test_start', mode);
     intro.hidden = true;
     stage.hidden = false;
     renderQuestion();
@@ -530,6 +595,7 @@
     if (responses[question.index] === null) return;
     if (current < activeQuestions.length - 1) {
       current += 1;
+      if (current >= Math.floor(activeQuestions.length / 2)) funnel('test_half', mode);
       renderQuestion();
       return;
     }

@@ -214,3 +214,31 @@
   .result-quick-actions .button { width: 100%; justify-content: center; }
   .result-hero .result-level { padding: 12px 20px; font-size: 40px; justify-self: start; }
 }
+
+/* Result: the test figures in small under the level message. */
+.result-hero .result-index { margin-top: 14px; font-size: 14px; line-height: 1.55; color: rgb(255 250 242 / 62%); }
+/* Choice of channel: WhatsApp or Messenger (result card and enrolment summary). */
+.result-channel-prompt { width: 100%; margin: 4px 0 0; color: rgb(255 250 242 / 78%); font-size: 15px; }
+.result-channels, .channel-pick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.channel { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 16px; border: 1.5px solid currentColor; border-radius: 12px; font: 700 16px/1 inherit; text-decoration: none; cursor: pointer; background: transparent; }
+.channel svg { width: 22px; height: 22px; flex: none; }
+.result-channels .channel { color: var(--paper); }
+.result-channels .channel:hover { background: rgb(255 250 242 / 10%); }
+.channel-pick { margin: 22px 0 4px; padding-top: 18px; border-top: 1px solid var(--line); }
+.channel-pick-title { margin: 0 0 4px; color: var(--ink); font-weight: 700; }
+.channel-pick-copy { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.channel-pick .channel { color: var(--ink); border-color: var(--line); background: var(--paper); }
+.channel-pick .channel-whatsapp svg { color: #128c4a; }
+.channel-pick .channel-messenger svg { color: #0866ff; }
+.channel-pick .channel[aria-pressed="true"] { border-color: var(--ink); background: color-mix(in srgb, var(--sage) 40%, var(--paper)); box-shadow: inset 0 0 0 1px var(--ink); }
+/* Plan price in Latin American currencies, with round flags. */
+.local-prices { margin: 18px 0 8px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+.local-prices-title { margin: 0 0 10px; color: var(--ink); font-size: 14px; font-weight: 700; }
+.local-prices-title span { color: var(--muted); font-weight: 500; }
+.local-prices-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 6px 18px; margin: 0; padding: 0; list-style: none; }
+.local-prices-list li { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; min-height: 34px; padding: 4px 8px; border-radius: 10px; font-size: 14px; color: var(--ink); }
+.local-prices-list li.is-home { background: color-mix(in srgb, var(--sage) 45%, var(--paper)); }
+.local-prices-list .flag { width: 22px; height: 22px; display: block; }
+.local-prices-list b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.local-prices-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.local-prices-note a { color: inherit; }

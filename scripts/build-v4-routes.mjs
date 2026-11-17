@@ -43,7 +43,7 @@ const PAGES = [
 ];
 
 const ADAPTER_ASSET = 'inscription-v4.js';
-const INSCRIPTION_SCRIPT_MARKER = '<script src="inscription.js?v=20261117-funnel"></script>';
+const INSCRIPTION_SCRIPT_MARKER = '<script src="inscription.js?v=20261117-relances"></script>';
 const SELECTION_STORAGE_KEY = 'pathwayV4Selection';
 
 export const PLAN_VALUES = ['Esencial', 'Acelerado', 'Intensivo'];
@@ -209,7 +209,7 @@ export const THANKS_COPY = {
     trail: 'Gracias', eyebrow: 'Pathway · próximos pasos',
     h1: 'Gracias por escribirnos.', lead: 'Así empieza tu curso con Pathway: tres pasos, y ningún pago antes de la confirmación escrita de tu horario.',
     savedH1: 'Recibimos tu solicitud.', savedLead: 'Pathway la revisa y te escribe para proponerte un horario. Envía también el mensaje preparado en WhatsApp: es por ahí que te respondemos más rápido.',
-    waH1: 'Falta un último paso.', waLead: 'Envía el mensaje que abrimos en WhatsApp: así Pathway recibe tus datos y te responde. Si la ventana no se abrió, usa el botón de abajo.',
+    msgH1: 'Recibimos tu solicitud.', msgLead: 'Tu resumen está copiado: pégalo en Messenger y envíalo, así te respondemos más rápido. Si Messenger no se abrió, usa el botón de abajo.', msgButton: 'Abrir Messenger', waH1: 'Falta un último paso.', waLead: 'Envía el mensaje que abrimos en WhatsApp: así Pathway recibe tus datos y te responde. Si la ventana no se abrió, usa el botón de abajo.',
     reopen: 'Abrir el mensaje en WhatsApp', test: 'Hacer el test de nivel', schedule: 'Elegir mi ritmo y mis horarios', whatsapp: 'Escribir a Pathway por WhatsApp',
     steps: [['Test de nivel', 'Mides tu punto de partida en línea, gratis (12 a 15 minutos). Tu nivel queda guardado para tu primera clase.'], ['Ritmo y horarios', 'Eliges entre 2 y 6 horas por semana de clases particulares y nos indicas tu disponibilidad.'], ['Confirmación escrita', 'Pathway confirma por escrito un horario con tu profesor. El pago solo se pide después.']],
     cardPill: 'Contacto directo', cardTitle: '¿Prefieres escribirnos?', cardText: 'Por correo o por WhatsApp, como te resulte más cómodo.', mailLabel: 'Correo', waLabel: 'WhatsApp',
@@ -220,7 +220,7 @@ export const THANKS_COPY = {
     trail: 'Merci', eyebrow: 'Pathway · prochaines étapes',
     h1: 'Merci de nous avoir écrit.', lead: 'Voici comment commence votre cours avec Pathway : trois étapes, et aucun paiement avant la confirmation écrite de votre horaire.',
     savedH1: 'Nous avons bien reçu votre demande.', savedLead: 'Pathway l’étudie et vous écrit pour vous proposer un horaire. Envoyez aussi le message préparé dans WhatsApp : c’est par là que nous vous répondons le plus vite.',
-    waH1: 'Il reste une dernière étape.', waLead: 'Envoyez le message que nous avons ouvert dans WhatsApp : Pathway reçoit ainsi vos informations et vous répond. Si la fenêtre ne s’est pas ouverte, utilisez le bouton ci-dessous.',
+    msgH1: 'Nous avons bien reçu votre demande.', msgLead: 'Votre résumé est copié : collez-le dans Messenger et envoyez-le, nous vous répondrons plus vite. Si Messenger ne s’est pas ouvert, utilisez le bouton ci-dessous.', msgButton: 'Ouvrir Messenger', waH1: 'Il reste une dernière étape.', waLead: 'Envoyez le message que nous avons ouvert dans WhatsApp : Pathway reçoit ainsi vos informations et vous répond. Si la fenêtre ne s’est pas ouverte, utilisez le bouton ci-dessous.',
     reopen: 'Ouvrir le message dans WhatsApp', test: 'Faire le test de niveau', schedule: 'Choisir mon rythme et mes horaires', whatsapp: 'Écrire à Pathway sur WhatsApp',
     steps: [['Test de niveau', 'Vous mesurez votre point de départ en ligne, gratuitement (12 à 15 minutes). Votre niveau est enregistré pour votre premier cours.'], ['Rythme et horaires', 'Vous choisissez entre 2 et 6 heures de cours particuliers par semaine et proposez vos disponibilités.'], ['Confirmation écrite', 'Pathway confirme par écrit un horaire avec votre professeur. Le paiement n’est demandé qu’ensuite.']],
     cardPill: 'Contact direct', cardTitle: 'Vous préférez nous écrire ?', cardText: 'Par e-mail ou par WhatsApp, comme vous préférez.', mailLabel: 'E-mail', waLabel: 'WhatsApp',
@@ -231,7 +231,7 @@ export const THANKS_COPY = {
     trail: 'Thank you', eyebrow: 'Pathway · next steps',
     h1: 'Thank you for reaching out.', lead: 'This is how your course with Pathway begins: three steps, and no payment before your schedule is confirmed in writing.',
     savedH1: 'We have received your request.', savedLead: 'Pathway reviews it and writes to you with a schedule proposal. Please also send the prepared WhatsApp message: that is where we reply fastest.',
-    waH1: 'One last step.', waLead: 'Send the message we opened in WhatsApp so that Pathway receives your details and can reply. If the window did not open, use the button below.',
+    msgH1: 'We have received your request.', msgLead: 'Your summary is copied: paste it into Messenger and send it so we can reply faster. If Messenger did not open, use the button below.', msgButton: 'Open Messenger', waH1: 'One last step.', waLead: 'Send the message we opened in WhatsApp so that Pathway receives your details and can reply. If the window did not open, use the button below.',
     reopen: 'Open the message in WhatsApp', test: 'Take the placement test', schedule: 'Choose my pace and schedule', whatsapp: 'Message Pathway on WhatsApp',
     steps: [['Placement test', 'You measure your starting point online, free of charge (12 to 15 minutes). Your level is saved for your first class.'], ['Pace and schedule', 'You choose between 2 and 6 hours of private lessons per week and suggest your availability.'], ['Written confirmation', 'Pathway confirms a schedule with your teacher in writing. Payment is only requested afterwards.']],
     cardPill: 'Direct contact', cardTitle: 'Prefer to write to us?', cardText: 'By email or on WhatsApp, whichever suits you.', mailLabel: 'Email', waLabel: 'WhatsApp',
@@ -242,7 +242,7 @@ export const THANKS_COPY = {
     trail: 'Vielen Dank', eyebrow: 'Pathway · nächste Schritte',
     h1: 'Vielen Dank für Ihre Nachricht.', lead: 'So beginnt Ihr Kurs mit Pathway: drei Schritte und keine Zahlung vor der schriftlichen Bestätigung Ihrer Unterrichtszeiten.',
     savedH1: 'Wir haben Ihre Anfrage erhalten.', savedLead: 'Pathway prüft sie und schreibt Ihnen mit einem Terminvorschlag. Senden Sie bitte auch die vorbereitete WhatsApp-Nachricht: Dort antworten wir am schnellsten.',
-    waH1: 'Ein letzter Schritt fehlt.', waLead: 'Senden Sie die Nachricht, die wir in WhatsApp geöffnet haben, damit Pathway Ihre Angaben erhält und Ihnen antworten kann. Falls sich das Fenster nicht geöffnet hat, nutzen Sie die Schaltfläche unten.',
+    msgH1: 'Wir haben Ihre Anfrage erhalten.', msgLead: 'Ihre Zusammenfassung ist kopiert: Fügen Sie sie in Messenger ein und senden Sie sie, dann antworten wir schneller. Falls Messenger sich nicht geöffnet hat, nutzen Sie die Schaltfläche unten.', msgButton: 'Messenger öffnen', waH1: 'Ein letzter Schritt fehlt.', waLead: 'Senden Sie die Nachricht, die wir in WhatsApp geöffnet haben, damit Pathway Ihre Angaben erhält und Ihnen antworten kann. Falls sich das Fenster nicht geöffnet hat, nutzen Sie die Schaltfläche unten.',
     reopen: 'Nachricht in WhatsApp öffnen', test: 'Einstufungstest machen', schedule: 'Tempo und Zeiten wählen', whatsapp: 'Pathway auf WhatsApp schreiben',
     steps: [['Einstufungstest', 'Sie messen Ihren Ausgangspunkt online und kostenlos (12 bis 15 Minuten). Ihr Niveau wird für Ihre erste Stunde gespeichert.'], ['Tempo und Zeiten', 'Sie wählen zwischen 2 und 6 Stunden Einzelunterricht pro Woche und schlagen Ihre Verfügbarkeit vor.'], ['Schriftliche Bestätigung', 'Pathway bestätigt Ihnen schriftlich einen Termin mit Ihrer Lehrkraft. Die Zahlung wird erst danach angefordert.']],
     cardPill: 'Direkter Kontakt', cardTitle: 'Lieber schreiben?', cardText: 'Per E-Mail oder über WhatsApp, wie es Ihnen lieber ist.', mailLabel: 'E-Mail', waLabel: 'WhatsApp',
@@ -259,7 +259,7 @@ export function thanksPage(lang, homeMarkup) {
   const testPath = lang === 'es' ? '/test-placement.html' : sitePath(lang, 'test.html');
   const { header, footer, icons } = v4Chrome(homeMarkup, lang, code => v4Path(code, THANKS_PAGES[code]));
   const arrow = icon('i-arrow');
-  const copy = JSON.stringify({ savedH1: t.savedH1, savedLead: t.savedLead, waH1: t.waH1, waLead: t.waLead });
+  const copy = JSON.stringify({ savedH1: t.savedH1, savedLead: t.savedLead, waH1: t.waH1, waLead: t.waLead, msgH1: t.msgH1, msgLead: t.msgLead, msgButton: t.msgButton });
   return `<!doctype html>
 <html lang="${lang}">
 <head>
@@ -331,6 +331,18 @@ export function thanksPage(lang, homeMarkup) {
     (() => {
       const copy = ${copy};
       const params = new URLSearchParams(location.search);
+      // Sent by Messenger (inscription.js): the summary was copied, the button reopens Messenger.
+      if (params.get('channel') === 'messenger') {
+        let m = '';
+        try { m = sessionStorage.getItem('pathwayMessengerUrl') || ''; } catch (_) { m = ''; }
+        document.querySelector('[data-thanks-title]').textContent = copy.msgH1;
+        document.querySelector('[data-thanks-lead]').textContent = copy.msgLead;
+        const btn = document.querySelector('[data-thanks-whatsapp]');
+        if (m.startsWith('https://m.me/') || m.startsWith('https://www.messenger.com/')) { btn.href = m; btn.textContent = copy.msgButton; btn.hidden = false; }
+        document.querySelector('[data-thanks-test]').className = 'text-link';
+        if (params.get('from') === 'inscription') document.querySelector('[data-thanks-schedule]').hidden = true;
+        return;
+      }
       if (params.get('channel') !== 'whatsapp') return;
       let url = '';
       try { url = sessionStorage.getItem('pathwayWhatsAppUrl') || ''; } catch (_) { url = ''; }

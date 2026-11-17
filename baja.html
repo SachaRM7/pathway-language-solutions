@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es" data-no-pixel>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Pathway · Correos</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    :root { --paper: #fffaf2; --ink: #122b26; --muted: #50625c; --action: #a34e3b; --sage: #cad8c3; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: #f5efe4; color: var(--ink); font: 400 17px/1.55 "DM Sans", Arial, sans-serif; }
+    main { width: 100%; max-width: 480px; padding: 32px 28px; border-radius: 20px; background: var(--paper); box-shadow: 0 24px 48px -36px rgb(18 43 38 / 45%); }
+    img { display: block; width: 44px; height: 44px; margin-bottom: 18px; }
+    h1 { margin: 0 0 10px; font: 700 26px/1.2 Outfit, Arial, sans-serif; letter-spacing: -.02em; }
+    p { margin: 0 0 20px; color: var(--muted); }
+    button, a.button { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; border: 0; border-radius: 12px; background: var(--action); color: var(--paper); font: 700 16px/1 Arial, sans-serif; text-decoration: none; cursor: pointer; }
+    button[disabled] { opacity: .6; cursor: default; }
+    a.back { display: inline-block; margin-top: 16px; color: var(--ink); font-size: 15px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/pathway-mark.svg" alt="Pathway">
+    <section data-ask>
+      <h1 data-t="askTitle">¿Ya no quieres recibir nuestros correos?</h1>
+      <p data-t="askCopy">Dejarás de recibir los correos de seguimiento de tu test de nivel. Tu resultado sigue guardado para tu primera clase.</p>
+      <button type="button" data-confirm data-t="askButton">Darme de baja</button>
+    </section>
+    <section data-done hidden>
+      <h1 data-t="doneTitle">Listo: ya no te escribiremos.</h1>
+      <p data-t="doneCopy">Si algún día quieres retomar, haz de nuevo el test o escríbenos por WhatsApp.</p>
+    </section>
+    <section data-error hidden>
+      <h1 data-t="errorTitle">Este enlace no funciona.</h1>
+      <p data-t="errorCopy">Escríbenos a contacto@pathway-languages.com y te damos de baja enseguida.</p>
+    </section>
+    <a class="back" href="/" data-t="back">Volver a Pathway</a>
+  </main>
+  <script>
+    // Unsubscribe from the follow-up emails of the level test (campus/db/029_relances_embudo.sql).
+    // A click is required, so that email scanners that open links never unsubscribe anyone.
+    (() => {
+      const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+      const q = new URLSearchParams(location.search);
+      const token = q.get('t') || '';
+      const lang = ['es', 'fr', 'en', 'de'].includes(q.get('l')) ? q.get('l') : 'es';
+      const T = {
+        fr: { askTitle: 'Vous ne souhaitez plus recevoir nos e-mails ?', askCopy: 'Vous ne recevrez plus les e-mails de suivi de votre test de niveau. Votre résultat reste enregistré pour votre premier cours.', askButton: 'Me désinscrire', doneTitle: 'C’est fait : nous ne vous écrirons plus.', doneCopy: 'Si vous souhaitez reprendre un jour, refaites le test ou écrivez-nous sur WhatsApp.', errorTitle: 'Ce lien ne fonctionne pas.', errorCopy: 'Écrivez-nous à contacto@pathway-languages.com et nous vous désinscrivons aussitôt.', back: 'Retour à Pathway' },
+        en: { askTitle: 'Don’t want our emails anymore?', askCopy: 'You will stop receiving the follow-up emails about your level test. Your result stays saved for your first class.', askButton: 'Unsubscribe me', doneTitle: 'Done: we won’t email you again.', doneCopy: 'If you ever want to pick it up again, retake the test or message us on WhatsApp.', errorTitle: 'This link doesn’t work.', errorCopy: 'Write to contacto@pathway-languages.com and we will unsubscribe you right away.', back: 'Back to Pathway' },
+        de: { askTitle: 'Keine E-Mails mehr von uns?', askCopy: 'Sie erhalten keine weiteren E-Mails zu Ihrem Einstufungstest. Ihr Ergebnis bleibt für Ihre erste Stunde gespeichert.', askButton: 'Abmelden', doneTitle: 'Erledigt: Wir schreiben Ihnen nicht mehr.', doneCopy: 'Wenn Sie wieder einsteigen möchten, machen Sie den Test erneut oder schreiben Sie uns auf WhatsApp.', errorTitle: 'Dieser Link funktioniert nicht.', errorCopy: 'Schreiben Sie an contacto@pathway-languages.com, wir melden Sie sofort ab.', back: 'Zurück zu Pathway' }
+      }[lang];
+      if (T) {
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-t]').forEach(el => { if (T[el.dataset.t]) el.textContent = T[el.dataset.t]; });
+      }
+      const show = name => ['ask', 'done', 'error'].forEach(n => { document.querySelector(`[data-${n}]`).hidden = n !== name; });
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) { show('error'); return; }
+      const button = document.querySelector('[data-confirm]');
+      button.addEventListener('click', () => {
+        button.disabled = true;
+        fetch(`${SUPABASE.url}/rest/v1/rpc/email_unsubscribe`, {
+          method: 'POST',
+          headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_token: token })
+        }).then(r => (r.ok ? r.json() : false)).then(ok => show(ok === true ? 'done' : 'error'), () => { button.disabled = false; show('error'); });
+      });
+    })();
+  </script>
+</body>
+</html>
