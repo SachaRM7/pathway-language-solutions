@@ -73,7 +73,7 @@
     { view: 'contenido', target: () => pick('#main .unit-row'), title: 'Tus unidades', text: 'Cada unidad con su estado: «Probar» como un alumno (no se guarda nada).', admin: false },
     { view: 'contenido', target: () => navLink('cuentas'), title: 'Cuentas', text: 'Para invitar a tus alumnos al campus. Entremos.', pad: 6, admin: false },
     { view: 'cuentas', target: () => tileWithTitle('Invitar a un alumno'), title: 'Invitar a un alumno', text: 'Por correo: su nombre, su nivel y su profesor quedan configurados antes de que entre.', admin: false },
-    { target: () => pick('#main .top .switch'), title: 'Tus espacios', text: 'Alumno: el Campus como lo ven tus alumnos. Profesor: tus clases y tus alumnos. Admin (solo administración): los interesados, las inscripciones, las clases de cada alumno y los ajustes. El Campus recuerda el último que usaste.', pad: 6 },
+    { target: () => pick('#main .top .switch'), title: 'Tus espacios', text: 'Profesor: tus clases y tus alumnos. Admin: los interesados, las inscripciones, las clases de cada alumno y los ajustes. El Campus recuerda el último que usaste.', pad: 6 },
     { target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Los mensajes que necesitan respuesta, los alumnos inactivos y, si eres administración, lo que espera en el espacio Admin.', pad: 6 },
     { target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];
@@ -95,7 +95,7 @@
     { view: 'horarios', target: () => tileWithTitle('Programar a un alumno'), title: 'Programar a un alumno', text: 'Las clases son particulares: eliges al alumno, su profesor, sus días y horas fijos y su enlace de Zoom personal, que conserva durante toda su formación.' },
     { view: 'horarios', target: () => navLink('contenido'), title: 'Programa', text: 'Las unidades del manual y los documentos del programa, nivel por nivel.', pad: 6 },
     { target: () => navLink('ajustes'), title: 'Ajustes', text: 'Las reglas del campus: asistencia, contrato, correos automáticos y accesos de los asistentes IA. Se tocan poco.', pad: 6 },
-    { target: () => pick('#main .top .switch'), title: 'Cambiar de espacio', text: 'Profesor para tus clases y tus alumnos, Alumno para ver el Campus como ellos. Un punto rojo en «Admin» avisa cuando algo urgente espera aquí.', pad: 6 },
+    { target: () => pick('#main .top .switch'), title: 'Cambiar de espacio', text: 'Profesor para tus clases y tus alumnos, Admin para la administración. Un punto rojo en «Admin» avisa cuando algo urgente espera aquí.', pad: 6 },
     { target: () => pick('[data-action="bell"]'), title: 'Tus avisos', text: 'Las mismas tareas que la bandeja, en corto, desde cualquier pantalla.', pad: 6 },
     { target: () => pick('[data-action="tour"]'), title: 'Vuelve a verlo cuando quieras', text: 'Este botón repite el recorrido.', next: 'Terminar', pad: 6, last: true }
   ];

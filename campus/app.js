@@ -51,9 +51,10 @@ const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role)
 // Three spaces for the team: « Alumno » (the student's Campus), « Profesor » (teaching only) and,
 // for admins, « Admin » (leads, enrolments, groups, programme, settings). teacherMode() is true in
 // both team spaces; adminMode() only in « Admin ». The last space used is remembered.
-const teacherMode = () => isStaff() && A.mode !== 'alumno';
+// Staff always work in Profesor or Admin; to see the Campus as a student, use a test student account.
+const teacherMode = () => isStaff();
 const adminMode = () => isAdmin() && A.mode === 'admin';
-try { const m = localStorage.getItem('campus-mode'); A.mode = ['alumno', 'profesor', 'admin'].includes(m) ? m : 'profesor'; } catch (e) { /* private mode */ }
+try { const m = localStorage.getItem('campus-mode'); A.mode = ['profesor', 'admin'].includes(m) ? m : 'profesor'; } catch (e) { /* private mode */ }
 try { A.staff.scope = localStorage.getItem('campus-scope') === 'all' ? 'all' : 'mine'; } catch (e) { A.staff.scope = 'mine'; }
 
 const SEGMENTS = {
@@ -557,8 +558,8 @@ function topBar(id, title, sub, extra = '') {
   const unseen = notes.length && notes.map(n => n.key).join('|') !== seen;
   return `<header class="top"><div><div class="h-info"><h1 id="${id}">${title}</h1>${infoBtn(helpKey(id))}</div>${sub ? `<p>${sub}</p>` : ''}</div>
     <div class="top-tools">${extra}
-      ${isStaff() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="alumno" aria-pressed="${!teacherMode()}">Alumno</button><button type="button" data-mode="profesor" aria-pressed="${teacherMode() && !adminMode()}">Profesor</button>${isAdmin() ? `<button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button>` : ''}</div>` : ''}
       <button type="button" class="round tt-help" data-action="tour" aria-label="Ver el tutorial" title="Ver el tutorial">?</button>
+      ${isAdmin() ? `<div class="switch" role="group" aria-label="Espacio"><button type="button" data-mode="profesor" aria-pressed="${!adminMode()}">Profesor</button><button type="button" data-mode="admin" aria-pressed="${adminMode()}">Admin${!adminMode() && adminTasks().some(t => t.urgent) ? '<span class="switch-dot" aria-hidden="true"></span><span class="sr-only"> (hay tareas urgentes)</span>' : ''}</button></div>` : ''}
       ${teacherMode() ? '' : searchMarkup(A.search)}
       ${!teacherMode() && navItems().some(n => n.id === 'mensajes') ? (() => { const u = myUnread(); return `<a class="round msg-top" href="#mensajes" data-msg-top aria-label="Mensajes${u ? ` (${u} sin leer)` : ''}" ${currentView() === 'mensajes' ? 'aria-current="page"' : ''}>${icon('chat')}${u ? `<span class="pip-n num">${u > 9 ? '9+' : u}</span>` : ''}</a>`; })() : ''}
       <div class="menu-wrap"><button type="button" class="round" data-action="bell" aria-label="Notificaciones">${icon('bell')}${unseen ? '<span class="pip"></span>' : ''}</button><div id="bellSlot"></div></div>
@@ -4010,7 +4011,7 @@ document.addEventListener('click', async e => {
   if (!e.target.closest('.menu-wrap')) closeMenus();
   if (!t) return;
   if (t.matches('[data-mode]')) {
-    A.mode = t.dataset.mode; try { localStorage.setItem('campus-mode', A.mode); } catch (err) { /* ignore */ }
+    A.mode = t.dataset.mode === 'admin' && isAdmin() ? 'admin' : 'profesor'; try { localStorage.setItem('campus-mode', A.mode); } catch (err) { /* ignore */ }
     location.hash = navItems()[0].id; render(); return;
   }
   if (t.matches('[data-hw-student]')) {
