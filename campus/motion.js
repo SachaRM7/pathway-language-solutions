@@ -118,7 +118,7 @@ export function searchMarkup(value = '') {
     <div class="seek" data-open="${open}">
       <div class="seek-skin">
         <svg class="seek-lens" viewBox="0 0 18 18" aria-hidden="true"><circle cx="7.6" cy="7.6" r="5.4"/><path d="M11.6 11.6 L15.4 15.4"/></svg>
-        <input class="seek-field" id="campusSearch" type="search" autocomplete="off" placeholder="Buscar una unidad, un verbo…" aria-label="Buscar una unidad o un verbo" aria-controls="searchSlot" value="${escapeHTML(value)}" tabindex="${open ? 0 : -1}">
+        <input class="seek-field" id="campusSearch" type="search" autocomplete="off" placeholder="Buscar…" aria-label="Buscar una unidad o un verbo" aria-controls="searchSlot" value="${escapeHTML(value)}" tabindex="${open ? 0 : -1}">
         <button class="seek-hit" type="button" aria-label="Abrir búsqueda" aria-controls="campusSearch" aria-expanded="${open}" ${open ? 'hidden' : ''}></button>
       </div>
     </div><div id="searchSlot" aria-label="Resultados de búsqueda"></div>
@@ -132,13 +132,22 @@ export function mountSearch(root, onSearch) {
   const button = wrap.querySelector('.seek-hit'), results = wrap.querySelector('#searchSlot');
   const abort = new AbortController(), options = { signal: abort.signal };
   let open = !!field.value, beat = 0, rest = 0, pointerFrame = 0;
-  // Closed, the search is a round button the size of its neighbours; open, it grows to the right
-  // over them, as far as the screen allows.
-  const base = () => wrap.getBoundingClientRect().width || 46;
-  const span = () => Math.max(base(), Math.min(240, innerWidth - 16 - wrap.getBoundingClientRect().left));
+  // Closed, the search is a round button the size of its neighbours. Open, it widens to the left
+  // into the free room before it: on a phone the space between « ? » and the search, on a wide
+  // screen the space between the title and the buttons. Its width stays in the flow, so the room
+  // it takes is exactly the room that was free.
+  const base = () => wrap.getBoundingClientRect().height || 46;
+  const span = () => {
+    const r = wrap.getBoundingClientRect(), tools = wrap.parentElement, prev = wrap.previousElementSibling;
+    const gap = parseFloat(getComputedStyle(tools).columnGap) || 10;
+    let free = prev ? r.left - prev.getBoundingClientRect().right - gap : 0;
+    const head = tools.previousElementSibling;
+    if (head) { const h = head.getBoundingClientRect(), t = tools.getBoundingClientRect(); if (t.top < h.bottom - 4) free += t.left - h.right - 24; }
+    return Math.max(base(), Math.min(240, r.width + Math.max(0, free)));
+  };
   const width = spring(open ? span() : base(), w => {
     const p = clamp((w - base()) / Math.max(1, span() - base()), 0, 1);
-    el.style.setProperty('--seek-w', `${w.toFixed(2)}px`);
+    wrap.style.setProperty('--seek-w', `${w.toFixed(2)}px`);
     el.style.setProperty('--seek-say', clamp((p - .55) / .45, 0, 1).toFixed(3));
   }, 20);
   function close(clear = false, focus = false) {
@@ -218,9 +227,8 @@ export function mountSearch(root, onSearch) {
       el.style.setProperty('--seek-x', `${x.toFixed(2)}px`); el.style.setProperty('--seek-y', `${y.toFixed(2)}px`);
     });
   }, options);
-  const resize = new ResizeObserver(() => { if (open) width.to(span()); });
-  resize.observe(el);
-  return () => { abort.abort(); resize.disconnect(); width.dispose(); clearTimeout(beat); clearTimeout(rest); cancelAnimationFrame(pointerFrame); };
+  addEventListener('resize', () => { if (open) width.to(span()); }, options);
+  return () => { abort.abort(); width.dispose(); clearTimeout(beat); clearTimeout(rest); cancelAnimationFrame(pointerFrame); };
 }
 
 // Display only: the server still owns the XP. Digits use the same whole-column

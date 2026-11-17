@@ -11,11 +11,9 @@
 .tabbar a:focus-visible { outline: none; }
 .tabbar a:focus-visible::after { content: ''; position: absolute; z-index: 2; inset: 0; border: 2px solid var(--coral); border-radius: inherit; pointer-events: none; }
 .top-tools { flex-wrap: wrap; }
-.campus-search { width: 46px; flex: none; position: relative; z-index: 6; }
-/* Open, the search covers the buttons on its right: hide them so their badges do not peek out. */
-.top-tools:has(.seek[data-open="true"]) .campus-search ~ * { visibility: hidden; }
-.seek { position: relative; display: grid; place-items: center start; width: 100%; height: 46px; --seek-w: 46px; --seek-say: 0; --seek-x: 0px; --seek-y: 0px; }
-.seek-skin { position: relative; width: var(--seek-w); height: 100%; border-radius: 23px; background: var(--panel); box-shadow: var(--shadow); isolation: isolate; overflow: hidden; transform: translate(var(--seek-x), var(--seek-y)) scale(var(--seek-scale, 1)); transition: transform 220ms cubic-bezier(.22, 1, .36, 1), background 220ms ease; }
+.campus-search { --seek-w: 46px; width: var(--seek-w); flex: none; position: relative; }
+.seek { position: relative; display: grid; place-items: center; width: 100%; height: 46px; --seek-say: 0; --seek-x: 0px; --seek-y: 0px; }
+.seek-skin { position: relative; width: 100%; height: 100%; border-radius: 23px; background: var(--panel); box-shadow: var(--shadow); isolation: isolate; overflow: hidden; transform: translate(var(--seek-x), var(--seek-y)) scale(var(--seek-scale, 1)); transition: transform 220ms cubic-bezier(.22, 1, .36, 1), background 220ms ease; }
 .seek:not([data-open="true"]) .seek-skin:hover { --seek-scale: 1.045; }
 .seek:not([data-open="true"]) .seek-skin:active,
 .seek:not([data-open="true"])[data-press="true"] .seek-skin { --seek-scale: .93; transition: transform 160ms cubic-bezier(.22, 1, .36, 1); }
@@ -33,10 +31,11 @@
 #searchSlot .menu { left: 50%; translate: -50% 0; width: min(360px, calc(100vw - 32px)); min-width: 0; max-height: min(60vh, 480px); overflow: auto; }
 @media (max-width: 560px) {
   .top-tools { width: 100%; }
+  .top-tools .tt-help { margin-right: auto; } /* « ? » alone on the left, the rest on the right */
 }
 @media (max-width: 389px) {
-  .campus-search { width: 40px; }
-  .seek { height: 40px; --seek-w: 40px; }
+  .campus-search { --seek-w: 40px; }
+  .seek { height: 40px; }
   .seek-skin { border-radius: 20px; }
   .seek-lens { left: 10px; }
   .seek-field { left: 40px; }
