@@ -54,6 +54,7 @@ const isStaff = () => A.profile && ['teacher', 'admin'].includes(A.profile.role)
 const teacherMode = () => isStaff() && A.mode !== 'alumno';
 const adminMode = () => isAdmin() && A.mode === 'admin';
 try { const m = localStorage.getItem('campus-mode'); A.mode = ['alumno', 'profesor', 'admin'].includes(m) ? m : 'profesor'; } catch (e) { /* private mode */ }
+try { A.staff.scope = localStorage.getItem('campus-scope') === 'all' ? 'all' : 'mine'; } catch (e) { A.staff.scope = 'mine'; }
 
 const SEGMENTS = {
   A2: [
@@ -491,7 +492,7 @@ function renderNav(cur) {
   $('#promo').innerHTML = adminMode()
     ? `<span>Administración</span><b>${esc(p.full_name)}</b><span>${todo.length ? `${todo.length} tarea${todo.length === 1 ? '' : 's'} en espera` : 'Todo al día'}</span>`
     : teacherMode()
-    ? `<span>Profesor</span><b>${esc(p.full_name)}</b><span>${A.staff.overview.length} alumno${A.staff.overview.length === 1 ? '' : 's'}</span>`
+    ? `<span>Profesor</span><b>${esc(p.full_name)}</b><span>${scopedOv().length} alumno${scopedOv().length === 1 ? '' : 's'}</span>`
     : (p.next_class_at ? `<span>Próxima clase</span><b>${esc(cap(fmtDate(new Date(p.next_class_at), { weekday: 'long', day: 'numeric', month: 'short' })))}</b><span>${fmtDate(new Date(p.next_class_at), { hour: '2-digit', minute: '2-digit' })}${A.teacher ? ' · ' + esc(A.teacher.full_name) : ''}</span>`
       : `<span>Tu objetivo</span><b>NCLC 7</b><span>${esc(EXAMS[p.exam] || 'Examen por definir')}</span>`);
   $('#sideFoot').innerHTML = `<span>${esc(firstName(p.full_name))}</span><button type="button" data-action="menu">Mi cuenta</button>`;
@@ -513,8 +514,8 @@ function notifications() {
   const out = [];
   if (adminMode()) return adminTasks().slice(0, 12).map(t => ({ key: t.key, ic: t.ic, text: `${t.urgent ? '<b>Urgente:</b> ' : ''}${t.title}.`, href: t.href, attrs: t.attrs }));
   if (teacherMode()) {
-    const inactive = A.staff.overview.filter(s => s.onboarded && (daysSince(s.last_activity) == null || daysSince(s.last_activity) >= 4)).length;
-    const fresh = A.staff.overview.filter(s => !s.onboarded).length;
+    const inactive = scopedOv().filter(s => s.onboarded && (daysSince(s.last_activity) == null || daysSince(s.last_activity) >= 4)).length;
+    const fresh = scopedOv().filter(s => !s.onboarded).length;
     if (inactive) out.push({ key: 'inactive' + inactive, ic: 'users', text: `${inactive} alumno${inactive > 1 ? 's' : ''} sin practicar desde hace 4 días o más.`, href: '#alumnos' });
     if (fresh) out.push({ key: 'fresh' + fresh, ic: 'sparkle', text: `${fresh} alumno${fresh > 1 ? 's' : ''} todavía no completó la bienvenida.`, href: '#alumnos' });
     const waiting = threadsWaiting();
@@ -874,7 +875,7 @@ function viewLogros() {
 const daysSince = d => d ? Math.floor((Date.now() - new Date(d).getTime()) / 864e5) : null;
 // Students who need a word before the next class (shared by Inicio and the notifications).
 function staffAlerts() {
-  const ov = A.staff.overview, alerts = [];
+  const ov = scopedOv(), alerts = [];
   for (const s of ov) {
     const ds = daysSince(s.last_activity);
     if (!s.onboarded) alerts.push({ s, kind: 'warn', text: 'Todavía no completó la bienvenida del campus.' });
@@ -943,16 +944,16 @@ function teacherTodo() {
   if (waiting) out.push({ ic: 'chat', text: `${waiting} ${waiting > 1 ? 'conversaciones' : 'conversación'} de alumno${waiting > 1 ? 's' : ''} por responder`, href: '#mensajes' });
   const rIds = A.staff.groups ? myGroupIds() : null, noReport = (A.staff.reports || []).filter(x => !x.report && (!rIds || rIds.has(x.group_id))).length;
   if (noReport) out.push({ ic: 'pen', text: `${noReport} clase${noReport > 1 ? 's' : ''} sin informe`, href: '#panel' });
-  const ready = (A.staff.levels || []).filter(x => x.units_done && !x.teacher_passed_at).length;
+  const ready = (A.staff.levels || []).filter(x => x.units_done && !x.teacher_passed_at && inScope(x.student_id)).length;
   if (ready) out.push({ ic: 'trophy', text: `${ready} alumno${ready > 1 ? 's' : ''} con el nivel terminado: validar el examen`, href: '#alumnos' });
-  const abs = A.staff.absences || [];
+  const abs = (A.staff.absences || []).filter(x => inScope(x.student_id));
   const toReview = abs.reduce((n, s) => n + s.record.filter(r => !r.reason && r.request && r.request.status === 'pending').length + (s.requests || []).filter(q => q.status === 'pending').length, 0);
   if (toReview) out.push({ ic: 'pen', text: `${toReview} justificativo${toReview > 1 ? 's' : ''} por revisar`, href: '#alumnos' });
   const toMake = abs.reduce((n, s) => n + s.record.filter(r => r.reason && !r.makeup).length, 0);
   if (toMake) out.push({ ic: 'calendar', text: `${toMake} clase${toMake > 1 ? 's' : ''} por recuperar`, href: '#alumnos' });
   for (const s of abs) if (s.month && s.month.failed) out.push({ ic: 'users', text: `${esc(s.name)}: mes no validado`, href: '#alumnos' });
   if (contractOn() && A.staff.contracts) {
-    const n = A.staff.overview.filter(s => contractState(s.id) !== 'ok').length;
+    const n = scopedOv().filter(s => contractState(s.id) !== 'ok').length;
     if (n) out.push({ ic: 'pen', text: `${n} alumno${n > 1 ? 's' : ''} sin el contrato firmado`, href: '#alumnos' });
   }
   if (!isAdmin() && A.staff.invitesReady) {
@@ -967,6 +968,22 @@ function teacherTodo() {
 // In « Profesor », an admin who teaches sees only their groups; an admin who does not teach sees them all.
 const myGroups = () => { const all = A.staff.groups || []; if (!isAdmin() || adminMode()) return all; const mine = all.filter(g => g.teacher_id === A.profile.id); return mine.length ? mine : all; };
 const myGroupIds = () => new Set(myGroups().map(g => g.id));
+// « Mis alumnos / Todos los alumnos » (Profesor space, admins only): mine = students whose teacher I
+// am, or who are in one of my groups. An admin with no students of their own always sees them all.
+function myStudents() {
+  const me = A.profile.id, ids = new Set();
+  for (const m of A.staff.members || []) if (m.teacher_id === me) ids.add(m.id);
+  for (const g of (A.staff.groups || []).filter(g => g.teacher_id === me)) for (const m of g.members) ids.add(m.id);
+  return ids;
+}
+const scopeOn = () => isAdmin() && !adminMode() && myStudents().size > 0;
+const inScope = id => !scopeOn() || A.staff.scope === 'all' || myStudents().has(id);
+const scopedOv = () => A.staff.overview.filter(s => inScope(s.id));
+function scopeSwitch() {
+  if (!scopeOn()) return '';
+  const mine = A.staff.overview.filter(s => myStudents().has(s.id)).length, all = A.staff.overview.length, isAll = A.staff.scope === 'all';
+  return `<div class="scope-bar"><div class="switch scope-switch" role="group" aria-label="Alumnos que se muestran"><button type="button" data-scope="mine" aria-pressed="${!isAll}">Mis alumnos <span class="num">${mine}</span></button><button type="button" data-scope="all" aria-pressed="${isAll}">Todos los alumnos <span class="num">${all}</span></button></div></div>`;
+}
 // A line, in the Profesor space, that opens the Admin space when something waits there.
 function adminLink(tasks, end) {
   const u = tasks.filter(t => t.urgent).length;
@@ -1036,7 +1053,7 @@ function adminTasks() {
 }
 
 function viewPanel() {
-  const ov = A.staff.overview;
+  const ov = scopedOv();
   const active = ov.filter(s => s.week_xp > 0).length;
   const open = ov.reduce((a, s) => a + s.homework_open, 0);
   const acc = ov.filter(s => s.week_accuracy != null);
@@ -1045,7 +1062,7 @@ function viewPanel() {
   const upcoming = myGroups().flatMap(g => g.upcoming.filter(x => x.status !== 'cancelled' && new Date(x.at) > Date.now()).map(x => ({ g, x })))
     .sort((a, b) => new Date(a.x.at) - new Date(b.x.at)).slice(0, 5);
   return `<section class="view" aria-labelledby="h-panel">
-  ${topBar('h-panel', 'Inicio', 'Lo que pasó entre clases, antes de la próxima')}
+  ${topBar('h-panel', 'Inicio', 'Lo que pasó entre clases, antes de la próxima')}${scopeSwitch()}
   <div class="bento staff">
     ${reportTile()}
     ${ov.length ? `<article class="tile sky c-4 kpi"><p class="label" style="color:var(--sky-ink)">Activos esta semana</p><p class="big num">${active}<span style="font-size:20px;color:var(--sky-ink)"> / ${ov.length}</span></p></article>
@@ -1090,7 +1107,7 @@ function reportTile() {
 }
 
 function viewAlumnos() {
-  const ov = A.staff.overview;
+  const ov = scopedOv();
   const showCt = A.staff.contracts != null && (contractOn() || Object.keys(A.staff.contracts).length > 0);
   const rows = ov.map(s => {
     const ds = daysSince(s.last_activity);
@@ -1098,7 +1115,7 @@ function viewAlumnos() {
     return `<tr><td><span class="who"><span class="ava sm">${esc(initials(s.full_name))}</span>${esc(s.full_name)}</span></td><td>${s.level}</td><td class="num">${s.streak ? `${s.streak} día${s.streak === 1 ? '' : 's'}` : '<span class="faint">—</span>'}</td><td>${ds == null ? '<span class="faint">Nunca</span>' : ds === 0 ? 'Hoy' : ds === 1 ? 'Ayer' : `Hace ${ds} días`}</td><td class="num">${s.week_accuracy == null ? '<span class="faint">—</span>' : s.week_accuracy + ' %'}</td><td class="num">${s.homework_done} / ${s.homework_done + s.homework_open}</td>${showCt ? `<td>${contractCell(s)}</td>` : ''}<td>${st}</td></tr>`;
   }).join('');
   return `<section class="view" aria-labelledby="h-alumnos">
-  ${topBar('h-alumnos', 'Alumnos', `${ov.length} alumno${ov.length === 1 ? '' : 's'} · su avance y el paso de nivel`)}
+  ${topBar('h-alumnos', 'Alumnos', `${ov.length} alumno${ov.length === 1 ? '' : 's'} · su avance y el paso de nivel`)}${scopeSwitch()}
   <div class="bento staff">
     ${ov.length ? `<article class="tile"><div class="tile-head"><h2>Avance</h2><span class="pill ghost">Esta semana</span></div><div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Nivel</th><th>Racha</th><th>Última actividad</th><th>Aciertos</th><th>Tareas</th>${showCt ? '<th>Contrato</th>' : ''}<th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article>
     ${absencesTile()}
@@ -1108,7 +1125,7 @@ function viewAlumnos() {
 
 // Absences that count toward the exclusion (db/016_avisos.sql); the teacher can justify one.
 function absencesTile() {
-  const list = A.staff.absences;
+  const list = A.staff.absences && A.staff.absences.filter(x => inScope(x.student_id));
   if (!list || !list.length) return '';
   const motives = ((A.contract && A.contract.contract && A.contract.contract.motives) || []).filter(Boolean);
   const keyOf = (s, r) => `${s.student_id}|${r.group_id}|${r.scheduled_at}`;
@@ -1167,12 +1184,12 @@ function absencesTile() {
 }
 
 function viewTareas() {
-  const ov = A.staff.overview, units = assignable();
+  const ov = scopedOv(), units = assignable();
   const studentOpts = ov.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('');
   const pick = A.staff.hwPick;
   const now = new Date(Date.now() + 2 * 864e5); const localDefault = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T18:00`;
   return `<section class="view" aria-labelledby="h-tareas">
-  ${topBar('h-tareas', 'Tareas', 'Lo que el alumno practica entre dos clases')}
+  ${topBar('h-tareas', 'Tareas', 'Lo que el alumno practica entre dos clases')}${scopeSwitch()}
   <div class="bento staff">
     ${!ov.length ? noStudentsTile() : `<article class="tile c-6"><div class="tile-head"><h2>Asignar una tarea</h2></div>
       <p class="muted" style="font-size:14px;margin:-6px 0 16px">El alumno la ve en su inicio y en sus avisos.</p>
@@ -1314,7 +1331,7 @@ function viewAjustes() {
 
 // End of level (db/012_fin_nivel.sql): step 1 is validated here by the teacher.
 function levelTile() {
-  const list = A.staff.levels;
+  const list = A.staff.levels && A.staff.levels.filter(x => inScope(x.student_id));
   if (!list || !list.length) return '';
   const name = id => (A.staff.overview.find(s => s.id === id) || {}).full_name || '—';
   const rows = list.slice().sort((a, b) => (b.units_done - a.units_done) || name(a.student_id).localeCompare(name(b.student_id))).map(x => {
@@ -3672,6 +3689,8 @@ function bindView(id) {
 }
 
 document.addEventListener('click', async e => {
+  const sc = e.target.closest('[data-scope]');
+  if (sc) { A.staff.scope = sc.dataset.scope; try { localStorage.setItem('campus-scope', A.staff.scope); } catch (err) { /* ignore */ } render(false); return; }
   const wg = e.target.closest('[data-wa-goto]');
   if (wg) { W.open = wg.dataset.waGoto; W.thread = null; W.editing = null; W.error = null; if (location.hash === '#whatsapp') { e.preventDefault(); if (crmOverlayOpen()) crmClose(); render(); } }
   // Links of the Admin « Bandeja »: open the right card, request, account or group on arrival.

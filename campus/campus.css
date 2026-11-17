@@ -1262,3 +1262,8 @@ a.pill.warn { text-decoration: none; }
   .bq-go { grid-column: 2; justify-self: start; }
   .bq-more { margin-left: 44px; }
 }
+
+/* « Mis alumnos / Todos los alumnos » (Profesor, admins who teach) */
+.scope-bar { margin: -4px 0 2px; }
+.scope-switch button .num { margin-left: 6px; opacity: .7; }
+@media (max-width: 420px) { .scope-switch button { padding: 0 12px; } }

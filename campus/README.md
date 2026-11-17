@@ -76,7 +76,7 @@ where id = (select id from auth.users where email = 'ADRESSE_DE_SACHA');
 
 ## Espace « Profesor »
 
-Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses groupes et ses cours ; un admin qui n'enseigne pas les voit tous.
+Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses groupes et ses cours ; un admin qui n'enseigne pas les voit tous. Dans Inicio, Alumnos et Tareas, un filtre « Mis alumnos / Todos los alumnos » (admins qui ont des élèves) choisit les élèves affichés : les siens (dont il est le professeur, ou qui sont dans un de ses groupes) ou tous. Le choix est retenu sur l'appareil.
 
 - **Inicio** : le rapport de fin de cours (unités vues, qui s'ouvrent pour l'élève : `db/018_informe_clase.sql`), les chiffres de la semaine, les élèves à relancer et « Por revisar » (messages, informes, justificatifs, examens à valider). Pour un admin, la dernière ligne ouvre l'espace Admin s'il y a des tâches en attente.
 - **Alumnos** : l'avance de chaque élève, ses absences (justificatifs à accepter, rattrapages à programmer, mois non validés : `db/017_reglas_clases.sql`) et la validation de fin de niveau.
