@@ -1068,7 +1068,7 @@ function adminTasks() {
   }
   if (mailOn()) for (const t of mailWaiting()) {
     const late = agoH(t.needs_reply_since || t.last_inbound_at) >= 24;
-    push({ key: 'mail' + t.id + t.needs_reply_since, area: 'captacion', ic: 'bell', title: `Responder al correo de ${esc(mailName(t))}`,
+    push({ key: 'mail' + t.id + t.needs_reply_since, area: 'captacion', ic: 'mail', title: `Responder al correo de ${esc(mailName(t))}`,
       detail: `«${esc(t.subject || 'sin asunto')}» · escribió ${esc(agoText(t.needs_reply_since || t.last_inbound_at))}${t.drafts ? ' · borrador listo' : ''}`, action: 'Responder', href: '#correo', attrs: ` data-mail-goto="${t.id}"`, urgent: late || !!t.flagged });
   }
   if (dfOn()) {
@@ -1892,7 +1892,7 @@ function crmSubNav(cur) {
   return `<nav class="seg-tabs crm-sub" aria-label="Secciones de Prospectos">
     <a href="#prospectos"${cur === 'crm' ? ' aria-current="page"' : ''}><b>${icon('funnel')}</b>Prospectos</a>
     ${waOn() ? `<a href="#whatsapp"${cur === 'wa' ? ' aria-current="page"' : ''}><b>${icon('chat')}</b>WhatsApp${n ? `<span class="count num">${n}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
-    ${mailOn() ? `<a href="#correo"${cur === 'mail' ? ' aria-current="page"' : ''}><b>${icon('bell')}</b>Correo${ml ? `<span class="count num">${ml}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
+    ${mailOn() ? `<a href="#correo"${cur === 'mail' ? ' aria-current="page"' : ''}><b>${icon('mail')}</b>Correo${ml ? `<span class="count num">${ml}<span class="sr-only"> por responder</span></span>` : ''}</a>` : ''}
     ${dfOn() ? `<a href="#difusion"${cur === 'df' ? ' aria-current="page"' : ''}><b>${icon('target')}</b>Difusión${d ? `<span class="count num">${d}<span class="sr-only"> borradores por enviar</span></span>` : ''}</a>` : ''}</nav>`;
 }
 function waRow(t) {
