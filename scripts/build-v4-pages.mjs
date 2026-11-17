@@ -166,7 +166,7 @@ function guidePage(lang, key, homeMarkup) {
     hero({
       lang, trail: [ui.guides, copy.title], eyebrow: copy.eyebrow, h1: copy.h1, leads: [esc(copy.lead)], long: key !== 'nclc',
       actions: `<a class="button button-primary" href="${pagePath(lang, 'test')}" data-cta="v4-guide-${key}-evaluation">${esc(ui.evaluateStart)} ${arrow}</a><a class="text-link" href="#${copy.sections[0][0]}">${esc(copy.sections[0][1])} ↓</a>`,
-      aside: card({ ...copy.card, source: key === 'tefaq' ? null : [IRCC.language(lang), ui.officialSource] })
+      aside: card({ ...copy.card, source: key === 'tefaq' ? null : (copy.source || [IRCC.language(lang), ui.officialSource]) })
     }),
     doc(lang, copy.sections),
     related(lang, copy.related),
@@ -292,9 +292,10 @@ export async function buildV4Pages({ outDir, rootDir }) {
 
   for (const lang of LANGS) {
     const homeMarkup = await readFile(join(outDir, 'v4', lang === 'es' ? '' : lang, 'index.html'), 'utf8'); // built home: shared tail included
-    await write(pagePath(lang, 'nclc'), guidePage(lang, 'nclc', homeMarkup));
-    await write(pagePath(lang, 'tef'), guidePage(lang, 'tef', homeMarkup));
-    await write(pagePath(lang, 'tefaq'), guidePage(lang, 'tefaq', homeMarkup));
+    // Every guide, in the languages it is written in (some are Spanish only).
+    for (const key of Object.keys(GUIDES)) {
+      if (GUIDES[key][lang]) await write(pagePath(lang, key), guidePage(lang, key, homeMarkup));
+    }
     await write(pagePath(lang, 'resources'), resourcesPage(lang, homeMarkup));
     await write(pagePath(lang, 'conditions'), legalPage(lang, 'conditions', await legacy(lang, ROUTES.conditions[lang]), homeMarkup));
     await write(pagePath(lang, 'privacy'), legalPage(lang, 'privacy', await legacy(lang, ROUTES.privacy[lang]), homeMarkup));
