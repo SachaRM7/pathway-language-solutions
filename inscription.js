@@ -68,6 +68,12 @@
   const resultLevel = testLevel ? `${testLevel} ${L.levelSuffix}` : L.byConfirm;
 
   const q = sel => form.querySelector(sel);
+  // The email given at the end of the level test is filled in already (the visitor can change it).
+  try {
+    const placementEmail = sessionStorage.getItem('pathwayPlacementEmail') || '';
+    const emailField = form.querySelector('[name="email"]');
+    if (emailField && !emailField.value && placementEmail) emailField.value = placementEmail;
+  } catch (_) { /* the field stays empty */ }
   const qa = sel => [...form.querySelectorAll(sel)];
   const getSelected = name => form.querySelector(`[name="${name}"]:checked`);
   const getCheckedValues = name => qa(`[name="${name}"]:checked`).map(i => i.value);
