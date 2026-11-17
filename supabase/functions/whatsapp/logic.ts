@@ -240,7 +240,7 @@ export function parseReply(reply: ModelReply): { ok: true; value: Parsed } | { o
   if (typeof o.reply !== 'string' || typeof o.note !== 'string' || typeof o.needs_human !== 'boolean') return { ok: false, why: 'bad_types' };
   return { ok: true, value: { reply: o.reply.trim(), note: o.note.trim().slice(0, 240), needs_human: o.needs_human } };
 }
-const plain = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const plain = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const numbersIn = (s: string) => (s.match(/\d+(?:[.,]\d+)?/g) || []).map(n => n.replace(',', '.').replace(/^0+(?=\d)/, ''));
 // « ¿Eres un bot? », « ¿hablo con una persona? »…
 export function botQuestion(text: string): boolean {
