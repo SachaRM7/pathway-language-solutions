@@ -1587,7 +1587,7 @@ function crmClose() {
   sheet.hidden = true; modal.hidden = true; $('#crmScrim').hidden = true; sheet.innerHTML = ''; modal.innerHTML = '';
   $('#app').inert = false; $('#tabbar').inert = false; document.body.classList.remove('no-scroll');
   C.open = null; C.detail = null; C.editing = false; C.lastFocus = null;
-  DF.open = null; DF.detail = null; DF.editing = false;
+  DF.open = null; DF.detail = null; DF.editing = false; DF.draftEdit = null; DF.confirm = null;
   const card = id && $(`[data-crm-open="${id}"],[data-df-open="${id}"]`);
   (card || (back && back.isConnected ? back : null) || $('#main'))?.focus({ preventScroll: !!card });
 }
@@ -2000,7 +2000,15 @@ const DF_KINDS = { blog: ['Blog', 'peach'], medio: ['Medio', 'sky'], foro: ['For
   facebook: ['Facebook', 'sky'], reddit: ['Reddit', 'butter'], red: ['Red o asociación', 'mint'], otro: ['Otro', 'stone'] };
 const DF_CHANNEL = { email: 'de correo', formulario: 'para el formulario', facebook: 'para Facebook', youtube: 'para YouTube', instagram: 'para Instagram', foro: 'para el foro', reddit: 'para Reddit', otro: '' };
 const DF_LIVE = ['por_contactar', 'contactado', 'respondio'];
-const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false };
+const DF = { q: '', kind: '', filter: '', open: null, detail: null, editing: false, draftEdit: null, confirm: null };
+const DF_SEND_ERR = {
+  not_configured: 'El envío directo todavía no está configurado (falta la contraseña de Zoho). Usa «Copiar» mientras tanto.',
+  smtp_auth: 'Zoho rechazó la contraseña de aplicación: revisa el secreto ZOHO_SMTP_PASSWORD en Supabase.',
+  smtp_failed: 'Zoho no aceptó el envío. El motivo quedó en el historial de la ficha.',
+  already_sent: 'Este borrador ya se envió.', already_sending: 'El envío ya está en curso: espera un momento.',
+  daily_limit: 'Límite alcanzado: 20 correos de difusión por día. Sigue mañana.', no_email: 'La ficha no tiene un correo de contacto.',
+  no_subject: 'El borrador no tiene asunto: edítalo antes de enviarlo.', contact_closed: 'La ficha ya no está activa.'
+};
 const dfOn = () => isAdmin() && Array.isArray(A.staff.outreach);
 const dfList = () => A.staff.outreach || [];
 const dfView = () => dfOn() && location.hash === '#difusion';
@@ -2056,7 +2064,7 @@ function viewDifusion() {
     <button class="btn btn-dark btn-sm crm-add" type="button" data-df-add>${icon('plus')}Añadir contacto</button>
   </div>
   <div id="dfBody">${dfBody()}</div>
-  <p class="muted crm-foot">Cuando envíes un mensaje, pulsa «Marcar como enviado»: la ficha pasa a «Contactado» y el Campus prevé una relance a los 7 días. Facebook, YouTube y Reddit se escriben a mano desde la cuenta de Pathway.</p>
+  <p class="muted crm-foot">Los correos salen con «Enviar desde ryan@» después de tu relectura (20 por día como máximo); la ficha pasa a «Contactado» y el Campus prevé una relance a los 7 días. Facebook, YouTube, Reddit y los formularios se escriben a mano: luego pulsa «Marcar como enviado».</p>
   </section>`;
 }
 const dfRefresh = () => {
@@ -2082,10 +2090,22 @@ function dfEvent(c, e) {
     const open = e.topic === 'email' && mail ? `<a class="btn btn-light btn-sm" href="mailto:${esc(mail)}?subject=${encodeURIComponent(d.subject)}&amp;body=${encodeURIComponent(d.body)}">${icon('arrow-up')}Abrir en el correo</a>`
       : link ? `<a class="btn btn-light btn-sm" href="${esc(link)}" target="_blank" rel="noopener">${icon('arrow-up')}Abrir el contacto</a>`
       : `<a class="btn btn-light btn-sm" href="${esc(c.url)}" target="_blank" rel="noopener">${icon('arrow-up')}Abrir el sitio</a>`;
+    if (!sent && DF.draftEdit === e.id) {
+      return `<li class="crm-draft"><span class="crm-t-ico sky" aria-hidden="true">${icon('pen')}</span><span>
+        <form class="form" id="dfDraftForm" data-event="${e.id}" novalidate>
+          <label class="field" for="ddSubject">Asunto<input id="ddSubject" maxlength="150" value="${esc(d.subject)}"></label>
+          <label class="field" for="ddBody">Mensaje<textarea id="ddBody" rows="12" maxlength="3000">${esc(d.body)}</textarea></label>
+          <span class="crm-row"><button class="btn btn-dark btn-sm" type="submit">Guardar el borrador</button><button class="btn btn-light btn-sm" type="button" data-df-dedit="">Cancelar</button></span>
+        </form></span></li>`;
+    }
+    const canSend = !sent && e.topic === 'email' && mail && d.subject && DF_LIVE.includes(c.status);
+    const sendBtn = canSend ? `<button class="btn btn-coral btn-sm" type="button" data-df-send="${e.id}">${icon('arrow')}Enviar desde ryan@</button>` : '';
     return `<li class="crm-draft"><span class="crm-t-ico sky" aria-hidden="true">${icon('chat')}</span><span>
       <span class="crm-draft-k">Borrador ${DF_CHANNEL[e.topic] ?? ''} · ${sent ? 'enviado' : 'por revisar y enviar'}</span>
+      ${canSend ? `<span class="crm-draft-s">Para: ${esc(mail)}</span>` : ''}
       ${d.subject ? `<span class="crm-draft-s">Asunto: ${esc(d.subject)}</span>` : ''}<span class="crm-draft-b">${esc(d.body)}</span>
-      <span class="crm-row"><button class="btn btn-dark btn-sm" type="button" data-df-copy="${e.id}" aria-label="Copiar el borrador del ${day}">Copiar</button>${open}${sent ? '' : `<button class="btn btn-light btn-sm" type="button" data-df-status="contactado">${icon('check')}Marcar como enviado</button>`}</span>
+      ${sendBtn ? `<span class="crm-row">${sendBtn}</span>` : ''}
+      <span class="crm-row">${sendBtn ? '' : `<button class="btn btn-dark btn-sm" type="button" data-df-copy="${e.id}" aria-label="Copiar el borrador del ${day}">Copiar</button>`}${sent ? '' : `<button class="btn btn-light btn-sm" type="button" data-df-dedit="${e.id}">${icon('pen')}Editar</button>`}${sendBtn ? `<button class="btn btn-light btn-sm" type="button" data-df-copy="${e.id}" aria-label="Copiar el borrador del ${day}">Copiar</button>` : open}${sent || sendBtn ? '' : `<button class="btn btn-light btn-sm" type="button" data-df-status="contactado">${icon('check')}Marcar como enviado</button>`}</span>
       <small>${day} · ${who}</small></span></li>`;
   }
   const ic = e.kind === 'note' ? `<span class="crm-t-ico stone" aria-hidden="true">${icon('pen')}</span>` : `<span class="crm-t-ico lilac" aria-hidden="true">${icon('sparkle')}</span>`;
@@ -2126,7 +2146,7 @@ function dfSheet() {
       <ul class="crm-timeline">${pending.map(e => dfEvent(c, e)).join('')}</ul></section>` : ''}
     <section class="crm-box" aria-labelledby="dfStatusT"><h3 id="dfStatusT">Estado</h3>
       <div class="crm-stage-pick" role="group" aria-labelledby="dfStatusT">${DF_STATUS.map(s => `<button type="button" data-df-status="${s.id}" aria-pressed="${s.id === c.status}">${s.name}</button>`).join('')}</div>
-      <p class="muted crm-note">«Contactado» guarda la fecha del envío y prevé una relance a los 7 días. Nada se envía desde el Campus.</p></section>
+      <p class="muted crm-note">«Contactado» guarda la fecha del envío y prevé una relance a los 7 días. «Enviar desde ryan@» lo marca solo; si envías el mensaje por otro medio, márcalo tú.</p></section>
     <section class="crm-box" aria-labelledby="dfNextT"><h3 id="dfNextT">Próxima acción</h3>
       <form class="form" id="dfNextForm" novalidate>
         <div class="crm-row"><label class="field crm-grow" for="dnWhat">Qué hacer<input id="dnWhat" maxlength="200" value="${esc(c.next_action || '')}" placeholder="Ej.: relanzar por correo"></label>
@@ -2156,7 +2176,7 @@ async function dfReload(id) {
 }
 async function dfOpen(id) {
   if (!dfById(id)) return;
-  if (DF.open !== id) { DF.editing = false; DF.detail = null; }
+  if (DF.open !== id) { DF.editing = false; DF.detail = null; DF.draftEdit = null; DF.confirm = null; }
   if (!DF.open) C.lastFocus = document.activeElement;
   DF.open = id;
   const sheet = $('#crmSheet');
@@ -2224,9 +2244,29 @@ function bindDf() {
 }
 function bindDfOverlay(sheet) {
   sheet.addEventListener('click', async e => {
-    const t = e.target.closest('[data-df-status],[data-df-copy],[data-df-edit],[data-df-done],[data-df-archive]');
+    const t = e.target.closest('[data-df-status],[data-df-copy],[data-df-edit],[data-df-done],[data-df-archive],[data-df-send],[data-df-dedit]');
     if (!t || !DF.open) return;
     const id = DF.open, c = DF.detail || dfById(id);
+    if (t.matches('[data-df-dedit]')) {
+      DF.draftEdit = t.dataset.dfDedit ? Number(t.dataset.dfDedit) : null; DF.confirm = null; dfRedraw();
+      if (DF.draftEdit) $('#ddBody')?.focus(); return;
+    }
+    if (t.matches('[data-df-send]')) {
+      const ev = t.dataset.dfSend;
+      if (DF.confirm !== ev) {
+        DF.confirm = ev;
+        t.innerHTML = `${icon('arrow')}Confirmar: enviar a ${esc(dfEmail(c))}`;
+        setTimeout(() => { if (DF.confirm === ev) { DF.confirm = null; if (t.isConnected) t.innerHTML = `${icon('arrow')}Enviar desde ryan@`; } }, 6000);
+        return;
+      }
+      DF.confirm = null; t.disabled = true; t.textContent = 'Enviando…';
+      const { data, error } = await sb.functions.invoke('outreach-send', { body: { event_id: Number(ev) } });
+      let code = data && data.error;
+      if (error) { try { code = (await error.context.json()).error; } catch (x) { code = 'error'; } }
+      if (code) toast(DF_SEND_ERR[code] || 'No se pudo enviar el correo. Inténtalo de nuevo o usa «Copiar».');
+      else toast(`Correo enviado a ${data.to}. Relance prevista en 7 días.`);
+      return dfReload(id);
+    }
     if (t.matches('[data-df-copy]')) {
       const ev = ((DF.detail && DF.detail.events) || []).find(x => String(x.id) === t.dataset.dfCopy);
       if (!ev) return;
@@ -2266,6 +2306,14 @@ function bindDfOverlay(sheet) {
     if (f.id === 'dfNextForm') {
       btn.disabled = true;
       await dfSave(id, { next_action: $('#dnWhat').value, next_due: $('#dnDue').value }, 'Próxima acción guardada.');
+    } else if (f.id === 'dfDraftForm') {
+      const body = $('#ddBody').value.trim();
+      if (!body) { $('#ddBody').focus(); return toast('El mensaje está vacío.'); }
+      btn.disabled = true;
+      const { error } = await sb.rpc('outreach_draft_update', { p_event: Number(f.dataset.event), p_subject: $('#ddSubject').value, p_body: body });
+      if (error) { btn.disabled = false; return fail(error, /already sent/.test(String(error.message || '')) ? 'Este borrador ya se envió.' : 'No se pudo guardar el borrador.'); }
+      DF.draftEdit = null; toast('Borrador guardado.');
+      await dfReload(id);
     } else if (f.id === 'dfNoteForm') {
       const v = $('#dfNote').value.trim();
       if (!v) { $('#dfNote').focus(); return toast('Escribe la nota.'); }

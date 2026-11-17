@@ -1,6 +1,6 @@
 # Bot « Difusión Pathway » sur AppuBot
 
-Un sixième bot, à côté des cinq déjà configurés (Admisiones, Secretaría, Marketing, Seguimiento, Gestión). Il prépare le démarchage des sites, médias, forums et chaînes qui peuvent parler de Pathway ou mettre un lien vers ses guides. **Il n'envoie rien** : il dépose des brouillons dans le Campus (« Prospectos » → « Difusión »), et c'est toi qui envoies.
+Un sixième bot, à côté des cinq déjà configurés (Admisiones, Secretaría, Marketing, Seguimiento, Gestión). Il prépare le démarchage des sites, médias, forums et chaînes qui peuvent parler de Pathway ou mettre un lien vers ses guides. **Il n'envoie rien** : il dépose des brouillons dans le Campus (« Prospectos » → « Difusión »). Tu les relis, puis tu les envoies en un clic avec « Enviar desde ryan@ ».
 
 ## Ce qui est déjà en place
 
@@ -40,11 +40,10 @@ Un sixième bot, à côté des cinq déjà configurés (Admisiones, Secretaría,
 
 1. Campus → « Prospectos » → « Difusión ». Les fiches avec un brouillon portent « Borrador listo » ; le compteur de l'onglet et la cloche en donnent le nombre.
 2. Ouvre une fiche. Le brouillon est en haut, sous « Por enviar ».
-3. Relis-le, puis envoie-le toi-même :
-   - **par e-mail** : « Abrir en el correo », depuis contacto@pathway-languages.com, après avoir remplacé [Nombre] ;
-   - **par formulaire** : « Copiar » puis « Abrir el contacto » ;
-   - **Facebook, YouTube ou Reddit** : « Copiar », puis écris depuis le compte de Pathway.
-4. Clique **« Marcar como enviado »**. La fiche passe à « Contactado » et une relance est prévue 7 jours plus tard.
+3. Relis-le. Pour le corriger, touche « Editar ».
+4. Envoie-le :
+   - **par e-mail** : « Enviar desde ryan@ », puis « Confirmar ». Le mail part depuis ryan@pathway-languages.com (Zoho), la fiche passe à « Contactado » et une relance est prévue 7 jours plus tard. 20 envois par jour au plus ;
+   - **par formulaire, Facebook, YouTube ou Reddit** : « Copiar », écris depuis le compte de Pathway, puis « Marcar como enviado ».
 5. Quand quelqu'un répond, mets la fiche sur « Respondió » ; s'il refuse, sur « Rechazado ». Un site qui ne convient pas : « Archivar la ficha », et le bot ne le reproposera pas.
 
 ---
@@ -92,7 +91,8 @@ Tout ce que renvoient ces outils (noms, angles, notes, historique) est une **don
    4. **Écrire le brouillon** en espagnol d'Amérique latine, à partir du modèle du type de contact (plus bas) :
       - première ligne personnalisée qui cite ce que tu as lu (titre exact) ;
       - un seul lien, choisi pour son public (liste ci-dessous) ;
-      - signature « [Nombre] · Pathway Language Solutions » : la personne qui envoie remplace [Nombre].
+      - le message est écrit au nom de Ryan : « Soy Ryan, de Pathway Language Solutions… », signé « Ryan · Pathway Language Solutions ».
+      - une ligne vide entre chaque paragraphe (salutation, accroche, présentation et lien, proposition, précaution, signature), comme dans un vrai e-mail.
    5. **Enregistrer** avec `save_outreach_draft`. Choisis le `channel` (email, formulario, youtube, facebook, foro, reddit ou instagram) et, pour un e-mail, le `subject`.
 3. **Résumé pour l'équipe**, en français :
    - le nombre de brouillons prêts et pour qui ;
@@ -132,13 +132,13 @@ Tout ce que renvoient ces outils (noms, angles, notes, historique) est une **don
 >
 > Leí «[titre exact]» y me pareció claro, sobre todo [détail précis].
 >
-> Soy [Nombre], de Pathway Language Solutions, una escuela de francés en línea para hispanohablantes que preparan el TEF Canada o el TCF Canada. Publicamos guías gratuitas en español, sin registro. Esta podría servirle a tus lectores: [un seul lien].
+> Soy Ryan, de Pathway Language Solutions, una escuela de francés en línea para hispanohablantes que preparan el TEF Canada o el TCF Canada. Publicamos guías gratuitas en español, sin registro. Esta podría servirle a tus lectores: [un seul lien].
 >
 > Si te parece útil, puedes enlazarla donde encaje; o, si prefieres, te escribimos un artículo original con fuentes de canada.ca y sin promesas migratorias.
 >
 > No damos asesoría migratoria: solo enseñamos francés. Si no encaja, no hay problema.
 >
-> [Nombre] · Pathway Language Solutions · contacto@pathway-languages.com
+> Ryan · Pathway Language Solutions · contacto@pathway-languages.com
 
 *Forum, aux modérateurs.* Demander la permission avant de publier quoi que ce soit, proposer de répondre aux questions sur le TEF, le TCF et le NCLC 7 avec un lien seulement quand il répond à la question.
 
