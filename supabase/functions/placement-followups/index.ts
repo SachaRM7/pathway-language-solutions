@@ -1,12 +1,12 @@
 // Supabase Edge Function « placement-followups » : envoie les trois e-mails qui suivent le test de
-// niveau du site (campus/db/029_relances_embudo.sql) — le résultat tout de suite, puis à 2 et 5 jours.
+// niveau du site (campus/db/029_relances_embudo.sql, 037) — le résultat et l'invitation à compléter le
+// test avec un professeur tout de suite, puis deux rappels à 2 et 5 jours (emails.ts).
 // Appelée toutes les 5 minutes par pg_cron avec le secret partagé (SQL 014). Rien ne part pour une
 // personne inscrite, élève, passée à une autre étape du suivi ou désinscrite.
 //
 // Déploiement : nom « placement-followups », « Verify JWT » désactivé (pg_cron l'appelle avec le
 // secret partagé ; tout autre appel automatique est refusé).
-// Secrets : RESEND_API_KEY (déjà ajouté). Facultatif : MESSENGER_URL (autre lien m.me de la page
-// Facebook), pour proposer Messenger à côté de WhatsApp.
+// Secrets : RESEND_API_KEY (déjà ajouté).
 // Test (admin du Campus uniquement) : POST { "test": true, "level": "B1", "lang": "es" } envoie les
 // trois e-mails d'exemple à l'adresse de l'admin connecté.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
@@ -15,17 +15,12 @@ import { renderFollowup, type Due } from './emails.ts';
 const FROM = 'Pathway Language Solutions <hola@pathway-languages.com>';
 const REPLY_TO = 'contacto@pathway-languages.com';
 const SITE = 'https://pathway-languages.com';
-const WHATSAPP = 'https://wa.me/51989887516';
 const cors = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-function links() {
-  // Pathway's Facebook page (no username yet: its numeric id). MESSENGER_URL can override it.
-  const m = (Deno.env.get('MESSENGER_URL') || 'https://m.me/61589267362316').trim();
-  return { site: SITE, whatsapp: WHATSAPP, messenger: /^https:\/\/(m\.me|www\.messenger\.com)\//.test(m) ? m : '' };
-}
+const links = () => ({ site: SITE });
 
 async function send(key: string, to: string, subject: string, html: string, unsubscribeUrl: string) {
   return fetch('https://api.resend.com/emails', {

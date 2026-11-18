@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es" data-no-pixel>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Pathway · Tus disponibilidades</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    :root { --paper: #fffaf2; --ink: #122b26; --muted: #50625c; --action: #a34e3b; --sage: #cad8c3; --line: #e2dbcd; --soft: #f3eee4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: start center; padding: 28px 16px 48px; background: #f5efe4; color: var(--ink); font: 400 17px/1.55 "DM Sans", Arial, sans-serif; }
+    main { width: 100%; max-width: 560px; padding: 30px 24px; border-radius: 20px; background: var(--paper); box-shadow: 0 24px 48px -36px rgb(18 43 38 / 45%); }
+    img.mark { display: block; width: 44px; height: 44px; margin-bottom: 16px; }
+    h1 { margin: 0 0 10px; font: 700 26px/1.2 Outfit, Arial, sans-serif; letter-spacing: -.02em; }
+    h2 { margin: 24px 0 6px; font: 700 18px/1.3 Outfit, Arial, sans-serif; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    .hint { font-size: 14px; margin: 0 0 12px; }
+    fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+    legend { padding: 0; }
+    .grid { display: grid; gap: 8px; }
+    .row { display: grid; grid-template-columns: 4.2em repeat(3, 1fr); gap: 6px; align-items: center; }
+    .row.head span { font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; line-height: 1.25; }
+    .day { font-weight: 700; font-size: 15px; }
+    .slot { position: relative; }
+    .slot input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .slot span { display: grid; place-items: center; min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 14px; font-weight: 700; color: var(--muted); transition: background .15s, color .15s, border-color .15s; }
+    .slot input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+    .slot input:checked + span::after { content: '✓'; font-size: 18px; }
+    .slot input:focus-visible + span { outline: 2px solid var(--action); outline-offset: 2px; }
+    label.field { display: grid; gap: 6px; margin: 0 0 14px; font-weight: 700; font-size: 15px; }
+    label.field small { font-weight: 400; color: var(--muted); }
+    select, input[type=tel], textarea { width: 100%; min-height: 48px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); font: 400 16px/1.4 Arial, sans-serif; }
+    textarea { min-height: 90px; resize: vertical; }
+    select:focus, input:focus, textarea:focus { outline: 2px solid var(--action); outline-offset: 1px; }
+    button.send { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; margin-top: 8px; border: 0; border-radius: 12px; background: var(--action); color: var(--paper); font: 700 17px/1 Arial, sans-serif; cursor: pointer; }
+    button.send[disabled] { opacity: .6; cursor: default; }
+    .error { margin: 10px 0 0; color: #a3291b; font-weight: 700; font-size: 15px; }
+    a.back { display: inline-block; margin-top: 16px; color: var(--ink); font-size: 15px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="mark" src="/pathway-mark.svg" alt="Pathway">
+    <section data-ask>
+      <h1 data-t="title">¿Cuándo podemos hacer tu reunión?</h1>
+      <p data-t="intro">Un profesor de Pathway completa tu test contigo por Zoom: la parte oral, tu objetivo, cuándo podrías empezar, cómo funcionan las clases, la inscripción y las tarifas. Marca los momentos en que puedes conectarte y te proponemos un horario.</p>
+      <form id="form" novalidate>
+        <fieldset>
+          <legend><h2 data-t="slotsTitle">Tus momentos libres</h2></legend>
+          <p class="hint" data-t="slotsHint">Marca todos los que te vengan bien, en tu hora local.</p>
+          <div class="grid" id="grid"></div>
+        </fieldset>
+        <h2 data-t="moreTitle">Para coordinar</h2>
+        <label class="field" for="tz"><span data-t="tz">Tu zona horaria</span><select id="tz"></select></label>
+        <label class="field" for="wa"><span><span data-t="wa">Tu WhatsApp</span> <small data-t="optional">(opcional)</small></span><input id="wa" type="tel" inputmode="tel" autocomplete="tel" maxlength="40" placeholder="+51 999 999 999"></label>
+        <label class="field" for="note"><span><span data-t="note">¿Algo que debamos saber?</span> <small data-t="optional">(opcional)</small></span><textarea id="note" maxlength="1000" data-ph="notePh" placeholder="Por ejemplo: prefiero los fines de semana, mi examen es en marzo…"></textarea></label>
+        <button class="send" type="submit" data-t="send">Enviar mis disponibilidades</button>
+        <p class="error" id="err" role="alert" hidden></p>
+      </form>
+    </section>
+    <section data-done hidden>
+      <h1 data-t="doneTitle">¡Gracias! Recibimos tus disponibilidades.</h1>
+      <p data-t="doneCopy">Una persona del equipo te escribe muy pronto para proponerte la reunión con un profesor. Ya no recibirás los recordatorios del test.</p>
+    </section>
+    <section data-bad hidden>
+      <h1 data-t="badTitle">Este enlace no funciona.</h1>
+      <p data-t="badCopy">Responde al correo de tu resultado o escríbenos a contacto@pathway-languages.com con tus disponibilidades: te proponemos la reunión.</p>
+    </section>
+    <a class="back" href="/" data-t="back">Volver a Pathway</a>
+  </main>
+  <script>
+    // After the level test: the person sends their free times for the meeting with a teacher
+    // (campus/db/037_reunion_test.sql). The token is the one of the test emails; no account.
+    (() => {
+      const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+      const q = new URLSearchParams(location.search);
+      const token = q.get('t') || '';
+      const lang = ['es', 'fr', 'en', 'de'].includes(q.get('l')) ? q.get('l') : 'es';
+      const T = {
+        es: {
+          days: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], dayNames: ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'],
+          parts: [['manana', 'Mañana', '8–12 h'], ['tarde', 'Tarde', '12–18 h'], ['noche', 'Noche', '18–22 h']],
+          pick: 'Marca al menos un momento.', failed: 'No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.', tooMany: 'Ya recibimos tus disponibilidades. Si quieres cambiarlas, responde al correo de tu resultado.', other: 'Otra zona horaria'
+        },
+        fr: {
+          title: 'Quand pouvons-nous faire votre réunion ?', intro: 'Un professeur de Pathway complète votre test avec vous sur Zoom : la partie orale, votre objectif, quand vous pourriez commencer, le fonctionnement des cours, l’inscription et les tarifs. Cochez les moments où vous pouvez vous connecter, nous vous proposons un horaire.',
+          slotsTitle: 'Vos moments libres', slotsHint: 'Cochez tous ceux qui vous conviennent, à votre heure locale.', moreTitle: 'Pour nous organiser', tz: 'Votre fuseau horaire', wa: 'Votre WhatsApp', optional: '(facultatif)', note: 'Quelque chose à nous dire ?', notePh: 'Par exemple : je préfère le week-end, mon examen est en mars…', send: 'Envoyer mes disponibilités',
+          doneTitle: 'Merci ! Nous avons reçu vos disponibilités.', doneCopy: 'Une personne de l’équipe vous écrit très vite pour vous proposer la réunion avec un professeur. Vous ne recevrez plus les rappels du test.',
+          badTitle: 'Ce lien ne fonctionne pas.', badCopy: 'Répondez à l’e-mail de votre résultat ou écrivez-nous à contacto@pathway-languages.com avec vos disponibilités : nous vous proposerons la réunion.', back: 'Retour à Pathway',
+          days: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], dayNames: ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'],
+          parts: [['manana', 'Matin', '8 h–12 h'], ['tarde', 'Après-midi', '12 h–18 h'], ['noche', 'Soir', '18 h–22 h']],
+          pick: 'Cochez au moins un moment.', failed: 'L’envoi a échoué. Vérifiez votre connexion et réessayez.', tooMany: 'Nous avons déjà reçu vos disponibilités. Pour les modifier, répondez à l’e-mail de votre résultat.', other: 'Autre fuseau horaire'
+        },
+        en: {
+          title: 'When can we hold your meeting?', intro: 'A Pathway teacher completes your test with you on Zoom: the speaking part, your goal, when you could start, how the classes work, enrolment and fees. Tick the times when you can connect and we will suggest a slot.',
+          slotsTitle: 'Your free times', slotsHint: 'Tick all that suit you, in your local time.', moreTitle: 'To arrange it', tz: 'Your time zone', wa: 'Your WhatsApp', optional: '(optional)', note: 'Anything we should know?', notePh: 'For example: I prefer weekends, my exam is in March…', send: 'Send my availability',
+          doneTitle: 'Thank you! We have your availability.', doneCopy: 'Someone on the team will write to you very soon to suggest the meeting with a teacher. You will not get the test reminders anymore.',
+          badTitle: 'This link does not work.', badCopy: 'Reply to your result email or write to contacto@pathway-languages.com with your availability: we will suggest the meeting.', back: 'Back to Pathway',
+          days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], dayNames: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+          parts: [['manana', 'Morning', '8–12'], ['tarde', 'Afternoon', '12–6 pm'], ['noche', 'Evening', '6–10 pm']],
+          pick: 'Tick at least one time.', failed: 'It could not be sent. Check your connection and try again.', tooMany: 'We already have your availability. To change it, reply to your result email.', other: 'Another time zone'
+        },
+        de: {
+          title: 'Wann passt Ihnen das Gespräch?', intro: 'Eine Lehrkraft von Pathway vervollständigt Ihren Test mit Ihnen über Zoom: den mündlichen Teil, Ihr Ziel, wann Sie beginnen könnten, den Unterricht, die Anmeldung und die Preise. Kreuzen Sie an, wann Sie Zeit haben, und wir schlagen Ihnen einen Termin vor.',
+          slotsTitle: 'Ihre freien Zeiten', slotsHint: 'Kreuzen Sie alle passenden an, in Ihrer Ortszeit.', moreTitle: 'Zur Abstimmung', tz: 'Ihre Zeitzone', wa: 'Ihr WhatsApp', optional: '(optional)', note: 'Sollten wir etwas wissen?', notePh: 'Zum Beispiel: lieber am Wochenende, meine Prüfung ist im März …', send: 'Meine Verfügbarkeit senden',
+          doneTitle: 'Danke! Wir haben Ihre Verfügbarkeit erhalten.', doneCopy: 'Eine Person aus dem Team schreibt Ihnen sehr bald, um Ihnen das Gespräch mit einer Lehrkraft vorzuschlagen. Sie erhalten keine Erinnerungen zum Test mehr.',
+          badTitle: 'Dieser Link funktioniert nicht.', badCopy: 'Antworten Sie auf die E-Mail mit Ihrem Ergebnis oder schreiben Sie an contacto@pathway-languages.com mit Ihrer Verfügbarkeit: Wir schlagen Ihnen das Gespräch vor.', back: 'Zurück zu Pathway',
+          days: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'], dayNames: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'],
+          parts: [['manana', 'Morgens', '8–12 Uhr'], ['tarde', 'Nachmittags', '12–18 Uhr'], ['noche', 'Abends', '18–22 Uhr']],
+          pick: 'Kreuzen Sie mindestens eine Zeit an.', failed: 'Senden fehlgeschlagen. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.', tooMany: 'Wir haben Ihre Verfügbarkeit bereits. Um sie zu ändern, antworten Sie auf die E-Mail mit Ihrem Ergebnis.', other: 'Andere Zeitzone'
+        }
+      }[lang];
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-t]').forEach(el => { if (T[el.dataset.t]) el.textContent = T[el.dataset.t]; });
+      document.querySelectorAll('[data-ph]').forEach(el => { if (T[el.dataset.ph]) el.placeholder = T[el.dataset.ph]; });
+      if (T.title) document.title = 'Pathway · ' + T.slotsTitle;
+      const show = name => ['ask', 'done', 'bad'].forEach(n => { document.querySelector(`[data-${n}]`).hidden = n !== name; });
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) { show('bad'); return; }
+
+      // Day × part of the day.
+      const grid = document.getElementById('grid');
+      grid.innerHTML = `<div class="row head" aria-hidden="true"><span></span>${T.parts.map(p => `<span>${p[1]}<br>${p[2]}</span>`).join('')}</div>` +
+        T.days.map((d, i) => `<div class="row"><span class="day">${d}</span>${T.parts.map(p => `<label class="slot"><input type="checkbox" name="slot" value="${i + 1}|${p[0]}" aria-label="${T.dayNames[i]}, ${p[1]} (${p[2]})"><span aria-hidden="true"></span></label>`).join('')}</div>`).join('');
+
+      // Time zone: the device's, first; then the usual ones of Pathway's students.
+      const ZONES = [['America/Lima', 'Lima · Bogotá · Quito'], ['America/Mexico_City', 'Ciudad de México'], ['America/Caracas', 'Caracas'], ['America/Santiago', 'Santiago de Chile'],
+        ['America/Argentina/Buenos_Aires', 'Buenos Aires · Montevideo'], ['America/Toronto', 'Montréal · Toronto'], ['America/Vancouver', 'Vancouver'], ['Europe/Madrid', 'Madrid · París · Berlín']];
+      let mine = ''; try { mine = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { /* old browser */ }
+      const list = mine && !ZONES.some(z => z[0] === mine) ? [[mine, mine.replace(/_/g, ' ')], ...ZONES] : ZONES;
+      const tz = document.getElementById('tz');
+      tz.innerHTML = list.map(([v, n]) => `<option value="${v}"${v === mine ? ' selected' : ''}>${n}</option>`).join('');
+
+      const form = document.getElementById('form'), err = document.getElementById('err'), button = form.querySelector('button');
+      const fail = m => { err.textContent = m; err.hidden = false; button.disabled = false; };
+      grid.addEventListener('change', () => { err.hidden = true; });
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        err.hidden = true;
+        const slots = [...form.querySelectorAll('input[name=slot]:checked')].map(c => { const [day, part] = c.value.split('|'); return { day: +day, part }; });
+        if (!slots.length) { fail(T.pick); grid.querySelector('input').focus(); return; }
+        button.disabled = true;
+        fetch(`${SUPABASE.url}/rest/v1/rpc/meeting_request_submit`, {
+          method: 'POST',
+          headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_token: token, p_slots: slots, p_timezone: tz.value, p_whatsapp: document.getElementById('wa').value, p_note: document.getElementById('note').value })
+        }).then(r => (r.ok ? r.json() : Promise.reject(r.status))).then(res => {
+          if (res && res.ok) { show('done'); window.scrollTo({ top: 0 }); return; }
+          if (res && res.error === 'token') { show('bad'); return; }
+          fail(res && res.error === 'too_many' ? T.tooMany : T.failed);
+        }, () => fail(T.failed));
+      });
+    })();
+  </script>
+</body>
+</html>
