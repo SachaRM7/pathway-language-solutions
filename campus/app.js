@@ -1545,6 +1545,19 @@ const crmName = p => p.name || p.email || p.whatsapp || 'Sin nombre';
 const crmOwners = () => (A.staff.teachers || []).filter(t => t.role === 'admin');
 const crmOwnerColor = id => CRM_OWNER_COLORS[Math.max(0, crmOwners().findIndex(o => o.id === id)) % CRM_OWNER_COLORS.length];
 const crmHash = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+// Where the 3 automatic emails after the placement test stand (db/029, db/036): sent, next one, stopped.
+function crmFollowups(p) {
+  const f = p.followups, sent = Math.min(3, f.sent || 0);
+  const n = `${sent} de 3 enviado${sent === 1 ? '' : 's'}`;
+  if (f.optout) return `${n} · se dio de baja: no recibe más correos automáticos.`;
+  if (sent >= 3) return `Los 3 enviados (el último el ${crmDay(f.last_sent_at)}). Si no responde, escríbele.`;
+  if (f.active && f.next_at && ['nuevo', 'test'].includes(p.stage)) {
+    const at = fmtDate(new Date(f.next_at), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }, tzOf()).replace('.', '');
+    return `${n} · el siguiente (${(f.next_step || 0) + 1}/3) sale el ${esc(at)}. Se detienen solos si responde, se inscribe o pasa a otra etapa.`;
+  }
+  if (f.active) return `${n} · detenidos: la ficha ya pasó a otra etapa.`;
+  return `${n} · detenidos (respondió, se inscribió o rehízo el test).`;
+}
 const crmDay = d => d ? fmtDate(new Date(d.length === 10 ? d + 'T12:00:00Z' : d), { day: 'numeric', month: 'short' }, d.length === 10 ? 'UTC' : tzOf()).replace('.', '') : '';
 const crmDue1 = d => !d ? '' : d < crmToday() ? 'late' : d === crmToday() ? 'today' : '';
 const crmDueLabel = d => !d ? '' : d < crmToday() ? `Atrasado · ${crmDay(d)}` : d === crmToday() ? 'Hoy' : crmDay(d);
@@ -1655,6 +1668,7 @@ function crmSheet() {
     ['País', esc(p.country || '—')], ['Zona horaria', esc(p.timezone || '—')],
     ['Objetivo', esc(p.goal || '—')], ['Examen', esc([p.exam, p.exam_date ? crmDay(p.exam_date) + ' ' + p.exam_date.slice(0, 4) : ''].filter(Boolean).join(' · ') || '—')],
     ['Nivel del test', p.level ? `${esc(p.level)}${p.level_score != null ? ` · ${p.level_score}/100` : ''}` : 'Sin test todavía'],
+    ...(p.followups ? [['Correos del test', crmFollowups(p)]] : []),
     ['Ritmo deseado', esc(crmPlan(p) || '—')],
     ...(p.crs_score ? [['Puntaje CRS', `${p.crs_score}`]] : []),
     ['Origen', `${(CRM_ORIGINS[p.origin] || CRM_ORIGINS.other)[0]}${p.campaign ? ` · campaña «${esc(p.campaign)}»` : ''}${p.source ? ` · ${esc(p.source)}` : ''}${p.referrer_name ? ` · recomendado por ${esc(p.referrer_name)}` : ''}`],
