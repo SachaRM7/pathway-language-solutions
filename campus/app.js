@@ -1065,7 +1065,7 @@ function adminTasks() {
   if (Array.isArray(A.staff.prospects)) for (const p of crmDue()) {
     const late = p.next_due < crmToday();
     push({ key: 'crm' + p.id + p.next_due, area: 'captacion', ic: 'funnel', title: `${esc(crmName(p))}: ${esc(p.next_action || 'próxima acción')}`,
-      detail: `${late ? `Atrasado desde el ${esc(crmDay(p.next_due))}` : 'Para hoy'}${p.owner ? ` · responsable: ${esc(firstName(p.owner))}` : ''}`, action: 'Abrir la ficha', href: '#prospectos', attrs: ` data-crm-goto="${p.id}"`, urgent: late });
+      detail: `${late ? `Atrasado desde el ${esc(crmDay(p.next_due))}` : 'Para hoy'}${p.owner ? ` · responsable: ${esc(firstName(p.owner))}` : ''}`, action: 'Abrir la ficha', href: '#prospectos', attrs: ` data-crm-goto="${p.id}"`, urgent: late || /disponibilidades/.test(p.next_action || '') });
   }
   if (mailOn()) for (const t of mailWaiting()) {
     const late = agoH(t.needs_reply_since || t.last_inbound_at) >= 24;
@@ -1556,7 +1556,15 @@ function crmFollowups(p) {
     return `${n} · el siguiente (${(f.next_step || 0) + 1}/3) sale el ${esc(at)}. Se detienen solos si responde, se inscribe o pasa a otra etapa.`;
   }
   if (f.active) return `${n} · detenidos: la ficha ya pasó a otra etapa.`;
-  return `${n} · detenidos (respondió, se inscribió o rehízo el test).`;
+  return `${n} · detenidos (respondió, envió sus disponibilidades, se inscribió o rehízo el test).`;
+}
+// Free times sent from disponibilidad.html after the test (db/037): the meeting with a teacher.
+const MEET_DAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'], MEET_PARTS = { manana: 'mañana (8–12 h)', tarde: 'tarde (12–18 h)', noche: 'noche (18–22 h)' };
+function crmMeeting(m) {
+  const by = {};
+  for (const s of m.slots || []) (by[s.part] = by[s.part] || []).push(MEET_DAYS[s.day - 1]);
+  const lines = Object.keys(MEET_PARTS).filter(k => by[k]).map(k => `<b>${MEET_PARTS[k]}</b>: ${esc(by[k].join(', '))}`);
+  return `${lines.join('<br>')}${m.timezone ? `<br><span class="muted">Hora de ${esc(m.timezone.replace(/_/g, ' '))} · enviado el ${crmDay(m.created_at)}</span>` : `<br><span class="muted">Enviado el ${crmDay(m.created_at)}</span>`}${m.whatsapp ? `<br>WhatsApp: ${esc(m.whatsapp)}` : ''}${m.note ? `<br>«${esc(m.note)}»` : ''}`;
 }
 const crmDay = d => d ? fmtDate(new Date(d.length === 10 ? d + 'T12:00:00Z' : d), { day: 'numeric', month: 'short' }, d.length === 10 ? 'UTC' : tzOf()).replace('.', '') : '';
 const crmDue1 = d => !d ? '' : d < crmToday() ? 'late' : d === crmToday() ? 'today' : '';
@@ -1669,6 +1677,7 @@ function crmSheet() {
     ['Objetivo', esc(p.goal || '—')], ['Examen', esc([p.exam, p.exam_date ? crmDay(p.exam_date) + ' ' + p.exam_date.slice(0, 4) : ''].filter(Boolean).join(' · ') || '—')],
     ['Nivel del test', p.level ? `${esc(p.level)}${p.level_score != null ? ` · ${p.level_score}/100` : ''}` : 'Sin test todavía'],
     ...(p.followups ? [['Correos del test', crmFollowups(p)]] : []),
+    ...(p.meetings && p.meetings.length ? [['Disponibilidades', crmMeeting(p.meetings[0])]] : []),
     ['Ritmo deseado', esc(crmPlan(p) || '—')],
     ...(p.crs_score ? [['Puntaje CRS', `${p.crs_score}`]] : []),
     ['Origen', `${(CRM_ORIGINS[p.origin] || CRM_ORIGINS.other)[0]}${p.campaign ? ` · campaña «${esc(p.campaign)}»` : ''}${p.source ? ` · ${esc(p.source)}` : ''}${p.referrer_name ? ` · recomendado por ${esc(p.referrer_name)}` : ''}`],
