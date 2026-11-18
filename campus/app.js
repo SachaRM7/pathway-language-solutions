@@ -355,7 +355,7 @@ async function loadStaff() {
     admin ? sb.from('profiles').select('id,plan,plan_start').eq('role', 'student') : null,
     admin ? sb.rpc('admin_members') : null,
     admin ? sb.rpc('staff_enrollments') : null,
-    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null, admin ? loadActivity() : null, admin ? loadMail() : null
+    admin ? loadAgents() : null, admin ? loadCrm() : null, admin ? loadWa() : null, admin ? loadOutreach() : null, admin ? loadActivity() : null, admin ? loadMail() : null, admin ? loadMeetings() : null
   ]);
   if (ov.error) throw ov.error;
   A.staff.overview = ov.data || [];
@@ -462,6 +462,7 @@ const TNAV = [
   { id: 'mensajes', label: 'Mensajes', icon: 'chat', when: () => Array.isArray(A.staff.threads), count: () => threadsWaiting().length },
   { id: 'tareas', label: 'Tareas', icon: 'pen' },
   { id: 'horarios', label: 'Horarios', icon: 'calendar', when: () => A.staff.groups !== null },
+  { id: 'agenda', label: 'Mi agenda', icon: 'timer' },
   { id: 'contenido', label: 'Contenido', icon: 'book', when: () => !isAdmin() },
   { id: 'cuentas', label: 'Cuentas', icon: 'user-plus', when: () => !isAdmin() && A.staff.invitesReady }
 ];
@@ -475,7 +476,7 @@ const ANAV = [
   { id: 'ajustes', label: 'Ajustes', icon: 'settings', group: 'Configuración', when: () => !!A.staff.settings }
 ];
 const navItems = () => (adminMode() ? ANAV : teacherMode() ? TNAV : SNAV).filter(n => !n.when || n.when());
-const VIEWS = { inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes, bandeja: viewBandeja };
+const VIEWS = { agenda: viewAgenda, inicio: viewInicio, ruta: viewRuta, repasar: viewRepasar, simulacros: viewSimulacros, logros: viewLogros, curso: viewCurso, panel: viewPanel, alumnos: viewAlumnos, tareas: viewTareas, horarios: viewHorarios, prospectos: viewProspectos, mensajes: viewMensajes, contenido: viewContenido, cuentas: viewCuentas, ajustes: viewAjustes, bandeja: viewBandeja };
 // Old links (#grupo) keep working.
 const ALIASES = { grupo: 'panel', whatsapp: 'prospectos', difusion: 'prospectos', correo: 'prospectos' };
 
@@ -524,13 +525,17 @@ const HELP = {
   logros: ['Tus logros', ['Cada ejercicio te da XP. Con los XP subes de nivel en el Campus.', 'Las insignias marcan pasos reales hacia tu examen.']],
   curso: ['Tus clases', ['«Tus próximas clases»: tu horario fijo, en tu hora local. Si una clase cambia, lo ves aquí y en tus avisos.', '«Entrar a la clase»: abre tu enlace de Zoom. Es siempre el mismo.', '«Tus clases grabadas»: cada clase aparece aquí poco después de terminar, para volver a verla.', 'Si no puedes venir, avisa con tiempo. Las reglas exactas de asistencia están en «Tu compromiso».']],
   mensajesAl: ['Tus preguntas', ['Escribe aquí tus dudas sobre el curso, los ejercicios o tus clases.', 'Te respondemos en esta misma conversación.']],
+  agenda: ['Tu semana', ['Tus clases (los horarios de tus alumnos), tus reuniones con interesados y tus momentos no disponibles, día por día.', 'Bloquea los momentos en que no puedes (almuerzo, otro trabajo): el Campus no te propondrá reuniones ahí.', '«Mi agenda en mi teléfono»: añade tu agenda al calendario de tu teléfono; se actualiza sola.']],
+  agendaMeet: ['Reuniones con interesados', ['Cuando alguien envía sus disponibilidades después del test, el Campus cruza sus horarios con tu agenda y te propone en los horarios libres.', 'Tu enlace de Zoom personal y tu dirección de envío se ponen solos en cada invitación (puedes cambiarlos en el momento).']],
+  agendaBlocks: ['Momentos no disponibles', ['«Cada semana»: por ejemplo, todos los martes de 12:00 a 14:00.', '«Una vez»: un día concreto (cita, viaje).', 'Las horas son las de tu zona horaria.']],
+  agendaFeed: ['Tu agenda en tu teléfono', ['iPhone: pulsa «Añadir a mi calendario» y acepta la suscripción.', 'Android / Google Calendar: copia el enlace y, en calendar.google.com, «Otros calendarios» → «Desde URL».', 'Es de solo lectura: los cambios se hacen en el Campus y aparecen en tu teléfono en unos minutos.']],
   finnivel: ['Pasar de nivel', ['Paso 1: el alumno hace el examen contigo. Si lo aprueba, pulsa «Validar el examen».', 'Paso 2: si el nivel tiene un examen final en el Campus, el alumno debe aprobarlo también.', 'Con los dos, pasa solo al nivel siguiente.']]
 };
 function helpKey(id) {
   const crm = location.hash.slice(1);
   return { 'h-inicio': 'inicio', 'h-ruta': 'ruta', 'h-rep': 'repasar', 'h-sim': 'simulacros', 'h-log': 'logros', 'h-curso': 'curso', 'h-bandeja': 'bandeja', 'h-panel': 'panel', 'h-alumnos': 'alumnos', 'h-tareas': 'tareas', 'h-ajustes': 'ajustes', 'h-cont': 'programa',
     'h-cuentas': isAdmin() ? 'inscripciones' : 'cuentas', 'h-horarios': adminMode() ? 'clases' : 'horarios',
-    'h-crm': ['whatsapp', 'correo', 'difusion'].includes(crm) ? crm : 'prospectos', 'h-mensajes': teacherMode() ? 'mensajes' : 'mensajesAl' }[id] || '';
+    'h-crm': ['whatsapp', 'correo', 'difusion'].includes(crm) ? crm : 'prospectos', 'h-mensajes': teacherMode() ? 'mensajes' : 'mensajesAl', 'h-agenda': 'agenda' }[id] || '';
 }
 function infoBtn(key) {
   if (!key || !HELP[key]) return '';
@@ -1062,7 +1067,16 @@ function adminTasks() {
     push({ key: 'wa' + t.id + t.needs_reply_since, area: 'captacion', ic: 'chat', title: `Responder por WhatsApp a ${esc(waName(t))}`,
       detail: `Escribió ${esc(agoText(t.needs_reply_since || t.last_inbound_at))} · ${esc(w.label)}`, action: 'Responder', href: '#whatsapp', attrs: ` data-wa-goto="${t.id}"`, urgent: true });
   }
-  if (Array.isArray(A.staff.prospects)) for (const p of crmDue()) {
+  const meets = Array.isArray(A.staff.meetings) ? A.staff.meetings : [];
+  for (const m of meets) {
+    const at = Date.parse(m.starts_at), when = meetWhen(m.starts_at, tzOf()), base = { area: 'captacion', ic: 'video', action: 'Abrir la ficha', href: '#prospectos', attrs: ` data-crm-goto="${m.prospect_id}"` };
+    if (m.status === 'propuesta' && m.invite_error) push({ ...base, key: 'mi' + m.id, title: `La invitación de reunión a ${esc(m.name)} no salió`, detail: 'Ábrela y usa «Reenviar la invitación»', urgent: true });
+    else if (['propuesta', 'confirmada'].includes(m.status) && at < Date.now() - 15 * 6e4) push({ ...base, key: 'md' + m.id, title: `¿Se hizo la reunión con ${esc(m.name)}?`, detail: `Era ${esc(when)} · márcala en su ficha: «Se hizo» o «No vino»`, urgent: true });
+    else if (m.status === 'confirmada' && dayKey(new Date(at)) === dayKey(new Date())) push({ ...base, key: 'mt' + m.id, title: `Reunión hoy a las ${esc(agTime(m.starts_at, tzOf()))} con ${esc(m.name)}`, detail: `La hace ${esc(firstName(m.host || ''))} · ${m.duration_min} min por Zoom`, urgent: true });
+    else if (m.status === 'propuesta' && m.invite_sent_at && Date.parse(m.invite_sent_at) < Date.now() - 864e5 && at > Date.now()) push({ ...base, key: 'mw' + m.id, title: `${esc(m.name)} todavía no confirmó la reunión`, detail: `Propuesta para ${esc(when)} · escríbele o propón otra hora` });
+  }
+  const meetLine = /^(Esperar su confirmación de la reunión|Reunión confirmada)/;
+  if (Array.isArray(A.staff.prospects)) for (const p of crmDue().filter(x => !meetLine.test(x.next_action || ''))) {
     const late = p.next_due < crmToday();
     push({ key: 'crm' + p.id + p.next_due, area: 'captacion', ic: 'funnel', title: `${esc(crmName(p))}: ${esc(p.next_action || 'próxima acción')}`,
       detail: `${late ? `Atrasado desde el ${esc(crmDay(p.next_due))}` : 'Para hoy'}${p.owner ? ` · responsable: ${esc(firstName(p.owner))}` : ''}`, action: 'Abrir la ficha', href: '#prospectos', attrs: ` data-crm-goto="${p.id}"`, urgent: late || /disponibilidades/.test(p.next_action || '') });
@@ -1712,6 +1726,7 @@ function crmSheet() {
       <div class="crm-row">${waT ? `<a class="btn btn-dark btn-sm" href="#whatsapp" data-wa-goto="${waT.id}">${icon('chat')}Ver la conversación${waT.needs_reply ? ' · por responder' : ''}</a>` : wa ? `<a class="btn btn-light btn-sm" href="${esc(wa)}" target="_blank" rel="noopener">${icon('chat')}Abrir WhatsApp</a>` : '<button class="btn btn-light btn-sm" type="button" disabled title="Sin número de WhatsApp">Sin WhatsApp</button>'}
         ${canInvite ? `<button class="btn ${strong ? 'btn-coral' : 'btn-light'} btn-sm" type="button" data-crm-invite>${icon('user-plus')}${p.invited_at ? 'Volver a invitar' : 'Invitar al Campus'}</button>` : ''}</div>
       <p class="muted crm-note">${waT ? 'Escribió al WhatsApp de Pathway: respóndele desde la conversación del Campus. ' : wa ? '«Abrir WhatsApp» prepara un mensaje en español; tú decides si lo envías. ' : ''}${canInvite ? '«Invitar al Campus» abre la invitación con el correo, el nombre y el nivel del test.' : p.student_id ? 'Ya tiene su cuenta en el Campus.' : ''}</p></section>
+    ${crmMeetBox(p)}
     <section class="crm-box" aria-labelledby="crmNextT"><h3 id="crmNextT">Próxima acción</h3>
       <form class="form" id="crmNextForm" novalidate>
         <div class="crm-row"><label class="field crm-grow" for="cnWhat">Qué hacer<input id="cnWhat" maxlength="200" value="${esc(p.next_action || '')}" placeholder="Ej.: relanzar por WhatsApp"></label>
@@ -1760,7 +1775,7 @@ async function copyText(text, input) {
 }
 async function crmOpen(id) {
   if (!crmById(id)) return;
-  if (C.open !== id) { C.editing = false; C.detail = null; }
+  if (C.open !== id) { C.editing = false; C.detail = null; C.meet = null; C.meetNote = false; }
   if (!C.open) C.lastFocus = document.activeElement;
   C.open = id;
   const sheet = $('#crmSheet');
@@ -2776,10 +2791,29 @@ function bindCrmOverlay() {
   modal.addEventListener('keydown', e => trap(modal, e));
   modal.addEventListener('click', e => { if (e.target.closest('[data-crm-close]')) crmClose(); });
   sheet.addEventListener('click', async e => {
-    const t = e.target.closest('[data-crm-close],[data-crm-stage],[data-crm-edit],[data-crm-invite],[data-crm-done],[data-crm-archive],[data-crm-copy]');
+    const t = e.target.closest('[data-crm-close],[data-crm-stage],[data-crm-edit],[data-crm-invite],[data-crm-done],[data-crm-archive],[data-crm-copy],[data-meet-new],[data-meet-cancel],[data-meet-mark],[data-meet-resend],[data-meet-note]');
     if (!t) return;
     const id = C.open, p = C.detail || crmById(id);
     if (t.matches('[data-crm-close]')) return crmClose();
+    if (t.matches('[data-meet-new]')) return crmMeetOpen();
+    if (t.matches('[data-meet-cancel]')) { C.meet = null; crmRedrawSheet(); $('[data-meet-new]')?.focus(); return; }
+    if (t.matches('[data-meet-note]')) { C.meetNote = t.dataset.meetNote === '1'; crmRedrawSheet(); $(C.meetNote ? '#cmNote' : '[data-meet-note="1"]')?.focus(); return; }
+    if (t.matches('[data-meet-resend]')) {
+      t.disabled = true;
+      const to = await crmMeetInvite(t.dataset.meetResend);
+      toast(to ? `Invitación enviada de nuevo a ${to}.` : 'El correo no salió: inténtalo de nuevo en un momento.');
+      return crmMeetReload(id);
+    }
+    if (t.matches('[data-meet-mark]')) {
+      const st = t.dataset.meetMark, cur = ((C.detail && C.detail.zoom_meetings) || []).find(m => ['propuesta', 'confirmada'].includes(m.status));
+      if (!cur) return;
+      if (st === 'cancelada' && !confirm('¿Cancelar la reunión? La persona no recibe ningún aviso automático: escríbele tú si hace falta.')) return;
+      t.disabled = true;
+      const { error } = await sb.rpc('meeting_mark', { p_id: cur.id, p_status: st, p_note: null });
+      if (error) { t.disabled = false; return fail(error); }
+      toast(st === 'no_vino' ? 'Anotado: no se conectó. Próxima acción: reprogramar.' : 'Reunión cancelada.');
+      await crmMeetReload(id); crmListRefresh(); return;
+    }
     if (t.matches('[data-crm-copy]')) {
       const ev = ((C.detail && C.detail.events) || []).find(x => String(x.id) === t.dataset.crmCopy);
       if (!ev) return;
@@ -2808,9 +2842,51 @@ function bindCrmOverlay() {
       toast(`Ficha de ${crmName(p)} archivada.`); crmClose(); render();
     }
   });
+  sheet.addEventListener('change', e => {
+    if (!C.meet || C.meet.loading) return;
+    if (e.target.name === 'meetAt' || e.target.id === 'mHost') {
+      crmMeetKeep();
+      if (e.target.name === 'meetAt') C.meet.host = null;
+      if (!C.meet.zoomTyped) { C.meet.zoom = undefined; C.meet.from = undefined; }
+      const focus = e.target.id || '';
+      crmRedrawSheet();
+      (focus ? $('#' + focus) : $('#crmMeetForm input[name=meetAt]:checked'))?.focus();
+    }
+  });
+  sheet.addEventListener('input', e => { if (e.target.id === 'mZoom' && C.meet) { C.meet.zoom = e.target.value; C.meet.zoomTyped = true; } });
   sheet.addEventListener('submit', async e => {
     e.preventDefault();
     const id = C.open, f = e.target, btn = f.querySelector('button[type=submit]');
+    if (f.id === 'crmMeetForm') {
+      crmMeetKeep();
+      const M = C.meet, tz = tzOf();
+      let at = M.pick;
+      if (at === 'custom') {
+        if (!M.date || !M.time) { $('#mcDate')?.focus(); return toast('Elige la fecha y la hora.'); }
+        at = zonedToUtc(M.date, M.time, tz).toISOString();
+      }
+      const zoom = $('#mZoom').value.trim();
+      if (!/^https:\/\/\S+$/.test(zoom)) { $('#mZoom').focus(); return toast('Pega el enlace de Zoom (empieza por https://).'); }
+      btn.disabled = true;
+      const { data, error } = await sb.rpc('meeting_propose', { p_prospect: id, p_host: $('#mHost').value, p_starts_at: at, p_duration: +$('#mDur').value, p_zoom_link: zoom, p_sender_email: $('#mFrom').value });
+      if (error) { btn.disabled = false; return toast(meetErr(error) || 'No se pudo guardar la reunión.'); }
+      const to = await crmMeetInvite(data.id);
+      toast(to ? `Invitación enviada a ${to}.` : 'La reunión quedó guardada, pero el correo no salió: usa «Reenviar la invitación».');
+      C.meet = null;
+      await crmMeetReload(id); crmListRefresh();
+      return;
+    }
+    if (f.id === 'crmMeetDone') {
+      const cur = ((C.detail && C.detail.zoom_meetings) || []).find(m => ['propuesta', 'confirmada'].includes(m.status));
+      if (!cur) return;
+      btn.disabled = true;
+      const { error } = await sb.rpc('meeting_mark', { p_id: cur.id, p_status: 'hecha', p_note: $('#cmNote').value });
+      if (error) { btn.disabled = false; return fail(error); }
+      C.meetNote = false;
+      toast('Reunión hecha. Próxima acción: proponer el horario de clases e inscribir.');
+      await crmMeetReload(id); crmListRefresh();
+      return;
+    }
     if (f.id === 'crmNextForm') {
       btn.disabled = true;
       await crmSave(id, { next_action: $('#cnWhat').value, next_due: $('#cnDue').value, owner_id: $('#cnOwner').value }, 'Próxima acción guardada.');
@@ -2871,6 +2947,240 @@ function viewCurso() {
       ${A.recordings.length ? A.recordings.slice(0, 12).map(r => `<div class="err-row"><span>${icon('video')} <b>${esc(cap(sessionLabel(r.at)))}</b>${r.minutes ? `<br><span class="muted" style="font-size:13px">${r.minutes} min</span>` : ''}</span><a class="btn btn-light btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener">Ver</a></div>`).join('')
         : '<p class="muted">Cada clase aparece aquí, grabada, poco después de terminar.</p>'}</article>` : ''}
   </div></section>`;
+}
+
+/* ───────────── Mi agenda and meetings with prospects (db/041) ───────────── */
+// A date and time typed in a time zone → the instant (the browser may be in another zone).
+function zonedToUtc(date, time, tz) {
+  const guess = Date.parse(`${date}T${time}:00Z`);
+  const off = d => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(d).map(x => [x.type, x.value]));
+    return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - d.getTime();
+  };
+  let t = guess - off(new Date(guess)); t = guess - off(new Date(t));
+  return new Date(t);
+}
+const agAddDays = (key, n) => new Date(Date.parse(key + 'T12:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+const agMonday = key => agAddDays(key, -((new Date(key + 'T12:00:00Z').getUTCDay() + 6) % 7));
+const agTime = (iso, tz) => fmtDate(new Date(iso), { hour: '2-digit', minute: '2-digit', hour12: false }, tz);
+const meetWhen = (iso, tz) => cap(fmtDate(new Date(iso), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }, tz).replace('.', ''));
+const tzCity = tz => String(tz || 'America/Lima').split('/').pop().replace(/_/g, ' ');
+const AG = { week: null, staff: null, data: null, key: '', loading: '', blockKind: 'weekly' };
+const AG_KIND = { clase: 'Clase', reunion: 'Reunión', bloqueo: 'No disponible' };
+const MEET_STATUS = { propuesta: 'propuesta · esperando su respuesta', confirmada: 'confirmada', otro_horario: 'pidió otro horario', hecha: 'hecha', no_vino: 'no se conectó', cancelada: 'cancelada' };
+const MEET_SENDERS = [['ryan@pathway-languages.com', 'Ryan · ryan@'], ['abdrahim@pathway-languages.com', 'Abdrahim · abdrahim@'], ['contacto@pathway-languages.com', 'Equipo · contacto@']];
+const agKey = () => `${AG.staff || 'me'}|${AG.week}`;
+async function loadAgenda() {
+  const key = agKey();
+  if (AG.loading === key) return;
+  AG.loading = key;
+  const start = Date.parse(AG.week + 'T00:00:00Z');
+  const r = await sb.rpc('my_agenda', { p_from: new Date(start - 14 * 36e5).toISOString(), p_to: new Date(start + 7 * 864e5 + 14 * 36e5).toISOString(), p_staff: AG.staff || null });
+  if (AG.loading !== key) return;
+  AG.loading = '';
+  AG.data = r.error || !r.data ? { error: (r.error && r.error.message) || 'empty' } : r.data; AG.key = key;
+  if (currentView() === 'agenda') render(false);
+}
+function agEvent(e, tz) {
+  const meet = e.kind === 'reunion';
+  const sub = meet ? `Reunión con un interesado · ${MEET_STATUS[e.status] || e.status}` : e.kind === 'clase' ? `Clase${e.status === 'moved' ? ' · movida' : e.status === 'makeup' ? ' · recuperación' : ''}` : (e.status === 'weekly' ? 'No disponible · cada semana' : 'No disponible');
+  return `<div class="ag-ev ag-${e.kind}${meet && e.status === 'propuesta' ? ' is-pending' : ''}">
+    <span class="ag-time num">${esc(agTime(e.starts_at, tz))}<small>${esc(agTime(e.ends_at, tz))}</small></span>
+    <span class="ag-main"><b>${esc(e.kind === 'bloqueo' ? e.title : e.title)}</b><small>${esc(sub)}</small></span>
+    <span class="ag-acts">${e.zoom && e.kind !== 'bloqueo' ? `<a class="btn btn-light btn-sm" href="${esc(e.zoom)}" target="_blank" rel="noopener">${icon('video')}Zoom</a>` : ''}${meet && isAdmin() ? `<button class="btn btn-light btn-sm" type="button" data-agenda-card="${esc(e.ref)}">Ficha</button>` : ''}</span></div>`;
+}
+function agBlockLine(b, tz) {
+  const what = b.weekday ? `Cada ${WEEKDAYS[b.weekday].toLowerCase()}, ${String(b.start_time).slice(0, 5)}–${String(b.end_time).slice(0, 5)}`
+    : `${meetWhen(b.starts_at, tz)} → ${dayKey(new Date(b.starts_at), tz) === dayKey(new Date(b.ends_at), tz) ? agTime(b.ends_at, tz) : meetWhen(b.ends_at, tz)}`;
+  return `<div class="err-row"><span><b>${esc(what)}</b>${b.note ? `<br><span class="muted" style="font-size:13px">${esc(b.note)}</span>` : ''}</span><button class="btn btn-light btn-sm" type="button" data-ag-del="${b.id}" aria-label="Quitar: ${esc(what)}">${icon('x')}</button></div>`;
+}
+function viewAgenda() {
+  const mine = !AG.staff || AG.staff === A.profile.id;
+  if (!AG.week) AG.week = agMonday(dayKey(new Date(), tzOf()));
+  const head = topBar('h-agenda', 'Mi agenda', 'Tus clases, tus reuniones con interesados y tus momentos no disponibles');
+  if (AG.key !== agKey() || !AG.data) { loadAgenda(); return `<section class="view" aria-labelledby="h-agenda">${head}<div class="saving"><span class="logo-mark">${icon('calendar')}</span>Cargando la agenda…</div></section>`; }
+  const d = AG.data;
+  if (d.error) return `<section class="view" aria-labelledby="h-agenda">${head}<div class="bento staff"><article class="tile empty"><h2>No se pudo cargar la agenda</h2><p class="muted">Vuelve a intentarlo en un momento. Si el problema sigue, falta instalar campus/db/041_agenda_reuniones.sql.</p><button class="btn btn-dark" type="button" data-ag-week="0">Reintentar</button></article></div></section>`;
+  const tz = d.timezone || tzOf(), today = dayKey(new Date(), tz);
+  const days = [...Array(7)].map((_, i) => agAddDays(AG.week, i));
+  const label = `${fmtDate(new Date(days[0] + 'T12:00:00Z'), { day: 'numeric', month: 'short' }, 'UTC').replace('.', '')} – ${fmtDate(new Date(days[6] + 'T12:00:00Z'), { day: 'numeric', month: 'short', year: 'numeric' }, 'UTC').replace('.', '')}`;
+  const byDay = Object.fromEntries(days.map(k => [k, (d.events || []).filter(e => dayKey(new Date(e.starts_at), tz) === k)]));
+  const people = d.people && d.people.length > 1 ? `<label class="field ag-who" for="agWho">Agenda de<select id="agWho">${d.people.map(p => `<option value="${p.id}" ${p.id === (AG.staff || A.profile.id) ? 'selected' : ''}>${esc(p.name)}${p.id === A.profile.id ? ' (yo)' : ''}</option>`).join('')}</select></label>` : '';
+  const s = d.settings || {};
+  const feed = s.feed_token ? `https://ynflykxalfynxoupkxmy.supabase.co/functions/v1/meetings?feed=${s.feed_token}` : '';
+  return `<section class="view" aria-labelledby="h-agenda">${head}
+  <div class="ag-bar">${people}<div class="ag-nav" role="group" aria-label="Semana"><button class="round sm" type="button" data-ag-week="-1" aria-label="Semana anterior">${icon('arrow')}</button><b class="num">${esc(label)}</b><button class="round sm" type="button" data-ag-week="1" aria-label="Semana siguiente">${icon('arrow')}</button>${AG.week !== agMonday(today) ? '<button class="btn btn-light btn-sm" type="button" data-ag-week="today">Hoy</button>' : ''}</div></div>
+  <p class="muted ag-tz">Horas en ${esc(tzCity(tz))}.</p>
+  <div class="bento staff">
+    <article class="tile ag-week" aria-label="Semana del ${esc(label)}">${days.map(k => `<div class="ag-day${k === today ? ' is-today' : ''}"><h3>${esc(cap(fmtDate(new Date(k + 'T12:00:00Z'), { weekday: 'long', day: 'numeric', month: 'short' }, 'UTC').replace('.', '')))}${k === today ? ' <span class="pill ghost">Hoy</span>' : ''}</h3>
+      ${byDay[k].length ? byDay[k].map(e => agEvent(e, tz)).join('') : '<p class="muted ag-free">Libre</p>'}</div>`).join('')}</article>
+    ${mine ? `<article class="tile c-6"><div class="tile-head">${withInfo('<h2>Reuniones con interesados</h2>', 'agendaMeet')}</div>
+      <form id="agSettings" class="form" novalidate>
+        <label class="check-row" for="agHosts"><input id="agHosts" type="checkbox" ${s.hosts_meetings ? 'checked' : ''}>Hago reuniones con interesados: el Campus me propone en los horarios libres</label>
+        <label class="field" for="agZoom">Mi enlace de Zoom personal<input id="agZoom" type="url" placeholder="https://zoom.us/j/…" value="${esc(s.zoom_link || '')}"></label>
+        <label class="field" for="agSender">Mis invitaciones salen de<select id="agSender"><option value="">Elegir</option>${MEET_SENDERS.map(([v, n]) => `<option value="${v}" ${s.sender_email === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        <button class="btn btn-dark" type="submit">Guardar</button>
+      </form></article>
+    <article class="tile c-6"><div class="tile-head">${withInfo('<h2>No disponible</h2>', 'agendaBlocks')}</div>
+      ${(d.blocks || []).length ? d.blocks.map(b => agBlockLine(b, tz)).join('') : '<p class="muted" style="margin-bottom:12px">Nada bloqueado: el Campus solo evita tus clases y tus reuniones.</p>'}
+      <form id="agBlockForm" class="form" style="margin-top:14px" novalidate>
+        <div class="seg-chips" role="group" aria-label="Tipo"><button type="button" data-ag-kind="weekly" aria-pressed="${AG.blockKind === 'weekly'}">Cada semana</button><button type="button" data-ag-kind="once" aria-pressed="${AG.blockKind === 'once'}">Una vez</button></div>
+        ${AG.blockKind === 'weekly' ? `<label class="field" for="abDay">Día<select id="abDay">${WEEKDAYS.slice(1).map((n, i) => `<option value="${i + 1}">${n}</option>`).join('')}</select></label>`
+          : `<label class="field" for="abDate">Fecha<input id="abDate" type="date" value="${today}" min="${today}"></label>`}
+        <div class="form-2"><label class="field" for="abFrom">Desde<input id="abFrom" type="time" value="12:00" required></label><label class="field" for="abTo">Hasta<input id="abTo" type="time" value="14:00" required></label></div>
+        <label class="field" for="abNote">Nota (opcional)<input id="abNote" maxlength="120" placeholder="Ej.: almuerzo, otro trabajo"></label>
+        <button class="btn btn-dark" type="submit">${icon('plus')}Bloquear</button>
+      </form></article>
+    ${feed ? `<article class="tile c-6"><div class="tile-head">${withInfo('<h2>Mi agenda en mi teléfono</h2>', 'agendaFeed')}</div>
+      <p class="muted" style="font-size:14px;margin:-6px 0 12px">Tus clases y tus reuniones aparecen solas en el calendario de tu teléfono y se actualizan.</p>
+      <a class="btn btn-dark" href="${esc(feed.replace(/^https:/, 'webcal:'))}">${icon('calendar')}Añadir a mi calendario</a>
+      <label class="field" for="agFeed" style="margin-top:12px">O copia este enlace privado<input id="agFeed" readonly value="${esc(feed)}"></label>
+      <div class="crm-row"><button class="btn btn-light btn-sm" type="button" data-ag-copy>Copiar el enlace</button><button class="btn btn-light btn-sm" type="button" data-ag-reset>Cambiar el enlace</button></div>
+      <p class="muted" style="font-size:13px;margin-top:10px">No lo compartas: quien lo tenga ve tu agenda. «Cambiar el enlace» desactiva el anterior.</p></article>` : ''}` : ''}
+  </div></section>`;
+}
+function bindAgenda() {
+  $('#agWho')?.addEventListener('change', e => { AG.staff = e.target.value === A.profile.id ? null : e.target.value; AG.data = null; render(false); });
+  $$('[data-ag-week]').forEach(b => b.onclick = () => {
+    const v = b.dataset.agWeek;
+    AG.week = v === 'today' ? agMonday(dayKey(new Date(), (AG.data && AG.data.timezone) || tzOf())) : v === '0' ? AG.week : agAddDays(AG.week, 7 * +v);
+    AG.data = null; render(false);
+  });
+  $$('[data-ag-kind]').forEach(b => b.onclick = () => { AG.blockKind = b.dataset.agKind; render(false); $(`[data-ag-kind="${AG.blockKind}"]`)?.focus(); });
+  $$('[data-ag-del]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await sb.rpc('agenda_block_delete', { p_id: +b.dataset.agDel });
+    if (error) { b.disabled = false; return fail(error); }
+    toast('Bloqueo quitado.'); AG.data = null; render(false);
+  });
+  const sf = $('#agSettings');
+  if (sf) sf.onsubmit = async e => {
+    e.preventDefault();
+    const zoom = $('#agZoom').value.trim();
+    if (zoom && !/^https:\/\/\S+$/.test(zoom)) { $('#agZoom').focus(); return toast('El enlace de Zoom empieza por https://'); }
+    const btn = sf.querySelector('button'); btn.disabled = true;
+    const { error } = await sb.rpc('agenda_settings_save', { p_zoom_link: zoom, p_sender_email: $('#agSender').value, p_hosts_meetings: $('#agHosts').checked });
+    btn.disabled = false;
+    if (error) return fail(error);
+    toast('Guardado.'); AG.data = null; render(false);
+  };
+  const bf = $('#agBlockForm');
+  if (bf) bf.onsubmit = async e => {
+    e.preventDefault();
+    const from = $('#abFrom').value, to = $('#abTo').value, tz = (AG.data && AG.data.timezone) || tzOf();
+    if (!from || !to || to <= from) { $('#abTo').focus(); return toast('«Hasta» debe ser después de «Desde».'); }
+    const args = AG.blockKind === 'weekly'
+      ? { p_weekday: +$('#abDay').value, p_start: from, p_end: to, p_starts_at: null, p_ends_at: null, p_note: $('#abNote').value }
+      : { p_weekday: null, p_start: null, p_end: null, p_starts_at: zonedToUtc($('#abDate').value, from, tz).toISOString(), p_ends_at: zonedToUtc($('#abDate').value, to, tz).toISOString(), p_note: $('#abNote').value };
+    if (AG.blockKind === 'once' && !$('#abDate').value) { $('#abDate').focus(); return toast('Elige la fecha.'); }
+    const btn = bf.querySelector('button[type=submit]'); btn.disabled = true;
+    const { error } = await sb.rpc('agenda_block_add', args);
+    btn.disabled = false;
+    if (error) return fail(error, 'No se pudo bloquear ese momento.');
+    toast('Bloqueado: no te propondremos reuniones en ese momento.'); AG.data = null; render(false);
+  };
+  const cp = $('[data-ag-copy]');
+  if (cp) cp.onclick = async () => { const ok = await copyText($('#agFeed').value, $('#agFeed')); toast(ok ? 'Enlace copiado.' : 'Selecciona el enlace y cópialo.'); };
+  const rs = $('[data-ag-reset]');
+  if (rs) rs.onclick = async () => {
+    if (!confirm('¿Cambiar el enlace? El calendario donde añadiste el anterior dejará de actualizarse.')) return;
+    const { error } = await sb.rpc('agenda_feed_reset');
+    if (error) return fail(error);
+    toast('Enlace cambiado: añádelo de nuevo a tu calendario.'); AG.data = null; render(false);
+  };
+}
+
+// ─── The meeting on a prospect's card ───
+async function loadMeetings() {
+  const r = await sb.rpc('meetings_overview');
+  A.staff.meetings = r.error ? null : (r.data || []); // needs db/041_agenda_reuniones.sql
+}
+const MEET_ERR = { 'host busy': 'Esa persona ya tiene algo a esa hora (clase, reunión o bloqueo).', 'zoom link': 'Falta el enlace de Zoom: pégalo, o guárdalo en «Mi agenda».', 'too soon': 'Elige una hora al menos 30 minutos después de ahora.', 'no email': 'La ficha no tiene correo: añádelo para enviar la invitación.', 'bad host': 'Elige quién hace la reunión.' };
+const meetErr = e => { const m = String((e && e.message) || ''); const k = Object.keys(MEET_ERR).find(x => m.includes(x)); return k ? MEET_ERR[k] : null; };
+function crmMeetBox(p) {
+  if (!C.detail) return '';
+  const ms = C.detail.zoom_meetings || [], req = (C.detail.meetings || [])[0];
+  const cur = ms.find(m => ['propuesta', 'confirmada'].includes(m.status)), last = ms[0];
+  const my = tzOf(), theirs = (cur && cur.timezone) || (req && req.timezone) || p.timezone || 'America/Lima';
+  let body = '';
+  if (C.meet && C.meet.loading) body = '<p class="muted">Buscando horarios libres…</p>';
+  else if (C.meet) body = crmMeetForm(p, theirs);
+  else if (cur) {
+    const started = Date.parse(cur.starts_at) < Date.now() + 10 * 6e4;
+    body = `<p class="meet-when"><b>${esc(meetWhen(cur.starts_at, my))}</b> (tu hora)${theirs !== my ? ` · ${esc(meetWhen(cur.starts_at, theirs))} para la persona (${esc(tzCity(theirs))})` : ''}<br>
+      <span class="status ${cur.status === 'confirmada' ? '' : 'warn'}">${cur.status === 'confirmada' ? 'Confirmada' : 'Esperando su respuesta'}</span> Con ${esc(firstName(cur.host || ''))} · ${cur.duration_min} min</p>
+      <p class="muted crm-note">${cur.invite_sent_at ? `Invitación enviada el ${esc(meetWhen(cur.invite_sent_at, my))} desde ${esc(cur.sender_email || '')}.` : cur.invite_error ? `<span class="form-error">La invitación no salió: ${esc(cur.invite_error)}</span>` : 'Invitación sin enviar.'}${cur.status === 'propuesta' ? ' Recibirá un recordatorio la víspera; si confirma, otro 1 hora antes.' : ' Recordatorio 1 hora antes, para la persona y para quien la hace.'}</p>
+      ${C.meetNote ? `<form class="form" id="crmMeetDone" novalidate><label class="field" for="cmNote">Notas de la reunión (opcional)<textarea id="cmNote" rows="3" maxlength="1000" placeholder="Nivel oral, objetivo, ritmo que le conviene, fecha de inicio…"></textarea></label>
+        <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">${icon('check')}Guardar: se hizo</button><button class="btn btn-light btn-sm" type="button" data-meet-note="0">Cancelar</button></div></form>`
+      : `<div class="crm-row"><a class="btn btn-light btn-sm" href="${esc(cur.zoom_link || '#')}" target="_blank" rel="noopener">${icon('video')}Zoom</a>
+        ${started ? `<button class="btn btn-dark btn-sm" type="button" data-meet-note="1">${icon('check')}Se hizo</button><button class="btn btn-light btn-sm" type="button" data-meet-mark="no_vino">No vino</button>` : ''}
+        ${cur.status === 'propuesta' && !started ? `<button class="btn btn-light btn-sm" type="button" data-meet-resend="${cur.id}">Reenviar la invitación</button>` : ''}
+        <button class="btn btn-light btn-sm" type="button" data-meet-new>Otra hora</button><button class="btn btn-light btn-sm" type="button" data-meet-mark="cancelada">Cancelar</button></div>`}`;
+  } else {
+    const intro = last && last.status === 'otro_horario' ? 'Pidió otro horario: propón una nueva hora.'
+      : last && last.status === 'hecha' ? `Reunión hecha el ${esc(meetWhen(last.starts_at, my))}${last.note ? `: «${esc(last.note)}»` : '.'}`
+      : last && last.status === 'no_vino' ? `No se conectó a la reunión del ${esc(meetWhen(last.starts_at, my))}.`
+      : req ? 'Envió sus disponibilidades: el Campus te propone los horarios libres que coinciden.' : 'Sin disponibilidades enviadas: puedes proponer una hora igualmente.';
+    body = `<p class="muted crm-note" style="margin-top:0">${intro}</p><div class="crm-row"><button class="btn ${req && !(last && last.status === 'hecha') ? 'btn-coral' : 'btn-light'} btn-sm" type="button" data-meet-new>${icon('calendar')}Proponer una reunión</button></div>`;
+  }
+  return `<section class="crm-box" aria-labelledby="crmMeetT"><h3 id="crmMeetT">Reunión con un profesor</h3>${body}</section>`;
+}
+function crmMeetForm(p, theirs) {
+  const M = C.meet, my = tzOf(), hosts = (M.hosts || []).filter(h => h.hosts_meetings);
+  const times = [...new Set((M.slots || []).map(s => s.starts_at))];
+  const hostsAt = at => (M.slots || []).filter(s => s.starts_at === at).map(s => s.host_id);
+  const pick = M.pick || times[0] || 'custom';
+  const free = pick === 'custom' ? hosts.map(h => h.id) : hostsAt(pick);
+  const host = M.host && free.includes(M.host) ? M.host : free.includes(A.profile.id) ? A.profile.id : free[0] || (hosts[0] && hosts[0].id) || A.profile.id;
+  const H = (M.hosts || []).find(h => h.id === host) || {};
+  const nameOf = id => firstName(((M.hosts || []).find(h => h.id === id) || {}).name || '');
+  return `<form class="form" id="crmMeetForm" novalidate>
+    <fieldset class="meet-slots"><legend class="label">${times.length ? 'Horarios libres que coinciden con sus disponibilidades' : 'Ningún horario libre coincide en los próximos 14 días'}</legend>
+      ${times.map(at => `<label class="meet-slot" for="ms${Date.parse(at)}"><input type="radio" name="meetAt" id="ms${Date.parse(at)}" value="${esc(at)}" ${pick === at ? 'checked' : ''}><span><b>${esc(meetWhen(at, my))}</b> tu hora${theirs !== my ? ` · <span class="muted">${esc(agTime(at, theirs))} para la persona</span>` : ''}<small>${esc(hostsAt(at).map(nameOf).join(' o '))}</small></span></label>`).join('')}
+      <label class="meet-slot" for="msCustom"><input type="radio" name="meetAt" id="msCustom" value="custom" ${pick === 'custom' ? 'checked' : ''}><span><b>Otra hora</b><small>En tu hora (${esc(tzCity(my))})</small></span></label>
+      ${pick === 'custom' ? `<div class="form-2"><label class="field" for="mcDate">Fecha<input id="mcDate" type="date" value="${esc(M.date || dayKey(new Date(Date.now() + 864e5), my))}"></label><label class="field" for="mcTime">Hora<input id="mcTime" type="time" step="900" value="${esc(M.time || '18:00')}"></label></div>` : ''}
+    </fieldset>
+    <div class="form-2"><label class="field" for="mHost">La hace<select id="mHost">${(pick === 'custom' ? hosts : hosts.filter(h => free.includes(h.id))).map(h => `<option value="${h.id}" ${h.id === host ? 'selected' : ''}>${esc(h.name)}</option>`).join('') || `<option value="${A.profile.id}">${esc(A.profile.full_name)}</option>`}</select></label>
+      <label class="field" for="mDur">Duración<select id="mDur">${[20, 30, 45, 60].map(n => `<option value="${n}" ${(M.dur || 30) === n ? 'selected' : ''}>${n} min</option>`).join('')}</select></label></div>
+    <label class="field" for="mZoom">Enlace de Zoom<input id="mZoom" type="url" placeholder="https://zoom.us/j/…" value="${esc(M.zoom ?? H.zoom_link ?? '')}"></label>
+    <label class="field" for="mFrom">Enviar desde<select id="mFrom">${MEET_SENDERS.map(([v, n]) => `<option value="${v}" ${(M.from || H.sender_email || 'contacto@pathway-languages.com') === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+    <p class="muted crm-note">Le llega un correo${p.lang && p.lang !== 'es' ? '' : ' en español'} con la hora en su zona, el enlace de Zoom, «Confirmo» u «otro horario» y un archivo para su calendario.</p>
+    <div class="crm-row"><button class="btn btn-dark btn-sm" type="submit">${icon('arrow')}Enviar la invitación</button><button class="btn btn-light btn-sm" type="button" data-meet-cancel>Cancelar</button></div>
+  </form>`;
+}
+async function crmMeetOpen() {
+  const id = C.open;
+  C.meet = { loading: true }; crmRedrawSheet();
+  const [s, h] = await Promise.all([sb.rpc('meeting_suggestions', { p_prospect: id, p_duration: 30, p_limit: 8 }), sb.rpc('meeting_hosts')]);
+  if (C.open !== id) return;
+  if (h.error) { C.meet = null; crmRedrawSheet(); return fail(h.error, 'No se pudo preparar la reunión.'); }
+  C.meet = { slots: s.error ? [] : (s.data || []), hosts: h.data || [] };
+  crmRedrawSheet(); $('#crmMeetForm input[name=meetAt]:checked')?.focus();
+}
+async function crmMeetReload(id) {
+  const r = await sb.rpc('crm_prospect', { p_id: id });
+  if (!r.error && C.open === id) { C.detail = r.data; crmRedrawSheet(); }
+  await loadMeetings();
+}
+async function crmMeetInvite(meetingId) {
+  const r = await sb.functions.invoke('meetings', { body: { action: 'invite', meeting_id: meetingId } });
+  return !r.error && r.data && r.data.ok ? r.data.to : null;
+}
+// Keeps what was typed when the form is redrawn (slot or host changed).
+function crmMeetKeep() {
+  const M = C.meet; if (!M || M.loading) return;
+  const v = id => { const el = $(id); return el ? el.value : undefined; };
+  M.pick = ($('#crmMeetForm input[name=meetAt]:checked') || {}).value || M.pick;
+  if (v('#mHost') !== undefined) M.host = v('#mHost');
+  if (v('#mDur') !== undefined) M.dur = +v('#mDur');
+  if (v('#mFrom') !== undefined) M.from = v('#mFrom');
+  if (v('#mcDate') !== undefined) { M.date = v('#mcDate'); M.time = v('#mcTime'); }
+}
+// The board and the Bandeja after a meeting changed a card's next action.
+async function crmListRefresh() {
+  await loadCrm();
+  if (currentView() === 'prospectos' && typeof crmRefreshBody === 'function') crmRefreshBody();
+  renderNav(currentView());
 }
 
 function viewHorarios() {
@@ -3858,6 +4168,7 @@ function bindView(id) {
   if (id === 'mensajes') bindMessages();
   pollMessages(id);
   if (id === 'contenido') bindEditor();
+  if (id === 'agenda') bindAgenda();
   if (id === 'prospectos') { bindCrm(); bindWa(); bindDf(); bindMail(); }
   if (id === 'bandeja' && Date.now() - (A.staff.activityAt || 0) > 30000) {
     A.staff.activityAt = Date.now();
@@ -4030,6 +4341,12 @@ document.addEventListener('click', async e => {
     const anchor = go.dataset.enrGoto ? '#solicitudes' : go.dataset.memberGoto ? '.member-edit' : go.dataset.groupGoto || go.dataset.scheduleGoto ? '#groupForm' : '';
     if (here) { e.preventDefault(); closeMenus(); render(); }
     if (anchor) setTimeout(() => $(anchor)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 200);
+  }
+  const ag = e.target.closest('[data-agenda-card]');
+  if (ag) {
+    const pid = ag.dataset.agendaCard;
+    A.mode = 'admin'; try { localStorage.setItem('campus-mode', 'admin'); } catch (err) { /* ignore */ }
+    location.hash = 'prospectos'; render(); setTimeout(() => crmOpen(pid), 120); return;
   }
   const ct = e.target.closest('[data-crm-today],[data-crm-goto]');
   if (ct) {

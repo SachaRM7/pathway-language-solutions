@@ -63,7 +63,7 @@ const assets = [
   'pathway-v2.css', 'pathway-page-shell.css', 'pathway-v2.js', 'test-placement.html', 'test.html', 'placement.css',
   'placement-test.css', 'test.css', 'placement-test.js', 'test.js', 'placement-scoring.js',
   'inscription.html', 'inscription.js', 'inscription.css', 'resource.css', 'resource.js',
-  'calculator.css', 'calculator.js', 'conditions-nclc7.css', 'conditions-nclc7.js', 'baja.html', 'disponibilidad.html'
+  'calculator.css', 'calculator.js', 'conditions-nclc7.css', 'conditions-nclc7.js', 'baja.html', 'disponibilidad.html', 'reunion.html'
 ];
 
 await rm(dist, { recursive: true, force: true });

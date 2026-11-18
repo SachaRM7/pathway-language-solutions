@@ -88,6 +88,12 @@ Seulement ce qui sert à enseigner. Un admin qui enseigne n'y voit que ses élè
 - **Horarios** : ses élèves, leurs horaires fixes et la demande de changement d'un cours (appliquée directement pour un admin).
 - **Contenido** et **Cuentas** : seulement pour un professeur qui n'est pas admin (voir les unités, inviter ses élèves). Les admins les trouvent dans l'espace Admin.
 
+### Mi agenda (`db/041_agenda_reuniones.sql`, fonction `meetings`)
+
+Chaque membre de l'équipe a « Mi agenda » dans l'espace Profesor : ses cours (horaires des élèves), ses réunions avec les intéressés et ses moments non disponibles (chaque semaine ou une fois), semaine par semaine, à son heure. Réglages : son lien Zoom personnel, l'adresse d'envoi des invitations, « Hago reuniones con interesados ». Un lien privé (`meetings?feed=…`) ajoute l'agenda au calendrier du téléphone (iPhone : « Añadir a mi calendario » ; Google Calendar : « Desde URL »). Un admin peut regarder l'agenda des autres.
+
+**Réunion avec un intéressé** (fiche, bloc « Reunión con un profesor ») : quand la personne a envoyé ses disponibilités, le Campus croise ses créneaux (dans son fuseau) avec l'agenda réel des personnes qui font les réunions et propose les premiers horaires libres sur 14 jours. On choisit l'horaire (ou une autre heure), qui la fait, la durée, le lien Zoom et l'adresse d'envoi, puis « Enviar la invitación » : la personne reçoit un e-mail dans sa langue (heure locale, Zoom, « Confirmo » / « otro horario » sur `reunion.html`, lien Google Calendar et fichier .ics). Rappels automatiques la veille et 1 h avant (et à la personne qui la fait, 1 h avant ; `db/043`). Ensuite : « Se hizo » (avec notes) ou « No vino » ; la prochaine action de la fiche suit. Dans l'Inicio admin : réunion du jour, invitation non partie, réunion sans réponse, réunion passée à marquer.
+
 ## Espace « Admin »
 
 La gestion, regroupée par métier dans la barre latérale ; le compteur rouge d'un onglet dit ce qui attend quelqu'un. Un point rouge sur « Admin » dans le sélecteur signale une tâche urgente quand on est dans un autre espace.

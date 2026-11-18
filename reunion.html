@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es" data-no-pixel>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Pathway · Tu reunión</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    :root { --paper: #fffaf2; --ink: #122b26; --muted: #50625c; --action: #a34e3b; --soft: #f3eee4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: #f5efe4; color: var(--ink); font: 400 17px/1.55 "DM Sans", Arial, sans-serif; }
+    main { width: 100%; max-width: 480px; padding: 32px 26px; border-radius: 20px; background: var(--paper); box-shadow: 0 24px 48px -36px rgb(18 43 38 / 45%); }
+    img { display: block; width: 44px; height: 44px; margin-bottom: 16px; }
+    h1 { margin: 0 0 10px; font: 700 26px/1.2 Outfit, Arial, sans-serif; letter-spacing: -.02em; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    .when { margin: 0 0 18px; padding: 16px 18px; border-radius: 14px; background: var(--soft); color: var(--ink); font-weight: 700; font-size: 18px; line-height: 1.45; }
+    .button { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin: 0 0 12px; border: 0; border-radius: 12px; background: var(--action); color: var(--paper); font: 700 16px/1.2 Arial, sans-serif; text-decoration: none; text-align: center; padding: 0 16px; cursor: pointer; }
+    .button.light { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px #d9d2c4; }
+    .button[disabled] { opacity: .6; cursor: default; }
+    a.zoom { color: var(--ink); font-weight: 700; word-break: break-all; }
+    a.back { display: inline-block; margin-top: 8px; color: var(--ink); font-size: 15px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/pathway-mark.svg" alt="Pathway">
+    <section data-view="load"><p data-t="loading">Un momento…</p></section>
+    <section data-view="ask" hidden>
+      <h1 data-t="askTitle">Tu reunión con Pathway</h1>
+      <p data-intro></p>
+      <p class="when" data-when></p>
+      <button class="button" type="button" data-confirm data-t="confirm">Confirmo la reunión</button>
+      <button class="button light" type="button" data-other data-t="other">Necesito otro horario</button>
+    </section>
+    <section data-view="ok" hidden>
+      <h1 data-t="okTitle">¡Listo, tu reunión está confirmada!</h1>
+      <p class="when" data-when></p>
+      <p data-t="okCopy">Te enviaremos un recordatorio la víspera y una hora antes. El día de la reunión, entra con este enlace:</p>
+      <p><a class="zoom" data-zoom href="#"></a></p>
+    </section>
+    <section data-view="other" hidden>
+      <h1 data-t="otherTitle">Entendido: buscamos otro horario.</h1>
+      <p data-t="otherCopy">Marca de nuevo los momentos en que puedes conectarte y te proponemos otra hora.</p>
+      <a class="button" data-availability href="#" data-t="availability">Elegir mis disponibilidades</a>
+    </section>
+    <section data-view="closed" hidden>
+      <h1 data-t="closedTitle">Esta reunión ya no está disponible.</h1>
+      <p data-t="closedCopy">Puede que ya haya pasado o que te hayamos propuesto otra hora. Responde al último correo de Pathway o escríbenos a contacto@pathway-languages.com.</p>
+    </section>
+    <section data-view="bad" hidden>
+      <h1 data-t="badTitle">Este enlace no funciona.</h1>
+      <p data-t="badCopy">Responde al correo de tu invitación o escríbenos a contacto@pathway-languages.com.</p>
+    </section>
+    <a class="back" href="/" data-t="back">Volver a Pathway</a>
+  </main>
+  <script>
+    // The free meeting with a teacher (campus/db/041_agenda_reuniones.sql): the person confirms the
+    // proposed time or asks for another one. A click is required (email scanners open links).
+    (() => {
+      const SUPABASE = { url: 'https://ynflykxalfynxoupkxmy.supabase.co', key: 'sb_publishable_e3Pa5ADDtYVU7BJilbkcxw_qaPPxtKB' };
+      const q = new URLSearchParams(location.search);
+      const token = q.get('t') || '';
+      let lang = ['es', 'fr', 'en', 'de'].includes(q.get('l')) ? q.get('l') : 'es';
+      const LOCALES = { es: 'es-PE', fr: 'fr-CA', en: 'en-CA', de: 'de-DE' };
+      const T = {
+        es: { intro: h => `${h} te propone una reunión gratuita por Zoom para completar tu test de nivel.`, tz: c => `hora de ${c}`, min: 'min' },
+        fr: { loading: 'Un instant…', askTitle: 'Votre réunion avec Pathway', intro: h => `${h} vous propose une réunion gratuite sur Zoom pour compléter votre test de niveau.`, tz: c => `heure de ${c}`, min: 'min',
+          confirm: 'Je confirme la réunion', other: 'J’ai besoin d’un autre horaire', okTitle: 'C’est noté, votre réunion est confirmée !', okCopy: 'Vous recevrez un rappel la veille et une heure avant. Le jour de la réunion, connectez-vous avec ce lien :',
+          otherTitle: 'Entendu : nous cherchons un autre horaire.', otherCopy: 'Cochez à nouveau les moments où vous pouvez vous connecter et nous vous proposons une autre heure.', availability: 'Choisir mes disponibilités',
+          closedTitle: 'Cette réunion n’est plus disponible.', closedCopy: 'Elle est peut-être passée, ou nous vous avons proposé une autre heure. Répondez au dernier e-mail de Pathway ou écrivez à contacto@pathway-languages.com.',
+          badTitle: 'Ce lien ne fonctionne pas.', badCopy: 'Répondez à l’e-mail de votre invitation ou écrivez à contacto@pathway-languages.com.', back: 'Retour à Pathway' },
+        en: { loading: 'One moment…', askTitle: 'Your meeting with Pathway', intro: h => `${h} suggests a free Zoom meeting to complete your level test.`, tz: c => `${c} time`, min: 'min',
+          confirm: 'I confirm the meeting', other: 'I need another time', okTitle: 'Done, your meeting is confirmed!', okCopy: 'You will get a reminder the day before and one hour before. On the day, join with this link:',
+          otherTitle: 'Got it: we will find another time.', otherCopy: 'Tick again the times when you can connect and we will suggest another slot.', availability: 'Choose my availability',
+          closedTitle: 'This meeting is no longer available.', closedCopy: 'It may have passed, or we suggested another time. Reply to Pathway’s last email or write to contacto@pathway-languages.com.',
+          badTitle: 'This link does not work.', badCopy: 'Reply to your invitation email or write to contacto@pathway-languages.com.', back: 'Back to Pathway' },
+        de: { loading: 'Einen Moment…', askTitle: 'Ihr Gespräch mit Pathway', intro: h => `${h} schlägt Ihnen ein kostenloses Zoom-Gespräch vor, um Ihren Einstufungstest zu vervollständigen.`, tz: c => `Zeit ${c}`, min: 'Min.',
+          confirm: 'Ich bestätige das Gespräch', other: 'Ich brauche einen anderen Termin', okTitle: 'Erledigt, Ihr Gespräch ist bestätigt!', okCopy: 'Sie erhalten am Vortag und eine Stunde vorher eine Erinnerung. Am Tag des Gesprächs nehmen Sie mit diesem Link teil:',
+          otherTitle: 'Verstanden: Wir suchen einen anderen Termin.', otherCopy: 'Kreuzen Sie erneut an, wann Sie Zeit haben, und wir schlagen Ihnen einen anderen Termin vor.', availability: 'Meine Verfügbarkeit wählen',
+          closedTitle: 'Dieses Gespräch ist nicht mehr verfügbar.', closedCopy: 'Es ist vielleicht vorbei, oder wir haben einen anderen Termin vorgeschlagen. Antworten Sie auf die letzte E-Mail von Pathway oder schreiben Sie an contacto@pathway-languages.com.',
+          badTitle: 'Dieser Link funktioniert nicht.', badCopy: 'Antworten Sie auf Ihre Einladung oder schreiben Sie an contacto@pathway-languages.com.', back: 'Zurück zu Pathway' }
+      };
+      const tr = () => {
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-t]').forEach(el => { const v = T[lang][el.dataset.t]; if (v) el.textContent = v; });
+      };
+      const show = name => document.querySelectorAll('[data-view]').forEach(s => { s.hidden = s.dataset.view !== name; });
+      tr();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) { show('bad'); return; }
+      const rpc = (fn, body) => fetch(`${SUPABASE.url}/rest/v1/rpc/${fn}`, {
+        method: 'POST', headers: { apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      }).then(r => (r.ok ? r.json() : Promise.reject(r.status)));
+      let meeting = null;
+      const paint = () => {
+        const tz = meeting.timezone || 'America/Lima', d = new Date(meeting.starts_at);
+        let w = '';
+        try {
+          const day = new Intl.DateTimeFormat(LOCALES[lang], { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long' }).format(d);
+          const time = new Intl.DateTimeFormat(LOCALES[lang], { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+          w = `${day.charAt(0).toUpperCase()}${day.slice(1)}, ${time} (${T[lang].tz(tz.split('/').pop().replace(/_/g, ' '))}) · ${meeting.duration_min} ${T[lang].min}`;
+        } catch (e) { w = d.toLocaleString(); }
+        document.querySelectorAll('[data-when]').forEach(el => { el.textContent = w; });
+        document.querySelector('[data-intro]').textContent = T[lang].intro(meeting.host || 'Pathway');
+        const z = document.querySelector('[data-zoom]');
+        if (meeting.zoom_link) { z.href = meeting.zoom_link; z.textContent = meeting.zoom_link; }
+        const a = document.querySelector('[data-availability]');
+        a.href = meeting.availability_token ? `/disponibilidad.html?t=${meeting.availability_token}&l=${lang}` : 'mailto:contacto@pathway-languages.com';
+      };
+      const answer = (kind, button) => {
+        button.disabled = true;
+        rpc('meeting_respond', { p_token: token, p_answer: kind }).then(r => {
+          if (r && r.ok) { show(kind === 'confirm' ? 'ok' : 'other'); return; }
+          show(r && r.error === 'token' ? 'bad' : 'closed');
+        }, () => { button.disabled = false; });
+      };
+      rpc('meeting_public', { p_token: token }).then(m => {
+        if (!m) { show('bad'); return; }
+        meeting = m;
+        if (!q.get('l') && T[m.lang]) { lang = m.lang; tr(); }
+        paint();
+        if (m.status === 'confirmada') { show('ok'); return; }
+        if (m.status !== 'propuesta' || new Date(m.starts_at) < new Date()) { show(m.status === 'otro_horario' ? 'other' : 'closed'); return; }
+        show('ask');
+        const wanted = q.get('a');
+        if (wanted === 'other') document.querySelector('[data-other]').focus();
+      }, () => show('bad'));
+      document.querySelector('[data-confirm]').addEventListener('click', e => answer('confirm', e.currentTarget));
+      document.querySelector('[data-other]').addEventListener('click', e => answer('other', e.currentTarget));
+    })();
+  </script>
+</body>
+</html>
