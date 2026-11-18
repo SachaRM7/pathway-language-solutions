@@ -1310,3 +1310,39 @@ a.pill.warn { text-decoration: none; }
 .logout-foot { text-align: center; margin: 28px 0 8px; }
 .logout-foot button { background: none; border: 0; padding: 10px 14px; color: var(--ink-3); font: 500 13px var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .logout-foot button:hover { color: var(--ink); }
+
+/* Mi agenda (db/041): the week, one day under the other. */
+.ag-bar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; margin: 4px 0 6px; }
+.ag-who { min-width: 200px; margin: 0; }
+.ag-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ag-nav b { font-size: 16px; }
+.ag-nav [data-ag-week="-1"] .icon { transform: rotate(180deg); }
+.ag-tz { font-size: 13px; margin: 0 0 12px; }
+.tile.ag-week { grid-column: 1 / -1; display: grid; gap: 4px; }
+.ag-day { padding: 12px 0; border-top: 1px solid var(--line); }
+.ag-day:first-child { border-top: 0; padding-top: 0; }
+.ag-day h3 { font-size: 15px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.ag-day.is-today h3 { color: var(--coral); }
+.ag-free { font-size: 14px; margin: 0; }
+.ag-ev { display: grid; grid-template-columns: 58px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; margin: 0 0 6px; border-radius: 14px; background: var(--soft); border-left: 4px solid var(--ink-3); }
+.ag-ev.ag-clase { border-left-color: #3b82c4; }
+.ag-ev.ag-reunion { border-left-color: var(--coral); }
+.ag-ev.ag-reunion.is-pending { border-left-style: dashed; }
+.ag-ev.ag-bloqueo { opacity: .75; }
+.ag-time { font-weight: 800; font-size: 15px; line-height: 1.2; }
+.ag-time small { display: block; font-weight: 500; font-size: 12px; color: var(--ink-3); }
+.ag-main { min-width: 0; }
+.ag-main b { display: block; overflow-wrap: anywhere; }
+.ag-main small { display: block; color: var(--ink-2); font-size: 13px; }
+.ag-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 520px) { .ag-ev { grid-template-columns: 50px 1fr; } .ag-acts { grid-column: 1 / -1; justify-content: flex-start; } }
+
+/* Meeting with a prospect, on the card. */
+.meet-when { margin: 0 0 8px; line-height: 1.6; }
+.meet-when .status { margin-right: 6px; }
+.meet-slots { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
+.meet-slots legend { margin-bottom: 6px; }
+.meet-slot { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--soft); cursor: pointer; }
+.meet-slot input { margin-top: 4px; accent-color: var(--ink); }
+.meet-slot small { display: block; color: var(--ink-2); font-size: 13px; }
+.meet-slot:has(input:checked) { box-shadow: inset 0 0 0 2px var(--ink); }
