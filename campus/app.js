@@ -1385,8 +1385,9 @@ function viewAjustes() {
       <div class="err-row"><span><b>Aviso de ausencia</b><br><span class="muted" style="font-size:13px">Al alumno, después de cada ausencia sin justificar: puede justificarla en 72 h, si no la hora se pierde; en la fórmula mensual, dónde está respecto a las ausencias que invalidan el mes. Se activa con la asistencia y el contrato.</span></span></div>
       <div class="err-row"><span><b>Recordatorio de clase</b><br><span class="muted" style="font-size:13px">A cada alumno, antes de cada clase, en su hora local. Se activa en «Reglas de asistencia».</span></span></div>
       <div class="err-row"><span><b>Acceso al campus</b><br><span class="muted" style="font-size:13px">El código de 6 cifras para entrar, enviado por Supabase.</span></span></div>
-      <button class="btn btn-light" style="margin-top:14px" type="button" data-mail-test>Enviarme los correos de prueba</button>
-      <p class="muted" style="font-size:13px;margin-top:10px">La prueba te envía solo a ti el informe del lunes, un recordatorio de clase y un aviso de ausencia de ejemplo.</p></article>
+      <div class="err-row"><span><b>Después del test de nivel</b><br><span class="muted" style="font-size:13px">A quien hace el test en el sitio: su resultado y la invitación a una reunión gratuita con un profesor (enseguida), luego dos recordatorios (a 2 y 5 días). Se detienen si envía sus disponibilidades, responde o se inscribe.</span></span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-light" type="button" data-mail-test>Enviarme los correos de las clases</button><button class="btn btn-light" type="button" data-placement-test>Enviarme los 3 correos del test</button></div>
+      <p class="muted" style="font-size:13px;margin-top:10px">Las pruebas solo te llegan a ti: el informe del lunes, un recordatorio y un aviso de ausencia; o los 3 correos del test de nivel (ejemplo A2), con su botón de disponibilidades en modo demostración.</p></article>
     ${agentsTile()}
   </div></section>`;
 }
@@ -3327,6 +3328,12 @@ function bindSchedule(id) {
     const { error } = await sb.rpc('decide_schedule_change', { p_id: b.dataset.chg, p_approve: b.dataset.ok === '1' });
     if (error) { b.disabled = false; return fail(error); }
     toast(b.dataset.ok === '1' ? 'Cambio aprobado: los alumnos ya lo ven.' : 'Cambio rechazado.'); await refresh(); render();
+  });
+  $$('[data-placement-test]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const r = await sb.functions.invoke('placement-followups', { body: { test: true, level: 'A2', lang: 'es' } });
+    b.disabled = false;
+    toast(!r.error && r.data && r.data.ok ? `Enviados a ${r.data.to}: los 3 correos del test de nivel.` : 'No se pudo enviar: revisa los registros de la función «placement-followups» en Supabase.');
   });
   $$('[data-mail-test]').forEach(b => b.onclick = async () => {
     b.disabled = true;

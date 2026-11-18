@@ -35,7 +35,7 @@ const C: Record<string, Copy> = {
     skills: { reading: 'Comprensión escrita', listening: 'Comprensión oral', grammarVocabulary: 'Gramática y vocabulario' },
     outOf: '/100', priority: 'Tu prioridad', speaking: 'Expresión oral: se evalúa en la reunión con un profesor.',
     meetingTitle: 'Completa tu test con un profesor',
-    meetingIntro: 'Este test no evalúa la expresión oral. Para completarlo, te invitamos a una reunión personalizada por Zoom con un profesor de Pathway. En esa reunión:',
+    meetingIntro: 'Este test no evalúa la expresión oral. Para completarlo, te invitamos a una reunión personalizada y gratuita por Zoom con un profesor de Pathway. En esa reunión:',
     meetingPoints: [
       'Hacemos juntos la parte oral del test.',
       'Hablamos de tu objetivo: Entrada Express, Quebec, estudios, trabajo…',
@@ -50,10 +50,10 @@ const C: Record<string, Copy> = {
       title: (l, s) => `Tu nivel estimado: ${l}${s}`, skillsTitle: 'Tu resultado por competencia' },
     r2: { subject: '¿Cuándo hacemos la parte oral de tu test?', preview: 'Marca tus momentos libres y un profesor te propone la reunión.', tag: 'TU REUNIÓN CON UN PROFESOR', hero: 'Parte oral',
       title: 'Te falta un paso para completar tu test',
-      intro: l => `Hace dos días hiciste el test de nivel (resultado: ${l}). Falta la parte oral: se hace en una reunión personalizada por Zoom con un profesor, donde también hablamos de tu objetivo, de cómo funcionan las clases, de la inscripción y de las tarifas.` },
+      intro: l => `Hace dos días hiciste el test de nivel (resultado: ${l}). Falta la parte oral: se hace en una reunión personalizada y gratuita por Zoom con un profesor, donde también hablamos de tu objetivo, de cómo funcionan las clases, de la inscripción y de las tarifas.` },
     r3: { subject: 'Tu test de nivel sigue incompleto', preview: 'Último recordatorio: la parte oral con un profesor.', tag: 'ÚLTIMO RECORDATORIO', hero: '¿Hablamos?',
       title: '¿Completamos tu test?',
-      body: l => `Hiciste el test hace unos días (resultado: ${l}), pero falta la parte oral. Envíanos tus disponibilidades y un profesor te propone una reunión por Zoom para completarlo y responder a tus preguntas.`,
+      body: l => `Hiciste el test hace unos días (resultado: ${l}), pero falta la parte oral. Envíanos tus disponibilidades y un profesor te propone una reunión gratuita por Zoom para completarlo y responder a tus preguntas.`,
       last: 'Es nuestro último correo sobre tu test: después, solo te escribimos si tú nos escribes.' },
     footer: 'Recibes este correo porque hiciste el test de nivel en pathway-languages.com.', unsubscribe: 'Darme de baja'
   },
@@ -62,7 +62,7 @@ const C: Record<string, Copy> = {
     skills: { reading: 'Compréhension écrite', listening: 'Compréhension orale', grammarVocabulary: 'Grammaire et vocabulaire' },
     outOf: '/100', priority: 'Votre priorité', speaking: 'Expression orale : évaluée pendant la réunion avec un professeur.',
     meetingTitle: 'Complétez votre test avec un professeur',
-    meetingIntro: 'Ce test n’évalue pas l’expression orale. Pour le compléter, nous vous invitons à une réunion personnalisée sur Zoom avec un professeur de Pathway. Pendant cette réunion :',
+    meetingIntro: 'Ce test n’évalue pas l’expression orale. Pour le compléter, nous vous invitons à une réunion personnalisée et gratuite sur Zoom avec un professeur de Pathway. Pendant cette réunion :',
     meetingPoints: [
       'Nous faisons ensemble la partie orale du test.',
       'Nous parlons de votre objectif : Entrée express, Québec, études, travail…',
@@ -77,10 +77,10 @@ const C: Record<string, Copy> = {
       title: (l, s) => `Votre niveau estimé : ${l}${s}`, skillsTitle: 'Votre résultat par compétence' },
     r2: { subject: 'Quand faisons-nous la partie orale de votre test ?', preview: 'Cochez vos moments libres et un professeur vous propose la réunion.', tag: 'VOTRE RÉUNION AVEC UN PROFESSEUR', hero: 'Partie orale',
       title: 'Il reste une étape pour compléter votre test',
-      intro: l => `Il y a deux jours, vous avez fait le test de niveau (résultat : ${l}). Il manque la partie orale : elle se fait lors d’une réunion personnalisée sur Zoom avec un professeur, où nous parlons aussi de votre objectif, du fonctionnement des cours, de l’inscription et des tarifs.` },
+      intro: l => `Il y a deux jours, vous avez fait le test de niveau (résultat : ${l}). Il manque la partie orale : elle se fait lors d’une réunion personnalisée et gratuite sur Zoom avec un professeur, où nous parlons aussi de votre objectif, du fonctionnement des cours, de l’inscription et des tarifs.` },
     r3: { subject: 'Votre test de niveau est encore incomplet', preview: 'Dernier rappel : la partie orale avec un professeur.', tag: 'DERNIER RAPPEL', hero: 'On en parle ?',
       title: 'On complète votre test ?',
-      body: l => `Vous avez fait le test il y a quelques jours (résultat : ${l}), mais il manque la partie orale. Envoyez-nous vos disponibilités : un professeur vous propose une réunion sur Zoom pour le compléter et répondre à vos questions.`,
+      body: l => `Vous avez fait le test il y a quelques jours (résultat : ${l}), mais il manque la partie orale. Envoyez-nous vos disponibilités : un professeur vous propose une réunion gratuite sur Zoom pour le compléter et répondre à vos questions.`,
       last: 'C’est notre dernier e-mail sur votre test : ensuite, nous ne vous écrivons que si vous nous écrivez.' },
     footer: 'Vous recevez cet e-mail parce que vous avez fait le test de niveau sur pathway-languages.com.', unsubscribe: 'Me désinscrire'
   },
@@ -89,7 +89,7 @@ const C: Record<string, Copy> = {
     skills: { reading: 'Reading', listening: 'Listening', grammarVocabulary: 'Grammar & vocabulary' },
     outOf: '/100', priority: 'Your priority', speaking: 'Speaking: assessed in the meeting with a teacher.',
     meetingTitle: 'Complete your test with a teacher',
-    meetingIntro: 'This test does not assess speaking. To complete it, we invite you to a personalised Zoom meeting with a Pathway teacher. In that meeting:',
+    meetingIntro: 'This test does not assess speaking. To complete it, we invite you to a free, personalised Zoom meeting with a Pathway teacher. In that meeting:',
     meetingPoints: [
       'We do the speaking part of the test together.',
       'We talk about your goal: Express Entry, Quebec, studies, work…',
@@ -104,10 +104,10 @@ const C: Record<string, Copy> = {
       title: (l, s) => `Your estimated level: ${l}${s}`, skillsTitle: 'Your result by skill' },
     r2: { subject: 'When shall we do the speaking part of your test?', preview: 'Tick your free times and a teacher will suggest the meeting.', tag: 'YOUR MEETING WITH A TEACHER', hero: 'Speaking',
       title: 'One step left to complete your test',
-      intro: l => `Two days ago you took the level test (result: ${l}). The speaking part is still missing: it is done in a personalised Zoom meeting with a teacher, where we also talk about your goal, how the classes work, enrolment and fees.` },
+      intro: l => `Two days ago you took the level test (result: ${l}). The speaking part is still missing: it is done in a free, personalised Zoom meeting with a teacher, where we also talk about your goal, how the classes work, enrolment and fees.` },
     r3: { subject: 'Your level test is still incomplete', preview: 'Last reminder: the speaking part with a teacher.', tag: 'LAST REMINDER', hero: 'Shall we talk?',
       title: 'Shall we complete your test?',
-      body: l => `You took the test a few days ago (result: ${l}), but the speaking part is missing. Send us your availability and a teacher will suggest a Zoom meeting to complete it and answer your questions.`,
+      body: l => `You took the test a few days ago (result: ${l}), but the speaking part is missing. Send us your availability and a teacher will suggest a free Zoom meeting to complete it and answer your questions.`,
       last: 'This is our last email about your test: after this, we only write if you write to us.' },
     footer: 'You are receiving this email because you took the level test on pathway-languages.com.', unsubscribe: 'Unsubscribe'
   },
@@ -116,7 +116,7 @@ const C: Record<string, Copy> = {
     skills: { reading: 'Leseverstehen', listening: 'Hörverstehen', grammarVocabulary: 'Grammatik und Wortschatz' },
     outOf: '/100', priority: 'Ihre Priorität', speaking: 'Sprechen: wird im Gespräch mit einer Lehrkraft bewertet.',
     meetingTitle: 'Vervollständigen Sie Ihren Test mit einer Lehrkraft',
-    meetingIntro: 'Dieser Test bewertet das Sprechen nicht. Um ihn zu vervollständigen, laden wir Sie zu einem persönlichen Zoom-Gespräch mit einer Lehrkraft von Pathway ein. In diesem Gespräch:',
+    meetingIntro: 'Dieser Test bewertet das Sprechen nicht. Um ihn zu vervollständigen, laden wir Sie zu einem kostenlosen, persönlichen Zoom-Gespräch mit einer Lehrkraft von Pathway ein. In diesem Gespräch:',
     meetingPoints: [
       'machen wir gemeinsam den mündlichen Teil des Tests,',
       'sprechen wir über Ihr Ziel: Express Entry, Quebec, Studium, Arbeit …,',
@@ -131,10 +131,10 @@ const C: Record<string, Copy> = {
       title: (l, s) => `Ihr geschätztes Niveau: ${l}${s}`, skillsTitle: 'Ihr Ergebnis nach Kompetenz' },
     r2: { subject: 'Wann machen wir den mündlichen Teil Ihres Tests?', preview: 'Kreuzen Sie Ihre freien Zeiten an, und eine Lehrkraft schlägt Ihnen das Gespräch vor.', tag: 'IHR GESPRÄCH MIT EINER LEHRKRAFT', hero: 'Mündlich',
       title: 'Noch ein Schritt bis zum vollständigen Test',
-      intro: l => `Vor zwei Tagen haben Sie den Einstufungstest gemacht (Ergebnis: ${l}). Es fehlt der mündliche Teil: Er findet in einem persönlichen Zoom-Gespräch mit einer Lehrkraft statt, in dem wir auch über Ihr Ziel, den Unterricht, die Anmeldung und die Preise sprechen.` },
+      intro: l => `Vor zwei Tagen haben Sie den Einstufungstest gemacht (Ergebnis: ${l}). Es fehlt der mündliche Teil: Er findet in einem kostenlosen, persönlichen Zoom-Gespräch mit einer Lehrkraft statt, in dem wir auch über Ihr Ziel, den Unterricht, die Anmeldung und die Preise sprechen.` },
     r3: { subject: 'Ihr Einstufungstest ist noch unvollständig', preview: 'Letzte Erinnerung: der mündliche Teil mit einer Lehrkraft.', tag: 'LETZTE ERINNERUNG', hero: 'Sprechen wir?',
       title: 'Sollen wir Ihren Test vervollständigen?',
-      body: l => `Sie haben den Test vor ein paar Tagen gemacht (Ergebnis: ${l}), aber der mündliche Teil fehlt. Senden Sie uns Ihre Verfügbarkeit, und eine Lehrkraft schlägt Ihnen ein Zoom-Gespräch vor, um ihn zu vervollständigen und Ihre Fragen zu beantworten.`,
+      body: l => `Sie haben den Test vor ein paar Tagen gemacht (Ergebnis: ${l}), aber der mündliche Teil fehlt. Senden Sie uns Ihre Verfügbarkeit, und eine Lehrkraft schlägt Ihnen ein kostenloses Zoom-Gespräch vor, um ihn zu vervollständigen und Ihre Fragen zu beantworten.`,
       last: 'Dies ist unsere letzte E-Mail zu Ihrem Test: Danach schreiben wir nur, wenn Sie uns schreiben.' },
     footer: 'Sie erhalten diese E-Mail, weil Sie den Einstufungstest auf pathway-languages.com gemacht haben.', unsubscribe: 'Abmelden'
   }
