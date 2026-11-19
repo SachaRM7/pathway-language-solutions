@@ -8,7 +8,8 @@
 node scripts/refresh-v4-ircc.mjs                               # 1. instantané officiel IRCC à jour
 node marketing/studio/formatos/ronda-ircc/nueva-pieza.mjs      # 2. crée piezas/<date>-ronda-<n>/ (reel.html + data.js)
 node marketing/studio/motor/render.mjs marketing/studio/piezas/<id>/reel.html --planche   # 3. planche de 18 images → validation
-node marketing/studio/motor/render.mjs marketing/studio/piezas/<id>/reel.html             # 4. reel.mp4
+node marketing/studio/formatos/ronda-ircc/sonido.mjs marketing/studio/piezas/<id>        # 4. audio.wav (cumbia à 120 BPM + bruitages, fabriqués en code)
+node marketing/studio/motor/render.mjs marketing/studio/piezas/<id>/reel.html --audio marketing/studio/piezas/<id>/audio.wav   # 5. reel.mp4 avec le son
 ```
 
 - Pour voir l'animation : ouvrir `reel.html` dans un navigateur (lecture en boucle).
