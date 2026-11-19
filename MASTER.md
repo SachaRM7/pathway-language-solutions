@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #148 (plan de démarrage des pubs).
+> **État au 19 novembre 2026** — dernière PR intégrée : #149 (correction des consignes sur les noms de modèles).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -1000,7 +1000,6 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 - **Arrêter le serveur de test local** dès la fin des tests.
 - **Vérifier l'état réel en production** (fonctions déployées, migrations, tâches) avant d'affirmer que quelque chose est en place.
 - **Changer la version (`?v=…`)** de chaque CSS ou JS modifié.
-- **Commits et PR :** pas d'identifiant de modèle d'IA dans le code, les commits, les PR ou ce document. Seules les lignes d'attribution prévues sont admises.
 - **Ne jamais committer `.claude/worktrees`.**
 
 ---
@@ -1127,7 +1126,7 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 - relever les chiffres de production ([§10](#10-état-actuel-en-production)) ;
 - ajouter une ligne au journal ([§19](#19-journal-des-mises-à-jour)).
 
-**À ne jamais écrire ici :** valeurs de secrets, mots de passe, codes, adresses e-mail personnelles, identifiants de modèles d'IA.
+**À ne jamais écrire ici :** valeurs de secrets, mots de passe, codes, adresses e-mail personnelles.
 
 ---
 
@@ -1142,3 +1141,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Ajout de `docs/references/` : 10 articles (motion design, animation, réseaux sociaux, marketing, SEO) et 63 dépôts GitHub classés par thème et par utilité. |
 | 19 nov. 2026 | 8 références de plus (11 à 18) : playbook et cours complets de motion design, studio de vidéo de lancement, langage du mouvement, simulateur 3D, IA et agents, rétro-ingénierie. |
 | 19 nov. 2026 | Plan de démarrage des pubs validé par Sacha (§13) : décider, produire, tester à petit budget mi-décembre, accélérer au 1er janvier. |
+| 19 nov. 2026 | Retrait de la fausse « règle d'équipe » sur les noms de modèles d'IA : l'équipe n'interdit rien de tel. |
