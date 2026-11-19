@@ -8,11 +8,11 @@
 
 | Réf. | Fait | Valeur | Source |
 |---|---|---|---|
-| F1 | Dernière ronde « francés » connue | **n.º 452, 27 oct. 2026, 407 points** | `v4/data/ircc-rounds.json`, vérifié sur IRCC le 10 nov. 2026 |
+| F1 | Dernière ronde « francés » connue | **n.º 452, 27 oct. 2026, 407 points** | JSON officiel IRCC (`ee_rounds_123_en.json`), **vérifié le 19 nov. 2026** |
 | F2 | Dernière ronde « Experiencia canadiense » connue | **n.º 449, 15 oct. 2026, 519 points** | idem |
 | F3 | Écart entre F2 et F1 | **112 points** (519 − 407) | calcul |
 
-- ⚠️ **À VÉRIFIER avant toute publication :** l'instantané date du **10 nov. 2026** et la source officielle n'était pas joignable depuis la session du 19 nov. Une ronde plus récente a pu avoir lieu. Relancer `node scripts/refresh-v4-ircc.mjs`, puis `nueva-pieza.mjs`.
+- ✅ **Vérifié sur la source officielle le 19 nov. 2026 :** la ronde n.º 452 reste la dernière ronde « francés ». Ronde suivante : n.º 453 (28 oct., Transport Occupations) ; aucune ronde française depuis. À refaire le jour de la publication si une nouvelle ronde est annoncée (`node scripts/refresh-v4-ircc.mjs --check`, qui fonctionne depuis la session cloud ; c'est `curl` qui échoue sur `canada.ca`).
 - Formulation permise : « Puntos mínimos para recibir invitación » **dans cette ronde**, avec son numéro et sa date. Jamais « necesitas 407 puntos » ni « con francés te invitan ».
 
 ## 2. Le français et Express Entry
