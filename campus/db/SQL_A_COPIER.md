@@ -9902,7 +9902,7 @@ Déjà installé en production (appliqué automatiquement).
 --   profesor.demo@example.com   Julien Moreau, professeur (rôle teacher)
 --   lucia.demo@example.com      Lucía Ramírez, A2, TEF, Lima : l'élève « vitrine » (série de 12 jours)
 --   mateo.demo@example.com      Mateo Torres, A2, TCF, Bogotá : en retard, 2 absences, à relancer
---   valentina.demo@example.com  Valentina Quispe, A2, TEF, Lima : série de 31 jours, fin de niveau à valider
+--   valentina.demo@example.com  Valentina Quispe, A2, TEF, Lima : tout l'A2 fait, série de 31 jours, fin de niveau à valider
 --   diego.demo@example.com      Diego Fernández, A2, TCF, Santiago : nouveau, une question en attente
 --
 -- Tout est marqué is_demo (voir 044) : invisible pour l'équipe réelle, jamais d'e-mail, rien dans le CRM.
@@ -9917,7 +9917,7 @@ declare
   t uuid; lu uuid; ma uuid; va uuid; di uuid;
   g_lu uuid; g_ma uuid; g_va uuid; g_di uuid;
   studs uuid[]; grps uuid[];
-  s record; e record; r uuid; th uuid; m bigint; i int; k int; tz text;
+  s record; e record; r uuid; th uuid; m bigint; i int; k int; tz text; ok int;
   sig text := 'M20 120 Q 60 40 110 110 Q 160 170 190 90 Q 250 30 280 110 M300 100 Q 340 60 380 120 Q 430 160 470 90 L 520 120';
   body text := E'COMPROMISO DEL ALUMNO · PATHWAY LANGUAGE SOLUTIONS\n\n1. Tu curso\nCuenta de demostración del Campus Pathway.';
 begin
@@ -9976,9 +9976,9 @@ begin
     xp_total = 640, streak = 0, best_streak = 6, last_goal_day = (now() at time zone 'America/Bogota')::date - 9, freezes = 0,
     plan = 'mensual', plan_start = (now() - interval '20 days')::date where id = ma;
   update profiles set full_name = 'Valentina Quispe', motive = 'rp', exam = 'tef', timezone = 'America/Lima', daily_goal = 80,
-    target_month = to_char(now() + interval '6 months', 'YYYY-MM'), onboarded_at = now() - interval '60 days', created_at = now() - interval '60 days',
-    xp_total = 4820, streak = 31, best_streak = 31, last_goal_day = (now() at time zone 'America/Lima')::date - 1, freezes = 2,
-    plan = 'ciclo', plan_start = (now() - interval '55 days')::date where id = va;
+    target_month = to_char(now() + interval '6 months', 'YYYY-MM'), onboarded_at = now() - interval '140 days', created_at = now() - interval '140 days',
+    xp_total = 9480, streak = 31, best_streak = 31, last_goal_day = (now() at time zone 'America/Lima')::date - 1, freezes = 2,
+    plan = 'ciclo', plan_start = (now() - interval '135 days')::date where id = va;
   update profiles set full_name = 'Diego Fernández', motive = 'estudios', exam = 'tcf', timezone = 'America/Santiago', daily_goal = 50,
     target_month = to_char(now() + interval '14 months', 'YYYY-MM'), onboarded_at = now() - interval '6 days', created_at = now() - interval '6 days',
     xp_total = 180, streak = 3, best_streak = 3, last_goal_day = (now() at time zone 'America/Santiago')::date - 1,
@@ -9990,7 +9990,7 @@ begin
   insert into class_groups (name, teacher_id, level, zoom_link, timezone, created_at)
     values ('Mateo Torres', t, 'A2', 'https://zoom.us/j/00000000002', 'America/Bogota', now() - interval '35 days') returning id into g_ma;
   insert into class_groups (name, teacher_id, level, zoom_link, timezone, created_at)
-    values ('Valentina Quispe', t, 'A2', 'https://zoom.us/j/00000000003', 'America/Lima', now() - interval '60 days') returning id into g_va;
+    values ('Valentina Quispe', t, 'A2', 'https://zoom.us/j/00000000003', 'America/Lima', now() - interval '140 days') returning id into g_va;
   insert into class_groups (name, teacher_id, level, zoom_link, timezone, created_at)
     values ('Diego Fernández', t, 'A2', 'https://zoom.us/j/00000000004', 'America/Santiago', now() - interval '6 days') returning id into g_di;
   insert into group_slots (group_id, weekday, start_time, duration_min) values
@@ -10004,7 +10004,7 @@ begin
   update profiles set group_id = g_di where id = di;
   update profiles set group_joined_at = now() - interval '35 days' where id = lu;
   update profiles set group_joined_at = now() - interval '30 days' where id = ma;
-  update profiles set group_joined_at = now() - interval '55 days' where id = va;
+  update profiles set group_joined_at = now() - interval '135 days' where id = va;
   update profiles set group_joined_at = now() - interval '6 days' where id = di;
 
   -- 3. Contrat signé (le Campus fait signer à nouveau si le texte en vigueur a changé).
@@ -10018,7 +10018,7 @@ begin
            row_number() over (partition by x.gid order by c.actual_at desc) as rk,
            row_number() over (partition by x.gid order by c.actual_at) as nth
     from (values (g_lu, lu, 'America/Lima', now() - interval '35 days'), (g_ma, ma, 'America/Bogota', now() - interval '30 days'),
-                 (g_va, va, 'America/Lima', now() - interval '55 days'), (g_di, di, 'America/Santiago', now() - interval '6 days')) x(gid, sid, tz, since)
+                 (g_va, va, 'America/Lima', now() - interval '135 days'), (g_di, di, 'America/Santiago', now() - interval '6 days')) x(gid, sid, tz, since)
     cross join lateral public._group_sessions(x.gid, x.since, now()) c
     where c.status <> 'cancelled' and c.actual_at + make_interval(mins => c.duration_min) < now()
   loop
@@ -10038,19 +10038,34 @@ begin
       on conflict do nothing;
   end loop;
   insert into taught_units (student_id, unit_id, first_at)
-    select p, 'a2-01', now() - interval '30 days' from unnest(array[lu, ma, va]) p
-    union all select di, 'a2-01', now() - interval '2 days';
+    select x.uid, u.id, now() - make_interval(days => x.days - 2 * u.number)
+    from (values (lu, 7, 40), (ma, 3, 30), (va, 63, 130), (di, 1, 5)) x(uid, upto, days)
+    join units u on u.level = 'A2' and u.number <= x.upto
+      and exists (select 1 from exercises ex where ex.unit_id = u.id and ex.status in ('validated', 'draft'));
 
-  -- 5. Unité 1 faite (la seule publiée aujourd'hui), avec le détail des réponses.
-  for s in select * from (values (lu, 7, 30), (va, 8, 50), (ma, 5, 13), (ma, 6, 11)) v(uid, ok, days_ago) loop
+  -- 5. Unités faites, avec le détail des réponses (les brouillons comptent dans la démo, voir 046).
+  -- Unités réussies (≥ 75 %), dans l'ordre : Lucía 1–6 (la 7 est l'unité actuelle), Valentina tout l'A2
+  -- (fin de niveau), Mateo 1–2 puis un échec sur la 3 ; Diego n'a pas commencé (tâche sur l'unité 1).
+  for s in
+    select x.uid, u.id as unit_id, u.number,
+           case when x.uid = ma and u.number = 3 then 5 else 6 + (u.number % 3) end as ok,
+           greatest(x.days - 2 * u.number - 1, 1) as days_ago
+    from (values (lu, 6, 38), (ma, 3, 28), (va, 63, 128)) x(uid, upto, days)
+    join units u on u.level = 'A2' and u.number <= x.upto
+      and exists (select 1 from exercises ex where ex.unit_id = u.id and ex.status in ('validated', 'draft'))
+    order by x.uid, u.number
+  loop
+    select count(*) into k from exercises where unit_id = s.unit_id and status in ('validated', 'draft');
+    ok := case when s.uid = ma and s.number = 3 then floor(k * 0.6)::int else least(k, ceil(k * 0.75)::int + (s.number % 3)) end;
     insert into lesson_runs (user_id, unit_id, total, first_try_correct, xp, duration_s, finished_at, focus_lost)
-      values (s.uid, 'a2-01', 8, s.ok, 10 * s.ok, 540 + 20 * s.ok, now() - make_interval(days => s.days_ago), case when s.uid = ma and s.ok = 5 then 2 else 0 end)
+      values (s.uid, s.unit_id, k, ok, 10 * ok, 60 * k + 20 * ok, now() - make_interval(days => s.days_ago),
+              case when s.uid = ma and s.number = 3 then 2 else 0 end)
       returning id into r;
     i := 0;
-    for e in select id from exercises where unit_id = 'a2-01' and status = 'validated' order by id loop
+    for e in select id from exercises where unit_id = s.unit_id and status in ('validated', 'draft') order by position loop
       i := i + 1;
       insert into attempts (user_id, run_id, exercise_id, first_try, correct, created_at)
-        values (s.uid, r, e.id, i <= s.ok, true, now() - make_interval(days => s.days_ago) - make_interval(mins => 9 - i));
+        values (s.uid, r, e.id, i <= ok, true, now() - make_interval(days => s.days_ago) - make_interval(mins => 9 - i));
     end loop;
   end loop;
 
@@ -10378,4 +10393,186 @@ select pg_temp._patch_all('public.unit_access(uuid, text)',
   $x$e.status = 'validated'$x$, $x$(e.status = 'validated' or (e.status = 'draft' and public._is_demo(p_user)))$x$, 1);
 select pg_temp._patch_all('public._level_units_done(uuid, text)',
   $x$e.status = 'validated'$x$, $x$(e.status = 'validated' or (e.status = 'draft' and public._is_demo(p_user)))$x$, 2);
+```
+
+## 047 · Exercices A2 en brouillon, unités 2 à 15
+
+Déjà installé en production (appliqué automatiquement).
+
+```sql
+-- Campus Pathway · 047 · brouillons d’exercices pour l’A2, unités 2 à 15 (Segment A)
+--
+-- 8 exercices par unité (a2-02 à a2-15), rédigés à partir du Manuel A2 de Pathway : mêmes points de grammaire,
+-- même vocabulaire et mêmes situations que chaque unité, avec des phrases courtes et originales (pas de copie
+-- du manuel). Format identique à l’unité a2-01 (001) : les 7 types (choice, type, listen, order, match,
+-- dictation, spot), consignes et explications en espagnol simple (tutoiement), français niveau A2.
+--
+-- Statut « draft » : un professeur les relit, les corrige si besoin et les publie dans Campus → Programa.
+-- En attendant, seuls l’équipe et les comptes démo (044, 046) les voient ; les vrais élèves ne les voient pas.
+--
+-- Rejouable : on efface d’abord les brouillons de ces unités (jamais les exercices déjà publiés, « validated »).
+-- Attention : si une unité a déjà des exercices publiés aux positions 1 à 8, l’insertion échoue
+-- (unique (unit_id, position)) et rien n’est appliqué. À exécuter après 046.
+
+begin;
+
+delete from public.exercises
+  where unit_id in ('a2-02', 'a2-03', 'a2-04', 'a2-05', 'a2-06', 'a2-07', 'a2-08', 'a2-09', 'a2-10', 'a2-11', 'a2-12', 'a2-13', 'a2-14', 'a2-15')
+  and status = 'draft';
+
+-- a2-02 · Les auxiliaires & les semi-auxiliaires
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-02', 1, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "Nous ___ étudiants à Montréal.", "es": "Somos estudiantes en Montreal.", "options": ["sont", "avons", "sommes", "êtes"], "answer": 2, "two": true, "explain": "Con <b>nous</b>, el verbo être es <b>sommes</b>: nous sommes étudiants."}$j$, 'draft'),
+  ('a2-02', 2, 'type', 'Conjugación', $j${"title": "Escribe el verbo conjugado", "before": "Je", "after": "travailler demain matin.", "hint": "devoir", "answers": ["dois"], "explain": "devoir con <b>je</b>: je <b>dois</b>. Después, el segundo verbo queda en infinitivo: travailler."}$j$, 'draft'),
+  ('a2-02', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a dos amigos", "audio": "— Tu es libre samedi ? — Non, je dois travailler au restaurant. Mais dimanche, je peux sortir. — Super ! Tu veux visiter le Vieux-Port ?", "question": "¿Por qué no puede salir el sábado?", "options": ["Tiene que trabajar", "Está enfermo", "Quiere estudiar", "No tiene dinero"], "answer": 0, "two": true, "explain": "« Non, je <b>dois travailler</b> au restaurant. » → tiene que trabajar."}$j$, 'draft'),
+  ('a2-02', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Queremos aprender francés.", "tiles": ["voulez", "voulons", "le", "apprenons", "français.", "apprendre", "Nous"], "answer": ["Nous", "voulons", "apprendre", "le", "français."], "explain": "Solo se conjuga el primer verbo: nous <b>voulons</b>. El segundo queda en <b>infinitivo</b>: apprendre."}$j$, 'draft'),
+  ('a2-02', 5, 'match', 'Conjugación', $j${"title": "Une cada pronombre con su forma de «être»", "pairs": [["je", "suis"], ["tu", "es"], ["il", "est"], ["nous", "sommes"], ["vous", "êtes"], ["ils", "sont"]], "explain": "être es irregular: suis, es, est, sommes, êtes, sont."}$j$, 'draft'),
+  ('a2-02', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Vous devez remplir ce formulaire.", "answers": ["Vous devez remplir ce formulaire."], "es": "Ustedes deben llenar este formulario.", "explain": "Con <b>vous</b>: vous <b>devez</b> + infinitivo (remplir)."}$j$, 'draft'),
+  ('a2-02', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Ils", "veut", "manger", "au", "restaurant."], "wrong": 1, "fix": "veulent", "explain": "Con <b>ils / elles</b>, vouloir es <b>veulent</b>: ils veulent manger."}$j$, 'draft'),
+  ('a2-02', 8, 'choice', 'Gramática', $j${"title": "¿Qué frase es correcta?", "options": ["Je peux venir demain.", "Je peux viens demain.", "Je pouvoir venir demain.", "Je peut venir demain."], "answer": 0, "two": true, "explain": "Con je: je <b>peux</b> (con x). Después de pouvoir, el segundo verbo va en <b>infinitivo</b>: venir."}$j$, 'draft');
+
+-- a2-03 · Le présent, verbes du 2e groupe (-ir)
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-03', 1, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "Nous ___ un cadeau pour Ana.", "es": "Elegimos un regalo para Ana.", "options": ["choisons", "choisissons", "choisissez", "choisis"], "answer": 1, "two": true, "explain": "En plural aparece <b>-iss-</b>: nous chois<b>issons</b>."}$j$, 'draft'),
+  ('a2-03', 2, 'type', 'Conjugación', $j${"title": "Escribe el verbo conjugado", "before": "Tu", "after": "ton travail à 17 h ?", "hint": "finir", "answers": ["finis"], "explain": "Con <b>tu</b>: tu fin<b>is</b>. La s final no se pronuncia."}$j$, 'draft'),
+  ('a2-03', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Sofía", "audio": "Le matin, je choisis mes cours à l’université. L’après-midi, je finis mes devoirs à la bibliothèque. Le soir, je réfléchis à mon projet.", "question": "¿Dónde termina sus tareas?", "options": ["En la universidad", "En la biblioteca", "En casa", "En el trabajo"], "answer": 1, "two": true, "explain": "« L’après-midi, je <b>finis</b> mes devoirs à la bibliothèque. »"}$j$, 'draft'),
+  ('a2-03', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Los niños crecen rápido.", "tiles": ["grandissent", "grandissez", "vite.", "grandit", "Les", "enfants"], "answer": ["Les", "enfants", "grandissent", "vite."], "explain": "Con <b>ils</b> (les enfants): grand<b>issent</b>, con -iss-."}$j$, 'draft'),
+  ('a2-03', 5, 'match', 'Vocabulario', $j${"title": "Une cada verbo con su traducción", "pairs": [["finir", "terminar"], ["choisir", "elegir"], ["réussir", "tener éxito"], ["grandir", "crecer"], ["réfléchir", "reflexionar"], ["remplir", "llenar"]], "explain": "Todos son del 2.º grupo: en plural llevan <b>-iss-</b> (nous finissons, nous remplissons…)."}$j$, 'draft'),
+  ('a2-03', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Vous finissez à quelle heure ?", "answers": ["Vous finissez à quelle heure ?"], "es": "¿A qué hora terminan ustedes?", "explain": "Con <b>vous</b>: fin<b>issez</b>, con doble s."}$j$, 'draft'),
+  ('a2-03', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Elle", "réfléchissent", "avant", "de", "parler."], "wrong": 1, "fix": "réfléchit", "explain": "Con <b>elle</b> (singular): elle réfléch<b>it</b>. La forma -issent es para ils / elles."}$j$, 'draft'),
+  ('a2-03', 8, 'choice', 'Gramática', $j${"title": "¿Qué verbo NO es del 2.º grupo?", "options": ["choisir", "finir", "réussir", "partir"], "answer": 3, "two": true, "explain": "<b>partir</b> termina en -ir, pero es irregular: nous partons (sin -iss-). Finir, choisir y réussir llevan -iss- en plural."}$j$, 'draft');
+
+-- a2-04 · Le présent, principaux verbes du 3e groupe
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-04', 1, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "Ils ___ au bureau en métro.", "es": "Van a la oficina en metro.", "options": ["allons", "vont", "va", "allez"], "answer": 1, "two": true, "explain": "aller con <b>ils</b>: ils <b>vont</b>."}$j$, 'draft'),
+  ('a2-04', 2, 'type', 'Conjugación', $j${"title": "Escribe el verbo conjugado", "before": "Nous", "after": "une réunion le lundi.", "hint": "faire", "answers": ["faisons"], "explain": "faire: nous <b>faisons</b>, vous faites, ils font."}$j$, 'draft'),
+  ('a2-04', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Andrés", "audio": "Ce matin, je sors de chez moi à sept heures. Je prends l’autobus et je vais au travail. À midi, mes collègues viennent avec moi au café.", "question": "¿Cómo va al trabajo?", "options": ["En autobús", "En metro", "En bicicleta", "A pie"], "answer": 0, "two": true, "explain": "« Je <b>prends</b> l’autobus et je <b>vais</b> au travail. » En Quebec se dice «l’autobus»."}$j$, 'draft'),
+  ('a2-04', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Tomamos el tren de las ocho.", "tiles": ["de", "prendons", "heures.", "le", "train", "huit", "Nous", "prennent", "prenons"], "answer": ["Nous", "prenons", "le", "train", "de", "huit", "heures."], "explain": "prendre: nous <b>prenons</b> (una n). Ils pre<b>nn</b>ent lleva dos n."}$j$, 'draft'),
+  ('a2-04', 5, 'match', 'Conjugación', $j${"title": "Une cada pronombre con su verbo", "pairs": [["je", "vais"], ["tu", "vas"], ["il", "fait"], ["nous", "venons"], ["vous", "dites"], ["ils", "prennent"]], "explain": "Verbos irregulares: aprende primero <b>je</b>, <b>nous</b> e <b>ils</b>; el resto sigue."}$j$, 'draft'),
+  ('a2-04', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Vous dites bonjour au directeur.", "answers": ["Vous dites bonjour au directeur."], "es": "Ustedes le dicen buenos días al director.", "explain": "dire con vous: vous <b>dites</b> (no «disez»)."}$j$, 'draft'),
+  ('a2-04', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Elle", "mets", "une", "veste", "parce", "qu’il", "fait", "froid."], "wrong": 1, "fix": "met", "explain": "mettre: je mets, tu mets, <b>elle met</b> (sin s)."}$j$, 'draft'),
+  ('a2-04', 8, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "Mes amis ___ de chez eux à 8 h.", "es": "Mis amigos salen de su casa a las 8.", "options": ["sortons", "sortez", "sortent", "sort"], "answer": 2, "two": true, "explain": "sortir con <b>ils</b>: ils <b>sortent</b>. Nous sortons, vous sortez."}$j$, 'draft');
+
+-- a2-05 · Les connecteurs simples
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-05', 1, 'choice', 'Conectores', $j${"title": "Completa la frase", "fr": "Je reste à la maison ___ je suis malade.", "es": "Me quedo en casa porque estoy enfermo.", "options": ["donc", "mais", "parce que", "ou"], "answer": 2, "two": true, "explain": "<b>parce que</b> explica la causa: me quedo en casa porque estoy enfermo."}$j$, 'draft'),
+  ('a2-05', 2, 'type', 'Conectores', $j${"title": "Escribe un conector de consecuencia", "before": "Il fait froid,", "after": "je mets un manteau.", "answers": ["donc", "alors"], "explain": "<b>donc</b> o <b>alors</b> expresan la consecuencia: hace frío, entonces me pongo un abrigo."}$j$, 'draft'),
+  ('a2-05', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Mateo", "audio": "J’habite à Longueuil et j’étudie à Montréal. Je prends le métro parce qu’il est rapide. Le soir, il y a beaucoup de monde, mais ce n’est pas grave.", "question": "¿Por qué toma el metro?", "options": ["Porque es rápido", "Porque es barato", "Porque vive en Montreal", "Porque hay poca gente"], "answer": 0, "two": true, "explain": "« Je prends le métro <b>parce qu’</b>il est rapide. » Parce que = porque."}$j$, 'draft'),
+  ('a2-05', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Primero como, luego salgo.", "tiles": ["sortir.", "je", "sors.", "D’abord,", "puis", "manges,", "mange,", "je"], "answer": ["D’abord,", "je", "mange,", "puis", "je", "sors."], "explain": "<b>D’abord</b> (primero) y <b>puis</b> (luego) ordenan las acciones."}$j$, 'draft'),
+  ('a2-05', 5, 'match', 'Conectores', $j${"title": "Une cada función con su conector", "pairs": [["Añadir", "et"], ["Oponer", "mais"], ["Elegir", "ou"], ["Causa", "parce que"], ["Consecuencia", "donc"], ["Ordenar", "d’abord"]], "explain": "Delante de vocal, parce que se convierte en <b>parce qu’</b>: parce qu’il pleut."}$j$, 'draft'),
+  ('a2-05', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Je suis fatigué, mais je continue.", "answers": ["Je suis fatigué, mais je continue.", "Je suis fatiguée, mais je continue."], "es": "Estoy cansado, pero sigo.", "explain": "<b>mais</b> marca la oposición: estoy cansado, <b>pero</b> sigo."}$j$, 'draft'),
+  ('a2-05', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Je", "veux", "sortir,", "donc", "je", "ne", "peux", "pas."], "wrong": 3, "fix": "mais", "explain": "Querer y no poder se oponen: se usa <b>mais</b>. Donc indica una consecuencia."}$j$, 'draft'),
+  ('a2-05', 8, 'choice', 'Conectores', $j${"title": "Completa la frase", "fr": "D’abord, je travaille. ___, je fais les courses.", "es": "Primero trabajo. Luego hago las compras.", "options": ["Parce que", "Ensuite", "Ou", "Mais"], "answer": 1, "two": true, "explain": "<b>Ensuite</b> (luego) ordena las acciones: d’abord → ensuite → enfin."}$j$, 'draft');
+
+-- a2-06 · Pratique, rappel des thèmes A1
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-06', 1, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "Ils ___ deux enfants.", "es": "Tienen dos hijos.", "options": ["avons", "ont", "a", "sont"], "answer": 1, "two": true, "explain": "Para la familia se usa <b>avoir</b>: ils <b>ont</b> deux enfants."}$j$, 'draft'),
+  ('a2-06', 2, 'type', 'Conjugación', $j${"title": "Escribe el verbo conjugado", "before": "Mes parents", "after": "à Bogota.", "hint": "habiter", "answers": ["habitent"], "explain": "Con <b>ils</b> (mes parents): habit<b>ent</b>. La terminación -ent no se pronuncia."}$j$, 'draft'),
+  ('a2-06', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Lucía", "audio": "Bonjour, je m’appelle Lucía. J’ai vingt-huit ans et je suis colombienne. Je suis infirmière, mais maintenant, j’étudie le français à Québec.", "question": "¿Qué hace Lucía ahora?", "options": ["Vive en Colombia", "Estudia francés en Quebec", "Enseña francés", "Trabaja de enfermera en Quebec"], "answer": 1, "two": false, "explain": "« Je suis infirmière, <b>mais maintenant, j’étudie</b> le français à Québec. »"}$j$, 'draft'),
+  ('a2-06', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Tengo un hermano y una hermana.", "tiles": ["et", "J’ai", "ai", "sœur.", "frère", "Je", "une", "un"], "answer": ["J’ai", "un", "frère", "et", "une", "sœur."], "explain": "Delante de vocal, je se convierte en <b>j’</b>: <b>j’ai</b> (nunca «je ai»)."}$j$, 'draft'),
+  ('a2-06', 5, 'match', 'Vocabulario', $j${"title": "Une cada descripción con la palabra de la familia", "pairs": [["le frère de ma mère", "mon oncle"], ["la sœur de mon père", "ma tante"], ["le père de mon père", "mon grand-père"], ["la mère de ma mère", "ma grand-mère"], ["la fille de mes parents", "ma sœur"], ["le fils de mes parents", "mon frère"]], "explain": "Masculino: <b>mon</b> oncle, mon frère. Femenino: <b>ma</b> tante, ma sœur."}$j$, 'draft'),
+  ('a2-06', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Nous parlons espagnol et français.", "answers": ["Nous parlons espagnol et français."], "es": "Hablamos español y francés.", "explain": "Con <b>nous</b>: parl<b>ons</b>. Los idiomas se escriben en minúscula: espagnol, français."}$j$, 'draft'),
+  ('a2-06', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Elle", "a", "étudiante", "à", "Toronto."], "wrong": 1, "fix": "est", "explain": "Para la profesión o la situación se usa <b>être</b>: elle <b>est</b> étudiante."}$j$, 'draft'),
+  ('a2-06', 8, 'choice', 'Conectores', $j${"title": "Completa la frase", "fr": "Je suis étudiant, ___ je travaille aussi le week-end.", "es": "Soy estudiante, pero también trabajo el fin de semana.", "options": ["mais", "donc", "ou", "parce que"], "answer": 0, "two": true, "explain": "<b>mais</b> marca un contraste: soy estudiante, <b>pero</b> también trabajo."}$j$, 'draft');
+
+-- a2-07 · Les activités & les loisirs
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-07', 1, 'choice', 'Gramática', $j${"title": "Completa la frase", "fr": "Le samedi, je fais ___ natation.", "es": "Los sábados hago natación.", "options": ["du", "des", "de la", "de l’"], "answer": 2, "two": true, "explain": "natation es femenino (la natation) → faire <b>de la</b> natation."}$j$, 'draft'),
+  ('a2-07', 2, 'type', 'Gramática', $j${"title": "Completa con du, de la, au o à la", "before": "Mon frère joue", "after": "guitare.", "answers": ["de la"], "explain": "Para un instrumento se usa jouer <b>de</b>. La guitare → jouer <b>de la</b> guitare."}$j$, 'draft'),
+  ('a2-07', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Valentina", "audio": "Le mardi soir, je fais du yoga. Le samedi matin, je joue au soccer avec mes collègues. Et le dimanche, je fais du vélo au parc.", "question": "¿Qué hace el sábado por la mañana?", "options": ["Toca el piano", "Hace yoga", "Juega al fútbol", "Anda en bicicleta"], "answer": 2, "two": true, "explain": "« Le samedi matin, je <b>joue au soccer</b>. » En Quebec, el fútbol se llama «soccer»."}$j$, 'draft'),
+  ('a2-07', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Ella toca el piano los domingos.", "tiles": ["au", "piano", "joue", "de", "du", "dimanche.", "Elle", "le"], "answer": ["Elle", "joue", "du", "piano", "le", "dimanche."], "explain": "Para un instrumento: jouer <b>de</b>. de + le = <b>du</b> → jouer <b>du</b> piano."}$j$, 'draft'),
+  ('a2-07', 5, 'match', 'Gramática', $j${"title": "Une cada actividad con su verbo", "pairs": [["vélo", "faire du"], ["natation", "faire de la"], ["escalade", "faire de l’"], ["courses", "faire des"], ["cartes", "jouer aux"]], "explain": "faire + <b>du / de la / de l’ / des</b> según el género y el número. Jouer <b>à</b> + juego o deporte."}$j$, 'draft'),
+  ('a2-07', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Nous jouons aux cartes le soir.", "answers": ["Nous jouons aux cartes le soir."], "es": "Jugamos a las cartas por la noche.", "explain": "à + les = <b>aux</b>: jouer <b>aux</b> cartes."}$j$, 'draft'),
+  ('a2-07', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Ils", "jouent", "de", "foot", "le", "week-end."], "wrong": 2, "fix": "au", "explain": "Para un deporte se usa jouer <b>à</b>. à + le = <b>au</b>: jouer <b>au</b> foot."}$j$, 'draft'),
+  ('a2-07', 8, 'choice', 'Gramática', $j${"title": "Completa la frase", "fr": "Tu joues ___ échecs ?", "es": "¿Juegas al ajedrez?", "options": ["du", "des", "au", "aux"], "answer": 3, "two": true, "explain": "les échecs es plural: à + les = <b>aux</b> → jouer <b>aux</b> échecs."}$j$, 'draft');
+
+-- a2-08 · Introduction au futur proche, aller + infinitif
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-08', 1, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "Demain, nous ___ visiter le musée.", "es": "Mañana vamos a visitar el museo.", "options": ["va", "allez", "allons", "vont"], "answer": 2, "two": true, "explain": "Futuro próximo: aller conjugado + infinitivo. Con nous: nous <b>allons</b> visiter."}$j$, 'draft'),
+  ('a2-08', 2, 'type', 'Conjugación', $j${"title": "Escribe el futuro próximo (aller + infinitivo)", "before": "Ce soir, je", "after": "un gâteau.", "hint": "préparer", "answers": ["vais préparer"], "explain": "je <b>vais</b> + infinitivo: je <b>vais préparer</b>."}$j$, 'draft'),
+  ('a2-08', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Camila", "audio": "Ce soir, je vais préparer une pizza. Demain, je vais inviter mes voisins, et dimanche, nous allons faire une randonnée au mont Royal.", "question": "¿Qué va a hacer mañana?", "options": ["Preparar una pizza", "Invitar a sus vecinos", "Visitar a su familia", "Hacer una caminata"], "answer": 1, "two": true, "explain": "« Demain, je <b>vais inviter</b> mes voisins. »"}$j$, 'draft'),
+  ('a2-08', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "No voy a salir esta noche.", "tiles": ["ce", "vais", "va", "Je", "pas", "sors", "sortir", "soir.", "ne"], "answer": ["Je", "ne", "vais", "pas", "sortir", "ce", "soir."], "explain": "En negativo, <b>ne… pas</b> rodea al verbo aller: je <b>ne vais pas</b> sortir."}$j$, 'draft'),
+  ('a2-08', 5, 'match', 'Conjugación', $j${"title": "Une cada frase con su traducción", "pairs": [["voy a comer", "je vais manger"], ["vas a salir", "tu vas sortir"], ["va a venir", "il va venir"], ["vamos a viajar", "nous allons voyager"], ["ustedes van a trabajar", "vous allez travailler"], ["ellos van a partir", "ils vont partir"]], "explain": "Igual que en español: <b>aller</b> conjugado + infinitivo."}$j$, 'draft'),
+  ('a2-08', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Ils vont prendre l’avion demain.", "answers": ["Ils vont prendre l’avion demain."], "es": "Van a tomar el avión mañana.", "explain": "Con <b>ils</b>: ils <b>vont</b> + infinitivo (prendre)."}$j$, 'draft'),
+  ('a2-08', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Nous", "allons", "mangeons", "au", "restaurant."], "wrong": 2, "fix": "manger", "explain": "En el futuro próximo solo se conjuga <b>aller</b>. El segundo verbo va en infinitivo: nous allons <b>manger</b>."}$j$, 'draft'),
+  ('a2-08', 8, 'choice', 'Gramática', $j${"title": "¿Qué frase está en futuro próximo?", "options": ["Je vais voyager en juillet.", "Je veux voyager en juillet.", "Je voyage en juillet.", "Je dois voyager en juillet."], "answer": 0, "two": true, "explain": "Futuro próximo = <b>aller</b> conjugado + infinitivo: je <b>vais voyager</b>."}$j$, 'draft');
+
+-- a2-09 · « Que fais-tu ce week-end ? »
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-09', 1, 'choice', 'Conjugación', $j${"title": "Completa la pregunta", "fr": "Qu’est-ce que tu ___ faire ce week-end ?", "es": "¿Qué vas a hacer este fin de semana?", "options": ["va", "vas", "vais", "allez"], "answer": 1, "two": true, "explain": "Con <b>tu</b>: tu <b>vas</b> faire. Qu’est-ce que tu vas faire ? = ¿Qué vas a hacer?"}$j$, 'draft'),
+  ('a2-09', 2, 'type', 'Conjugación', $j${"title": "Escribe el futuro próximo (aller + infinitivo)", "before": "Samedi, nous", "after": "le marché Jean-Talon.", "hint": "visiter", "answers": ["allons visiter"], "explain": "nous <b>allons</b> + infinitivo: nous <b>allons visiter</b>."}$j$, 'draft'),
+  ('a2-09', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a dos amigas", "audio": "— Samedi, on va au cinéma ? — Désolée, je ne peux pas. Je dois travailler. — Et dimanche ? — Dimanche, d’accord ! Avec plaisir.", "question": "¿Qué día van a salir juntas?", "options": ["El sábado", "No van a salir", "El viernes", "El domingo"], "answer": 3, "two": true, "explain": "Rechaza el sábado (« je <b>dois travailler</b> ») y acepta el domingo (« <b>d’accord</b> ! »)."}$j$, 'draft'),
+  ('a2-09', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "¿Quieres venir con nosotros?", "tiles": ["Tu", "veux", "viens", "veut", "venir", "nous ?", "avec"], "answer": ["Tu", "veux", "venir", "avec", "nous ?"], "explain": "Para proponer: tu <b>veux</b> + infinitivo: tu veux <b>venir</b> ?"}$j$, 'draft'),
+  ('a2-09', 5, 'match', 'Vocabulario', $j${"title": "Une cada respuesta con su significado", "pairs": [["Avec plaisir !", "¡Con mucho gusto!"], ["Bonne idée !", "¡Buena idea!"], ["Je ne peux pas.", "No puedo."], ["Désolé, je dois travailler.", "Lo siento, tengo que trabajar."], ["Une autre fois ?", "¿Otro día?"], ["D’accord !", "¡De acuerdo!"]], "explain": "Para aceptar: <b>Avec plaisir</b>, <b>D’accord</b>. Para rechazar: <b>Désolé(e)</b>, je ne peux pas."}$j$, 'draft'),
+  ('a2-09', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "On va faire du vélo au bord du fleuve.", "answers": ["On va faire du vélo au bord du fleuve."], "es": "Vamos a andar en bicicleta a orillas del río.", "explain": "<b>on va</b> + infinitivo = vamos a… En el habla diaria, on = nous."}$j$, 'draft'),
+  ('a2-09', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Ce", "week-end,", "je", "va", "jouer", "au", "foot."], "wrong": 3, "fix": "vais", "explain": "Con <b>je</b>: je <b>vais</b> + infinitivo."}$j$, 'draft'),
+  ('a2-09', 8, 'choice', 'Comunicación', $j${"title": "Tu amigo te invita, pero tienes que trabajar. ¿Qué respondes?", "options": ["Désolé, je dois travailler.", "Bonne idée, on y va !", "Avec plaisir !", "D’accord, à samedi !"], "answer": 0, "two": true, "explain": "Para rechazar con cortesía: <b>Désolé(e)</b>, je dois travailler."}$j$, 'draft');
+
+-- a2-10 · Les expressions avec être
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-10', 1, 'choice', 'Vocabulario', $j${"title": "Completa la frase", "fr": "Le bus est parti : je suis ___ !", "es": "El autobús se fue: ¡llego tarde!", "options": ["à l’heure", "en retard", "prêt", "d’accord"], "answer": 1, "two": true, "explain": "<b>être en retard</b> = llegar tarde."}$j$, 'draft'),
+  ('a2-10', 2, 'type', 'Gramática', $j${"title": "Escribe «content» en la forma correcta", "before": "Marie est très", "after": "de son nouveau travail.", "answers": ["contente"], "explain": "Después de être, el adjetivo concuerda: Marie es femenino → content<b>e</b>."}$j$, 'draft'),
+  ('a2-10', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha y responde", "audio": "Le cours commence à neuf heures. Marc arrive à neuf heures et quart. Léo travaille la nuit et il dort en classe.", "question": "¿Cuál es el problema de Marc?", "options": ["No está de acuerdo", "Llega tarde", "Está enfermo", "Está cansado"], "answer": 1, "two": true, "explain": "El curso empieza a las nueve y Marc llega a las nueve y cuarto: <b>il est en retard</b>."}$j$, 'draft'),
+  ('a2-10', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Estamos de acuerdo contigo.", "tiles": ["avec", "d’accord", "avons", "sommes", "Nous", "d’accords", "toi."], "answer": ["Nous", "sommes", "d’accord", "avec", "toi."], "explain": "<b>être d’accord</b> usa être y no cambia: nous <b>sommes d’accord</b>."}$j$, 'draft'),
+  ('a2-10', 5, 'match', 'Vocabulario', $j${"title": "Une cada expresión con su significado", "pairs": [["être en retard", "llegar tarde"], ["être à l’heure", "llegar a tiempo"], ["être d’accord", "estar de acuerdo"], ["être en forme", "estar en forma"], ["être prêt", "estar listo"], ["être en train de", "estar haciendo algo ahora"]], "explain": "Todas se forman con <b>être</b>."}$j$, 'draft'),
+  ('a2-10', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Nous sommes en train de travailler.", "answers": ["Nous sommes en train de travailler."], "es": "Estamos trabajando (en este momento).", "explain": "<b>être en train de</b> + infinitivo = estar + gerundio."}$j$, 'draft'),
+  ('a2-10', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Les", "enfants", "sont", "fatigué", "ce", "soir."], "wrong": 3, "fix": "fatigués", "explain": "Después de être, el adjetivo concuerda: les enfants sont fatigu<b>és</b> (masculino plural → -s)."}$j$, 'draft'),
+  ('a2-10', 8, 'choice', 'Gramática', $j${"title": "Completa la frase", "fr": "Elles sont ___ pour le test.", "es": "Ellas están listas para la prueba.", "options": ["prêt", "prête", "prêts", "prêtes"], "answer": 3, "two": true, "explain": "Femenino plural: prêt + <b>es</b> → prêt<b>es</b>."}$j$, 'draft');
+
+-- a2-11 · Les expressions avec avoir
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-11', 1, 'choice', 'Gramática', $j${"title": "Completa la frase", "fr": "Il fait 35 degrés, nous ___ chaud !", "es": "Hace 35 grados, ¡tenemos calor!", "options": ["êtes", "avons", "sommes", "ont"], "answer": 1, "two": true, "explain": "En francés el calor se «tiene»: nous <b>avons</b> chaud (no «sommes»)."}$j$, 'draft'),
+  ('a2-11', 2, 'type', 'Vocabulario', $j${"title": "Completa con «besoin» o «envie»", "before": "Pour voyager, on a", "after": "d’un passeport.", "answers": ["besoin"], "explain": "<b>avoir besoin de</b> = necesitar. Avoir envie de = tener ganas de."}$j$, 'draft'),
+  ('a2-11', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Daniel", "audio": "Il est une heure de l’après-midi. J’ai très faim et mon collègue a soif. Il a aussi mal à la tête. Nous avons besoin d’une pause !", "question": "¿Qué le pasa al colega?", "options": ["Tiene sed y le duele la cabeza", "Tiene hambre y sueño", "Tiene miedo", "Tiene frío"], "answer": 0, "two": false, "explain": "« Mon collègue <b>a soif</b>. Il a aussi <b>mal à la tête</b>. »"}$j$, 'draft'),
+  ('a2-11', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Tengo ganas de un chocolate caliente.", "tiles": ["d’un", "de", "envie", "chocolat", "J’ai", "chaud.", "Je suis"], "answer": ["J’ai", "envie", "d’un", "chocolat", "chaud."], "explain": "<b>avoir envie de</b> = tener ganas de. de + un → <b>d’un</b>."}$j$, 'draft'),
+  ('a2-11', 5, 'match', 'Vocabulario', $j${"title": "Une cada situación con la expresión", "pairs": [["Il fait 35 degrés.", "J’ai chaud."], ["Il fait moins vingt.", "J’ai froid."], ["Il est minuit.", "J’ai sommeil."], ["Je veux de l’eau.", "J’ai soif."], ["Il y a une araignée !", "J’ai peur."], ["Je veux manger.", "J’ai faim."]], "explain": "Sensaciones con <b>avoir</b>: avoir chaud, froid, sommeil, soif, peur, faim."}$j$, 'draft'),
+  ('a2-11', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Tu as raison, il fait froid.", "answers": ["Tu as raison, il fait froid."], "es": "Tienes razón, hace frío.", "explain": "<b>avoir raison</b> = tener razón: tu <b>as</b> raison."}$j$, 'draft'),
+  ('a2-11', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Nous", "sommes", "soif", "après", "le", "sport."], "wrong": 1, "fix": "avons", "explain": "La sed se expresa con avoir: nous <b>avons</b> soif."}$j$, 'draft'),
+  ('a2-11', 8, 'choice', 'Gramática', $j${"title": "¿être o avoir?", "fr": "Elle ___ 30 ans et elle est infirmière.", "es": "Tiene 30 años y es enfermera.", "options": ["est", "as", "a", "ont"], "answer": 2, "two": true, "explain": "La edad se dice con <b>avoir</b>: elle <b>a</b> 30 ans."}$j$, 'draft');
+
+-- a2-12 · Situations : chez le médecin, au magasin, à l’aéroport
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-12', 1, 'choice', 'Situaciones', $j${"title": "¿Dónde escuchas esta frase?", "fr": "Je voudrais essayer ce pantalon en taille M.", "options": ["En la tienda", "En el aeropuerto", "En la escuela", "En el médico"], "answer": 0, "two": true, "explain": "<b>Essayer</b> (probarse) y la <b>taille</b> (talla) son palabras de la tienda."}$j$, 'draft'),
+  ('a2-12', 2, 'type', 'Gramática', $j${"title": "Completa con au, à la o aux", "before": "J’ai mal", "after": "dents depuis hier.", "answers": ["aux"], "explain": "les dents es plural: à + les = <b>aux</b> → j’ai mal <b>aux</b> dents."}$j$, 'draft'),
+  ('a2-12', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha en el aeropuerto", "audio": "— Bonjour madame, voici mon passeport et ma carte d’embarquement. — Merci, monsieur. Votre vol pour Mexico part à quatorze heures trente, porte 12.", "question": "¿De qué puerta sale el vuelo?", "options": ["De la puerta 14", "De la puerta 22", "De la puerta 12", "De la puerta 2"], "answer": 2, "two": true, "explain": "« Votre vol pour Mexico part à quatorze heures trente, <b>porte 12</b>. »"}$j$, 'draft'),
+  ('a2-12', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "¿Puedo pagar con tarjeta?", "tiles": ["carte ?", "avec", "payer", "peut", "Je", "peux", "par"], "answer": ["Je", "peux", "payer", "par", "carte ?"], "explain": "Se dice payer <b>par carte</b> (con tarjeta). Con je: je <b>peux</b>."}$j$, 'draft'),
+  ('a2-12', 5, 'match', 'Situaciones', $j${"title": "Une cada frase con su respuesta", "pairs": [["J’ai de la fièvre.", "Prenez ce médicament."], ["Combien ça coûte ?", "25 dollars."], ["Où est la porte 12 ?", "Au fond, à droite."], ["Je voudrais essayer ce manteau.", "Bien sûr, la cabine est là."], ["J’ai mal aux dents.", "Allez voir le dentiste."], ["Voici ma carte d’embarquement.", "Merci, bon vol !"]], "explain": "Médico: <b>j’ai mal à…</b> Tienda: <b>combien ça coûte ?</b> Aeropuerto: <b>la porte, le vol</b>."}$j$, 'draft'),
+  ('a2-12', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Je voudrais un rendez-vous avec le médecin.", "answers": ["Je voudrais un rendez-vous avec le médecin."], "es": "Quisiera una cita con el médico.", "explain": "<b>Je voudrais</b> es más cortés que «je veux». Un <b>rendez-vous</b> = una cita."}$j$, 'draft'),
+  ('a2-12', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["J’ai", "mal", "au", "tête", "depuis", "ce", "matin."], "wrong": 2, "fix": "à la", "explain": "la tête es femenino: j’ai mal <b>à la</b> tête. Au = à + le (au ventre)."}$j$, 'draft'),
+  ('a2-12', 8, 'choice', 'Situaciones', $j${"title": "En la tienda, ¿qué frase es más cortés?", "options": ["Ce pull, maintenant.", "Donne-moi ce pull.", "Je voudrais ce pull, s’il vous plaît.", "Je veux ce pull."], "answer": 2, "two": false, "explain": "<b>Je voudrais</b> + <b>s’il vous plaît</b> es la forma cortés para pedir algo."}$j$, 'draft');
+
+-- a2-13 · Introduction à l’impératif
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-13', 1, 'choice', 'Conjugación', $j${"title": "Completa la consigna", "fr": "À la classe : « ___ le tableau ! »", "es": "A la clase: «¡Miren la pizarra!»", "options": ["Regardez", "Regarder", "Regardes", "Regarde"], "answer": 0, "two": true, "explain": "Para hablarle a varias personas: imperativo de <b>vous</b> → <b>Regardez</b> !"}$j$, 'draft'),
+  ('a2-13', 2, 'type', 'Conjugación', $j${"title": "Escribe el imperativo (tú)", "before": "Marco,", "after": "tes devoirs !", "hint": "finir", "answers": ["finis"], "explain": "Imperativo de <b>tu</b> con un verbo en -ir: <b>finis</b> (como el presente, sin «tu»)."}$j$, 'draft'),
+  ('a2-13', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha las instrucciones", "audio": "Bienvenue dans l’entreprise ! D’abord, prenez votre badge à l’accueil. Ensuite, montez au troisième étage et attendez dans la salle de réunion.", "question": "¿Qué hay que hacer primero?", "options": ["Esperar en la sala de reuniones", "Subir al tercer piso", "Tomar la credencial en la recepción", "Llamar al jefe"], "answer": 2, "two": false, "explain": "« <b>D’abord, prenez</b> votre badge à l’accueil. »"}$j$, 'draft'),
+  ('a2-13', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "¡No hablen durante el examen!", "tiles": ["Ne", "parlez", "vous", "pendant", "pas", "l’examen !", "parlons"], "answer": ["Ne", "parlez", "pas", "pendant", "l’examen !"], "explain": "Imperativo negativo: <b>Ne</b> + verbo + <b>pas</b>: Ne parlez pas ! Sin pronombre sujeto."}$j$, 'draft'),
+  ('a2-13', 5, 'match', 'Conjugación', $j${"title": "Une cada forma del presente con su imperativo", "pairs": [["tu écoutes", "Écoute !"], ["vous écoutez", "Écoutez !"], ["nous écoutons", "Écoutons !"], ["tu finis", "Finis !"], ["tu es", "Sois !"], ["vous avez", "Ayez !"]], "explain": "Verbos en -er: con tu se quita la <b>-s</b> (tu écoutes → Écoute !). Être y avoir son irregulares: <b>Sois</b>, <b>Ayez</b>."}$j$, 'draft'),
+  ('a2-13', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "N’oubliez pas vos affaires !", "answers": ["N’oubliez pas vos affaires !"], "es": "¡No olviden sus cosas!", "explain": "Delante de vocal, ne se convierte en <b>n’</b>: <b>N’oubliez pas</b>."}$j$, 'draft'),
+  ('a2-13', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Manges", "tes", "légumes", "avant", "le", "dessert."], "wrong": 0, "fix": "Mange", "explain": "Verbos en -er: en el imperativo de tu se quita la <b>-s</b>: <b>Mange</b> tes légumes !"}$j$, 'draft'),
+  ('a2-13', 8, 'choice', 'Conjugación', $j${"title": "Completa la frase", "fr": "À un ami : « ___ prudent sur la route ! »", "es": "A un amigo: «¡Sé prudente en la carretera!»", "options": ["Es", "Être", "Sois", "Soyez"], "answer": 2, "two": true, "explain": "être es irregular en imperativo: <b>Sois</b>, Soyons, Soyez. A un amigo → Sois."}$j$, 'draft');
+
+-- a2-14 · Pratique, le monde du travail & des études
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-14', 1, 'choice', 'Vocabulario', $j${"title": "Completa la frase", "fr": "Il est infirmier. Elle est ___.", "es": "Él es enfermero. Ella es enfermera.", "options": ["infirmieuse", "une infirmière", "infirmière", "infirmier"], "answer": 2, "two": true, "explain": "Femenino: -ier → <b>-ière</b>. Después de être + profesión, <b>sin artículo</b>: elle est infirmière."}$j$, 'draft'),
+  ('a2-14', 2, 'type', 'Conjugación', $j${"title": "Escribe el verbo conjugado", "before": "Je commence à 9 h et je", "after": "à 17 h.", "hint": "finir", "answers": ["finis"], "explain": "finir con <b>je</b>: je fin<b>is</b>."}$j$, 'draft'),
+  ('a2-14', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha a Diego", "audio": "Je m’appelle Diego. Je suis vendeur dans un magasin de sport à Québec. Je travaille du mercredi au dimanche. Le lundi et le mardi, je suis libre : j’étudie le français.", "question": "¿Qué días está libre Diego?", "options": ["El sábado y el domingo", "Solo el lunes", "El miércoles y el domingo", "El lunes y el martes"], "answer": 3, "two": true, "explain": "« <b>Le lundi et le mardi</b>, je suis libre. »"}$j$, 'draft'),
+  ('a2-14', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "Mi colega trabaja en una empresa.", "tiles": ["Ma", "travaille", "une", "collègue", "entreprise.", "dans", "travaillent", "un"], "answer": ["Ma", "collègue", "travaille", "dans", "une", "entreprise."], "explain": "une entreprise es femenino. Con un sujeto singular: travaill<b>e</b>."}$j$, 'draft'),
+  ('a2-14', 5, 'match', 'Vocabulario', $j${"title": "Une cada profesión con su lugar de trabajo", "pairs": [["un professeur", "une école"], ["un médecin", "un hôpital"], ["un cuisinier", "un restaurant"], ["un vendeur", "un magasin"], ["un ouvrier", "une usine"]], "explain": "Il travaille <b>dans</b> une école, <b>dans</b> un hôpital, <b>dans</b> une usine…"}$j$, 'draft'),
+  ('a2-14', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Nous avons une réunion à dix heures.", "answers": ["Nous avons une réunion à dix heures."], "es": "Tenemos una reunión a las diez.", "explain": "<b>une réunion</b> = una reunión. Nous <b>avons</b> (avoir)."}$j$, 'draft'),
+  ('a2-14', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Ma", "sœur", "est", "vendeur", "dans", "un", "magasin."], "wrong": 3, "fix": "vendeuse", "explain": "Femenino de las profesiones en -eur: <b>-euse</b> → vendeur, vend<b>euse</b>."}$j$, 'draft'),
+  ('a2-14', 8, 'choice', 'Vocabulario', $j${"title": "Completa la frase", "fr": "À midi, nous avons une ___ d’une heure.", "es": "A mediodía tenemos una pausa de una hora.", "options": ["usine", "matière", "pause", "réunion"], "answer": 2, "two": true, "explain": "<b>une pause</b> = un descanso, una pausa."}$j$, 'draft');
+
+-- a2-15 · « Tu dois… », donner des recommandations
+insert into public.exercises (unit_id, position, type, kind, payload, status) values
+  ('a2-15', 1, 'choice', 'Conjugación', $j${"title": "Completa el consejo", "fr": "Tu tousses beaucoup : tu ___ voir un médecin.", "es": "Toses mucho: debes ver a un médico.", "options": ["dois", "devez", "devoir", "doit"], "answer": 0, "two": true, "explain": "devoir con <b>tu</b>: tu <b>dois</b> + infinitivo."}$j$, 'draft'),
+  ('a2-15', 2, 'type', 'Conjugación', $j${"title": "Escribe el verbo conjugado", "before": "Pour l’examen, vous", "after": "réviser chaque jour.", "hint": "devoir", "answers": ["devez"], "explain": "devoir con <b>vous</b>: vous <b>devez</b> + infinitivo."}$j$, 'draft'),
+  ('a2-15', 3, 'listen', 'Comprensión oral', $j${"title": "Escucha los consejos", "audio": "Tu commences un nouveau travail lundi ? Alors, tu dois dormir tôt dimanche soir. Il faut arriver dix minutes en avance. Et n’oublie pas tes documents !", "question": "¿Qué no debe olvidar?", "options": ["Su computadora", "Su teléfono", "Su almuerzo", "Sus documentos"], "answer": 3, "two": true, "explain": "« Et <b>n’oublie pas</b> tes documents ! »"}$j$, 'draft'),
+  ('a2-15', 4, 'order', 'Construcción', $j${"title": "Ordena la frase", "es": "No hay que llegar tarde.", "tiles": ["faux", "retard.", "faut", "pas", "arriver", "en", "ne", "arrive", "Il"], "answer": ["Il", "ne", "faut", "pas", "arriver", "en", "retard."], "explain": "<b>Il ne faut pas</b> + infinitivo = no hay que… Faut se escribe con t."}$j$, 'draft'),
+  ('a2-15', 5, 'match', 'Vocabulario', $j${"title": "Une cada problema con un consejo", "pairs": [["Je suis fatigué.", "Tu dois dormir."], ["J’ai soif.", "Bois de l’eau !"], ["J’ai mal aux dents.", "Il faut aller chez le dentiste."], ["J’ai un examen demain.", "Tu dois réviser."], ["J’ai froid.", "Mets un manteau !"], ["Je suis en retard.", "Il faut prendre un taxi."]], "explain": "Tres formas de aconsejar: <b>tu dois</b>, <b>il faut</b> + infinitivo, o el <b>imperativo</b>."}$j$, 'draft'),
+  ('a2-15', 6, 'dictation', 'Dictado', $j${"title": "Escribe lo que oyes", "audio": "Il ne faut pas fumer ici.", "answers": ["Il ne faut pas fumer ici."], "es": "No hay que fumar aquí.", "explain": "<b>Il ne faut pas</b> + infinitivo expresa una prohibición."}$j$, 'draft'),
+  ('a2-15', 7, 'spot', 'Detecta el error', $j${"title": "Toca la palabra incorrecta", "words": ["Vous", "devez", "dormez", "huit", "heures."], "wrong": 2, "fix": "dormir", "explain": "Después de <b>devoir</b>, el verbo va en infinitivo: vous devez <b>dormir</b>."}$j$, 'draft'),
+  ('a2-15', 8, 'choice', 'Gramática', $j${"title": "¿Cuál es una prohibición?", "options": ["Il faut boire de l’eau.", "Mange des fruits !", "Ne fume pas !", "Tu dois te reposer."], "answer": 2, "two": true, "explain": "<b>Ne… pas</b> con el imperativo prohíbe: Ne fume pas ! Las otras frases son consejos."}$j$, 'draft');
+
+commit;
 ```

@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #155 (parcours A1 → B2 dans Mi ruta).
+> **État au 19 novembre 2026** — dernière PR intégrée : #156 (exercices A2 en brouillon, démo sur tout l'A2).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -486,6 +486,7 @@ Toutes sont **appliquées en production** au 19 nov. 2026.
 | 044 | Monde démo séparé (`profiles.is_demo`) : invisible pour l'équipe réelle, exclu des e-mails, des rapports et du CRM |
 | 045 | Données de la démo (`demo_seed`) : un professeur et 4 élèves A2 avec un historique réaliste |
 | 046 | Unités A1, B1 et B2 (titres du sommaire des manuels) ; les comptes démo voient les exercices en brouillon |
+| 047 | 112 exercices A2 en brouillon (unités 2 à 15, 8 par unité), écrits à partir du manuel |
 
 ### Edge Functions
 
@@ -627,7 +628,7 @@ Relevé du 19 nov. 2026.
 | Tests de niveau enregistrés | 6 |
 | Demandes d'inscription | 0 |
 | Élèves programmés (horaires) | 0 |
-| Unités du programme | 240 (60 par niveau, A1 → B2), mais **une seule (A2, unité 1) a des exercices publiés** |
+| Unités du programme | 240 (60 par niveau, A1 → B2). **A2 : les 60 unités ont leurs exercices, mais seule l'unité 1 est publiée** (787 brouillons à relire) ; A1, B1, B2 : pas encore d'exercices |
 | Contacts Difusión | 33 |
 | Conversations Correo | 0 (aucun e-mail réel reçu depuis la mise en route) |
 | Disponibilités reçues, réunions proposées | 0, 0 |
@@ -715,6 +716,7 @@ Relevé du 19 nov. 2026.
   - **bande-son en code** (cumbia à 120 BPM et bruitages) et **trois versions** de la vidéo : muette, bruitages seuls, complète (#152) ;
   - **Campus de démonstration** : un monde fictif séparé, un professeur et 4 élèves, entrée d'un clic depuis Ajustes (#154) ;
   - **parcours A1 → B2** dans Mi ruta, 180 unités A1/B1/B2 ajoutées, brouillons visibles dans la démo (#155) ;
+  - **exercices A2 2 à 15 écrits en brouillon** ; constat : les unités 17 à 63 avaient déjà leurs brouillons depuis le 12 nov. Tout l'A2 est donc prêt à relire. Démo : Valentina a fini l'A2, Lucía est à l'unité 7 (#156) ;
   - décision de Sacha : **écrire les vrais exercices** (brouillons relus puis publiés par les professeurs) et **construire les vrais Simulacros**, plutôt que des données factices.
 
 ---
@@ -726,7 +728,7 @@ Relevé du 19 nov. 2026.
 C'est l'échéance qui fixe les priorités (décision de Sacha, 19 nov. 2026). Avant cette date, il faut :
 
 - [ ] **WhatsApp canadien branché** (voir ci-dessous), puis le numéro +51 remplacé partout.
-- [ ] **Contenus du Campus** : sur les 60 unités A2, **seule l'unité 1 a des exercices** (8). Il faut écrire et publier les exercices des unités suivantes, puis A1, B1 et B2 selon les besoins des premiers élèves. **C'est le plus gros chantier avant le lancement.**
+- [ ] **Contenus du Campus** : **tout l'A2 est rédigé** (unité 1 publiée ; unités 2 à 15 : 8 brouillons chacune, écrits le 19 nov. à partir du manuel ; unités 17 à 63 : 15 brouillons chacune, écrits le 12 nov.). **Ryan et Abdrahim doivent les relire et les publier** (Programa → unité → Probar → Publicar). Puis écrire A1, B1 et B2 selon les niveaux des premiers élèves.
 - [ ] **Premiers élèves invités et programmés :** invitation, onboarding, contrat signé, horaire fixe, lien Zoom personnel.
 - [ ] **Mi agenda configurée** par Ryan et Abdrahim, et **une réunion réelle faite** de bout en bout.
 - [ ] **Essais réels de Correo**, et d'un parcours élève complet avec un compte de test.
@@ -768,7 +770,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 - **Essai réel des réunions :** faire le test avec une autre adresse, envoyer ses disponibilités, proposer la réunion, recevoir l'invitation, cliquer « Confirmo ».
 - **Essai réel de Correo :** e-mail depuis un Gmail perso vers `contacto@`, puis vérifier qu'il arrive avec un brouillon, répondre « desde Ryan » et vérifier le fil et les Envoyés.
 - **Premier vrai élève :** Admin → Clases → « Programar a un alumno », avec son lien Zoom personnel.
-- **Contenu du programme :** écrire les exercices des unités A2 2 à 63 (seule l'unité 1 en a), puis A1, B1 et B2.
+- **Contenu du programme :** relire et publier les 787 brouillons A2, puis écrire A1, B1 et B2.
 
 ### 🟡 Petits réglages en attente (Sacha)
 
@@ -1205,3 +1207,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Tâche programmée « Studio vidéo Pathway » : chaque lundi 14 h 11 (Paris), bilan, 3 sujets, puis production après le choix de Sacha (§13). |
 | 19 nov. 2026 | Campus de démonstration (§6, SQL 044–045, fonction `demo`) ; constat : seule l'unité A2 1 a des exercices (§12). |
 | 19 nov. 2026 | Parcours A1 → B2 visible dans Mi ruta (SQL 046) ; brouillons visibles dans la démo ; vrais exercices et vrais Simulacros décidés. |
+| 19 nov. 2026 | Exercices A2 2 à 15 en brouillon (SQL 047) : tout l'A2 est rédigé, 787 brouillons à relire et publier. Simulacros : CO et CE d'abord, à partir de la version enseignant des examens blancs (à envoyer par Sacha). |
