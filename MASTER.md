@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #156 (exercices A2 en brouillon, démo sur tout l'A2).
+> **État au 19 novembre 2026** — dernière PR intégrée : #157 (Simulacros en ligne : CO et CE).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -243,7 +243,17 @@ Application web d'une seule page (`campus/app.js`, environ 5 600 lignes, sans bu
     - examen tous les 16 unités, puis **examen de fin de niveau** en deux étapes (examen validé par le professeur, puis examen final du Campus) ;
     - **passage automatique** au niveau suivant, annulable pendant 14 jours.
   - **Repasar :** cartes de révision espacée, en paquet à balayer (Otra vez / Difícil / Bien / Fácil). Les erreurs des leçons et des cours deviennent des cartes.
-  - **Simulacros :** présentation des épreuves. **La version en ligne n'existe pas encore** (« llega pronto »).
+  - **Simulacros** (19 nov., SQL 048–049) : les **examens blancs TCF Canada B1 et B2 de Pathway**, en ligne.
+    - **Compréhension orale :** 39 questions, 35 min. Chaque document s'écoute **une seule fois** (voix du navigateur) et on ne peut pas revenir en arrière. En B2, la question est entendue après le document, comme dans la consigne de l'examen blanc.
+    - **Compréhension écrite :** 39 questions, 60 min ; on peut revenir à une question avant de terminer.
+    - Les réponses sont enregistrées au fur et à mesure. La correction se fait **sur le serveur** : le corrigé n'arrive jamais dans le navigateur avant la fin.
+    - **Résultat :**
+      - score /39 et appréciation (Muy sólido, Sólido, En progreso, Por reforzar) ;
+      - **profil par blocs de difficulté** (1–10, 11–20, 21–30, 31–39), pour voir où les erreurs commencent, comme le prévoient les examens blancs ;
+      - correction question par question, avec la transcription ou le document et l'« appui » du professeur.
+    - **Pas de conversion en score TCF ni en NCLC** : c'est la consigne des examens blancs, et l'écran le dit.
+    - **Expression écrite et expression orale : en classe** avec le professeur, pas encore en ligne.
+    - Au plus 6 épreuves par jour et par élève. Les questions viennent de `campus/simulacros/tcf_examenes_blancos.json`, extrait des versions enseignant et vérifié contre les corrigés et les versions élève.
   - **Mi curso :**
     - horaire fixe à l'heure locale, bouton **« Entrar a la clase »** (lien Zoom fixe) ;
     - **« Tus clases grabadas »** ;
@@ -487,6 +497,8 @@ Toutes sont **appliquées en production** au 19 nov. 2026.
 | 045 | Données de la démo (`demo_seed`) : un professeur et 4 élèves A2 avec un historique réaliste |
 | 046 | Unités A1, B1 et B2 (titres du sommaire des manuels) ; les comptes démo voient les exercices en brouillon |
 | 047 | 112 exercices A2 en brouillon (unités 2 à 15, 8 par unité), écrits à partir du manuel |
+| 048 | Simulacros : tables `sim_exams`, `sim_items`, `sim_attempts` ; démarrer, répondre, terminer (correction côté serveur), corrigé, résultats pour l'équipe |
+| 049 | Questions des examens blancs TCF Canada B1 et B2 (156 questions CO et CE) ; profil par blocs de difficulté |
 
 ### Edge Functions
 
@@ -717,6 +729,7 @@ Relevé du 19 nov. 2026.
   - **Campus de démonstration** : un monde fictif séparé, un professeur et 4 élèves, entrée d'un clic depuis Ajustes (#154) ;
   - **parcours A1 → B2** dans Mi ruta, 180 unités A1/B1/B2 ajoutées, brouillons visibles dans la démo (#155) ;
   - **exercices A2 2 à 15 écrits en brouillon** ; constat : les unités 17 à 63 avaient déjà leurs brouillons depuis le 12 nov. Tout l'A2 est donc prêt à relire. Démo : Valentina a fini l'A2, Lucía est à l'unité 7 (#156) ;
+  - **Simulacros en ligne** (CO et CE) avec les examens blancs TCF Canada B1 et B2 de Pathway (#157) ;
   - décision de Sacha : **écrire les vrais exercices** (brouillons relus puis publiés par les professeurs) et **construire les vrais Simulacros**, plutôt que des données factices.
 
 ---
@@ -1000,7 +1013,10 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 ### Produit et pédagogie
 
-- **Simulacros en ligne :** examens chronométrés, estimation NCLC par compétence.
+- **Simulacros, suite :**
+  - vrais enregistrements audio pour la CO, au lieu de la voix du navigateur (le B2 prévoit les fichiers B2_BLANC_CO01 à CO39, pas encore enregistrés ; ElevenLabs est possible) ;
+  - expression écrite et orale en ligne, corrigées par le professeur ;
+  - affichage des résultats de Simulacros dans l'espace Profesor (la fonction `staff_sim_results` existe déjà).
 - **Contenus A1, B1, B2** dans le Campus.
 - **Productions écrites et orales** avec pré-correction IA, et statistiques (specs Campus, tâches T040–T042).
 - **Test pilote** avec 3 à 5 élèves (T021).
@@ -1129,12 +1145,11 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
    - qui les anime : Ryan et Abdrahim seulement, ou Sacha aussi ?
 4. **Enregistrement Zoom :** l'animateur peut-il le mettre en pause ou l'arrêter ? C'est plus respectueux de la vie privée, mais un cours risque alors de manquer dans « Mi curso ».
 5. **Canal principal** une fois le +1 branché : WhatsApp, Messenger ou les deux ? Le test A/B est à lancer.
-6. **Simulacros :** quand les construire ?
-7. **Cohérence des informations publiques :**
+6. **Cohérence des informations publiques :**
    - `llms.txt` simplifie les formules (Acelerado 4 h, Intensivo 6 h) et contient encore le +51 ;
    - les pages « Cuánto tiempo » donnent des délais, alors que le résultat du test n'en donne plus. Choix à confirmer.
-8. **Octolinks :** commande abandonnée ou maintenue ?
-9. **Publicité :** budget de test, pubs actuelles de Ryan et leurs coûts, accès aux comptes Instagram et publicitaire Meta, accord d'Elena et Devon, mascotte ([§13](#13-vision-et-backlog), plan de démarrage).
+7. **Octolinks :** commande abandonnée ou maintenue ?
+8. **Publicité :** budget de test, pubs actuelles de Ryan et leurs coûts, accès aux comptes Instagram et publicitaire Meta, accord d'Elena et Devon, mascotte ([§13](#13-vision-et-backlog), plan de démarrage).
 
 ### Dette technique
 
@@ -1208,3 +1223,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Campus de démonstration (§6, SQL 044–045, fonction `demo`) ; constat : seule l'unité A2 1 a des exercices (§12). |
 | 19 nov. 2026 | Parcours A1 → B2 visible dans Mi ruta (SQL 046) ; brouillons visibles dans la démo ; vrais exercices et vrais Simulacros décidés. |
 | 19 nov. 2026 | Exercices A2 2 à 15 en brouillon (SQL 047) : tout l'A2 est rédigé, 787 brouillons à relire et publier. Simulacros : CO et CE d'abord, à partir de la version enseignant des examens blancs (à envoyer par Sacha). |
+| 19 nov. 2026 | Simulacros en ligne, CO et CE, examens blancs B1 et B2 (SQL 048–049) ; la démo a déjà des Simulacros passés. |

@@ -1,0 +1,2360 @@
+{
+  "source": "Pathway · Examens blancs de type TCF Canada B1 et B2, versions professeur (PDF) ; extraction des épreuves CO et CE uniquement (EE et EO hors champ). Sujets pédagogiques Pathway, non officiels.",
+  "extracted_at": "2026-11-19",
+  "schema_notes": "answer = index 0–3 dans options (A–D). CO : script = transcription lue/enregistrée (un tour de parole par ligne, « — » en tête de tour) ; script_meta = indications de lecture du PDF (voix, ambiance) ; question_after = la question est entendue après le document (B2) ou lue avant (B1). note = « appui » du corrigé (passage qui justifie la réponse), réservé à l'enseignant / à l'affichage après correction. target_level et audio_file : B2 seulement. doc_group : présent seulement si plusieurs questions partagent un document (aucun cas dans ces deux examens).",
+  "exams": [
+    {
+      "id": "tcf-b1",
+      "label": "Examen blanco TCF Canada · B1",
+      "level": "B1",
+      "source_file": "B1 - Examen blanc TCF Canada (version prof).pdf",
+      "disclaimer": "Entraînement complet rédigé par Pathway, sur la structure du TCF Canada vérifiée le 30 septembre 2026. Documents inédits. Ce n'est pas un sujet officiel : le résultat est indicatif et ne se convertit ni en score TCF ni en niveau NCLC.",
+      "rules": {
+        "co": "39 QCM, 35 min. Une seule écoute par document ; questions lues AVANT chaque document ; aucune reprise. Les documents sont lus par l'enseignant (aucun enregistrement fourni) : c'est un entraînement guidé, pas une reproduction des conditions réelles. Pas de dictionnaire. Une seule réponse par question ; une réponse non cochée vaut 0. Les documents progressent du plus simple au plus difficile, comme au test.",
+        "ce": "39 QCM, 60 min. Pas de dictionnaire. Une seule réponse par question ; une réponse non cochée vaut 0. Les documents progressent du plus simple au plus difficile, comme au test."
+      },
+      "scoring": "Chaque bonne réponse = 1 point : CO /39, CE /39.\nUne seule réponse par question ; une réponse non cochée vaut 0.\nRépartition des clés : 10 A, 10 B, 10 C, 9 D dans chaque épreuve (ordre aléatoire).\nProfil de difficulté : items 1–10, 11–20, 21–30, 31–39 ; noter à quel bloc les erreurs commencent.\nCe n'est pas un sujet officiel : le résultat est indicatif et ne se convertit ni en score TCF ni en niveau NCLC.\n(Grille EE/EO : « Le TCF officiel note EE et EO sur 20 avec ses propres grilles ; cette grille Pathway sert à l'entraînement et ne prédit pas un résultat officiel. Aucune conversion en niveau NCLC. »)",
+      "sections": {
+        "co": {
+          "minutes": 35,
+          "listenings": 1,
+          "question_after": false,
+          "items": [
+            {
+              "n": 1,
+              "script": "— Bonjour, je voudrais un aller simple pour Québec, s'il vous plaît.\n— Pour aujourd'hui ?\n— Oui, le train de 14 h.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Où se passe cette conversation ?",
+              "question_after": false,
+              "options": [
+                "Dans une gare",
+                "Dans un hôtel",
+                "Dans un restaurant",
+                "Dans une banque"
+              ],
+              "answer": 0,
+              "note": "Appui : « un aller simple », « le train de 14 h »"
+            },
+            {
+              "n": 2,
+              "script": "Mesdames et messieurs, le magasin fermera ses portes dans quinze minutes. Merci de vous diriger vers les caisses.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Que doivent faire les clients ?",
+              "question_after": false,
+              "options": [
+                "Revenir demain",
+                "Aller payer",
+                "Attendre quinze minutes à l'entrée",
+                "Appeler un vendeur"
+              ],
+              "answer": 1,
+              "note": "Appui : « vous diriger vers les caisses »"
+            },
+            {
+              "n": 3,
+              "script": "Salut Léa, c'est Hugo. Je suis désolé, je ne peux pas venir au cinéma ce soir : je suis malade. On y va samedi ?",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Pourquoi Hugo appelle-t-il ?",
+              "question_after": false,
+              "options": [
+                "Pour annuler une sortie",
+                "Pour inviter Léa au restaurant",
+                "Pour acheter des billets",
+                "Pour demander un médicament"
+              ],
+              "answer": 0,
+              "note": "Appui : « je ne peux pas venir au cinéma ce soir »"
+            },
+            {
+              "n": 4,
+              "script": "— Tu as vu mes clés ?\n— Oui, elles sont sur la table de la cuisine, à côté du pain.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Où sont les clés ?",
+              "question_after": false,
+              "options": [
+                "Dans la voiture",
+                "Dans le salon",
+                "Sur la table de la cuisine",
+                "Près de la porte"
+              ],
+              "answer": 2,
+              "note": "Appui : « sur la table de la cuisine »"
+            },
+            {
+              "n": 5,
+              "script": "Attention : en raison de travaux, la ligne orange du métro est fermée ce week-end entre les stations Berri et Jean-Talon. Des autobus remplacent le métro.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce qui remplace le métro ce week-end ?",
+              "question_after": false,
+              "options": [
+                "Des taxis",
+                "Des vélos en libre-service",
+                "Des trains de banlieue",
+                "Des autobus"
+              ],
+              "answer": 3,
+              "note": "Appui : « Des autobus remplacent le métro »"
+            },
+            {
+              "n": 6,
+              "script": "— Qu'est-ce que tu prends ?\n— Pour moi, une soupe et une salade, mais pas de dessert : je n'ai plus faim après.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce que la personne ne commande pas ?",
+              "question_after": false,
+              "options": [
+                "Une soupe",
+                "Une salade",
+                "Un dessert",
+                "Une boisson"
+              ],
+              "answer": 2,
+              "note": "Appui : « pas de dessert »"
+            },
+            {
+              "n": 7,
+              "script": "Bonjour, ici la clinique du Parc. Votre rendez-vous de jeudi est déplacé à vendredi, même heure. Rappelez-nous si ce n'est pas possible.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce qui change ?",
+              "question_after": false,
+              "options": [
+                "L'heure du rendez-vous",
+                "Le jour du rendez-vous",
+                "Le nom du médecin",
+                "L'adresse de la clinique"
+              ],
+              "answer": 1,
+              "note": "Appui : « déplacé à vendredi, même heure »"
+            },
+            {
+              "n": 8,
+              "script": "Demain, le temps sera nuageux le matin, avec un risque de pluie l'après-midi. Les températures resteront douces pour la saison.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quel temps fera-t-il demain après-midi ?",
+              "question_after": false,
+              "options": [
+                "Il fera très froid",
+                "Il fera grand soleil",
+                "Il pourrait pleuvoir",
+                "Il neigera"
+              ],
+              "answer": 2,
+              "note": "Appui : « un risque de pluie l'après-midi »"
+            },
+            {
+              "n": 9,
+              "script": "— Tu travailles toujours à la banque ?\n— Non, depuis janvier, je suis professeur de mathématiques dans une école secondaire. C'est plus fatigant, mais j'adore ça.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Que pense la personne de son nouveau travail ?",
+              "question_after": false,
+              "options": [
+                "Elle le trouve ennuyeux",
+                "Elle l'aime beaucoup malgré la fatigue",
+                "Elle veut le quitter",
+                "Elle préfère la banque"
+              ],
+              "answer": 1,
+              "note": "Appui : « C'est plus fatigant, mais j'adore ça »"
+            },
+            {
+              "n": 10,
+              "script": "Le musée des Beaux-Arts est ouvert du mardi au dimanche, de 10 h à 17 h, et jusqu'à 21 h le mercredi. L'entrée est gratuite le premier dimanche du mois.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quand peut-on visiter le musée le soir ?",
+              "question_after": false,
+              "options": [
+                "Le lundi",
+                "Le samedi",
+                "Le mercredi",
+                "Le premier dimanche du mois"
+              ],
+              "answer": 2,
+              "note": "Appui : « jusqu'à 21 h le mercredi »"
+            },
+            {
+              "n": 11,
+              "script": "— Alors, ton nouvel appartement ?\n— Il est plus petit que l'ancien, c'est vrai, mais il est tout près de mon travail. Je ne prends plus la voiture !",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quel est l'avantage principal du nouvel appartement ?",
+              "question_after": false,
+              "options": [
+                "Il est plus grand",
+                "Il est moins cher",
+                "Il est proche du travail",
+                "Il a un stationnement"
+              ],
+              "answer": 2,
+              "note": "Appui : « tout près de mon travail »"
+            },
+            {
+              "n": 12,
+              "script": "Chers voyageurs, le vol AC 862 à destination de Paris est retardé d'environ une heure en raison des conditions météorologiques. L'embarquement se fera à la porte 32 au lieu de la porte 28.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'apprend-on sur le vol ?",
+              "question_after": false,
+              "options": [
+                "Il est annulé",
+                "Il part d'une autre porte, avec du retard",
+                "Il partira plus tôt",
+                "Il fait escale à Montréal"
+              ],
+              "answer": 1,
+              "note": "Appui : « retardé d'environ une heure » ; « porte 32 au lieu de la porte 28 »"
+            },
+            {
+              "n": 13,
+              "script": "— Je t'appelle pour la fête de samedi. Tu peux apporter des boissons ?\n— D'accord, mais je vais arriver un peu tard, vers 21 h, parce que je travaille jusqu'à 20 h.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Pourquoi la personne arrivera-t-elle tard ?",
+              "question_after": false,
+              "options": [
+                "Elle doit acheter les boissons",
+                "Elle travaille jusqu'à 20 h",
+                "Elle habite loin",
+                "Elle a un autre rendez-vous"
+              ],
+              "answer": 1,
+              "note": "Appui : « parce que je travaille jusqu'à 20 h »"
+            },
+            {
+              "n": 14,
+              "script": "Vous cherchez un emploi d'été ? Le centre sportif recrute des animateurs pour ses camps de jour. Aucune expérience n'est exigée, mais vous devez avoir 17 ans ou plus et être disponible tout le mois de juillet.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle condition faut-il remplir ?",
+              "question_after": false,
+              "options": [
+                "Être disponible tout le mois de juillet",
+                "Avoir de l'expérience",
+                "Avoir un diplôme sportif",
+                "Parler anglais"
+              ],
+              "answer": 0,
+              "note": "Appui : « être disponible tout le mois de juillet »"
+            },
+            {
+              "n": 15,
+              "script": "— Tu es allé au concert finalement ?\n— Oui, mais on était très mal placés, tout au fond de la salle. Heureusement, le son était excellent, donc ça valait quand même la peine.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quel est le bilan de la soirée ?",
+              "question_after": false,
+              "options": [
+                "Totalement négatif",
+                "Positif malgré les places",
+                "Décevant à cause du son",
+                "Annulé à la dernière minute"
+              ],
+              "answer": 1,
+              "note": "Appui : « Heureusement, le son était excellent… ça valait quand même la peine »"
+            },
+            {
+              "n": 16,
+              "script": "Ici Radio-Estrie. Le conseil municipal a adopté hier soir un règlement qui interdit l'usage des souffleuses à feuilles à essence à partir de l'an prochain. Les appareils électriques restent autorisés.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'interdit le nouveau règlement ?",
+              "question_after": false,
+              "options": [
+                "Tous les appareils de jardinage",
+                "Les appareils électriques",
+                "Les souffleuses à essence",
+                "Le ramassage des feuilles"
+              ],
+              "answer": 2,
+              "note": "Appui : « interdit l'usage des souffleuses à feuilles à essence »"
+            },
+            {
+              "n": 17,
+              "script": "— Je ne sais pas si je vais accepter ce poste à Calgary. Le salaire est meilleur, mais je ne connais personne là-bas.\n— À ta place, je demanderais d'abord à faire un essai de quelques mois.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Que conseille l'interlocuteur ?",
+              "question_after": false,
+              "options": [
+                "Refuser le poste",
+                "Accepter immédiatement",
+                "Demander un meilleur salaire",
+                "Essayer quelques mois"
+              ],
+              "answer": 3,
+              "note": "Appui : « je demanderais d'abord à faire un essai de quelques mois »"
+            },
+            {
+              "n": 18,
+              "script": "Notre invitée, la chef Marie Lavoie, a ouvert son restaurant il y a dix ans avec une idée simple : ne servir que des produits cultivés à moins de cent kilomètres. « Au début, tout le monde trouvait ça trop cher. Aujourd'hui, c'est devenu un argument de vente », dit-elle.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Comment l'opinion sur son idée a-t-elle évolué ?",
+              "question_after": false,
+              "options": [
+                "Elle a d'abord été jugée trop chère, puis appréciée",
+                "Elle a toujours été critiquée",
+                "Elle a été immédiatement acceptée",
+                "Elle a été abandonnée"
+              ],
+              "answer": 0,
+              "note": "Appui : « Au début… trop cher. Aujourd'hui… un argument de vente »"
+            },
+            {
+              "n": 19,
+              "script": "— Tu as lu l'article sur le télétravail ?\n— Oui. Ce qui m'a surpris, c'est que les employés travaillent plus longtemps à la maison, alors qu'on pensait le contraire.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce qui a surpris la personne ?",
+              "question_after": false,
+              "options": [
+                "Les employés travaillent moins à la maison",
+                "Les entreprises refusent le télétravail",
+                "Les employés travaillent plus longtemps à la maison",
+                "Les employés préfèrent le bureau"
+              ],
+              "answer": 2,
+              "note": "Appui : « les employés travaillent plus longtemps à la maison, alors qu'on pensait le contraire »"
+            },
+            {
+              "n": 20,
+              "script": "Madame, nous avons bien reçu votre dossier de candidature. Cependant, il manque la copie de votre diplôme. Sans ce document, nous ne pourrons pas étudier votre demande avant la date limite du 30 avril.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quel est le risque pour la candidate ?",
+              "question_after": false,
+              "options": [
+                "Son diplôme n'est pas reconnu",
+                "Elle doit repasser un examen",
+                "Elle doit payer des frais",
+                "Sa demande ne sera pas étudiée à temps"
+              ],
+              "answer": 3,
+              "note": "Appui : « nous ne pourrons pas étudier votre demande avant la date limite »"
+            },
+            {
+              "n": 21,
+              "script": "Selon une étude publiée cette semaine, les adolescents canadiens dorment en moyenne une heure de moins qu'il y a vingt ans. Les chercheurs ne mettent pas seulement en cause les écrans : les horaires scolaires, qui commencent tôt, jouent aussi un rôle important.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Selon les chercheurs, quelle est la cause du manque de sommeil ?",
+              "question_after": false,
+              "options": [
+                "Uniquement les écrans",
+                "Uniquement le stress des examens",
+                "Le sport le soir",
+                "Les écrans, mais aussi les horaires scolaires"
+              ],
+              "answer": 3,
+              "note": "Appui : « pas seulement… les écrans : les horaires scolaires… jouent aussi un rôle »"
+            },
+            {
+              "n": 22,
+              "script": "— On m'a proposé de présider l'association des parents.\n— Et tu vas accepter ?\n— J'hésite. Si je dis oui, je n'aurai plus une minute pour moi. Mais si personne ne se présente, l'association risque de disparaître.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Pourquoi la personne hésite-t-elle ?",
+              "question_after": false,
+              "options": [
+                "Elle ne connaît pas l'association",
+                "Elle a déjà refusé",
+                "Elle n'a pas d'enfant",
+                "Elle craint de manquer de temps, mais l'association pourrait disparaître"
+              ],
+              "answer": 3,
+              "note": "Appui : « je n'aurai plus une minute… l'association risque de disparaître »"
+            },
+            {
+              "n": 23,
+              "script": "Le prix des loyers continue d'augmenter dans les grandes villes. À Montréal, un logement de deux chambres coûte en moyenne 12 % de plus que l'an dernier. Le gouvernement promet de construire davantage de logements sociaux, mais les associations de locataires jugent ces mesures insuffisantes à court terme.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle est la position des associations de locataires ?",
+              "question_after": false,
+              "options": [
+                "Elles approuvent entièrement le gouvernement",
+                "Elles demandent une baisse des salaires",
+                "Elles pensent que les mesures ne suffiront pas rapidement",
+                "Elles veulent interdire la construction"
+              ],
+              "answer": 2,
+              "note": "Appui : « jugent ces mesures insuffisantes à court terme »"
+            },
+            {
+              "n": 24,
+              "script": "— Alors, cette formation en ligne ?\n— Le contenu est bon, mais il manque le contact humain. J'aurais préféré quelques séances en présentiel, ne serait-ce que pour poser mes questions directement.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce que la personne regrette ?",
+              "question_after": false,
+              "options": [
+                "La qualité du contenu",
+                "Le prix de la formation",
+                "L'absence de séances en présentiel",
+                "La durée de la formation"
+              ],
+              "answer": 2,
+              "note": "Appui : « J'aurais préféré quelques séances en présentiel »"
+            },
+            {
+              "n": 25,
+              "script": "Invité de notre émission, l'urbaniste Paul Girard défend les « rues-écoles », fermées aux voitures aux heures d'entrée et de sortie des classes. « On craignait des embouteillages dans les rues voisines ; en réalité, beaucoup de parents ont simplement changé d'habitude et viennent à pied. »",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce qui s'est passé contrairement aux craintes ?",
+              "question_after": false,
+              "options": [
+                "Les embouteillages ont augmenté",
+                "Les écoles ont fermé",
+                "Les voitures ont été interdites partout",
+                "Les parents ont changé leurs habitudes"
+              ],
+              "answer": 3,
+              "note": "Appui : « On craignait des embouteillages… en réalité… viennent à pied »"
+            },
+            {
+              "n": 26,
+              "script": "Nous rappelons aux résidents que la collecte des gros objets aura lieu le premier lundi de chaque mois. Les objets doivent être déposés sur le trottoir la veille après 19 h, jamais avant. Les appareils électroniques ne sont pas acceptés : apportez-les à l'écocentre.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Que faut-il faire des appareils électroniques ?",
+              "question_after": false,
+              "options": [
+                "Les déposer le lundi",
+                "Les apporter à l'écocentre",
+                "Les déposer la veille après 19 h",
+                "Les laisser dans le bac de recyclage"
+              ],
+              "answer": 1,
+              "note": "Appui : « apportez-les à l'écocentre »"
+            },
+            {
+              "n": 27,
+              "script": "— Tu as entendu ? L'entreprise va déménager en banlieue.\n— Oui, officiellement pour réduire les coûts. Mais entre nous, je pense que la direction veut surtout se rapprocher de son principal client.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Selon la personne, quelle est la vraie raison du déménagement ?",
+              "question_after": false,
+              "options": [
+                "Réduire les coûts",
+                "Recruter plus facilement",
+                "Se rapprocher du principal client",
+                "Profiter d'un loyer gratuit"
+              ],
+              "answer": 2,
+              "note": "Appui : « officiellement pour réduire les coûts. Mais… surtout se rapprocher de son principal client »"
+            },
+            {
+              "n": 28,
+              "script": "La romancière Nadia Chérif présente son nouveau livre : « Ce n'est pas une autobiographie, même si j'ai emprunté certains lieux à mon enfance. Les personnages sont inventés ; ce qui est vrai, c'est l'atmosphère du quartier. »",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Qu'est-ce qui est inspiré de la réalité dans le roman ?",
+              "question_after": false,
+              "options": [
+                "Les personnages",
+                "L'atmosphère du quartier",
+                "L'histoire complète de sa vie",
+                "Les dialogues"
+              ],
+              "answer": 1,
+              "note": "Appui : « ce qui est vrai, c'est l'atmosphère du quartier »"
+            },
+            {
+              "n": 29,
+              "script": "Plusieurs universités québécoises testent la notation « réussite ou échec » pour les cours de première année. L'objectif est de réduire la pression sur les étudiants. Les opposants craignent toutefois que les étudiants fournissent moins d'efforts, puisque la note n'aura plus d'influence sur leur moyenne.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Que craignent les opposants ?",
+              "question_after": false,
+              "options": [
+                "Plus d'échecs",
+                "Moins d'efforts de la part des étudiants",
+                "Une hausse des frais",
+                "Une baisse des inscriptions"
+              ],
+              "answer": 1,
+              "note": "Appui : « craignent… que les étudiants fournissent moins d'efforts »"
+            },
+            {
+              "n": 30,
+              "script": "— Le comité a retenu votre projet de jardin communautaire, à une condition : vous devrez trouver au moins dix bénévoles avant le mois de mai.\n— Et si on n'en trouve que huit ?\n— Dans ce cas, le financement sera reporté à l'année suivante.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Que se passera-t-il s'il n'y a pas assez de bénévoles ?",
+              "question_after": false,
+              "options": [
+                "Le financement sera reporté d'un an",
+                "Le projet sera annulé définitivement",
+                "Le comité trouvera des bénévoles",
+                "Le jardin sera plus petit"
+              ],
+              "answer": 0,
+              "note": "Appui : « le financement sera reporté à l'année suivante »"
+            },
+            {
+              "n": 31,
+              "script": "Le chercheur Luc Ménard nuance les conclusions de l'étude : « Il est exact que les ventes de livres numériques progressent, mais elles restent marginales. Parler de la fin du livre papier me semble donc prématuré. »",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle est l'opinion de Luc Ménard ?",
+              "question_after": false,
+              "options": [
+                "Le livre papier va disparaître bientôt",
+                "Le livre numérique ne progresse pas",
+                "Les deux formats vont disparaître",
+                "Il est trop tôt pour annoncer la fin du papier"
+              ],
+              "answer": 3,
+              "note": "Appui : « Parler de la fin du livre papier me semble donc prématuré »"
+            },
+            {
+              "n": 32,
+              "script": "Dans notre chronique consommation : de plus en plus d'applications proposent de revendre les repas invendus des restaurants à prix réduit. Si l'idée séduit, certains restaurateurs reconnaissent qu'ils préparent désormais davantage de portions, sachant qu'elles seront écoulées de toute façon, ce qui va à l'encontre de l'objectif antigaspillage.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quel effet inattendu est signalé ?",
+              "question_after": false,
+              "options": [
+                "Les restaurants gaspillent moins",
+                "Certains restaurants préparent plus de portions",
+                "Les prix augmentent",
+                "Les applications ferment"
+              ],
+              "answer": 1,
+              "note": "Appui : « ils préparent désormais davantage de portions… à l'encontre de l'objectif »"
+            },
+            {
+              "n": 33,
+              "script": "— Je ne comprends pas pourquoi tu refuses cette promotion.\n— Ce n'est pas le poste qui me dérange, c'est ce qu'il implique : des déplacements chaque semaine. Avec deux enfants en bas âge, je ne m'en sens pas capable pour l'instant.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Pourquoi la personne refuse-t-elle la promotion ?",
+              "question_after": false,
+              "options": [
+                "Le salaire est trop bas",
+                "Le poste ne l'intéresse pas",
+                "Elle veut changer d'entreprise",
+                "Les déplacements fréquents ne conviennent pas à sa situation familiale"
+              ],
+              "answer": 3,
+              "note": "Appui : « des déplacements chaque semaine. Avec deux enfants en bas âge… »"
+            },
+            {
+              "n": 34,
+              "script": "La philosophe invitée estime que l'on confond souvent solitude et isolement : « La solitude peut être choisie et même féconde ; l'isolement, lui, est subi. C'est ce dernier qui constitue un problème de santé publique. »",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle distinction fait la philosophe ?",
+              "question_after": false,
+              "options": [
+                "La solitude est toujours négative",
+                "L'isolement est choisi, la solitude est subie",
+                "Il n'y a aucune différence",
+                "La solitude peut être positive, l'isolement est subi"
+              ],
+              "answer": 3,
+              "note": "Appui : « La solitude peut être choisie… l'isolement, lui, est subi »"
+            },
+            {
+              "n": 35,
+              "script": "À la suite des plaintes répétées des riverains, la société de transport a décidé non pas de supprimer la ligne de nuit, comme certains le réclamaient, mais d'en modifier le trajet afin d'éviter les rues résidentielles après minuit.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle décision a été prise ?",
+              "question_after": false,
+              "options": [
+                "Modifier le trajet de la ligne de nuit",
+                "Supprimer la ligne de nuit",
+                "Ajouter des autobus",
+                "Réduire les tarifs"
+              ],
+              "answer": 0,
+              "note": "Appui : « non pas de supprimer la ligne… mais d'en modifier le trajet »"
+            },
+            {
+              "n": 36,
+              "script": "— Honnêtement, le rapport est solide sur le diagnostic.\n— Mais ?\n— Mais les solutions proposées reposent sur un financement que personne n'a encore promis. Tant qu'on ne saura pas qui paie, ce ne sont que des intentions.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle critique est faite au rapport ?",
+              "question_after": false,
+              "options": [
+                "Ses solutions ne sont pas financées",
+                "Son diagnostic est faux",
+                "Il est trop court",
+                "Il ne propose aucune solution"
+              ],
+              "answer": 0,
+              "note": "Appui : « reposent sur un financement que personne n'a encore promis »"
+            },
+            {
+              "n": 37,
+              "script": "L'économiste interrogé rappelle qu'une hausse du salaire minimum a des effets contrastés : elle améliore le pouvoir d'achat des travailleurs concernés, mais peut, dans les petites entreprises aux marges faibles, freiner l'embauche. Selon lui, tout dépend du rythme de la hausse plus que de son montant.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Selon l'économiste, qu'est-ce qui est déterminant ?",
+              "question_after": false,
+              "options": [
+                "Le rythme de la hausse",
+                "Le montant de la hausse",
+                "La taille des grandes entreprises",
+                "Le nombre de travailleurs"
+              ],
+              "answer": 0,
+              "note": "Appui : « tout dépend du rythme de la hausse plus que de son montant »"
+            },
+            {
+              "n": 38,
+              "script": "Présentant son documentaire, la réalisatrice explique avoir renoncé à la voix off : « Je voulais que les habitants racontent eux-mêmes leur village, quitte à ce que le récit soit moins linéaire. Le spectateur doit accepter de reconstituer l'histoire. »",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Pourquoi la réalisatrice a-t-elle renoncé à la voix off ?",
+              "question_after": false,
+              "options": [
+                "Pour laisser la parole aux habitants",
+                "Pour réduire les coûts",
+                "Parce que le village était trop petit",
+                "Pour rendre le récit plus linéaire"
+              ],
+              "answer": 0,
+              "note": "Appui : « Je voulais que les habitants racontent eux-mêmes leur village »"
+            },
+            {
+              "n": 39,
+              "script": "Loin de s'opposer, affirme la chercheuse, croissance économique et protection de l'environnement peuvent aller de pair, à condition que les investissements publics ciblent les secteurs peu émetteurs. Encore faut-il, ajoute-t-elle, que ces choix soient maintenus au-delà d'un seul mandat politique.",
+              "script_meta": "une lecture, débit naturel",
+              "question": "Quelle condition supplémentaire la chercheuse ajoute-t-elle ?",
+              "question_after": false,
+              "options": [
+                "Maintenir ces choix sur plusieurs mandats",
+                "Réduire tous les investissements",
+                "Arrêter la croissance",
+                "Interdire les secteurs émetteurs"
+              ],
+              "answer": 0,
+              "note": "Appui : « Encore faut-il… que ces choix soient maintenus au-delà d'un seul mandat »"
+            }
+          ]
+        },
+        "ce": {
+          "minutes": 60,
+          "items": [
+            {
+              "n": 1,
+              "document": "Boulangerie Dupuis\nFermée le lundi. Du mardi au samedi : 7 h – 18 h. Dimanche : 8 h – 13 h.",
+              "question": "Quand la boulangerie est-elle fermée ?",
+              "options": [
+                "Le lundi",
+                "Le dimanche",
+                "Le samedi après-midi",
+                "Le mardi matin"
+              ],
+              "answer": 0,
+              "note": "Appui : « Fermée le lundi »"
+            },
+            {
+              "n": 2,
+              "document": "Salut Marc ! Je suis arrivée à Québec. L'hôtel est très bien, mais il pleut depuis ce matin. Demain, je visite le Château Frontenac. Bises, Julie",
+              "question": "Que fait Julie demain ?",
+              "options": [
+                "Elle rentre chez elle",
+                "Elle visite le Château Frontenac",
+                "Elle change d'hôtel",
+                "Elle va à la plage"
+              ],
+              "answer": 1,
+              "note": "Appui : « Demain, je visite le Château Frontenac »"
+            },
+            {
+              "n": 3,
+              "document": "Piscine municipale · Bonnet de bain obligatoire. Douche avant la baignade. Interdit de courir autour du bassin.",
+              "question": "Qu'est-ce qui est obligatoire ?",
+              "options": [
+                "Courir autour du bassin",
+                "Apporter une serviette",
+                "Nager une heure",
+                "Porter un bonnet de bain"
+              ],
+              "answer": 3,
+              "note": "Appui : « Bonnet de bain obligatoire »"
+            },
+            {
+              "n": 4,
+              "document": "À vendre : vélo pour enfant (6–9 ans), rouge, très bon état, 40 $. Appeler Sophie après 18 h au 819 555 0177.",
+              "question": "Quand peut-on appeler Sophie ?",
+              "options": [
+                "Le matin",
+                "À midi",
+                "Seulement le week-end",
+                "Le soir, après 18 h"
+              ],
+              "answer": 3,
+              "note": "Appui : « Appeler Sophie après 18 h »"
+            },
+            {
+              "n": 5,
+              "document": "Chers parents, la sortie au zoo de vendredi est annulée à cause des prévisions de tempête. Elle est reportée au vendredi suivant. Les élèves auront classe normalement.",
+              "question": "Pourquoi la sortie est-elle annulée ?",
+              "options": [
+                "Une tempête est prévue",
+                "Le zoo est fermé",
+                "Il manque des accompagnateurs",
+                "Les élèves ont un examen"
+              ],
+              "answer": 0,
+              "note": "Appui : « à cause des prévisions de tempête »"
+            },
+            {
+              "n": 6,
+              "document": "Offre d'emploi · Café du Vieux-Port recherche serveur ou serveuse, temps partiel, soirs et fins de semaine. Expérience appréciée mais non obligatoire. Envoyer CV à emploi@cafeduport.ca.",
+              "question": "Qu'est-ce qui n'est pas obligatoire pour ce poste ?",
+              "options": [
+                "Travailler le soir",
+                "Envoyer un CV",
+                "Avoir de l'expérience",
+                "Travailler la fin de semaine"
+              ],
+              "answer": 2,
+              "note": "Appui : « Expérience appréciée mais non obligatoire »"
+            },
+            {
+              "n": 7,
+              "document": "Bonjour Madame Roy, je vous écris pour confirmer notre rendez-vous du 12 mai à 10 h. Pourriez-vous apporter votre carte d'assurance maladie et la liste de vos médicaments ? Cordialement, la secrétaire du Dr Martin",
+              "question": "Que doit apporter Mme Roy ?",
+              "options": [
+                "Un certificat médical",
+                "Sa carte d'assurance maladie et la liste de ses médicaments",
+                "Une ordonnance",
+                "Une photo d'identité"
+              ],
+              "answer": 1,
+              "note": "Appui : « votre carte d'assurance maladie et la liste de vos médicaments »"
+            },
+            {
+              "n": 8,
+              "document": "Bibliothèque · Les livres empruntés doivent être rendus dans un délai de trois semaines. Vous pouvez prolonger ce délai une fois, en ligne ou au comptoir, si le livre n'est pas réservé par un autre abonné.",
+              "question": "Dans quel cas ne peut-on pas prolonger un emprunt ?",
+              "options": [
+                "Si on est en retard d'un jour",
+                "Si on le fait en ligne",
+                "Si on a emprunté plus de trois livres",
+                "Si un autre abonné a réservé le livre"
+              ],
+              "answer": 3,
+              "note": "Appui : « si le livre n'est pas réservé par un autre abonné »"
+            },
+            {
+              "n": 9,
+              "document": "Depuis trois ans, j'habite à la campagne. Je pensais m'ennuyer, loin des cinémas et des restaurants. En réalité, je n'ai jamais eu autant d'activités : je fais partie de la chorale du village et je donne des cours de guitare aux enfants.",
+              "question": "Qu'est-ce qui a surpris la personne ?",
+              "options": [
+                "Elle s'ennuie beaucoup",
+                "Le village n'a pas d'école",
+                "Elle a plus d'activités qu'avant",
+                "Les restaurants sont nombreux"
+              ],
+              "answer": 2,
+              "note": "Appui : « je n'ai jamais eu autant d'activités »"
+            },
+            {
+              "n": 10,
+              "document": "Avis aux locataires · L'eau sera coupée le mardi 14 de 9 h à 15 h pour des travaux de réparation. Nous vous conseillons de prévoir des réserves d'eau. Merci de votre compréhension. La gestion",
+              "question": "Que conseille la gestion ?",
+              "options": [
+                "Quitter l'immeuble",
+                "Appeler un plombier",
+                "Prévoir des réserves d'eau",
+                "Fermer les fenêtres"
+              ],
+              "answer": 2,
+              "note": "Appui : « prévoir des réserves d'eau »"
+            },
+            {
+              "n": 11,
+              "document": "Le covoiturage progresse chez les étudiants de l'université : un sur cinq partage désormais sa voiture pour venir sur le campus. Pour encourager cette pratique, l'université réserve les meilleures places de stationnement aux voitures qui transportent au moins trois personnes.",
+              "question": "Comment l'université encourage-t-elle le covoiturage ?",
+              "options": [
+                "Elle offre l'essence",
+                "Elle réserve de bonnes places aux voitures pleines",
+                "Elle interdit les voitures",
+                "Elle offre des vélos"
+              ],
+              "answer": 1,
+              "note": "Appui : « réserve les meilleures places… aux voitures qui transportent au moins trois personnes »"
+            },
+            {
+              "n": 12,
+              "document": "Madame, Monsieur, j'ai acheté dans votre magasin un téléphone qui ne fonctionne plus après deux semaines. Le vendeur m'a proposé une réparation, mais je souhaite un remboursement complet, car l'appareil est encore sous garantie. Cordialement, P. Nguyen",
+              "question": "Que veut obtenir P. Nguyen ?",
+              "options": [
+                "Une réparation",
+                "Un remboursement complet",
+                "Un nouveau téléphone plus cher",
+                "Une réduction sur un autre achat"
+              ],
+              "answer": 1,
+              "note": "Appui : « je souhaite un remboursement complet »"
+            },
+            {
+              "n": 13,
+              "document": "Festival de la chanson de Tadoussac · Les billets achetés avant le 1er juin bénéficient d'une réduction de 20 %. Les enfants de moins de 10 ans entrent gratuitement s'ils sont accompagnés d'un adulte. Aucun remboursement en cas de pluie : les spectacles ont lieu sous chapiteau.",
+              "question": "Pourquoi n'y a-t-il pas de remboursement en cas de pluie ?",
+              "options": [
+                "Parce que les spectacles ont lieu sous chapiteau",
+                "Parce que les billets sont réduits",
+                "Parce que les enfants entrent gratuitement",
+                "Parce que le festival est annulé"
+              ],
+              "answer": 0,
+              "note": "Appui : « les spectacles ont lieu sous chapiteau »"
+            },
+            {
+              "n": 14,
+              "document": "Beaucoup de nouveaux arrivants pensent qu'il faut d'abord parler parfaitement français pour chercher un emploi. Pourtant, selon les conseillers en emploi, les employeurs apprécient surtout la motivation et la capacité à progresser. Un niveau intermédiaire, accompagné d'une formation continue, suffit souvent pour commencer.",
+              "question": "Selon les conseillers, qu'apprécient surtout les employeurs ?",
+              "options": [
+                "La motivation et la capacité à progresser",
+                "Un français parfait",
+                "Un diplôme canadien",
+                "L'expérience à l'étranger"
+              ],
+              "answer": 0,
+              "note": "Appui : « apprécient surtout la motivation et la capacité à progresser »"
+            },
+            {
+              "n": 15,
+              "document": "Contrairement à une idée répandue, les jeunes lisent encore beaucoup, selon une enquête récente. Ce qui a changé, ce sont les supports : ils lisent davantage sur leur téléphone, et les bandes dessinées ainsi que les romans graphiques représentent une part croissante de leurs lectures.",
+              "question": "Qu'est-ce qui a changé selon l'enquête ?",
+              "options": [
+                "Les jeunes ne lisent plus",
+                "Le nombre de bibliothèques",
+                "Le prix des livres",
+                "Les supports et les genres de lecture"
+              ],
+              "answer": 3,
+              "note": "Appui : « Ce qui a changé, ce sont les supports… bandes dessinées… romans graphiques »"
+            },
+            {
+              "n": 16,
+              "document": "Chère Inès, merci pour ton invitation au mariage. Je serai très heureuse d'y être, mais je ne pourrai assister qu'à la cérémonie : le soir même, je dois prendre un vol pour Vancouver pour un congrès. Je t'embrasse, Claire",
+              "question": "À quelle partie du mariage Claire assistera-t-elle ?",
+              "options": [
+                "À la soirée seulement",
+                "À la cérémonie seulement",
+                "À toute la journée",
+                "À aucune partie"
+              ],
+              "answer": 1,
+              "note": "Appui : « je ne pourrai assister qu'à la cérémonie »"
+            },
+            {
+              "n": 17,
+              "document": "Le conseil d'administration de la coopérative a voté la hausse de la cotisation annuelle, qui passera de 50 $ à 65 $. Cette décision, justifiée par l'augmentation des frais d'assurance, ne s'appliquera toutefois qu'aux nouveaux membres cette année ; les membres actuels la paieront à partir de l'an prochain.",
+              "question": "Qui paiera la nouvelle cotisation cette année ?",
+              "options": [
+                "Tous les membres",
+                "Les membres actuels seulement",
+                "Les nouveaux membres seulement",
+                "Personne"
+              ],
+              "answer": 2,
+              "note": "Appui : « ne s'appliquera toutefois qu'aux nouveaux membres cette année »"
+            },
+            {
+              "n": 18,
+              "document": "Les villes qui ont installé des « frigos partagés », où chacun peut déposer ou prendre gratuitement de la nourriture, en tirent un bilan positif. Le principal obstacle n'est pas le vol, comme on le craignait, mais l'hygiène : sans bénévoles pour nettoyer régulièrement, les frigos sont vite abandonnés.",
+              "question": "Quel est le principal obstacle aux frigos partagés ?",
+              "options": [
+                "Le vol",
+                "L'hygiène et l'entretien",
+                "Le manque de nourriture",
+                "Le coût de l'électricité"
+              ],
+              "answer": 1,
+              "note": "Appui : « Le principal obstacle n'est pas le vol… mais l'hygiène »"
+            },
+            {
+              "n": 19,
+              "document": "Nous regrettons de vous informer que votre demande de bourse n'a pas été retenue cette année, le nombre de candidatures ayant largement dépassé les fonds disponibles. Votre dossier était néanmoins complet et de qualité : nous vous encourageons à le présenter de nouveau lors du prochain concours.",
+              "question": "Pourquoi la demande n'a-t-elle pas été retenue ?",
+              "options": [
+                "Le dossier était incomplet",
+                "Le candidat était trop jeune",
+                "Il y avait trop de candidatures pour les fonds disponibles",
+                "La date limite était dépassée"
+              ],
+              "answer": 2,
+              "note": "Appui : « le nombre de candidatures ayant largement dépassé les fonds disponibles »"
+            },
+            {
+              "n": 20,
+              "document": "Le télétravail a transformé nos villes plus qu'on ne l'imaginait. Les centres-villes, autrefois animés à l'heure du dîner, se vident en semaine, tandis que les commerces de quartier profitent d'une clientèle nouvelle. Certains urbanistes y voient l'occasion de transformer des bureaux vides en logements.",
+              "question": "Qui profite du télétravail selon le texte ?",
+              "options": [
+                "Les restaurants du centre-ville",
+                "Les commerces de quartier",
+                "Les propriétaires de bureaux",
+                "Les transports en commun"
+              ],
+              "answer": 1,
+              "note": "Appui : « les commerces de quartier profitent d'une clientèle nouvelle »"
+            },
+            {
+              "n": 21,
+              "document": "On accuse souvent les réseaux sociaux d'isoler les personnes âgées. Une étude menée auprès de 2 000 retraités montre pourtant l'inverse : ceux qui utilisent régulièrement les appels vidéo déclarent se sentir moins seuls. Les auteurs précisent cependant que ces outils complètent les visites sans les remplacer.",
+              "question": "Quelle nuance les auteurs apportent-ils ?",
+              "options": [
+                "Les appels vidéo isolent les retraités",
+                "Les outils numériques remplacent les visites",
+                "Les outils complètent les visites sans les remplacer",
+                "Les retraités refusent la technologie"
+              ],
+              "answer": 2,
+              "note": "Appui : « ces outils complètent les visites sans les remplacer »"
+            },
+            {
+              "n": 22,
+              "document": "La municipalité a décidé de rendre gratuits les transports en commun le dimanche. L'objectif affiché est de réduire la circulation automobile, mais plusieurs élus reconnaissent que la mesure vise aussi à redynamiser les commerces du centre, en difficulté depuis l'ouverture d'un grand centre commercial en périphérie.",
+              "question": "Quel objectif moins officiel la mesure poursuit-elle ?",
+              "options": [
+                "Réduire la pollution",
+                "Fermer le centre commercial",
+                "Augmenter les impôts",
+                "Aider les commerces du centre"
+              ],
+              "answer": 3,
+              "note": "Appui : « vise aussi à redynamiser les commerces du centre »"
+            },
+            {
+              "n": 23,
+              "document": "Monsieur le Directeur, je me permets de contester la facture reçue le 3 mars. Le montant indiqué correspond à une consommation de deux mois, alors que mon contrat prévoit une facturation mensuelle. Je vous saurais gré de bien vouloir corriger cette erreur et de m'adresser une facture conforme.",
+              "question": "Pourquoi la personne conteste-t-elle la facture ?",
+              "options": [
+                "Le montant est trop bas",
+                "Elle a été envoyée en retard",
+                "Le contrat est résilié",
+                "Elle couvre deux mois au lieu d'un"
+              ],
+              "answer": 3,
+              "note": "Appui : « une consommation de deux mois, alors que… facturation mensuelle »"
+            },
+            {
+              "n": 24,
+              "document": "Si l'apprentissage précoce d'une langue seconde présente des avantages, affirme la linguiste, ceux-ci dépendent moins de l'âge de départ que de l'intensité de l'exposition. Deux heures par semaine dès six ans produisent souvent moins de résultats qu'un séjour immersif de quelques mois à quinze ans.",
+              "question": "Selon la linguiste, qu'est-ce qui compte le plus ?",
+              "options": [
+                "L'âge de départ",
+                "L'intensité de l'exposition à la langue",
+                "Le nombre d'années d'études",
+                "Le choix de la langue"
+              ],
+              "answer": 1,
+              "note": "Appui : « dépendent moins de l'âge de départ que de l'intensité de l'exposition »"
+            },
+            {
+              "n": 25,
+              "document": "Le musée a longtemps hésité avant d'autoriser les photos dans ses salles. La crainte d'abîmer les œuvres avec les flashs a été écartée par les experts ; le vrai débat portait sur l'expérience des visiteurs, certains se plaignant de ne plus pouvoir contempler un tableau sans être entourés de téléphones.",
+              "question": "Sur quoi portait vraiment le débat ?",
+              "options": [
+                "Les dommages causés par les flashs",
+                "L'expérience des visiteurs",
+                "Le prix d'entrée",
+                "Les droits d'auteur"
+              ],
+              "answer": 1,
+              "note": "Appui : « le vrai débat portait sur l'expérience des visiteurs »"
+            },
+            {
+              "n": 26,
+              "document": "L'entreprise a présenté la semaine de quatre jours comme une mesure de bien-être. Les salariés, eux, rappellent qu'elle s'accompagne d'une hausse des objectifs de production. « On travaille moins de jours, mais plus intensément », résume une représentante syndicale, qui ne rejette pas la mesure mais demande qu'elle soit évaluée après un an.",
+              "question": "Quelle est la position de la représentante syndicale ?",
+              "options": [
+                "Elle demande une évaluation après un an",
+                "Elle rejette totalement la mesure",
+                "Elle l'accepte sans réserve",
+                "Elle réclame une semaine de trois jours"
+              ],
+              "answer": 0,
+              "note": "Appui : « ne rejette pas la mesure mais demande qu'elle soit évaluée après un an »"
+            },
+            {
+              "n": 27,
+              "document": "Les partisans de la gratuité des musées font valoir qu'elle attire un public nouveau. Les études disponibles montrent toutefois que la gratuité profite surtout à des visiteurs déjà habitués, et que les publics éloignés de la culture sont davantage sensibles à la médiation, c'est-à-dire à l'accompagnement proposé sur place.",
+              "question": "Selon les études, qu'est-ce qui attire le plus les publics éloignés de la culture ?",
+              "options": [
+                "La gratuité",
+                "Les expositions temporaires",
+                "La médiation proposée sur place",
+                "La publicité"
+              ],
+              "answer": 2,
+              "note": "Appui : « les publics éloignés… sont davantage sensibles à la médiation »"
+            },
+            {
+              "n": 28,
+              "document": "Le rapport ne conteste pas l'efficacité des voitures électriques pour réduire les émissions en ville. Il souligne en revanche que leur bilan global dépend de la manière dont l'électricité est produite et de la durée de vie des batteries, deux éléments rarement mentionnés dans les publicités.",
+              "question": "Que reproche implicitement le rapport aux publicités ?",
+              "options": [
+                "Elles exagèrent le prix des voitures",
+                "Elles critiquent les voitures électriques",
+                "Elles oublient des éléments importants du bilan",
+                "Elles parlent trop des batteries"
+              ],
+              "answer": 2,
+              "note": "Appui : « deux éléments rarement mentionnés dans les publicités »"
+            },
+            {
+              "n": 29,
+              "document": "À première vue, l'augmentation du nombre de diplômés est une bonne nouvelle. Mais l'auteur observe que, dans certains secteurs, les employeurs exigent désormais un diplôme pour des postes qui n'en demandaient pas auparavant, sans que les tâches aient changé. Le diplôme deviendrait ainsi moins un signe de compétence qu'un moyen de trier les candidats.",
+              "question": "Quelle idée l'auteur défend-il ?",
+              "options": [
+                "Les diplômes sont de plus en plus rares",
+                "Les tâches sont devenues plus complexes",
+                "Le diplôme sert parfois surtout à trier les candidats",
+                "Les employeurs refusent les diplômés"
+              ],
+              "answer": 2,
+              "note": "Appui : « moins un signe de compétence qu'un moyen de trier les candidats »"
+            },
+            {
+              "n": 30,
+              "document": "Loin d'être un simple loisir, le jardinage collectif remplit, selon la sociologue, une fonction politique discrète : en décidant ensemble de l'usage d'un terrain, les habitants apprennent à négocier, à gérer des conflits et à prendre des décisions communes, des compétences qu'ils réinvestissent ensuite dans la vie du quartier.",
+              "question": "Quelle fonction la sociologue attribue-t-elle au jardinage collectif ?",
+              "options": [
+                "Une fonction uniquement économique",
+                "Une activité réservée aux retraités",
+                "Un moyen de vendre des légumes",
+                "Un apprentissage de la décision collective"
+              ],
+              "answer": 3,
+              "note": "Appui : « les habitants apprennent à négocier… prendre des décisions communes »"
+            },
+            {
+              "n": 31,
+              "document": "Les défenseurs de l'uniforme scolaire invoquent l'égalité entre les élèves. Ses adversaires répondent que les différences sociales se déplacent simplement vers les chaussures, les sacs ou les téléphones. Entre ces deux positions, plusieurs directions d'école optent pour un code vestimentaire souple, élaboré avec les élèves eux-mêmes.",
+              "question": "Quelle solution intermédiaire est évoquée ?",
+              "options": [
+                "L'uniforme obligatoire",
+                "L'interdiction des téléphones",
+                "La suppression de tout règlement",
+                "Un code vestimentaire élaboré avec les élèves"
+              ],
+              "answer": 3,
+              "note": "Appui : « un code vestimentaire souple, élaboré avec les élèves eux-mêmes »"
+            },
+            {
+              "n": 32,
+              "document": "On aurait tort de voir dans la baisse des ventes de disques la preuve d'un désintérêt pour la musique. Jamais on n'en a autant écouté ; c'est la manière d'y accéder qui a changé. Le véritable enjeu, pour les artistes, est désormais la rémunération par écoute, jugée dérisoire par la plupart d'entre eux.",
+              "question": "Quel est le véritable enjeu pour les artistes ?",
+              "options": [
+                "La rémunération par écoute",
+                "Le manque d'auditeurs",
+                "La fin des concerts",
+                "Le prix des disques"
+              ],
+              "answer": 0,
+              "note": "Appui : « Le véritable enjeu… est désormais la rémunération par écoute »"
+            },
+            {
+              "n": 33,
+              "document": "La consultation publique sur le nouveau parc a recueilli plus de 3 000 avis. Si la majorité approuve le projet, les commentaires révèlent un désaccord de fond sur son usage : les familles souhaitent des aires de jeux, alors que les résidents âgés demandent surtout des espaces calmes. Le rapport recommande de concevoir des zones distinctes plutôt que de trancher.",
+              "question": "Que recommande le rapport ?",
+              "options": [
+                "Abandonner le projet",
+                "Privilégier les familles",
+                "Créer des zones distinctes pour chaque usage",
+                "Organiser une nouvelle consultation"
+              ],
+              "answer": 2,
+              "note": "Appui : « concevoir des zones distinctes plutôt que de trancher »"
+            },
+            {
+              "n": 34,
+              "document": "Il serait naïf, écrit l'éditorialiste, de croire que la technologie réglera seule la question de la désinformation. Les outils de vérification automatique repèrent les fausses nouvelles une fois qu'elles circulent ; ils ne remplacent pas l'éducation aux médias, seule capable de rendre les lecteurs moins vulnérables en amont.",
+              "question": "Quelle solution l'éditorialiste privilégie-t-il ?",
+              "options": [
+                "Les outils de vérification automatique",
+                "L'interdiction des réseaux sociaux",
+                "La censure des fausses nouvelles",
+                "L'éducation aux médias"
+              ],
+              "answer": 3,
+              "note": "Appui : « l'éducation aux médias, seule capable de rendre les lecteurs moins vulnérables en amont »"
+            },
+            {
+              "n": 35,
+              "document": "Les chiffres du tourisme sont excellents ; les habitants de la vieille ville, eux, parlent de saturation. Les loyers ont grimpé, les commerces de proximité ont cédé la place aux boutiques de souvenirs, et certains résidents envisagent de partir. Le succès touristique, conclut l'auteur, risque de détruire précisément ce qui attirait les visiteurs.",
+              "question": "Quel paradoxe l'auteur souligne-t-il ?",
+              "options": [
+                "Le succès touristique menace ce qui attire les touristes",
+                "Les touristes ne viennent plus",
+                "Les loyers baissent",
+                "Les habitants profitent du tourisme"
+              ],
+              "answer": 0,
+              "note": "Appui : « risque de détruire précisément ce qui attirait les visiteurs »"
+            },
+            {
+              "n": 36,
+              "document": "Présentée comme une avancée pour les consommateurs, l'étiquette « réparabilité » attribue une note à chaque appareil. Son efficacité reste pourtant à démontrer : les fabricants calculent eux-mêmes la note, et aucun organisme indépendant ne la vérifie systématiquement. Les associations réclament donc des contrôles aléatoires.",
+              "question": "Pourquoi l'efficacité de l'étiquette est-elle mise en doute ?",
+              "options": [
+                "La note est calculée par les fabricants sans contrôle systématique",
+                "Les consommateurs ne la comprennent pas",
+                "Elle est trop chère à produire",
+                "Elle ne concerne que les téléphones"
+              ],
+              "answer": 0,
+              "note": "Appui : « les fabricants calculent eux-mêmes la note… aucun organisme indépendant ne la vérifie »"
+            },
+            {
+              "n": 37,
+              "document": "L'auteur reconnaît que l'intelligence artificielle facilite la traduction de documents simples. Il met néanmoins en garde contre une confiance excessive : dans les textes juridiques ou médicaux, une erreur de nuance peut avoir des conséquences graves, et la responsabilité reste humaine, quelle que soit la qualité de l'outil.",
+              "question": "Quelle est la position de l'auteur ?",
+              "options": [
+                "L'IA est utile, mais pas fiable sans contrôle humain dans les textes sensibles",
+                "L'IA doit remplacer les traducteurs",
+                "L'IA est inutile pour la traduction",
+                "Les textes médicaux sont faciles à traduire"
+              ],
+              "answer": 0,
+              "note": "Appui : « une erreur de nuance peut avoir des conséquences graves, et la responsabilité reste humaine »"
+            },
+            {
+              "n": 38,
+              "document": "Qu'on le déplore ou qu'on s'en réjouisse, le bénévolat change de visage. Les engagements longs dans une même association reculent, au profit de missions ponctuelles, choisies en ligne selon ses disponibilités. Les associations doivent donc repenser leur organisation : moins compter sur un noyau fidèle, davantage accueillir et former rapidement des volontaires de passage.",
+              "question": "Quelle adaptation est demandée aux associations ?",
+              "options": [
+                "Recruter uniquement des bénévoles fidèles",
+                "Accueillir et former vite des volontaires ponctuels",
+                "Supprimer les missions en ligne",
+                "Payer les bénévoles"
+              ],
+              "answer": 1,
+              "note": "Appui : « davantage accueillir et former rapidement des volontaires de passage »"
+            },
+            {
+              "n": 39,
+              "document": "Le débat sur la limitation de la vitesse en ville oppose souvent sécurité et liberté. L'étude publiée hier déplace la question : elle montre qu'en dessous de 30 km/h, le temps de trajet moyen n'augmente que de quelques secondes, car la vitesse réelle en ville dépend surtout des feux et des intersections.",
+              "question": "Comment l'étude modifie-t-elle le débat ?",
+              "options": [
+                "Elle montre que la perte de temps est presque nulle",
+                "Elle prouve que les trajets deviennent beaucoup plus longs",
+                "Elle demande de supprimer les feux",
+                "Elle conclut que la vitesse n'a pas d'effet sur la sécurité"
+              ],
+              "answer": 0,
+              "note": "Appui : « le temps de trajet moyen n'augmente que de quelques secondes »"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tcf-b2",
+      "label": "Examen blanco TCF Canada · B2",
+      "level": "B2",
+      "source_file": "B2 - Examen blanc TCF Canada (version prof).pdf",
+      "disclaimer": "Sujet pédagogique Pathway, non officiel. Structure du TCF Canada vérifiée le 6 octobre 2026 ; à revalider sur la page TCF Canada de France Éducation international avant chaque session. Documents inédits. Le résultat est indicatif : il ne se convertit ni en score TCF ni en niveau NCLC.",
+      "rules": {
+        "co": "39 QCM, 35 min, une écoute. Pour chaque item : un signal sonore, puis le document (une seule écoute), puis la question entendue ; les quatre propositions sont alors lisibles. Rien n'est à lire avant le document. Aucune réécoute, aucun retour en arrière. Puis 15 à 20 secondes pour choisir parmi les quatre propositions visibles (délai Pathway : non publié dans les sources consultées). De préférence, diffuser les enregistrements B2_BLANC_CO01 à CO39 ; en leur absence, l'enseignant lit chaque script une seule fois, débit naturel, sans reformuler ni insister sur un mot. Items classés du plus simple au plus difficile. Pas de dictionnaire ni de téléphone.",
+        "ce": "60 minutes pour 39 questions ; une seule réponse par question ; une question sans réponse vaut 0. Items classés du plus simple au plus difficile. Pas de dictionnaire ni de téléphone."
+      },
+      "scoring": "Distribution des bonnes réponses : CO A 10, B 10, C 10, D 9 · CE A 10, B 10, C 10, D 9.\nUne question sans réponse vaut 0. Résultat noté /39 par épreuve (CO ___ /39, CE ___ /39).\nNiveau visé par item (corrigé) : items 1–10 A1–A2 · 11–20 B1 · 21–30 B2 · 31–39 C1–C2.\nProfil par compétence et remédiation (exemple de lecture du profil) :\nCO : « items 1–20 réussis, 21–39 fragiles : niveau B1 consolidé, B2 en cours » ; remédiation (unités du manuel) : U24, U43, U51, U59 (écoute unique, repérage de la situation dès les premiers mots).\nCE : « erreurs sur l'implicite et la thèse (items 21–39) » ; remédiation : U30, U33, U54, U58 (thèse, nuance, distracteurs).\nAucune conversion en score TCF ou en niveau NCLC. La décision de s'inscrire au test se prend sur la régularité des résultats (deux simulations, au moins), non sur un score unique.\nLe résultat est indicatif : il ne se convertit ni en score TCF ni en niveau NCLC.",
+      "sections": {
+        "co": {
+          "minutes": 35,
+          "listenings": 1,
+          "question_after": true,
+          "items": [
+            {
+              "n": 1,
+              "script": "— Pardon, madame, la pharmacie, c'est loin ?\n— Non, c'est juste en face de la poste, à deux minutes.",
+              "script_meta": "1 écoute · H 40 ans, F 60 ans · rue, circulation légère",
+              "question": "Que cherche l'homme ?",
+              "question_after": true,
+              "options": [
+                "Une pharmacie",
+                "La poste",
+                "Un arrêt de bus",
+                "Une banque"
+              ],
+              "answer": 0,
+              "note": "Appui : « la pharmacie, c'est loin ? »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO01.mp3"
+            },
+            {
+              "n": 2,
+              "script": "Bonjour, ici le cabinet du docteur Lavoie. Votre rendez-vous de jeudi est déplacé à vendredi, même heure. Merci de nous rappeler pour confirmer.",
+              "script_meta": "1 écoute · F 35 ans · répondeur",
+              "question": "Que doit faire la personne ?",
+              "question_after": true,
+              "options": [
+                "Venir jeudi",
+                "Changer de médecin",
+                "Confirmer le nouveau rendez-vous",
+                "Annuler le rendez-vous"
+              ],
+              "answer": 2,
+              "note": "Appui : « Merci de nous rappeler pour confirmer »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO02.mp3"
+            },
+            {
+              "n": 3,
+              "script": "Votre attention, s'il vous plaît : le vol AC 872 à destination de Paris embarquera porte 31 et non porte 24.",
+              "script_meta": "1 écoute · H 50 ans · hall d'aéroport",
+              "question": "Quelle information est donnée ?",
+              "question_after": true,
+              "options": [
+                "Le vol est annulé",
+                "Le vol est en retard",
+                "Le vol change de porte",
+                "Le vol change de destination"
+              ],
+              "answer": 2,
+              "note": "Appui : « porte 31 et non porte 24 »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO03.mp3"
+            },
+            {
+              "n": 4,
+              "script": "— Je prendrais bien un thé.\n— Désolée, la machine est en panne ; je peux vous proposer un jus d'orange ou de l'eau gazeuse.",
+              "script_meta": "1 écoute · H 30 ans, F 25 ans · café",
+              "question": "Pourquoi le client ne peut-il pas avoir de thé ?",
+              "question_after": true,
+              "options": [
+                "La machine ne fonctionne pas",
+                "Il n'y a plus de thé",
+                "Le café est fermé",
+                "Le thé est trop cher"
+              ],
+              "answer": 0,
+              "note": "Appui : « la machine est en panne »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO04.mp3"
+            },
+            {
+              "n": 5,
+              "script": "Salut Nadia, c'est Théo. Finalement, je ne pourrai pas t'aider à déménager samedi matin, mais je peux passer dimanche toute la journée avec la camionnette de mon frère.",
+              "script_meta": "1 écoute · H 28 ans · message vocal",
+              "question": "Que propose Théo ?",
+              "question_after": true,
+              "options": [
+                "D'aider samedi matin",
+                "De prêter de l'argent",
+                "D'annuler le déménagement",
+                "D'aider dimanche"
+              ],
+              "answer": 3,
+              "note": "Appui : « je peux passer dimanche toute la journée »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO05.mp3"
+            },
+            {
+              "n": 6,
+              "script": "La bibliothèque sera exceptionnellement fermée lundi pour inventaire. Les livres empruntés pourront être déposés dans la boîte de retour, à droite de l'entrée.",
+              "script_meta": "1 écoute · F 45 ans · annonce enregistrée",
+              "question": "Que peut-on faire lundi ?",
+              "question_after": true,
+              "options": [
+                "Emprunter des livres",
+                "Rendre ses livres dans la boîte de retour",
+                "Participer à l'inventaire",
+                "S'inscrire à la bibliothèque"
+              ],
+              "answer": 1,
+              "note": "Appui : « pourront être déposés dans la boîte de retour »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO06.mp3"
+            },
+            {
+              "n": 7,
+              "script": "— Tu as vu le prix des fraises ? Six dollars la barquette !\n— Oui, mais ce sont les premières de la saison ; dans deux semaines, elles coûteront moitié moins.",
+              "script_meta": "1 écoute · H 55 ans, F 50 ans · marché",
+              "question": "Selon la femme, que va-t-il se passer ?",
+              "question_after": true,
+              "options": [
+                "Il n'y aura plus de fraises",
+                "Le prix va doubler",
+                "Les fraises vont baisser de prix",
+                "Les fraises seront importées"
+              ],
+              "answer": 2,
+              "note": "Appui : « elles coûteront moitié moins »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO07.mp3"
+            },
+            {
+              "n": 8,
+              "script": "Pour les nouveaux employés, la formation à la sécurité aura lieu mardi à 9 h, salle B. Elle est obligatoire avant de pouvoir accéder à l'atelier.",
+              "script_meta": "1 écoute · H 45 ans · bureau",
+              "question": "Pourquoi la formation est-elle importante ?",
+              "question_after": true,
+              "options": [
+                "Elle est nécessaire pour entrer dans l'atelier",
+                "Elle est payée en heures supplémentaires",
+                "Elle remplace l'entretien d'embauche",
+                "Elle permet de choisir sa salle"
+              ],
+              "answer": 0,
+              "note": "Appui : « obligatoire avant de pouvoir accéder à l'atelier »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO08.mp3"
+            },
+            {
+              "n": 9,
+              "script": "— On se retrouve devant le cinéma à 19 h ?\n— Plutôt 19 h 30 : je finis le travail à 19 h et il me faut au moins vingt minutes en métro.",
+              "script_meta": "1 écoute · H 22 ans, F 24 ans · téléphone",
+              "question": "Pourquoi la femme propose-t-elle 19 h 30 ?",
+              "question_after": true,
+              "options": [
+                "Le film commence plus tard",
+                "À cause de son temps de trajet",
+                "Elle doit dîner avant",
+                "Le cinéma ouvre à 19 h 30"
+              ],
+              "answer": 1,
+              "note": "Appui : « il me faut au moins vingt minutes en métro »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO09.mp3"
+            },
+            {
+              "n": 10,
+              "script": "Météo de demain : matinée fraîche et ensoleillée, puis le vent se lèvera en début d'après-midi, avec des rafales jusqu'à 70 km/h sur la côte.",
+              "script_meta": "1 écoute · F 40 ans · radio",
+              "question": "À quoi faut-il s'attendre l'après-midi ?",
+              "question_after": true,
+              "options": [
+                "À un vent fort",
+                "À de la neige",
+                "À une forte chaleur",
+                "À du brouillard"
+              ],
+              "answer": 0,
+              "note": "Appui : « des rafales jusqu'à 70 km/h »",
+              "target_level": "A1–A2",
+              "audio_file": "B2_BLANC_CO10.mp3"
+            },
+            {
+              "n": 11,
+              "script": "— Je voudrais retourner ce manteau, il est trop grand.\n— Vous avez le ticket ? Alors je peux vous l'échanger, mais pas vous rembourser : c'était un article en solde.",
+              "script_meta": "1 écoute · F 35 ans, H 25 ans · magasin",
+              "question": "Que peut obtenir la cliente ?",
+              "question_after": true,
+              "options": [
+                "Un échange",
+                "Un remboursement",
+                "Une réduction supplémentaire",
+                "Une retouche gratuite"
+              ],
+              "answer": 0,
+              "note": "Appui : « je peux vous l'échanger, mais pas vous rembourser »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO11.mp3"
+            },
+            {
+              "n": 12,
+              "script": "Notre association recherche des bénévoles pour l'aide aux devoirs, deux soirs par semaine. Aucune expérience n'est exigée : une courte formation est offerte au début de l'année.",
+              "script_meta": "1 écoute · F 60 ans · radio communautaire",
+              "question": "Que dit l'annonce sur les bénévoles ?",
+              "question_after": true,
+              "options": [
+                "Ils doivent être enseignants",
+                "Ils seront formés",
+                "Ils seront payés",
+                "Ils travaillent le week-end"
+              ],
+              "answer": 1,
+              "note": "Appui : « une courte formation est offerte »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO12.mp3"
+            },
+            {
+              "n": 13,
+              "script": "— Alors, ce nouveau poste ?\n— Le travail est intéressant, mais je passe presque deux heures par jour dans les transports. Je vais demander à faire du télétravail le vendredi.",
+              "script_meta": "1 écoute · H 38 ans, F 36 ans · cuisine",
+              "question": "Quel est le problème de l'homme ?",
+              "question_after": true,
+              "options": [
+                "Le salaire",
+                "Ses collègues",
+                "Le temps de trajet",
+                "Le contenu du travail"
+              ],
+              "answer": 2,
+              "note": "Appui : « presque deux heures par jour dans les transports »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO13.mp3"
+            },
+            {
+              "n": 14,
+              "script": "Le musée propose désormais une visite en langue des signes le premier samedi de chaque mois. La réservation est conseillée, car le groupe est limité à quinze personnes.",
+              "script_meta": "1 écoute · H 30 ans · annonce de musée",
+              "question": "Pourquoi faut-il réserver ?",
+              "question_after": true,
+              "options": [
+                "La visite est payante",
+                "La visite a lieu tous les jours",
+                "Le musée ferme tôt",
+                "Le nombre de places est limité"
+              ],
+              "answer": 3,
+              "note": "Appui : « le groupe est limité à quinze personnes »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO14.mp3"
+            },
+            {
+              "n": 15,
+              "script": "— Tu crois qu'on devrait acheter une voiture électrique ?\n— Pour nos trajets en ville, oui. Mais pour aller voir tes parents à 600 kilomètres, il faudra prévoir des arrêts pour recharger.",
+              "script_meta": "1 écoute · H 42 ans, F 40 ans · salon",
+              "question": "Quelle réserve la femme exprime-t-elle ?",
+              "question_after": true,
+              "options": [
+                "Les longs trajets demandent des recharges",
+                "La voiture est trop chère",
+                "Il n'y a pas de bornes en ville",
+                "Les parents n'aiment pas l'idée"
+              ],
+              "answer": 0,
+              "note": "Appui : « il faudra prévoir des arrêts pour recharger »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO15.mp3"
+            },
+            {
+              "n": 16,
+              "script": "Chers clients, en raison de travaux sur la ligne, les trains de banlieue seront remplacés par des autobus entre Sainte-Rose et Gare centrale ce week-end. Prévoyez trente minutes de plus.",
+              "script_meta": "1 écoute · F 50 ans · quai, bruit de train",
+              "question": "Que conseille l'annonce ?",
+              "question_after": true,
+              "options": [
+                "De prendre un taxi",
+                "De partir plus tôt",
+                "De rester chez soi",
+                "D'acheter un nouveau billet"
+              ],
+              "answer": 1,
+              "note": "Appui : « Prévoyez trente minutes de plus »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO16.mp3"
+            },
+            {
+              "n": 17,
+              "script": "— Vous avez déjà travaillé avec des enfants ?\n— Oui, j'ai été animatrice de camp de jour pendant trois étés. C'est ce qui m'a donné envie de devenir éducatrice.",
+              "script_meta": "1 écoute · F 23 ans, H 50 ans · entretien",
+              "question": "Qu'apprend-on sur la candidate ?",
+              "question_after": true,
+              "options": [
+                "Elle n'a jamais travaillé",
+                "Elle a été enseignante",
+                "Son expérience a influencé son choix de métier",
+                "Elle préfère les adultes"
+              ],
+              "answer": 2,
+              "note": "Appui : « C'est ce qui m'a donné envie de devenir éducatrice »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO17.mp3"
+            },
+            {
+              "n": 18,
+              "script": "Selon le dernier bulletin de la ville, la collecte des déchets verts reprendra le 15 avril. D'ici là, les branches doivent être attachées en fagots et déposées au bord du trottoir uniquement le premier lundi du mois.",
+              "script_meta": "1 écoute · H 45 ans · radio locale",
+              "question": "Que doivent faire les habitants avant le 15 avril ?",
+              "question_after": true,
+              "options": [
+                "Brûler les branches",
+                "Garder les branches jusqu'en été",
+                "Apporter les branches à la mairie",
+                "Déposer les branches attachées le premier lundi du mois"
+              ],
+              "answer": 3,
+              "note": "Appui : « attachées en fagots et déposées au bord du trottoir uniquement le premier lundi du mois »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO18.mp3"
+            },
+            {
+              "n": 19,
+              "script": "— Franchement, ce restaurant a bonne réputation, mais j'ai été déçue : les plats étaient bons, sans plus, et on a attendu quarante minutes entre l'entrée et le plat.\n— Le service était débordé ?\n— Apparemment, il manquait deux serveurs.",
+              "script_meta": "1 écoute · F 45 ans, H 47 ans · conversation",
+              "question": "Qu'est-ce qui a surtout déçu la femme ?",
+              "question_after": true,
+              "options": [
+                "L'attente",
+                "Le prix",
+                "La qualité de l'entrée",
+                "L'accueil"
+              ],
+              "answer": 0,
+              "note": "Appui : « on a attendu quarante minutes entre l'entrée et le plat »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO19.mp3"
+            },
+            {
+              "n": 20,
+              "script": "Bonjour, je vous appelle de la part de l'agence Horizon. Votre candidature nous intéresse, mais le poste a été modifié : il s'agit désormais d'un contrat de six mois, renouvelable. Si cela vous convient toujours, rappelez-moi avant mercredi.",
+              "script_meta": "1 écoute · F 32 ans · message vocal",
+              "question": "Qu'est-ce qui a changé ?",
+              "question_after": true,
+              "options": [
+                "Le lieu de travail",
+                "Le salaire",
+                "La durée du contrat",
+                "Le nom de l'entreprise"
+              ],
+              "answer": 2,
+              "note": "Appui : « il s'agit désormais d'un contrat de six mois, renouvelable »",
+              "target_level": "B1",
+              "audio_file": "B2_BLANC_CO20.mp3"
+            },
+            {
+              "n": 21,
+              "script": "— Beaucoup de parents s'inquiètent du temps que leurs enfants passent sur les écrans. Vous partagez cette inquiétude ?\n— En partie. Ce qui me préoccupe, ce n'est pas tant la durée que ce que l'enfant fait devant l'écran : regarder des vidéos en boucle et réaliser un petit film avec ses amis, ce n'est pas du tout la même chose.",
+              "script_meta": "1 écoute · H 45 ans (journaliste), F 50 ans (psychologue) · studio radio",
+              "question": "Selon la spécialiste, qu'est-ce qui compte le plus ?",
+              "question_after": true,
+              "options": [
+                "Le nombre d'heures d'écran",
+                "L'âge du premier téléphone",
+                "L'usage qu'on fait de l'écran",
+                "Le prix des appareils"
+              ],
+              "answer": 2,
+              "note": "Appui : « ce n'est pas tant la durée que ce que l'enfant fait devant l'écran »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO21.mp3"
+            },
+            {
+              "n": 22,
+              "script": "La municipalité a décidé de transformer l'ancienne gare de triage en parc urbain. Le projet, estimé à 40 millions, ne fait pas l'unanimité : les commerçants du quartier y voient une chance, tandis qu'une partie des riverains redoute une hausse des loyers.",
+              "script_meta": "1 écoute · F 38 ans · reportage, ambiance extérieure",
+              "question": "Que craignent certains habitants ?",
+              "question_after": true,
+              "options": [
+                "La fermeture des commerces",
+                "Le bruit des trains",
+                "La disparition du parc",
+                "Une augmentation des loyers"
+              ],
+              "answer": 3,
+              "note": "Appui : « redoute une hausse des loyers »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO22.mp3"
+            },
+            {
+              "n": 23,
+              "script": "— Tu as lu le rapport ?\n— Oui, et je trouve qu'on tire des conclusions un peu hâtives. L'échantillon ne compte que soixante entreprises, toutes situées en ville. Difficile d'en déduire quoi que ce soit pour les régions.",
+              "script_meta": "1 écoute · F 33 ans, H 48 ans · bureau",
+              "question": "Que reproche l'homme au rapport ?",
+              "question_after": true,
+              "options": [
+                "Il se fonde sur un échantillon trop limité",
+                "Il est trop long",
+                "Il ne parle que des régions",
+                "Il a été publié trop tard"
+              ],
+              "answer": 0,
+              "note": "Appui : « L'échantillon ne compte que soixante entreprises, toutes situées en ville »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO23.mp3"
+            },
+            {
+              "n": 24,
+              "script": "Dans notre série sur les métiers en tension, nous rencontrons aujourd'hui Karine, soudeuse depuis douze ans. Elle l'avoue : au début, sur le chantier, on la prenait pour la stagiaire. Aujourd'hui, c'est elle qui forme les nouveaux, hommes comme femmes.",
+              "script_meta": "1 écoute · H 40 ans (animateur), F 36 ans · chantier en fond",
+              "question": "Comment la situation de Karine a-t-elle évolué ?",
+              "question_after": true,
+              "options": [
+                "Elle a quitté le chantier",
+                "Elle forme désormais les nouveaux employés",
+                "Elle est redevenue stagiaire",
+                "Elle a changé de métier"
+              ],
+              "answer": 1,
+              "note": "Appui : « c'est elle qui forme les nouveaux »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO24.mp3"
+            },
+            {
+              "n": 25,
+              "script": "— Le télétravail a-t-il vraiment amélioré la productivité ?\n— Les études se contredisent. Certaines mesurent une hausse, d'autres une baisse. Ce qui semble acquis, c'est que les salariés y gagnent en temps et en autonomie ; pour l'entreprise, le bilan dépend beaucoup de l'organisation.",
+              "script_meta": "1 écoute · F 42 ans, H 55 ans · interview radio",
+              "question": "Que dit l'expert de la productivité ?",
+              "question_after": true,
+              "options": [
+                "Elle a clairement augmenté",
+                "Les résultats des études divergent",
+                "Elle a clairement baissé",
+                "Elle n'a jamais été mesurée"
+              ],
+              "answer": 1,
+              "note": "Appui : « Les études se contredisent »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO25.mp3"
+            },
+            {
+              "n": 26,
+              "script": "On a longtemps cru que le cerveau adulte ne se modifiait plus. On sait aujourd'hui qu'il continue de créer des connexions tout au long de la vie, à condition d'être stimulé : apprendre une langue à cinquante ans n'a donc rien d'une utopie.",
+              "script_meta": "1 écoute · H 60 ans · chronique scientifique",
+              "question": "Quelle idée ancienne est contredite ?",
+              "question_after": true,
+              "options": [
+                "Le cerveau adulte ne changerait plus",
+                "Les langues s'apprennent seulement jeunes à l'école",
+                "Le cerveau vieillit plus vite chez les bilingues",
+                "La stimulation fatigue le cerveau"
+              ],
+              "answer": 0,
+              "note": "Appui : « On a longtemps cru que le cerveau adulte ne se modifiait plus »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO26.mp3"
+            },
+            {
+              "n": 27,
+              "script": "— Je ne dis pas que la réforme est mauvaise ; je dis qu'on l'applique trop vite. Les écoles n'ont reçu les nouveaux programmes que trois semaines avant la rentrée.\n— Le ministère répond que les enseignants avaient été consultés.\n— Consultés, peut-être. Écoutés, c'est une autre affaire.",
+              "script_meta": "1 écoute · F 52 ans (syndicaliste), H 45 ans (journaliste) · débat",
+              "question": "Que sous-entend la syndicaliste ?",
+              "question_after": true,
+              "options": [
+                "Les enseignants n'ont jamais été contactés",
+                "La réforme est inutile",
+                "Les programmes sont arrivés à temps",
+                "L'avis des enseignants n'a pas été pris en compte"
+              ],
+              "answer": 3,
+              "note": "Appui : « Consultés, peut-être. Écoutés, c'est une autre affaire. »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO27.mp3"
+            },
+            {
+              "n": 28,
+              "script": "Le covoiturage domicile-travail reste marginal malgré les primes. En cause, moins le prix que la contrainte horaire : partager une voiture, c'est accepter de partir et de rentrer à heure fixe, ce que beaucoup de salariés jugent incompatible avec des journées imprévisibles.",
+              "script_meta": "1 écoute · H 35 ans · chronique économique",
+              "question": "Selon le document, pourquoi le covoiturage se développe-t-il peu ?",
+              "question_after": true,
+              "options": [
+                "À cause du coût",
+                "À cause des horaires imposés",
+                "À cause du manque de voitures",
+                "À cause de l'absence de primes"
+              ],
+              "answer": 1,
+              "note": "Appui : « moins le prix que la contrainte horaire »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO28.mp3"
+            },
+            {
+              "n": 29,
+              "script": "— Vous dites que la gratuité des transports ne suffit pas. Pourquoi ?\n— Parce qu'un bus gratuit qui passe toutes les quarante minutes ne fera jamais renoncer quelqu'un à sa voiture. La fréquence et la fiabilité comptent davantage que le prix du billet.",
+              "script_meta": "1 écoute · F 40 ans (journaliste), H 58 ans (urbaniste) · studio",
+              "question": "Quelle est la position de l'urbaniste ?",
+              "question_after": true,
+              "options": [
+                "La gratuité est la seule solution",
+                "La qualité du service compte plus que la gratuité",
+                "Il faut supprimer les bus",
+                "Le prix du billet doit augmenter"
+              ],
+              "answer": 1,
+              "note": "Appui : « La fréquence et la fiabilité comptent davantage que le prix du billet »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO29.mp3"
+            },
+            {
+              "n": 30,
+              "script": "Le roman s'ouvre sur un enterrement et se clôt sur une naissance, mais on aurait tort d'y lire une histoire d'espoir naïf : entre les deux, l'auteure ne cesse de montrer ce que chaque génération transmet malgré elle, y compris ses blessures.",
+              "script_meta": "1 écoute · F 48 ans · émission littéraire",
+              "question": "Comment le critique interprète-t-il le roman ?",
+              "question_after": true,
+              "options": [
+                "Comme un récit simplement optimiste",
+                "Comme une enquête policière",
+                "Comme une autobiographie",
+                "Comme une réflexion sur ce qui se transmet entre générations"
+              ],
+              "answer": 3,
+              "note": "Appui : « ce que chaque génération transmet malgré elle, y compris ses blessures »",
+              "target_level": "B2",
+              "audio_file": "B2_BLANC_CO30.mp3"
+            },
+            {
+              "n": 31,
+              "script": "— Les plateformes affirment qu'elles retirent les contenus haineux en moins de vingt-quatre heures.\n— Sur le papier. En pratique, les signalements en français sont traités beaucoup plus lentement que ceux en anglais, faute de modérateurs francophones en nombre suffisant.",
+              "script_meta": "1 écoute · H 30 ans, F 44 ans · débat radio",
+              "question": "Quel problème est souligné ?",
+              "question_after": true,
+              "options": [
+                "Les plateformes refusent tout signalement",
+                "Les contenus en anglais ne sont jamais retirés",
+                "Les modérateurs francophones sont trop nombreux",
+                "Les contenus en français sont modérés plus lentement"
+              ],
+              "answer": 3,
+              "note": "Appui : « les signalements en français sont traités beaucoup plus lentement »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO31.mp3"
+            },
+            {
+              "n": 32,
+              "script": "La filière laitière traverse une crise paradoxale : la demande mondiale augmente, mais les petites exploitations disparaissent. Les prix payés au producteur ne couvrent plus les coûts de l'énergie et de l'alimentation animale, et la relève, découragée, se tourne vers d'autres métiers.",
+              "script_meta": "1 écoute · H 50 ans · reportage agricole, ambiance ferme",
+              "question": "Quel est le paradoxe évoqué ?",
+              "question_after": true,
+              "options": [
+                "Les prix baissent alors que la demande baisse",
+                "La demande progresse alors que les petites fermes disparaissent",
+                "Les coûts diminuent alors que les fermes ferment",
+                "La relève est nombreuse mais sans terres"
+              ],
+              "answer": 1,
+              "note": "Appui : « la demande mondiale augmente, mais les petites exploitations disparaissent »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO32.mp3"
+            },
+            {
+              "n": 33,
+              "script": "Ce que j'essaie de faire comprendre à mes étudiants, c'est qu'une donnée n'est jamais neutre : quelqu'un a décidé quoi mesurer, comment, et ce qu'on laisserait de côté. Lire une statistique, c'est d'abord se demander ce qu'elle ne dit pas.",
+              "script_meta": "1 écoute · F 55 ans · extrait de cours, amphithéâtre",
+              "question": "Que veut transmettre la professeure ?",
+              "question_after": true,
+              "options": [
+                "Les statistiques sont toujours fausses",
+                "Il faut éviter les chiffres",
+                "Il faut interroger la façon dont une donnée a été produite",
+                "Une donnée parle d'elle-même"
+              ],
+              "answer": 2,
+              "note": "Appui : « une donnée n'est jamais neutre »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO33.mp3"
+            },
+            {
+              "n": 34,
+              "script": "— On reproche souvent aux jeunes de ne plus s'engager.\n— C'est mal poser la question. Ils s'engagent autrement : moins dans les partis et les syndicats, davantage dans des causes précises, ponctuelles, où ils voient un résultat concret. Le déclin, c'est celui des institutions, pas de l'engagement.",
+              "script_meta": "1 écoute · F 37 ans, H 62 ans (sociologue) · entretien",
+              "question": "Quelle thèse défend le sociologue ?",
+              "question_after": true,
+              "options": [
+                "Les jeunes ne s'engagent plus",
+                "Les partis attirent de plus en plus de jeunes",
+                "Les causes ponctuelles n'intéressent personne",
+                "L'engagement des jeunes a changé de forme"
+              ],
+              "answer": 3,
+              "note": "Appui : « Ils s'engagent autrement »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO34.mp3"
+            },
+            {
+              "n": 35,
+              "script": "Le chercheur ne nie pas l'efficacité du médicament ; il conteste la manière dont elle a été présentée. Annoncer une réduction de moitié du risque impressionne, mais lorsque ce risque passe de deux pour mille à un pour mille, le bénéfice réel pour chaque patient reste modeste.",
+              "script_meta": "1 écoute · H 46 ans · chronique santé",
+              "question": "Que critique le chercheur ?",
+              "question_after": true,
+              "options": [
+                "L'inefficacité totale du médicament",
+                "Le prix du médicament",
+                "La présentation trompeuse d'un résultat",
+                "Le nombre de patients étudiés"
+              ],
+              "answer": 2,
+              "note": "Appui : « il conteste la manière dont elle a été présentée »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO35.mp3"
+            },
+            {
+              "n": 36,
+              "script": "— Votre dernier film a été accusé de complaisance envers la violence.\n— Je comprends la critique, mais je la récuse. Montrer la violence frontalement, c'est refuser de la rendre confortable. Ce qui serait complaisant, ce serait de la suggérer joliment, hors champ, pour que le spectateur ne soit jamais dérangé.",
+              "script_meta": "1 écoute · H 50 ans (critique), F 45 ans (réalisatrice) · plateau",
+              "question": "Comment la réalisatrice justifie-t-elle ses choix ?",
+              "question_after": true,
+              "options": [
+                "Montrer la violence empêche de la rendre agréable",
+                "Elle reconnaît sa complaisance",
+                "Elle préfère la violence hors champ",
+                "Elle veut divertir le spectateur"
+              ],
+              "answer": 0,
+              "note": "Appui : « Montrer la violence frontalement, c'est refuser de la rendre confortable »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO36.mp3"
+            },
+            {
+              "n": 37,
+              "script": "Il serait commode d'opposer croissance et écologie. La réalité est plus embarrassante : certains secteurs peuvent croître en réduisant leur empreinte, d'autres non, et c'est précisément ce tri, politiquement coûteux, que les gouvernements repoussent d'élection en élection.",
+              "script_meta": "1 écoute · H 58 ans · éditorial radio",
+              "question": "Que reproche l'éditorialiste aux gouvernements ?",
+              "question_after": true,
+              "options": [
+                "Ils opposent trop clairement croissance et écologie",
+                "Ils réduisent trop vite l'empreinte carbone",
+                "Ils organisent trop d'élections",
+                "Ils évitent de faire des choix difficiles entre secteurs"
+              ],
+              "answer": 3,
+              "note": "Appui : « ce tri, politiquement coûteux, que les gouvernements repoussent »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO37.mp3"
+            },
+            {
+              "n": 38,
+              "script": "— Traduire, c'est trahir, dit l'adage.\n— Je dirais plutôt que traduire, c'est choisir ce qu'on accepte de perdre. Un jeu de mots, un rythme, une connotation : on ne garde jamais tout. Le bon traducteur n'est pas celui qui ne perd rien, c'est celui qui sait ce qu'il sacrifie, et pourquoi.",
+              "script_meta": "1 écoute · H 40 ans, F 57 ans (traductrice) · émission culturelle",
+              "question": "Selon la traductrice, qu'est-ce qui caractérise un bon traducteur ?",
+              "question_after": true,
+              "options": [
+                "Il ne perd jamais rien du texte",
+                "Il choisit consciemment ce qu'il ne pourra pas conserver",
+                "Il trahit volontairement l'auteur",
+                "Il évite les jeux de mots"
+              ],
+              "answer": 1,
+              "note": "Appui : « celui qui sait ce qu'il sacrifie, et pourquoi »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO38.mp3"
+            },
+            {
+              "n": 39,
+              "script": "L'économiste nuance : si l'automatisation détruit des emplois peu qualifiés, elle en crée ailleurs. Mais rien ne garantit que ce soient les mêmes personnes qui en profitent, ni au même endroit. Le vrai défi n'est donc pas le volume d'emplois, mais la transition de ceux qui perdent le leur.",
+              "script_meta": "1 écoute · F 49 ans · conférence, salle",
+              "question": "Quel est, selon l'économiste, l'enjeu principal ?",
+              "question_after": true,
+              "options": [
+                "Freiner toute automatisation",
+                "Augmenter le nombre total d'emplois",
+                "Accompagner les travailleurs dont l'emploi disparaît",
+                "Former uniquement les jeunes diplômés"
+              ],
+              "answer": 2,
+              "note": "Appui : « le vrai défi n'est donc pas le volume d'emplois, mais la transition »",
+              "target_level": "C1–C2",
+              "audio_file": "B2_BLANC_CO39.mp3"
+            }
+          ]
+        },
+        "ce": {
+          "minutes": 60,
+          "items": [
+            {
+              "n": 1,
+              "document": "Clinique dentaire Saint-Jean\nUrgences sans rendez-vous : du lundi au vendredi, de 8 h à 10 h.\nTout autre rendez-vous : 514 555 0182.",
+              "question": "Quand peut-on venir sans rendez-vous ?",
+              "options": [
+                "Le samedi",
+                "Tous les soirs",
+                "En semaine, tôt le matin",
+                "Le dimanche matin"
+              ],
+              "answer": 2,
+              "note": "Appui : « Urgences sans rendez-vous : du lundi au vendredi, de 8 h à 10 h »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 2,
+              "document": "Coucou Inès, je suis partie chercher Lucas à l'école. Il reste de la soupe dans le frigo ; réchauffe-la cinq minutes, pas plus. On rentre vers 18 h. Maman",
+              "question": "Que doit faire Inès ?",
+              "options": [
+                "Aller chercher Lucas",
+                "Préparer le dîner pour 18 h",
+                "Appeler sa mère",
+                "Réchauffer la soupe"
+              ],
+              "answer": 3,
+              "note": "Appui : « réchauffe-la cinq minutes »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 3,
+              "document": "Parc national de la Mauricie · Les chiens sont admis sur les sentiers, tenus en laisse. Ils sont interdits sur les plages et dans les refuges.",
+              "question": "Où les chiens sont-ils acceptés ?",
+              "options": [
+                "Sur les plages",
+                "Sur les sentiers, en laisse",
+                "Dans les refuges",
+                "Partout, sans laisse"
+              ],
+              "answer": 1,
+              "note": "Appui : « admis sur les sentiers, tenus en laisse »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 4,
+              "document": "Avis aux locataires · L'eau chaude sera coupée mercredi de 9 h à 13 h pour l'entretien de la chaudière. Merci de votre compréhension. La gérance",
+              "question": "Pourquoi l'eau chaude sera-t-elle coupée ?",
+              "options": [
+                "À cause d'une fuite",
+                "Pour l'entretien d'un équipement",
+                "Pour économiser l'énergie",
+                "Parce que les loyers augmentent"
+              ],
+              "answer": 1,
+              "note": "Appui : « pour l'entretien de la chaudière »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 5,
+              "document": "Offre d'emploi · Librairie cherche vendeur ou vendeuse à temps partiel (20 h/semaine), samedis obligatoires. Connaissance de la littérature jeunesse appréciée. CV à librairie.pages@courriel.ca",
+              "question": "Quelle condition est imposée ?",
+              "options": [
+                "Connaître la littérature jeunesse",
+                "Travailler à temps plein",
+                "Travailler le samedi",
+                "Avoir un diplôme de libraire"
+              ],
+              "answer": 2,
+              "note": "Appui : « samedis obligatoires »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 6,
+              "document": "Bonjour Monsieur Tremblay, je vous confirme la livraison de votre canapé jeudi entre 13 h et 17 h. Le livreur vous appellera trente minutes avant son arrivée. Service client Maison Plus",
+              "question": "Que fera le livreur ?",
+              "options": [
+                "Il viendra le matin",
+                "Il téléphonera avant d'arriver",
+                "Il installera aussi une table",
+                "Il laissera le canapé devant la porte"
+              ],
+              "answer": 1,
+              "note": "Appui : « Le livreur vous appellera trente minutes avant son arrivée »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 7,
+              "document": "Cours de natation pour adultes · Niveau débutant. Session de 8 semaines, le mardi à 19 h. Inscription en ligne avant le 1er septembre. Places limitées à 10 personnes.",
+              "question": "À qui s'adresse ce cours ?",
+              "options": [
+                "Aux enfants",
+                "Aux nageurs confirmés",
+                "Aux adultes qui ne savent pas encore nager",
+                "Aux moniteurs de natation"
+              ],
+              "answer": 2,
+              "note": "Appui : « pour adultes · Niveau débutant »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 8,
+              "document": "Chers parents, la sortie au musée prévue vendredi est reportée à cause de la grève des transports. Une nouvelle date vous sera communiquée la semaine prochaine. L'équipe de l'école",
+              "question": "Qu'est-ce qui empêche la sortie ?",
+              "options": [
+                "Une grève",
+                "La météo",
+                "Le prix des billets",
+                "La fermeture du musée"
+              ],
+              "answer": 0,
+              "note": "Appui : « à cause de la grève des transports »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 9,
+              "document": "Mode d'emploi · Avant la première utilisation, laissez la batterie charger pendant au moins 4 heures. Ne pas exposer l'appareil à l'eau.",
+              "question": "Que faut-il faire avant d'utiliser l'appareil ?",
+              "options": [
+                "Le charger longuement",
+                "Le mouiller",
+                "Le brancher une heure",
+                "L'éteindre quatre heures"
+              ],
+              "answer": 0,
+              "note": "Appui : « laissez la batterie charger pendant au moins 4 heures »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 10,
+              "document": "Marché de Noël · Entrée gratuite. Les profits de la buvette seront versés à la banque alimentaire du quartier.",
+              "question": "À quoi serviront les profits de la buvette ?",
+              "options": [
+                "À payer l'entrée",
+                "À décorer le quartier",
+                "À rémunérer les exposants",
+                "À aider une banque alimentaire"
+              ],
+              "answer": 3,
+              "note": "Appui : « versés à la banque alimentaire du quartier »",
+              "target_level": "A1–A2"
+            },
+            {
+              "n": 11,
+              "document": "Après dix ans en ville, Marc a choisi de s'installer à la campagne. Il ne regrette pas le calme ni les grands espaces, mais reconnaît que l'absence de transports en commun l'oblige à prendre la voiture pour la moindre course.",
+              "question": "Quel inconvénient Marc mentionne-t-il ?",
+              "options": [
+                "Le bruit",
+                "Le manque d'espace",
+                "Le coût du logement",
+                "La dépendance à la voiture"
+              ],
+              "answer": 3,
+              "note": "Appui : « l'oblige à prendre la voiture pour la moindre course »",
+              "target_level": "B1"
+            },
+            {
+              "n": 12,
+              "document": "La ville teste cet été des « rues-écoles » : aux heures d'entrée et de sortie des classes, la circulation automobile est interdite devant six établissements. Si l'essai est concluant, le dispositif sera étendu à vingt écoles en 2027.",
+              "question": "Que se passera-t-il si l'essai réussit ?",
+              "options": [
+                "Le dispositif concernera plus d'écoles",
+                "Les rues seront fermées toute la journée",
+                "Les écoles déménageront",
+                "L'essai sera arrêté"
+              ],
+              "answer": 0,
+              "note": "Appui : « le dispositif sera étendu à vingt écoles en 2027 »",
+              "target_level": "B1"
+            },
+            {
+              "n": 13,
+              "document": "Madame, Monsieur, j'ai commandé le 2 mars un ordinateur portable livré avec un clavier anglais, alors que j'avais choisi un clavier français canadien. Je vous demande de procéder à l'échange dans les meilleurs délais, à vos frais. Cordialement, Amina Diallo",
+              "question": "Quel est l'objet de la lettre ?",
+              "options": [
+                "Commander un nouvel ordinateur",
+                "Se plaindre d'un retard de livraison",
+                "Demander l'échange d'un produit non conforme",
+                "Demander un remboursement partiel"
+              ],
+              "answer": 2,
+              "note": "Appui : « Je vous demande de procéder à l'échange »",
+              "target_level": "B1"
+            },
+            {
+              "n": 14,
+              "document": "Les librairies indépendantes résistent mieux que prévu à la concurrence en ligne. Leur atout : le conseil. Selon les libraires interrogés, près d'un client sur deux repart avec un livre qu'il n'était pas venu chercher.",
+              "question": "Quel est l'avantage des librairies indépendantes ?",
+              "options": [
+                "Des prix plus bas",
+                "Les conseils donnés aux clients",
+                "La livraison rapide",
+                "Un plus grand choix que les sites en ligne"
+              ],
+              "answer": 1,
+              "note": "Appui : « Leur atout : le conseil »",
+              "target_level": "B1"
+            },
+            {
+              "n": 15,
+              "document": "Le conseil d'administration a approuvé le budget, sous réserve qu'une étude d'impact environnemental soit réalisée avant le début des travaux. Sans ce document, aucun appel d'offres ne pourra être lancé.",
+              "question": "À quelle condition le projet peut-il avancer ?",
+              "options": [
+                "Le budget doit être réduit",
+                "Une étude d'impact doit être faite",
+                "Les travaux doivent commencer tout de suite",
+                "L'appel d'offres doit être annulé"
+              ],
+              "answer": 1,
+              "note": "Appui : « sous réserve qu'une étude d'impact environnemental soit réalisée »",
+              "target_level": "B1"
+            },
+            {
+              "n": 16,
+              "document": "Contrairement à une idée reçue, les adolescents ne lisent pas moins qu'avant ; ils lisent autrement. Les mangas, les romans en ligne et les forums spécialisés occupent une part croissante de leur temps de lecture, souvent invisible dans les statistiques officielles.",
+              "question": "Quelle idée reçue l'article conteste-t-il ?",
+              "options": [
+                "Que les mangas sont populaires",
+                "Que les statistiques sont fiables",
+                "Que les adolescents lisent moins qu'avant",
+                "Que les forums sont dangereux"
+              ],
+              "answer": 2,
+              "note": "Appui : « les adolescents ne lisent pas moins qu'avant ; ils lisent autrement »",
+              "target_level": "B1"
+            },
+            {
+              "n": 17,
+              "document": "Votre abonnement sera renouvelé automatiquement le 30 du mois. Si vous ne souhaitez pas le prolonger, il vous suffit de le résilier depuis votre espace client au moins 48 heures avant cette date.",
+              "question": "Comment éviter le renouvellement ?",
+              "options": [
+                "Ne rien faire",
+                "Appeler le 30 du mois",
+                "Envoyer une lettre après le 30",
+                "Résilier en ligne au moins deux jours avant"
+              ],
+              "answer": 3,
+              "note": "Appui : « le résilier depuis votre espace client au moins 48 heures avant »",
+              "target_level": "B1"
+            },
+            {
+              "n": 18,
+              "document": "Le programme de mentorat associe chaque nouvel arrivant à un professionnel de son domaine pendant six mois. L'objectif n'est pas de trouver un emploi à sa place, mais de l'aider à comprendre les codes du marché du travail local et à élargir son réseau.",
+              "question": "Quel est le but du mentorat ?",
+              "options": [
+                "Aider à comprendre le marché du travail et à se faire un réseau",
+                "Trouver directement un emploi au participant",
+                "Donner des cours de langue",
+                "Financer une formation"
+              ],
+              "answer": 0,
+              "note": "Appui : « l'aider à comprendre les codes du marché du travail local et à élargir son réseau »",
+              "target_level": "B1"
+            },
+            {
+              "n": 19,
+              "document": "Si la consommation de viande recule légèrement, ce n'est pas tant par conviction écologique que pour des raisons de prix et de santé, selon l'enquête. Les arguments environnementaux arrivent en troisième position seulement.",
+              "question": "Pourquoi les gens consomment-ils un peu moins de viande ?",
+              "options": [
+                "Surtout pour le prix et la santé",
+                "Surtout pour l'environnement",
+                "Parce que la viande est rare",
+                "Parce que les restaurants n'en servent plus"
+              ],
+              "answer": 0,
+              "note": "Appui : « ce n'est pas tant par conviction écologique que pour des raisons de prix et de santé »",
+              "target_level": "B1"
+            },
+            {
+              "n": 20,
+              "document": "La direction rappelle que l'utilisation des véhicules de service à des fins personnelles est strictement interdite, y compris le week-end. Tout manquement pourra entraîner une sanction disciplinaire.",
+              "question": "Que rappelle la direction ?",
+              "options": [
+                "Les véhicules sont disponibles le week-end",
+                "Les sanctions sont supprimées",
+                "Chacun peut réserver un véhicule",
+                "On ne peut pas utiliser les véhicules de service pour soi"
+              ],
+              "answer": 3,
+              "note": "Appui : « strictement interdite, y compris le week-end »",
+              "target_level": "B1"
+            },
+            {
+              "n": 21,
+              "document": "On présente souvent le bénévolat comme un pur don de soi. Les bénévoles interrogés décrivent pourtant une relation plus équilibrée : ils disent recevoir autant qu'ils donnent, qu'il s'agisse de liens sociaux, de compétences nouvelles ou du simple sentiment d'être utiles.",
+              "question": "Que montre le témoignage des bénévoles ?",
+              "options": [
+                "Ils retirent eux aussi des bénéfices de leur engagement",
+                "Ils donnent sans rien recevoir",
+                "Ils sont payés indirectement",
+                "Ils regrettent leur engagement"
+              ],
+              "answer": 0,
+              "note": "Appui : « ils disent recevoir autant qu'ils donnent »",
+              "target_level": "B2"
+            },
+            {
+              "n": 22,
+              "document": "Les assistants vocaux comprennent de mieux en mieux nos demandes, mais restent incapables de saisir l'ironie. Demandez-leur, après une journée catastrophique, si c'était « une journée formidable » : ils vous répondront le plus sérieusement du monde.",
+              "question": "Quelle limite des assistants vocaux est soulignée ?",
+              "options": [
+                "Ils comprennent mal les demandes simples",
+                "Ils refusent de répondre",
+                "Ils ne perçoivent pas l'ironie",
+                "Ils sont trop lents"
+              ],
+              "answer": 2,
+              "note": "Appui : « restent incapables de saisir l'ironie »",
+              "target_level": "B2"
+            },
+            {
+              "n": 23,
+              "document": "La semaine de quatre jours séduit les salariés, mais elle n'a de sens que si la charge de travail est réellement réorganisée. Comprimer cinq jours de tâches en quatre, c'est simplement déplacer la fatigue, préviennent les médecins du travail.",
+              "question": "Quelle mise en garde formulent les médecins ?",
+              "options": [
+                "La semaine de quatre jours est dangereuse",
+                "Les salariés la refusent",
+                "Il faut travailler cinq jours",
+                "Il ne faut pas faire en quatre jours le travail de cinq"
+              ],
+              "answer": 3,
+              "note": "Appui : « Comprimer cinq jours de tâches en quatre, c'est simplement déplacer la fatigue »",
+              "target_level": "B2"
+            },
+            {
+              "n": 24,
+              "document": "Pour l'auteur, la ville « intelligente » promise par les entreprises technologiques confond efficacité et démocratie : optimiser la circulation grâce aux capteurs ne dit rien de qui décide de l'usage des rues, ni au profit de qui.",
+              "question": "Que reproche l'auteur au modèle de ville « intelligente » ?",
+              "options": [
+                "Il rend la circulation moins efficace",
+                "Il néglige la question de savoir qui décide",
+                "Il coûte trop cher aux entreprises",
+                "Il supprime les capteurs"
+              ],
+              "answer": 1,
+              "note": "Appui : « ne dit rien de qui décide de l'usage des rues »",
+              "target_level": "B2"
+            },
+            {
+              "n": 25,
+              "document": "Le rapport recommande d'inscrire l'éducation aux médias dans tous les programmes scolaires, de la primaire au cégep. Il précise toutefois qu'un cours isolé serait inefficace : c'est dans chaque discipline, de l'histoire aux sciences, que les élèves doivent apprendre à vérifier une source.",
+              "question": "Quelle précision apporte le rapport ?",
+              "options": [
+                "L'éducation aux médias doit être intégrée à toutes les matières",
+                "Il faut créer un cours séparé",
+                "Elle concerne seulement le cégep",
+                "Elle doit remplacer l'histoire"
+              ],
+              "answer": 0,
+              "note": "Appui : « c'est dans chaque discipline [...] que les élèves doivent apprendre à vérifier une source »",
+              "target_level": "B2"
+            },
+            {
+              "n": 26,
+              "document": "Le tourisme de masse menace les sites qu'il rend célèbres. Plusieurs villes ont instauré des quotas ou des taxes d'entrée ; d'autres misent sur la dispersion des visiteurs vers des lieux moins connus. Aucune de ces solutions ne fait consensus, car chacune déplace le problème plus qu'elle ne le règle.",
+              "question": "Quel jugement l'auteur porte-t-il sur les solutions ?",
+              "options": [
+                "Elles sont toutes efficaces",
+                "Elles font l'unanimité",
+                "Elles déplacent le problème plus qu'elles ne le résolvent",
+                "Elles augmentent le tourisme de masse"
+              ],
+              "answer": 2,
+              "note": "Appui : « chacune déplace le problème plus qu'elle ne le règle »",
+              "target_level": "B2"
+            },
+            {
+              "n": 27,
+              "document": "Que le français recule à Montréal comme langue d'usage au travail ne signifie pas que les Montréalais le parlent moins bien. Les données montrent surtout une hausse du bilinguisme : on passe plus souvent d'une langue à l'autre selon l'interlocuteur.",
+              "question": "Comment l'auteur interprète-t-il le recul du français au travail ?",
+              "options": [
+                "Comme une baisse de la maîtrise du français",
+                "Comme la disparition du français",
+                "Comme le signe d'un bilinguisme accru",
+                "Comme un phénomène sans cause"
+              ],
+              "answer": 2,
+              "note": "Appui : « Les données montrent surtout une hausse du bilinguisme »",
+              "target_level": "B2"
+            },
+            {
+              "n": 28,
+              "document": "La critique est sévère, mais elle n'est pas injuste : le spectacle multiplie les effets visuels au point d'étouffer le texte, dont on finit par ne plus rien entendre. Reste une interprète remarquable, qui mériterait une mise en scène à sa mesure.",
+              "question": "Que pense le critique de l'interprète ?",
+              "options": [
+                "Elle est responsable de l'échec",
+                "Elle étouffe le texte",
+                "Elle devrait changer de métier",
+                "Elle est excellente mais desservie par la mise en scène"
+              ],
+              "answer": 3,
+              "note": "Appui : « une interprète remarquable, qui mériterait une mise en scène à sa mesure »",
+              "target_level": "B2"
+            },
+            {
+              "n": 29,
+              "document": "Il est tentant de mesurer la réussite d'une politique d'intégration au taux d'emploi des nouveaux arrivants. L'indicateur est utile, mais trompeur s'il est pris seul : un ingénieur qui conduit un taxi a un emploi, sans que ses compétences soient pour autant reconnues.",
+              "question": "Pourquoi le taux d'emploi est-il un indicateur insuffisant ?",
+              "options": [
+                "Il ne dit pas si l'emploi correspond aux compétences",
+                "Il est impossible à calculer",
+                "Il surestime le chômage",
+                "Il ne concerne que les ingénieurs"
+              ],
+              "answer": 0,
+              "note": "Appui : « un ingénieur qui conduit un taxi a un emploi, sans que ses compétences soient pour autant reconnues »",
+              "target_level": "B2"
+            },
+            {
+              "n": 30,
+              "document": "La restauration du vieux pont a divisé les habitants. Les uns voulaient le conserver à l'identique, au nom du patrimoine ; les autres réclamaient un ouvrage moderne, plus large et accessible aux vélos. La solution retenue, un tablier neuf posé sur les piles d'origine, ne satisfait pleinement personne, ce qui est peut-être le signe d'un compromis réussi.",
+              "question": "Comment l'auteur présente-t-il la solution choisie ?",
+              "options": [
+                "Comme une victoire des défenseurs du patrimoine",
+                "Comme un compromis dont l'insatisfaction partagée est plutôt bon signe",
+                "Comme un échec complet",
+                "Comme une décision imposée sans débat"
+              ],
+              "answer": 1,
+              "note": "Appui : « ne satisfait pleinement personne, ce qui est peut-être le signe d'un compromis réussi »",
+              "target_level": "B2"
+            },
+            {
+              "n": 31,
+              "document": "La précarité étudiante est souvent réduite à une question de revenus. Elle tient pourtant aussi au temps : un étudiant qui travaille vingt-cinq heures par semaine pour payer son loyer dispose mécaniquement de moins de temps pour ses cours, et ses résultats s'en ressentent, quelle que soit sa motivation.",
+              "question": "Quel aspect de la précarité étudiante l'auteur met-il en avant ?",
+              "options": [
+                "Le manque de temps lié au travail salarié",
+                "Le manque de motivation",
+                "Le coût des livres",
+                "La difficulté des cours"
+              ],
+              "answer": 0,
+              "note": "Appui : « Elle tient pourtant aussi au temps »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 32,
+              "document": "Les défenseurs de la voiture autonome promettent moins d'accidents. L'argument est sérieux, mais il suppose un parc entièrement automatisé. Pendant la longue période de cohabitation entre conducteurs humains et véhicules autonomes, les comportements des uns et des autres risquent au contraire de devenir moins prévisibles.",
+              "question": "Quelle objection l'auteur formule-t-il ?",
+              "options": [
+                "Les voitures autonomes causeront plus d'accidents à long terme",
+                "L'argument de la sécurité n'est pas sérieux",
+                "Les conducteurs humains disparaîtront rapidement",
+                "La période de transition pourrait accroître l'imprévisibilité"
+              ],
+              "answer": 3,
+              "note": "Appui : « les comportements des uns et des autres risquent au contraire de devenir moins prévisibles »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 33,
+              "document": "On aurait tort de voir dans la popularité des balados un simple effet de mode. Le format répond à un besoin réel : celui d'écouter, en faisant autre chose, une parole longue, nuancée, qui prend le temps d'expliquer, ce que les formats courts des réseaux sociaux ont largement abandonné.",
+              "question": "Selon l'auteur, à quoi tient le succès des balados ?",
+              "options": [
+                "À un simple effet de mode",
+                "À leur brièveté",
+                "À leur caractère visuel",
+                "Au besoin d'une parole développée qu'on écoute en faisant autre chose"
+              ],
+              "answer": 3,
+              "note": "Appui : « une parole longue, nuancée, qui prend le temps d'expliquer »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 34,
+              "document": "La philosophe rappelle que la tolérance n'est pas l'indifférence. Tolérer, c'est supporter ce qu'on désapprouve, ce qui suppose précisément d'avoir un jugement. Celui à qui tout est égal ne tolère rien : il ne voit simplement aucune différence à supporter.",
+              "question": "Quelle distinction la philosophe établit-elle ?",
+              "options": [
+                "Tolérer, c'est tout approuver",
+                "La tolérance suppose un jugement, contrairement à l'indifférence",
+                "L'indifférence est une forme supérieure de tolérance",
+                "La tolérance interdit tout jugement"
+              ],
+              "answer": 1,
+              "note": "Appui : « Tolérer, c'est supporter ce qu'on désapprouve, ce qui suppose précisément d'avoir un jugement »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 35,
+              "document": "L'essai défend une thèse à contre-courant : le temps « perdu » des enfants, l'ennui, l'attente, le jeu sans but, serait une condition de leur créativité. En remplissant chaque heure d'activités encadrées, les parents bien intentionnés priveraient leurs enfants de l'espace où naissent les idées propres.",
+              "question": "Quelle est la thèse de l'essai ?",
+              "options": [
+                "Les activités encadrées développent la créativité",
+                "L'ennui et le temps libre favorisent la créativité des enfants",
+                "Les enfants s'ennuient trop",
+                "Les parents doivent remplir l'emploi du temps"
+              ],
+              "answer": 1,
+              "note": "Appui : « l'ennui, l'attente, le jeu sans but, serait une condition de leur créativité »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 36,
+              "document": "Que la science se trompe n'est pas un argument contre elle ; c'est sa définition même. Une théorie scientifique est une proposition qu'on peut réfuter, et qui reste provisoire tant qu'elle résiste aux tests. Ce qui devrait inquiéter, c'est moins l'erreur que le refus de la reconnaître.",
+              "question": "Selon l'auteur, qu'est-ce qui devrait inquiéter ?",
+              "options": [
+                "Le fait que la science se trompe",
+                "Le caractère provisoire des théories",
+                "Le refus d'admettre une erreur",
+                "L'existence de tests"
+              ],
+              "answer": 2,
+              "note": "Appui : « c'est moins l'erreur que le refus de la reconnaître »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 37,
+              "document": "Les entreprises vantent volontiers leur « culture du feedback ». Encore faut-il que la critique circule dans les deux sens. Un salarié invité à évaluer son responsable, mais dont l'avis n'est jamais suivi d'effet, apprend surtout que l'exercice est décoratif, et cesse vite d'y participer sincèrement.",
+              "question": "Que démontre l'exemple du salarié ?",
+              "options": [
+                "Un dispositif sans suites décourage la sincérité",
+                "Les responsables refusent toute évaluation",
+                "Les salariés n'aiment pas critiquer",
+                "La culture du feedback est efficace partout"
+              ],
+              "answer": 0,
+              "note": "Appui : « apprend surtout que l'exercice est décoratif, et cesse vite d'y participer sincèrement »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 38,
+              "document": "Le paradoxe de la transparence tient en peu de mots : plus une institution publie de données, moins on les lit. Noyée sous des centaines de rapports, l'information pertinente devient introuvable, si bien qu'une transparence totale peut produire, en pratique, une opacité nouvelle.",
+              "question": "En quoi consiste le paradoxe décrit ?",
+              "options": [
+                "Les institutions refusent de publier",
+                "Les citoyens lisent tous les rapports",
+                "L'excès d'informations publiées peut rendre l'essentiel invisible",
+                "La transparence réduit le nombre de rapports"
+              ],
+              "answer": 2,
+              "note": "Appui : « une transparence totale peut produire, en pratique, une opacité nouvelle »",
+              "target_level": "C1–C2"
+            },
+            {
+              "n": 39,
+              "document": "On oppose volontiers mémoire et histoire comme l'émotion à la raison. L'historienne refuse ce partage trop commode : la mémoire des témoins est une source que l'historien doit critiquer, non écarter, et l'histoire, à son tour, nourrit les mémoires collectives qu'elle prétend seulement étudier.",
+              "question": "Quelle position l'historienne défend-elle ?",
+              "options": [
+                "La mémoire doit être écartée par l'historien",
+                "Mémoire et histoire s'influencent mutuellement",
+                "L'histoire relève uniquement de l'émotion",
+                "Les témoins sont toujours fiables"
+              ],
+              "answer": 1,
+              "note": "Appui : « l'histoire, à son tour, nourrit les mémoires collectives qu'elle prétend seulement étudier »",
+              "target_level": "C1–C2"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

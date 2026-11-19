@@ -268,6 +268,19 @@ begin
     student_read_at = now() - interval '3 hours', needs_staff = true, needs_staff_since = now() - interval '3 hours', staff_emailed_at = now()
   where id = th;
 
+  -- 13. Simulacros déjà passés (examen blanc B1, 048–049) : les erreurs commencent dans les derniers blocs.
+  delete from sim_attempts where user_id = any(studs);
+  for s in select * from (values (lu, 'co', 24, 9), (lu, 'ce', 27, 4), (va, 'co', 30, 12), (va, 'ce', 33, 5), (ma, 'co', 16, 15)) v(uid, sec, ok, days_ago) loop
+    insert into sim_attempts (user_id, exam_id, section, started_at, deadline, finished_at, answers, correct, total, estimate)
+    select s.uid, 'tcf-b1', s.sec, now() - make_interval(days => s.days_ago, mins => 50),
+           now() - make_interval(days => s.days_ago, mins => 50) + make_interval(mins => case s.sec when 'co' then 35 else 60 end),
+           now() - make_interval(days => s.days_ago, mins => 20),
+           x.ans, s.ok, x.cnt, public._sim_estimate(s.ok, x.cnt) || jsonb_build_object('blocks', public._sim_blocks('tcf-b1', s.sec, x.ans))
+    from (select jsonb_object_agg(i.n::text, case when i.n <= s.ok then i.answer else (i.answer + 1) % 4 end) ans, count(*)::int cnt
+          from sim_items i where i.exam_id = 'tcf-b1' and i.section = s.sec) x
+    where x.cnt > 0;
+  end loop;
+
   insert into demo_state (id, seeded_at) values (1, now()) on conflict (id) do update set seeded_at = excluded.seeded_at;
   return jsonb_build_object('ok', true, 'teacher', t, 'students', to_jsonb(studs), 'seeded_at', now());
 end $$;
