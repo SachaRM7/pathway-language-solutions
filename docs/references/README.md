@@ -2,6 +2,18 @@
 
 Ce dossier rassemble des **articles de référence** (guides publiés sur X, sauvegardés en HTML ou en Markdown) et une **liste de dépôts GitHub**, rangés par thème.
 
+## Légende des modèles
+
+Dans les copies de ce dossier, les noms des modèles d'IA sont remplacés par des étiquettes :
+
+| Étiquette | Modèle |
+|---|---|
+| `[top model]` | Claude Fable 5.2 |
+| `[previous top model]` | Claude Fable 5.1 |
+| `[advanced model]` | Claude Opus 5.5 |
+| `[mid model]` | Claude Sonnet 5.5 |
+| `[light model]` | Claude Haiku 5.5 |
+
 **Règle pour les agents :** quand une tâche touche à l'un de ces thèmes, lire d'abord ce sommaire, puis les références marquées ★★★ pour ce thème. Elles servent de méthode et d'idées. **Les règles de Pathway passent avant** : `MASTER.md` §13 (plan du studio), `docs/marketing/studio-video.md`, et les interdits de `MASTER.md` §15.
 
 À savoir avant de lire :
