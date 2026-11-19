@@ -408,6 +408,7 @@ Bots AppuBot ──► pathway-mcp (clé par rôle) ──► fonctions SQL agen
 | `supabase/functions/` | 11 Edge Functions |
 | `supabase/templates/` | E-mails Supabase Auth (invitation, lien magique) |
 | `docs/` | `whatsapp-setup.md`, `marketing/agent-difusion.md`, `marketing/studio-video.md`, captures des animations |
+| `marketing/studio/` | **Studio vidéo** (non publié sur le site) : `bible.md` (règles), `faits.md` (ce qu'une pub a le droit de dire), `motor/` (moteur et rendu HTML → MP4), `formatos/` (modèles), `piezas/<id>/` (script, plan, HTML, planche, MP4), `log.md` (journal). Fiches des 7 agents dans `.claude/agents/studio-*.md` |
 | `docs/references/` | **Références externes** : motion design, animation, réseaux sociaux, marketing, SEO, et dépôts GitHub classés par utilité. Le sommaire `README.md` dit quoi lire pour quelle tâche. |
 | `specs/` | Spécifications de la home V4 et du Campus (en partie datées) |
 | `CONFIGURATION.md`, `campus/README.md`, `design-qa.md` | Documentation complémentaire (certaines parties sont datées, voir [§17](#17-questions-ouvertes-et-dette-technique)) |
@@ -684,7 +685,8 @@ Relevé du 19 nov. 2026.
   - **la publicité vidéo et les réseaux sociaux deviennent le prochain grand chantier** (#144) ;
   - **lancement du Campus fixé au 1er janvier 2027** (#145) ;
   - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146), puis 8 de plus : motion design, vidéo de lancement, IA en général (#147) ;
-  - **plan de démarrage des pubs validé**, en 4 étapes jusqu'au lancement du 1er janvier (#148).
+  - **plan de démarrage des pubs validé**, en 4 étapes jusqu'au lancement du 1er janvier (#148) ;
+  - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (PR du studio vidéo).
 
 ---
 
@@ -700,7 +702,7 @@ C'est l'échéance qui fixe les priorités (décision de Sacha, 19 nov. 2026). A
 - [ ] **Mi agenda configurée** par Ryan et Abdrahim, et **une réunion réelle faite** de bout en bout.
 - [ ] **Essais réels de Correo**, et d'un parcours élève complet avec un compte de test.
 - [ ] **E-mail de connexion** vérifié (modèle avec le code, arrivée hors spam).
-- [ ] **Publicité prête pour le lancement :** pub principale et premières vidéos, voir [§13](#13-vision-et-backlog).
+- [ ] **Publicité prête pour le lancement :** pub principale et premières vidéos, voir [§13](#13-vision-et-backlog). Le studio est monté et le prototype « Ronda IRCC » attend la validation de Sacha ; la pub principale reste à faire.
 
 
 ### 🔴 Bloquant : WhatsApp avec le numéro canadien (Sacha, avec Ryan)
@@ -764,6 +766,19 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 ### 🎬 Prochain grand chantier : publicités vidéo et réseaux sociaux (Instagram, puis TikTok)
 
 > Décidé le 19 nov. 2026 : ce sera le **prochain gros chantier**, dans une nouvelle conversation. Le plan complet, rédigé le 14 nov., est dans **`docs/marketing/studio-video.md`** : le lire en entier avant de commencer. Il était « en attente » jusqu'à la fin des priorités du moment (CRM, relances, **lancement du Campus le 1er janvier 2027**). Les vidéos doivent donc servir ce lancement.
+
+#### État du studio au 19 nov. 2026
+
+- **Décision de Sacha (19 nov.) :** on commence à **produire les rendus tout de suite**. Le budget et l'accès aux comptes (Meta, Instagram) ne sont pas nécessaires pour créer les vidéos ; ils seront fixés avant le test payant et la publication.
+- **Le studio existe :** `marketing/studio/`.
+  - `bible.md` : public, ton, interdits, charte, zones sûres, rythme, contrat de rendu, grille de relecture. **Version 1, à valider par Sacha.**
+  - `faits.md` : le fichier de faits (rondes IRCC datées, NCLC 7, offre, ce qu'on ne dit jamais, ce qui manque). **À relire par Sacha.**
+  - `motor/studio.js` et `motor/render.mjs` : le moteur. Chaque pièce est une page HTML dont l'image est une fonction du temps (`window.seek(t)`), filmée par Playwright et encodée par FFmpeg. **Aucune dépendance installée** (ni GSAP ni Remotion pour l'instant : les ressorts sont calculés dans `studio.js`).
+  - Les 7 fiches d'agents : `.claude/agents/studio-*.md`.
+- **Première pièce produite :** « Ronda IRCC n.º 452 » (`piezas/2026-10-27-ronda-452/`), 15 s, 1080 × 1920, sans son, en boucle. Planche de 18 images et MP4 prêts, **en attente de la validation de Sacha**. Coût : 0 €.
+  - Le format se remplit seul : `formatos/ronda-ircc/nueva-pieza.mjs` lit `v4/data/ircc-rounds.json`.
+  - **Avant publication :** revérifier la dernière ronde sur IRCC (l'instantané date du 10 nov. ; `canada.ca` n'est pas joignable depuis la session cloud).
+- **Pas encore fait :** le son (musique à 120 BPM), le format 4:5, la pub principale (il faut un compte de démonstration du Campus), les variantes, le témoignage (accord d'Elena et de Devon manquant).
 
 #### Ce qui existe déjà côté publicité
 
@@ -868,6 +883,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 - **On juge une pub sur ce qu'elle produit dans le CRM, pas sur ses vues :** coût par test terminé → part de tests suivis de disponibilités → réunions → inscrits. Ces chiffres sortent du rapport du lundi (par campagne) et des fiches « Publicidad · <campagne> ».
 
 **Étape 0 — Décider (environ 1 h de Sacha)**
+- *État au 19 nov. :* le fichier de faits et la bible sont rédigés (`marketing/studio/`), à relire par Sacha. Budget et accès : reportés par Sacha après les premiers rendus.
 - **Budget de test :** ordre de grandeur proposé, 10 à 15 US$ par jour pendant 2 semaines. **À fixer par Sacha.**
 - **Accès :** compte publicitaire Meta et compte Instagram de Pathway. TikTok plus tard.
 - **Fichier de faits** (méthode de la référence 09), préparé par l'assistant à partir des §1 et §3, relu par Sacha. Il contient :
@@ -1141,4 +1157,5 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Ajout de `docs/references/` : 10 articles (motion design, animation, réseaux sociaux, marketing, SEO) et 63 dépôts GitHub classés par thème et par utilité. |
 | 19 nov. 2026 | 8 références de plus (11 à 18) : playbook et cours complets de motion design, studio de vidéo de lancement, langage du mouvement, simulateur 3D, IA et agents, rétro-ingénierie. |
 | 19 nov. 2026 | Plan de démarrage des pubs validé par Sacha (§13) : décider, produire, tester à petit budget mi-décembre, accélérer au 1er janvier. |
+| 19 nov. 2026 | Studio vidéo créé (`marketing/studio/`) et premier prototype « Ronda IRCC n.º 452 » rendu ; budget et accès aux comptes reportés après les premiers rendus (décision de Sacha). |
 | 19 nov. 2026 | Retrait de la fausse « règle d'équipe » sur les noms de modèles d'IA : l'équipe n'interdit rien de tel. |

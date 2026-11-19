@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ronda IRCC — Pathway</title>
+<style>
+  @font-face { font-family: "Outfit"; src: url("../../../../v4/assets/fonts/Outfit-variable.woff2") format("woff2"); font-weight: 100 900; }
+  @font-face { font-family: "DM Sans"; src: url("../../../../v4/assets/fonts/DM-Sans-variable.woff2") format("woff2"); font-weight: 100 1000; }
+  :root { --ink:#122b26; --paper:#fffaf2; --cream:#f5efe4; --terra:#c76f56; --action:#a34e3b; --sage:#cad8c3; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+  body { font-family: "DM Sans", sans-serif; color: var(--ink); }
+  .stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .card { position: absolute; inset: 0; overflow: hidden; will-change: transform; }
+  .cam { position: absolute; inset: 0; transform-origin: 50% 46%; }
+  .abs { position: absolute; left: 106px; right: 106px; }
+  .t { font-family: "Outfit", sans-serif; font-weight: 700; letter-spacing: -0.01em; line-height: 1.05; }
+  .w { display: inline-block; will-change: transform, opacity; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Plan 1 — accroche */
+  #s1 { background: var(--ink); color: var(--paper); }
+  #s1 .rings { position: absolute; left: 540px; top: 860px; width: 0; height: 0; }
+  #s1 .rings i { position: absolute; border-radius: 50%; border: 3px solid var(--sage); opacity: .13; transform: translate(-50%, -50%); }
+  #s1 .logo { top: 216px; height: 76px; }
+  #s1 .logo img { height: 76px; display: block; }
+  #s1 .eye { top: 392px; font-size: 40px; font-weight: 600; letter-spacing: .14em; color: var(--sage); }
+  #s1 .l1 { top: 470px; font-size: 108px; }
+  #s1 .big { top: 560px; font-size: 470px; font-weight: 800; color: var(--terra); letter-spacing: -0.035em; line-height: 1; transform-origin: 22% 60%; }
+  #s1 .l3 { top: 1010px; font-size: 136px; }
+  #s1 .chip { top: 1210px; right: auto; padding: 22px 38px; border-radius: 999px; background: var(--sage); color: var(--ink); font-size: 42px; font-weight: 600; transform-origin: 0 50%; white-space: nowrap; }
+  #s1 .q { top: 1400px; font-size: 92px; color: var(--paper); }
+  #s1 .q b { color: var(--sage); font-weight: 700; }
+
+  /* Plan 2 — comparaison */
+  #s2 { background: var(--paper); }
+  #s2 .title { top: 214px; font-size: 70px; }
+  #s2 .badge { top: 408px; left: 50%; right: auto; margin-left: -400px; width: 800px; text-align: center; padding: 26px 0 30px; border-radius: 999px; background: var(--action); color: var(--paper); font-size: 76px; }
+  #s2 .col { position: absolute; bottom: 620px; width: 414px; }
+  #s2 .col.a { left: 106px; } #s2 .col.b { left: 560px; }
+  #s2 .bar { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; transform-origin: 50% 100%; }
+  #s2 .a .bar { background: var(--ink); } #s2 .b .bar { background: var(--action); }
+  #s2 .val { position: absolute; left: 0; right: 0; text-align: center; font-size: 150px; font-weight: 800; line-height: 1; transform-origin: 50% 100%; }
+  #s2 .b .val { color: var(--action); }
+  #s2 .base { position: absolute; left: 106px; right: 106px; top: 1300px; height: 4px; background: var(--ink); opacity: .9; transform-origin: 0 50%; }
+  #s2 .lab { position: absolute; top: 1326px; width: 414px; text-align: center; }
+  #s2 .lab.a { left: 106px; } #s2 .lab.b { left: 560px; }
+  #s2 .lab .n { font-family: "Outfit"; font-weight: 700; font-size: 46px; line-height: 1.08; }
+  #s2 .lab .d { margin-top: 10px; font-size: 40px; line-height: 1.2; font-weight: 500; }
+  #s2 .src { top: 1580px; font-size: 28px; text-align: center; opacity: .8; }
+
+  /* Plan 3 — la condition */
+  #s3 { background: var(--sage); }
+  #s3 .k { top: 250px; font-size: 68px; }
+  #s3 .n7 { top: 338px; white-space: nowrap; font-size: 262px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  #s3 .n7 b { color: var(--action); font-weight: 800; }
+  #s3 .k2 { top: 650px; font-size: 76px; }
+  #s3 .chips { top: 830px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  #s3 .c { height: 220px; border-radius: 40px; background: var(--paper); padding: 0 34px; display: flex; align-items: center; gap: 24px; font-family: "Outfit"; font-weight: 600; font-size: 44px; line-height: 1.1; }
+  #s3 .c svg { flex: none; width: 76px; height: 76px; }
+  #s3 .ex { top: 1420px; font-size: 46px; line-height: 1.3; }
+  #s3 .ex b { font-weight: 700; }
+
+  /* Plan 4 — appel à l'action */
+  #s4 { background: var(--paper); }
+  #s4 .y { top: 290px; font-size: 250px; font-weight: 800; letter-spacing: -0.03em; }
+  #s4 .q { top: 610px; font-size: 80px; }
+  #s4 .btn { top: 900px; height: 170px; border-radius: 999px; background: var(--action); color: var(--paper); font-size: 74px; display: flex; align-items: center; justify-content: center; gap: 22px; box-shadow: 0 18px 0 rgba(18,43,38,.14); }
+  #s4 .btn svg { width: 58px; height: 58px; }
+  #s4 .sub { top: 1112px; font-size: 42px; text-align: center; opacity: .82; }
+  #s4 .url { top: 1300px; font-size: 62px; text-align: center; }
+  #s4 .legal { top: 1560px; font-size: 32px; text-align: center; opacity: .85; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <section class="card" id="s2"><div class="cam">
+    <div class="abs t title"><span class="w">Puntos</span> <span class="w">mínimos</span> <span class="w">para</span><br><span class="w">recibir</span> <span class="w">invitación</span></div>
+    <div class="abs t badge"><span class="num" data-f="diff"></span> puntos menos</div>
+    <div class="col a"><div class="bar"></div><div class="val t num" data-f="cecScore"></div></div>
+    <div class="col b"><div class="bar"></div><div class="val t num" data-f="frScore"></div></div>
+    <div class="base"></div>
+    <div class="lab a"><div class="n">Experiencia<br>canadiense</div><div class="d">Ronda n.º <span data-f="cecDraw"></span><br><span data-f="cecDate"></span></div></div>
+    <div class="lab b"><div class="n">Categoría<br>de francés</div><div class="d">Ronda n.º <span data-f="frDraw"></span><br><span data-f="frDate"></span></div></div>
+    <div class="abs src">Fuente: IRCC (canada.ca), rondas de invitaciones de Express Entry.</div>
+  </div></section>
+
+  <section class="card" id="s3"><div class="cam">
+    <div class="abs t k"><span class="w">La</span> <span class="w">condición:</span></div>
+    <div class="abs t n7"><span class="w">NCLC</span> <span class="w"><b>7</b></span></div>
+    <div class="abs t k2"><span class="w">en</span> <span class="w">las</span> <span class="w">4</span> <span class="w">competencias</span></div>
+    <div class="abs chips">
+      <div class="c"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="38" fill="#122b26"/><path class="ck" d="M21 39l12 12 23-25" fill="none" stroke="#fffaf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Comprensión<br>oral</span></div>
+      <div class="c"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="38" fill="#122b26"/><path class="ck" d="M21 39l12 12 23-25" fill="none" stroke="#fffaf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Comprensión<br>escrita</span></div>
+      <div class="c"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="38" fill="#122b26"/><path class="ck" d="M21 39l12 12 23-25" fill="none" stroke="#fffaf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Expresión<br>oral</span></div>
+      <div class="c"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="38" fill="#122b26"/><path class="ck" d="M21 39l12 12 23-25" fill="none" stroke="#fffaf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Expresión<br>escrita</span></div>
+    </div>
+    <div class="abs ex">Se demuestra con el <b>TEF Canada</b><br>o el <b>TCF Canada</b>.</div>
+  </div></section>
+
+  <section class="card" id="s4"><div class="cam">
+    <div class="abs t y"><span class="w">¿Y</span> <span class="w">tú?</span></div>
+    <div class="abs t q"><span class="w">¿Cuál</span> <span class="w">es</span> <span class="w">tu</span> <span class="w">nivel</span><br><span class="w">de</span> <span class="w">francés?</span></div>
+    <div class="abs t btn"><span>Mide tu nivel gratis</span><svg viewBox="0 0 58 58"><path d="M10 29h36M32 13l16 16-16 16" fill="none" stroke="#fffaf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="abs sub">Test en línea · desde 12 minutos</div>
+    <div class="abs t url">pathway-languages.com</div>
+    <div class="abs legal">Solo enseñamos francés; no damos asesoría migratoria.</div>
+  </div></section>
+
+  <section class="card" id="s1"><div class="cam">
+    <div class="rings"><i style="width:620px;height:620px"></i><i style="width:980px;height:980px;border-width:8px;opacity:.09"></i><i style="width:1420px;height:1420px"></i><i style="width:1900px;height:1900px;opacity:.08"></i></div>
+    <div class="abs logo"><img src="../../../../v4/assets/pathway-logo-inverse.svg" alt="Pathway"></div>
+    <div class="abs t eye">EXPRESS ENTRY · CANADÁ</div>
+    <div class="abs t l1"><span class="w">Con</span> <span class="w">francés:</span></div>
+    <div class="abs t big num" data-f="frScore"></div>
+    <div class="abs t l3"><span class="w">puntos.</span></div>
+    <div class="abs chip">Ronda n.º <span data-f="frDraw"></span> · <span data-f="frDate"></span></div>
+    <div class="abs t q"><span class="w">¿Y</span> <span class="w"><b>sin</b></span> <span class="w">francés?</span></div>
+  </div></section>
+</div>
+
+<script src="data.js"></script>
+<script src="../../motor/studio.js"></script>
+<script>
+(() => {
+  const { clamp, lerp, spring, easeOut, enter, pop } = Studio;
+  const D = window.PIEZA, H = 1920, DUR = 15;
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // Toutes les valeurs de mouvement, au même endroit.
+  const MOTION = {
+    push: { z: 1, w: 13 },          // changement de plan : la carte suivante pousse la précédente
+    text: { z: 1, w: 15, dy: 70 },  // texte : aucun rebond
+    ui:   { z: 0.8, w: 16 },        // barres, pastilles
+    pop:  { z: 0.55, w: 17 },       // badge, bouton
+    word: 0.07,                     // décalage entre deux mots (2 images)
+    drift: 0.02                     // la caméra ne s'arrête jamais : +2 % par plan (reste dans la marge de 96 px)
+  };
+  // Découpage sur la grille de 120 BPM (un temps = 0,5 s).
+  const CUT = { s2: 2.5, s3: 6.5, s4: 10, s1: 13.5 };
+
+  const MES = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sept.', 'oct.', 'nov.', 'dic.'];
+  const fecha = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MES[m - 1]} ${y}`; };
+  const F = {
+    frScore: D.french.score, cecScore: D.cec.score, diff: D.cec.score - D.french.score,
+    frDraw: D.french.drawNumber, cecDraw: D.cec.drawNumber, frDate: fecha(D.french.date), cecDate: fecha(D.cec.date)
+  };
+  $$('[data-f]').forEach((el) => { el.textContent = F[el.dataset.f]; });
+
+  const s1 = $('#s1'), s2 = $('#s2'), s3 = $('#s3'), s4 = $('#s4');
+  const BAR = 500; // hauteur de la plus grande barre ; l'autre est proportionnelle au score
+  const hA = BAR, hB = Math.round((BAR * F.frScore) / F.cecScore);
+  const cks = $$('#s3 .ck'); const ckLen = cks[0].getTotalLength();
+  cks.forEach((c) => { c.style.strokeDasharray = ckLen; });
+
+  const push = (dt) => spring(dt, MOTION.push.z, MOTION.push.w);
+  const place = (card, tin, tout, local, len) => {
+    const y = H * (1 - push(tin)) - H * push(tout);
+    card.style.transform = `translateY(${y}px)`;
+    card.style.visibility = Math.abs(y) >= H - 0.5 ? 'hidden' : 'visible';
+    $('.cam', card).style.transform = `scale(${1 + MOTION.drift * clamp(local / len)})`;
+  };
+  const words = (root, t, t0, o = {}) => $$('.w', root).forEach((w, i) => enter(w, t, t0 + i * MOTION.word, { ...MOTION.text, ...o }));
+
+  window.seek = (time) => {
+    const t = ((time % DUR) + DUR) % DUR;
+
+    // ---- Plan 1 : accroche. u = temps local ; le plan entre à 13,5 s et l'image 0 tombe à u = 1,5.
+    const u = (t - CUT.s1 + DUR) % DUR;
+    place(s1, u, u - (DUR - CUT.s1 + CUT.s2), u, 4);
+    enter($('#s1 .logo'), u, 0.15, MOTION.text);
+    words($('#s1 .l1'), u, 0.25);
+    enter($('#s1 .big'), u, 0.4, { ...MOTION.text, dy: 120 });
+    words($('#s1 .l3'), u, 0.6);
+    // image 0 (u = 1,5) : tout est posé. Le chiffre « bat » sur le premier temps, puis la suite arrive.
+    const beat = Math.exp(-9 * Math.max(0, u - 1.5)) * Math.sin(22 * Math.max(0, u - 1.5));
+    $('#s1 .big').style.transform += ` scale(${1 + 0.06 * beat})`;
+    enter($('#s1 .eye'), u, 0.2, MOTION.text);
+    pop($('#s1 .chip'), u, 0.8, MOTION.pop); // la ronde et sa date sont à l'écran dès l'image 0
+    const beat2 = Math.exp(-9 * Math.max(0, u - 2.0)) * Math.sin(22 * Math.max(0, u - 2.0));
+    $('#s1 .chip').style.transform += ` scale(${1 + 0.07 * beat2})`;
+    words($('#s1 .q'), u, 2.75);
+    $$('#s1 .rings i').forEach((r, i) => { r.style.transform = `translate(-50%,-50%) scale(${1 + 0.05 * u + 0.012 * i * u})`; });
+
+    // ---- Plan 2 : la comparaison (2,5 → 6,5 s).
+    const v = t - CUT.s2;
+    place(s2, v, t - CUT.s3, v, 4);
+    words($('#s2 .title'), v, 0.2);
+    $('#s2 .base').style.transform = `scaleX(${spring(v - 0.3, 1, 12)})`;
+    const col = (sel, t0, h, to) => {
+      const g = spring(v - t0, MOTION.ui.z, MOTION.ui.w);
+      const bar = $(`#s2 .col${sel} .bar`), val = $(`#s2 .col${sel} .val`), lab = $(`#s2 .lab${sel}`);
+      bar.style.height = h + 'px'; bar.style.transform = `scaleY(${Math.max(0, g)})`;
+      // Le chiffre officiel se pose d'un coup quand la barre arrive : jamais de valeur intermédiaire à l'écran.
+      val.style.bottom = h + 16 + 'px'; val.textContent = to; pop(val, v, t0 + 0.3, MOTION.pop);
+      enter(lab, v, t0, { ...MOTION.text, dy: 40 });
+    };
+    col('.a', 0.5, hA, F.cecScore);
+    col('.b', 1.5, hB, F.frScore);
+    pop($('#s2 .badge'), v, 2.5, MOTION.pop);
+    enter($('#s2 .src'), v, 0.5, { ...MOTION.text, dy: 20 });
+
+    // ---- Plan 3 : la condition (6,5 → 9,5 s).
+    const x = t - CUT.s3;
+    place(s3, x, t - CUT.s4, x, 3.5);
+    words($('#s3 .k'), x, 0.2);
+    words($('#s3 .n7'), x, 0.35, { dy: 110 });
+    words($('#s3 .k2'), x, 0.55);
+    $$('#s3 .c').forEach((c, i) => {
+      const t0 = 0.85 + i * 0.2;
+      enter(c, x, t0, { z: MOTION.ui.z, w: MOTION.ui.w, dy: 60, scale: 0.94 });
+      cks[i].style.strokeDashoffset = ckLen * (1 - easeOut((x - t0 - 0.12) / 0.3));
+    });
+    enter($('#s3 .ex'), x, 1.5, { ...MOTION.text, dy: 40 }); // 2 s de lecture avant le plan suivant
+
+    // ---- Plan 4 : l'appel à l'action (9,5 → 13,5 s).
+    const c = t - CUT.s4;
+    place(s4, c, t - CUT.s1, c, 3.5);
+    words($('#s4 .y'), c, 0.2, { dy: 120 });
+    words($('#s4 .q'), c, 0.5);
+    const btn = $('#s4 .btn');
+    pop(btn, c, 1.0, MOTION.pop);
+    const press = Math.exp(-10 * Math.max(0, c - 2.0)) * Math.sin(20 * Math.max(0, c - 2.0)); // « clic » sur le temps
+    btn.style.transform += ` scale(${1 - 0.045 * press})`;
+    $('#s4 .btn svg').style.transform = `translateX(${10 * spring(c - 2.0, 0.5, 14) - 10 * spring(c - 2.5, 0.8, 14)}px)`;
+    enter($('#s4 .legal'), c, 0.5, { ...MOTION.text, dy: 20 }); // la mention reste 3 s à l'écran
+    enter($('#s4 .sub'), c, 1.25, { ...MOTION.text, dy: 30 });
+    enter($('#s4 .url'), c, 1.5, { ...MOTION.text, dy: 40 });
+  };
+
+  // Aperçu dans un navigateur : lecture en boucle. En rendu (?render=1), seul seek(t) est appelé.
+  if (!/render=1/.test(location.search)) {
+    const t0 = performance.now();
+    const loop = (now) => { window.seek((now - t0) / 1000); requestAnimationFrame(loop); };
+    document.body.style.zoom = Math.min(1, innerHeight / 1920);
+    requestAnimationFrame(loop);
+  } else { window.seek(0); }
+})();
+</script>
+</body>
+</html>
