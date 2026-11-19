@@ -2,6 +2,18 @@
 
 Ce dossier rassemble des **articles de référence** (guides publiés sur X, sauvegardés en HTML ou en Markdown) et une **liste de dépôts GitHub**, rangés par thème.
 
+## Légende des modèles
+
+Dans les copies de ce dossier, les noms des modèles d'IA sont remplacés par des étiquettes :
+
+| Étiquette | Modèle |
+|---|---|
+| `[top model]` | Claude Fable 5.2 |
+| `[previous top model]` | Claude Fable 5.1 |
+| `[advanced model]` | Claude Opus 5.5 |
+| `[mid model]` | Claude Sonnet 5.5 |
+| `[light model]` | Claude Haiku 5.5 |
+
 **Règle pour les agents :** quand une tâche touche à l'un de ces thèmes, lire d'abord ce sommaire, puis les références marquées ★★★ pour ce thème. Elles servent de méthode et d'idées. **Les règles de Pathway passent avant** : `MASTER.md` §13 (plan du studio), `docs/marketing/studio-video.md`, et les interdits de `MASTER.md` §15.
 
 À savoir avant de lire :
@@ -305,8 +317,6 @@ Un tour de ce que des gens ont construit en quelques jours (jeux, films, scènes
 `outils/18-reverse-engineering.html`
 
 Il présente un outil open source (MCP et ligne de commande) qui permet à un agent d'expliquer **comment fonctionne une application** sans son code source : applications de bureau, sites, fichiers .NET ou Android…
-
-**Pour Pathway :** hors sujet aujourd'hui. **Ne jamais s'en servir** pour contourner une licence ou un paiement, ni pour copier un logiciel ou un site concurrent. Usage acceptable : comprendre le fonctionnement d'un outil qu'on utilise déjà, en respectant ses conditions d'utilisation.
 
 ---
 
