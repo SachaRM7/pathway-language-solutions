@@ -1,0 +1,142 @@
+{
+  "motion": {
+    "tipScreenBounds": {
+      "minX": 240,
+      "maxX": 1700,
+      "minY": 349.1193614324253,
+      "maxY": 830.8214827972442
+    },
+    "tailBacktracks": [],
+    "joins": [
+      {
+        "time": 15,
+        "before": {
+          "head": 7872.424262848634,
+          "tip": [
+            5293.5361689599995,
+            783.227293696
+          ],
+          "cx": 5605.27303365572,
+          "cy": 697.3273595357871,
+          "scale": 1.1126108735324327,
+          "start": 7412.442153242165
+        },
+        "at": {
+          "head": 7876.072523630358,
+          "tip": [
+            5297.50096128,
+            783.5632065279999
+          ],
+          "cx": 5611.6717519239255,
+          "cy": 699.140329711779,
+          "scale": 1.1136793366710507,
+          "start": 7418.253900932614
+        },
+        "after": {
+          "head": 7879.2122341974255,
+          "tip": [
+            5300.19960576,
+            783.734901376
+          ],
+          "cx": 5617.522779502942,
+          "cy": 700.7981208591668,
+          "scale": 1.1146536534594682,
+          "start": 7423.255518615274
+        }
+      },
+      {
+        "time": 30,
+        "before": {
+          "head": 12986.54485358845,
+          "tip": [
+            9280,
+            365
+          ],
+          "cx": 8900,
+          "cy": 540,
+          "scale": 1,
+          "start": 11665.251644168738
+        },
+        "at": {
+          "head": 12986.54485358845,
+          "tip": [
+            9280,
+            365
+          ],
+          "cx": 8900,
+          "cy": 540,
+          "scale": 1,
+          "start": 11665.251644168738
+        },
+        "after": {
+          "head": 12986.54485358845,
+          "tip": [
+            9280,
+            365
+          ],
+          "cx": 8900,
+          "cy": 540,
+          "scale": 1,
+          "start": 11665.251644168738
+        }
+      }
+    ],
+    "logoExact": true,
+    "holdStatic": true,
+    "logoLength": 155.56948519954494,
+    "noExternalTimingReset": true
+  },
+  "exports": {
+    "exports": [
+      {
+        "name": "Pathway-R3-MASTER_LONG_FORM.mp4",
+        "duration": 44.0,
+        "frames": 1320,
+        "width": 1280,
+        "height": 720,
+        "fps": "30/1",
+        "audio": false,
+        "sha256": "942e1c469bce0d599038cc717211b5fd9eb514d706d26bc2a088031bc000ea84"
+      },
+      {
+        "name": "Pathway-R3-VIDEO_01.mp4",
+        "duration": 15.0,
+        "frames": 450,
+        "width": 1280,
+        "height": 720,
+        "fps": "30/1",
+        "audio": false,
+        "sha256": "a557db1f8796e4f24b188582177e2bccf296959e011fc22b6e20eab6999fa876"
+      },
+      {
+        "name": "Pathway-R3-VIDEO_02.mp4",
+        "duration": 15.0,
+        "frames": 450,
+        "width": 1280,
+        "height": 720,
+        "fps": "30/1",
+        "audio": false,
+        "sha256": "caf39d84989d10034951deeba18ddb9457fb3089c3c73260d259bf06e2a9b0bc"
+      },
+      {
+        "name": "Pathway-R3-VIDEO_03.mp4",
+        "duration": 15.0,
+        "frames": 450,
+        "width": 1280,
+        "height": 720,
+        "fps": "30/1",
+        "audio": false,
+        "sha256": "6ae0f1845338061ad83ac3421f033f5295a12923374ea7d546ea681baf1cb5be"
+      }
+    ],
+    "direct_concatenation_frame_identical": true,
+    "master_equals_first_1320_concatenated_frames": true,
+    "static_final_hold_master_seconds": 3,
+    "static_final_hold_video03_seconds": 4,
+    "seams_frames": [
+      450,
+      900
+    ],
+    "same_global_timeline": true
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "max_geometric_tangent_change_degrees": 0,
+  "L": 15988.423836269365,
+  "duration": 42,
+  "line_stop": 39,
+  "final_hold": 3,
+  "eventTimes": {
+    "hook": 1.264152629070395,
+    "intro-out": 3.670920614906663,
+    "classes-in": 4.764819005732079,
+    "classes": 7.275443562456985,
+    "levels-in": 8.62643864143638,
+    "levels": 11.689260590630965,
+    "circle-start": 14.161529905838961,
+    "selected": 15.381586672663161,
+    "entry": 16.02015513068045,
+    "first-in": 16.91306253904486,
+    "annotation-start": 17.946406402038974,
+    "annotation": 18.157474203670517,
+    "response-in": 20.572773060911913,
+    "exchange": 20.847500665406642,
+    "practice-origin": 21.69854433631872,
+    "practice-in": 22.58495983439161,
+    "practice": 23.989179451304608,
+    "feedback-in": 24.52711483669782,
+    "feedback": 26.06665675285467,
+    "goal-in": 27.193486182238757,
+    "goal-base": 29.1334736107724,
+    "goal": 29.748362745325267,
+    "personal-in": 31.52374917318275,
+    "personal": 34.00187563203099,
+    "plan": 34.588889217886845,
+    "logo-start": 36.799155783267,
+    "logo-end": 38.99992499591872
+  },
+  "min_velocity_before_final_deceleration": 237.5221774712779,
+  "near_zero_definition": "arc velocity < 10 source pixels / second",
+  "intentional_near_zero": [
+    [
+      38.38333333333333,
+      42
+    ]
+  ],
+  "screen_near_zero_before_deceleration": [
+    [
+      7.270833333333333,
+      7.283333333333333
+    ],
+    [
+      8.570833333333333,
+      8.579166666666667
+    ],
+    [
+      31.495833333333334,
+      31.520833333333332
+    ]
+  ],
+  "r3_full_stops": [
+    [
+      0,
+      0.18
+    ],
+    [
+      0.72,
+      2.45
+    ],
+    [
+      4.9,
+      6.45
+    ],
+    [
+      9.55,
+      10.2
+    ],
+    [
+      11.62,
+      12.75
+    ],
+    [
+      16.4,
+      17.65
+    ],
+    [
+      19.03,
+      20.05
+    ],
+    [
+      22.3,
+      23.2
+    ],
+    [
+      24.24,
+      25.5
+    ],
+    [
+      29.15,
+      31.5
+    ],
+    [
+      34,
+      34.5
+    ],
+    [
+      35.12,
+      36.55
+    ]
+  ],
+  "r3_stopped_seconds_before_logo": 13.950000000000003,
+  "bounds": [
+    240,
+    1853.1280275707031,
+    352.5136356764448,
+    752.6644052641009
+  ],
+  "minVisible": 1.871287626450352,
+  "joins": [
+    {
+      "t": 15,
+      "s": 7229.982219707256,
+      "v": 415.51864776013304,
+      "before": 415.72341712351476,
+      "after": 415.3135107752757,
+      "stateEquality": true
+    },
+    {
+      "t": 28,
+      "s": 12018.881483817813,
+      "v": 404.6565945082552,
+      "before": 404.6566376233611,
+      "after": 404.6568221375907,
+      "stateEquality": true
+    },
+    {
+      "t": 30,
+      "s": 12846.553580985168,
+      "v": 429.9195900989399,
+      "before": 429.8360353511663,
+      "after": 430.00316417939547,
+      "stateEquality": true
+    }
+  ],
+  "exactLogo": true,
+  "singleContinuousClock": true,
+  "rendered_window_comparison": [
+    {
+      "global_frame": 449,
+      "same_png_sha256": "6a8be57bed2013e6459351c0aeeccc19cfb9abafc8648755eeba40d320a5274f"
+    },
+    {
+      "global_frame": 450,
+      "same_png_sha256": "c9bdd260008fb89978e46f8c59a745bf58a2cc334b79cf01b11ea37759d3dbff"
+    },
+    {
+      "global_frame": 451,
+      "same_png_sha256": "a5c4421095b334825b2b759db869b971a4633783afc33268950dfdde52225210"
+    },
+    {
+      "global_frame": 839,
+      "same_png_sha256": "91ab4fd575c734e43c46624e7169d66ef716b284c7911633be06a061bdcb5235"
+    },
+    {
+      "global_frame": 840,
+      "same_png_sha256": "d3570c750947638a3de6b86e128b6b0cc624f223995f8017d3922f019cf6cbf7"
+    },
+    {
+      "global_frame": 841,
+      "same_png_sha256": "645bf47cd45b2692d0b161983024ab3172c451461753b701cc913233337bce3a"
+    }
+  ],
+  "windows": [
+    {
+      "id": "WINDOW-01",
+      "global_start_frame": 0,
+      "frames": 450
+    },
+    {
+      "id": "WINDOW-02",
+      "global_start_frame": 450,
+      "frames": 390
+    },
+    {
+      "id": "WINDOW-03",
+      "global_start_frame": 840,
+      "frames": 420
+    }
+  ],
+  "export": {
+    "frames": 1260,
+    "fps": 30,
+    "duration": 42,
+    "width": 1280,
+    "height": 720,
+    "audio": false,
+    "sha256": "b6c6ed0ddb0267973ff67bf36ce9c3cf24b66ada68bd648dc2e8031c0bf4f5e6"
+  },
+  "assets_unchanged": [
+    {
+      "name": "DM-Sans-500.ttf",
+      "sha256": "376427b5322148d8de1e03f263bcca4935a2d60ba71d9f94f4947ab664c711ae"
+    },
+    {
+      "name": "DM-Sans-600.ttf",
+      "sha256": "b79a2ea7a38f33fd96a282fadb9ce97626bb0724a44d21075859f0e50239993a"
+    },
+    {
+      "name": "OFL-DM-Sans.txt",
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1"
+    },
+    {
+      "name": "OFL-Outfit.txt",
+      "sha256": "c676351bf8576b9aba743cd5eaa8c0e7ee0d51f805d720447b4df4ddb6a2e416"
+    },
+    {
+      "name": "Outfit-500.ttf",
+      "sha256": "9a9f465776e653cd6175661d844555e08684d432518f1d2c621bcb3006598f9c"
+    },
+    {
+      "name": "Outfit-600.ttf",
+      "sha256": "8900df5726b5a6f23e723594f11d5ea27e695bd85c884f18d88ed080544fe205"
+    },
+    {
+      "name": "Outfit-700.ttf",
+      "sha256": "49dcdf653a004a2575b3de649f5e4c549d774fecddf317812330edd0ad70685a"
+    },
+    {
+      "name": "pathway-mark.svg",
+      "sha256": "d755f0a050a7d9ef347dd754440e10a6d923e12c9cbc7cade0d52e30c61c0960"
+    },
+    {
+      "name": "pathway-site-hero.jpg",
+      "sha256": "18dccefdede48673006109b38b23470f93dea7dc914628a7a9d652da21f83148"
+    }
+  ]
+}

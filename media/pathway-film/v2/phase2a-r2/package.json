@@ -1,0 +1,23 @@
+{
+  "name": "pathway-phase2a-r2-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "description": "45-second continuous institute / learning / conversion review prototype",
+  "dependencies": {
+    "@remotion/cli": "4.0.519",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.519"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "studio": "remotion studio src/index.tsx",
+    "check": "tsc --noEmit",
+    "frames": "node render.mjs frames",
+    "animatics": "node render.mjs video",
+    "assemble": "python assemble.py"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "stage": "Phase 2A revision R2, not final",
+  "master": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "frames": 1350
+  },
+  "review": {
+    "width": 1280,
+    "height": 720,
+    "audio": false,
+    "duration": 45,
+    "parts": [
+      15,
+      15,
+      15
+    ]
+  },
+  "narrative": [
+    "Institute and real website",
+    "Guided learning experience",
+    "NCLC 7 objective and first step toward enrollment"
+  ],
+  "sources": {
+    "site": "https://pathway-languages.com/",
+    "pedagogical_excerpt": "https://pathway-languages.com/assets/manual-a2/unite-1.pdf",
+    "page": 2,
+    "logo": "https://pathway-languages.com/pathway-mark.svg"
+  },
+  "assets": [
+    {
+      "path": "public/DM-Sans-500.ttf",
+      "sha256": "376427b5322148d8de1e03f263bcca4935a2d60ba71d9f94f4947ab664c711ae",
+      "bytes": 48308
+    },
+    {
+      "path": "public/DM-Sans-600.ttf",
+      "sha256": "b79a2ea7a38f33fd96a282fadb9ce97626bb0724a44d21075859f0e50239993a",
+      "bytes": 48280
+    },
+    {
+      "path": "public/OFL-DM-Sans.txt",
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "bytes": 4482
+    },
+    {
+      "path": "public/OFL-Outfit.txt",
+      "sha256": "c676351bf8576b9aba743cd5eaa8c0e7ee0d51f805d720447b4df4ddb6a2e416",
+      "bytes": 4389
+    },
+    {
+      "path": "public/Outfit-500.ttf",
+      "sha256": "9a9f465776e653cd6175661d844555e08684d432518f1d2c621bcb3006598f9c",
+      "bytes": 47800
+    },
+    {
+      "path": "public/Outfit-600.ttf",
+      "sha256": "8900df5726b5a6f23e723594f11d5ea27e695bd85c884f18d88ed080544fe205",
+      "bytes": 48456
+    },
+    {
+      "path": "public/Outfit-700.ttf",
+      "sha256": "49dcdf653a004a2575b3de649f5e4c549d774fecddf317812330edd0ad70685a",
+      "bytes": 48340
+    },
+    {
+      "path": "public/pathway-mark.svg",
+      "sha256": "d755f0a050a7d9ef347dd754440e10a6d923e12c9cbc7cade0d52e30c61c0960",
+      "bytes": 958
+    },
+    {
+      "path": "public/pathway-site-hero.jpg",
+      "sha256": "18dccefdede48673006109b38b23470f93dea7dc914628a7a9d652da21f83148",
+      "bytes": 95281
+    }
+  ],
+  "reference_video_media": [],
+  "line": "Single connected SVG path; last two cubics are the official logo curve",
+  "end_hold": [
+    41,
+    45
+  ],
+  "rendered_from": "Remotion 4.0.519",
+  "assembly": "Three 450-frame MP4 parts concatenated without another encode",
+  "final_production": false
+}
