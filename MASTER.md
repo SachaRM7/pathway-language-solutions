@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #147 (8 références vidéo et IA de plus).
+> **État au 19 novembre 2026** — dernière PR intégrée : #148 (plan de démarrage des pubs).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -683,7 +683,8 @@ Relevé du 19 nov. 2026.
   - consignes de mise à jour pour les agents (#143) ;
   - **la publicité vidéo et les réseaux sociaux deviennent le prochain grand chantier** (#144) ;
   - **lancement du Campus fixé au 1er janvier 2027** (#145) ;
-  - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146), puis 8 de plus : motion design, vidéo de lancement, IA en général (#147).
+  - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146), puis 8 de plus : motion design, vidéo de lancement, IA en général (#147) ;
+  - **plan de démarrage des pubs validé**, en 4 étapes jusqu'au lancement du 1er janvier (#148).
 
 ---
 
@@ -860,14 +861,62 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 **Première pièce (prototype) :** « Ronda IRCC », 15 s, 1080×1920, sans voix, sur une grille de 120 BPM, avec la dernière ronde.
 
+#### Plan de démarrage des pubs (validé par Sacha le 19 nov. 2026)
+
+**Le principe :**
+- **Une seule destination : le test de niveau gratuit.** Il est déjà optimisé pour mobile, et tout ce qui suit est automatique (e-mails, disponibilités, réunion, inscription).
+- **On juge une pub sur ce qu'elle produit dans le CRM, pas sur ses vues :** coût par test terminé → part de tests suivis de disponibilités → réunions → inscrits. Ces chiffres sortent du rapport du lundi (par campagne) et des fiches « Publicidad · <campagne> ».
+
+**Étape 0 — Décider (environ 1 h de Sacha)**
+- **Budget de test :** ordre de grandeur proposé, 10 à 15 US$ par jour pendant 2 semaines. **À fixer par Sacha.**
+- **Accès :** compte publicitaire Meta et compte Instagram de Pathway. TikTok plus tard.
+- **Fichier de faits** (méthode de la référence 09), préparé par l'assistant à partir des §1 et §3, relu par Sacha. Il contient :
+  - les prix et les promesses ;
+  - les chiffres IRCC datés ;
+  - ce qu'on ne promet jamais.
+- **La « bible » du studio :** charte, espagnol tutoyé, interdits. Rédigée par l'assistant, puis validée.
+
+**Étape 1 — Monter le studio et produire (semaines 1 et 2)**
+1. **Prototype « Ronda IRCC »** de 15 s, pour valider la chaîne de fabrication (références 11 et 12).
+2. **Pub principale** de 30 à 45 s, avec de vraies captures du site et d'un Campus de démonstration (référence 13). Script : le problème → le test gratuit → le Campus → une preuve réelle → « Mide tu nivel gratis ».
+3. **Variantes** (référence 01), soit **une douzaine de pubs**, chacune avec son propre lien UTM :
+   - 3 accroches, par exemple « ¿Cuántos puntos te da el francés? », « De cero a NCLC 7: ¿cuánto tiempo? », « Tu nivel de francés en 12 minutos, gratis » ;
+   - 2 formats : 9:16 et 4:5 ;
+   - 2 fins.
+4. **Témoignage vidéo d'Elena ou de Devon**, sous-titré et habillé aux couleurs de Pathway. Il faut leur accord pour un usage publicitaire.
+5. **Deux validations de Sacha :** la planche d'images avant le rendu, puis la publication.
+
+**Étape 2 — Test à petit budget (mi-décembre, 7 à 10 jours)**
+- **Campagne Meta** optimisée sur l'événement **Lead** (test terminé), ciblant le Pérou, la Colombie, le Chili et le Paraguay, en espagnol.
+- **Toutes les variantes en même temps** ; Meta répartit le budget.
+- **Suivi :** rapport du lundi par campagne, et un agent « analyste » qui classe les pubs.
+- **Règle de décision :**
+  - couper au-delà d'un **coût par test terminé** à fixer après les premiers jours ;
+  - garder les 2 ou 3 meilleures ;
+  - ne pas juger avant quelques centaines de clics.
+- **En option :** le test A/B pub vers Messenger contre pub vers le test.
+
+**Étape 3 — Lancement du 1er janvier 2027, puis rythme de croisière**
+- **Budget augmenté sur les pubs gagnantes.** Angle possible : « 2027, tu año para el francés » (janvier, mois des résolutions).
+- **Organique :** 3 Reels par semaine (Ronda IRCC, Tip TEF, témoignage, offre), préparés par les agents.
+- **Chaque semaine :** 3 nouvelles accroches, et on retire les pubs qui s'essoufflent.
+- **Temps visé pour Sacha :** environ 30 min par semaine.
+
+**Points d'attention :**
+- **Se coordonner avec Ryan,** qui fait déjà des pubs (témoignages, vers Messenger). Il ne faut pas se concurrencer sur les mêmes audiences. Ses chiffres (coût par message) servent de point de comparaison.
+- **Avant Noël,** les pubs coûtent plus cher et l'attention baisse. D'où un test court mi-décembre, puis la vraie poussée début janvier.
+- **Toujours :** vrais élèves avec leur accord, chiffres IRCC datés, aucune promesse migratoire, pas d'étiquette « IA ».
+
 #### Pour démarrer la nouvelle conversation
 
 1. Lire `docs/marketing/studio-video.md`, cette section et **`docs/references/README.md`**. En priorité : le **studio de vidéo de lancement (13)**, le **playbook complet (11)**, le cours complet (12), le moteur automatisé (01), la campagne par agents (09) et la sélection d'outils (`outils/depots-github.md`).
-2. Trancher les questions ouvertes :
-   - la **mascotte** (le phare du logo animé : Sacha est pour, Ryan et Abdrahim n'ont pas confirmé) ;
-   - le budget ;
-   - l'accès aux comptes Instagram et TikTok ;
-   - le calendrier de production pour être prêt au 1er janvier.
+2. Faire l'**étape 0** du plan ci-dessus, en posant d'abord ces 4 questions à Sacha :
+   - le budget de test ;
+   - les pubs actuelles de Ryan (sur quoi elles tournent, coût par message) ;
+   - l'accès au compte Instagram et au compte publicitaire Meta ;
+   - l'accord d'Elena et de Devon pour l'usage publicitaire de leur vidéo.
+
+   Autre point à trancher : la **mascotte** (le phare du logo animé : Sacha est pour, Ryan et Abdrahim n'ont pas confirmé).
 3. **Clé ElevenLabs :** l'enregistrer par le formulaire sécurisé de la session, **jamais dans le chat**. Les droits sont déjà définis dans le plan : plafond de crédits, expiration à 90 jours.
 4. Créer `marketing/studio/` et la bible, puis produire le prototype « Ronda IRCC » : planche de 18 images, validation, MP4.
 5. **Publication :**
@@ -1026,7 +1075,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
    - `llms.txt` simplifie les formules (Acelerado 4 h, Intensivo 6 h) et contient encore le +51 ;
    - les pages « Cuánto tiempo » donnent des délais, alors que le résultat du test n'en donne plus. Choix à confirmer.
 8. **Octolinks :** commande abandonnée ou maintenue ?
-9. **Publicité :** budget, campagnes en cours, résultats, accès aux comptes Instagram et TikTok, mascotte ([§13](#13-vision-et-backlog)).
+9. **Publicité :** budget de test, pubs actuelles de Ryan et leurs coûts, accès aux comptes Instagram et publicitaire Meta, accord d'Elena et Devon, mascotte ([§13](#13-vision-et-backlog), plan de démarrage).
 
 ### Dette technique
 
@@ -1092,3 +1141,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Lancement du Campus fixé au 1er janvier 2027, avec la liste de ce qu'il reste à faire avant cette date (§12). |
 | 19 nov. 2026 | Ajout de `docs/references/` : 10 articles (motion design, animation, réseaux sociaux, marketing, SEO) et 63 dépôts GitHub classés par thème et par utilité. |
 | 19 nov. 2026 | 8 références de plus (11 à 18) : playbook et cours complets de motion design, studio de vidéo de lancement, langage du mouvement, simulateur 3D, IA et agents, rétro-ingénierie. |
+| 19 nov. 2026 | Plan de démarrage des pubs validé par Sacha (§13) : décider, produire, tester à petit budget mi-décembre, accélérer au 1er janvier. |
