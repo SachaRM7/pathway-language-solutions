@@ -1,6 +1,6 @@
 # Studio vidéo Pathway : plan à traiter plus tard
 
-Statut : **en attente**. Rédigé le 14 novembre 2026, à reprendre quand les priorités actuelles seront terminées (CRM, relances, lancement du 1er janvier).
+Statut : **démarré le 19 novembre 2026**. Le studio est dans `marketing/studio/` et son état est suivi dans `MASTER.md` §13. Ce plan, rédigé le 14 novembre 2026, reste la référence de méthode.
 
 ## L'objectif
 
