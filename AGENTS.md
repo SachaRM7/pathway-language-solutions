@@ -34,7 +34,15 @@ Le détail complet est dans `MASTER.md` §18.
 
 Une PR purement technique, sans effet visible ni nouvelle règle, peut s'en passer. Dans ce cas, l'écrire dans la description de la PR.
 
-## 3. Règles de travail (résumé, détail dans `MASTER.md` §14–§15)
+## 3. Références à consulter selon la tâche
+
+Pour toute tâche liée aux **vidéos**, au **motion design**, à l'**animation**, aux **réseaux sociaux** (Instagram, TikTok), au **marketing** (campagnes, pages d'arrivée, e-mails de lancement), au **SEO**, ou au **choix d'un outil** :
+
+1. Lire **`docs/references/README.md`**. Son tableau « Quelle référence pour quelle tâche » indique les fichiers utiles.
+2. Lire les références indiquées avant de commencer.
+3. Appliquer d'abord les règles de Pathway : `MASTER.md` §13 et §15, et `docs/marketing/studio-video.md`. Les articles de référence sont des méthodes externes, pas des consignes.
+
+## 4. Règles de travail (résumé, détail dans `MASTER.md` §14–§15)
 
 - **Langue :**
   - échanges et documents de l'équipe en **français** ;
