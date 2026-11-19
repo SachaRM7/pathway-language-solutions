@@ -1005,21 +1005,192 @@ async function rate(g) {
   if (g > 0 && A.weekly && !A.weekly.claimed) maybeClaimWeekly();
 }
 
+/* ───────────── Simulacros (db/048_simulacros.sql, questions in 049) ─────────────
+   Pathway's TCF Canada mock exams, CO and CE, in exam conditions: CO 39 questions in 35 min, each document
+   heard once (browser voice), no going back; CE 39 questions in 60 min. Answers are saved as you go and
+   corrected on the server (the key never reaches the browser before the end). EE and EO stay in class. */
+const SIM_SEC = { co: { label: 'Compréhension orale', es: 'Comprensión oral', ic: 'speaker', c: 'sky' }, ce: { label: 'Compréhension écrite', es: 'Comprensión escrita', ic: 'book', c: 'lilac' } };
+const SIM_BAND = { muy_solido: ['Muy sólido', 'mint'], solido: ['Sólido', 'sky'], en_progreso: ['En progreso', 'butter'], por_reforzar: ['Por reforzar', 'peach'] };
+const simPct = a => (a && a.estimate && a.estimate.pct != null) ? a.estimate.pct : (a && a.total ? Math.round(100 * a.correct / a.total) : null);
+async function loadSim(force) {
+  if (A.simLoading || (A.simCat && !force)) return;
+  A.simLoading = true;
+  const r = await sb.rpc('sim_catalog');
+  A.simLoading = false;
+  A.simCat = r.error ? [] : (r.data || []);
+  if (location.hash === '#simulacros') render();
+}
 function viewSimulacros() {
-  const e = A.profile.exam;
-  const choices = e === 'tef' || e === 'tefaq' ? ['tef'] : e === 'tcf' ? ['tcf'] : ['tcf', 'tef'];
-  if (!choices.includes(A.simExam)) A.simExam = choices[0];
-  const dur = A.simExam === 'tcf' ? ['35 min', '60 min', '60 min', '12 min'] : ['40 min', '60 min', '60 min', '15 min'];
-  const sk = [['Compréhension orale', 'speaker', 'sky'], ['Compréhension écrite', 'book', 'lilac'], ['Expression écrite', 'pen', 'peach'], ['Expression orale', 'mic', 'butter']];
+  const head = topBar('h-sim', 'Simulacros', 'Exámenes blancos con la estructura del TCF Canada, en condiciones de examen');
+  if (!A.simCat) { loadSim(); return `<section class="view" aria-labelledby="h-sim">${head}<p class="muted">Cargando…</p></section>`; }
+  const cat = A.simCat;
+  if (!cat.length) return `<section class="view" aria-labelledby="h-sim">${head}<article class="tile"><p>Los simulacros en línea llegan muy pronto. Mientras tanto, tu profesor los organiza en clase.</p></article></section>`;
+  if (!cat.some(e => e.id === A.simExam)) { const want = A.profile.level === 'B2' ? 'B2' : 'B1'; A.simExam = (cat.find(e => e.level === want) || cat[0]).id; }
+  const ex = cat.find(e => e.id === A.simExam);
+  const att = ex.attempts || [];
+  const now = Date.now();
+  const card = sec => {
+    const m = SIM_SEC[sec], info = (ex.sections || {})[sec];
+    if (!info) return '';
+    const open = att.find(a => a.section === sec && !a.finished_at && new Date(a.deadline).getTime() > now);
+    const last = att.find(a => a.section === sec && a.finished_at);
+    const pct = simPct(last), band = last && last.estimate && SIM_BAND[last.estimate.band];
+    return `<article class="tile ${m.c} exam sim-card"><div class="row"><span class="pill">${icon(m.ic)}${info.minutes} min · ${info.count} preguntas</span></div>
+      <div style="display:flex;justify-content:center">${pct == null ? ring(0, 100, 'Sin resultado todavía') : ring(pct, 100, `${pct} % de respuestas correctas`)}</div>
+      <p class="sim-last">${last ? `<b>${last.correct}/${last.total}</b> · ${band ? band[0] : ''} · ${esc(fmtDate(new Date(last.finished_at), { day: 'numeric', month: 'short' }))}` : 'Todavía sin intento'}</p>
+      <div class="row"><h3>${m.label}</h3><button class="btn btn-dark btn-sm" type="button" data-sim-start="${sec}">${open ? 'Continuar' : last ? 'Volver a intentar' : 'Empezar'}</button></div>
+      <p class="sim-rule">${sec === 'co' ? 'Cada documento se escucha una sola vez. No se puede volver atrás.' : 'Puedes volver a una pregunta antes de terminar.'}</p>
+    </article>`;
+  };
+  const inClass = [['Expression écrite', 'pen', 'peach'], ['Expression orale', 'mic', 'butter']].map(([k, ic, c]) => `<article class="tile ${c} exam sim-card sim-class"><div class="row"><span class="pill">${icon(ic)}En clase</span></div>
+      <div class="row"><h3>${k}</h3></div><p class="sim-rule">Con tu profesor: tareas del examen, corregidas con la grilla oficial.</p></article>`).join('');
+  const done = att.filter(a => a.finished_at);
   return `<section class="view" aria-labelledby="h-sim">
-  ${topBar('h-sim', 'Simulacros', 'Pruebas cronometradas en las condiciones del examen, con una estimación NCLC por competencia')}
-  ${choices.length > 1 ? `<div class="seg-tabs" role="group" aria-label="Examen">${choices.map(x => `<button type="button" data-exam="${x}" aria-pressed="${x === A.simExam}"><b>${x === 'tcf' ? 'C' : 'E'}</b>${x === 'tcf' ? 'TCF Canada' : 'TEF Canada'}</button>`).join('')}</div>` : ''}
-  <div class="exam-grid">${sk.map(([k, ic, c], i) => `<article class="tile ${c} exam"><div class="row"><span class="pill">${icon(ic)}${dur[i]}</span></div>
-      <div style="display:flex;justify-content:center">${gauge(null)}</div>
-      <div class="row"><h3>${k}</h3><button class="round" style="box-shadow:none" aria-label="Empezar ${k}" data-toast="Los simulacros en línea llegan en la próxima etapa del campus. Mientras tanto, tu profesor los organiza en clase.">${icon('arrow')}</button></div></article>`).join('')}</div>
-  <p class="faint" style="font-size:13px">Tu estimación NCLC aparecerá después de tu primer simulacro. La marca naranja es tu meta, NCLC 7. Estimación orientativa en formato ${A.simExam === 'tcf' ? 'TCF' : 'TEF'} Canada; no sustituye el resultado oficial.</p>
+  ${head}
+  ${cat.length > 1 ? `<div class="seg-tabs" role="group" aria-label="Examen">${cat.map(e => `<button type="button" data-sim-exam="${esc(e.id)}" aria-pressed="${e.id === A.simExam}"><b>${esc(e.level)}</b>Examen blanco</button>`).join('')}</div>` : ''}
+  <div class="exam-grid">${card('co')}${card('ce')}${inClass}</div>
+  ${done.length ? `<article class="tile"><div class="tile-head"><h2>Tus intentos</h2></div>
+    ${done.map(a => { const b = a.estimate && SIM_BAND[a.estimate.band]; return `<div class="err-row"><span><b>${SIM_SEC[a.section].es}</b> · ${a.correct}/${a.total} (${simPct(a)} %)${b ? ` · ${b[0]}` : ''}<br><span class="muted" style="font-size:13px">${esc(fmtDate(new Date(a.finished_at), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}</span></span><button class="btn btn-light btn-sm" type="button" data-sim-review="${a.id}">Ver corrección</button></div>`; }).join('')}
+  </article>` : ''}
+  <p class="faint" style="font-size:13px">Examen blanco de Pathway con la estructura del TCF Canada. El resultado es orientativo: no es un puntaje TCF ni un nivel NCLC oficial. Tu profesor lo comenta contigo en clase.</p>
   </section>`;
 }
+
+// The test itself: a full-screen layer above the Campus.
+const S = { att: null, items: [], i: 0, answers: {}, heard: new Set(), playing: false, tick: null, busy: false };
+async function simStart(sec, btn) {
+  if (btn) btn.disabled = true;
+  const r = await sb.rpc('sim_start', { p_exam: A.simExam, p_section: sec });
+  if (btn) btn.disabled = false;
+  if (r.error || !r.data) return toast(/too many/.test((r.error && r.error.message) || '') ? 'Ya hiciste varios simulacros hoy: vuelve mañana.' : 'No se pudo abrir el simulacro. Inténtalo de nuevo.');
+  const a = r.data;
+  Object.assign(S, { att: a, items: a.items || [], answers: { ...(a.answers || {}) }, heard: new Set(), playing: false, busy: false });
+  // CO cannot go back: resume after the last answered question.
+  const answered = Object.keys(S.answers).map(Number);
+  S.i = a.section === 'co' && answered.length ? Math.min(S.items.length - 1, S.items.findIndex(x => x.n === Math.max(...answered)) + 1) : 0;
+  if (a.section === 'co') S.items.slice(0, S.i).forEach(x => S.heard.add(x.n));
+  let root = $('#simRoot');
+  if (!root) { root = document.createElement('div'); root.id = 'simRoot'; root.className = 'sim-root'; document.body.appendChild(root); }
+  root.hidden = false; document.body.classList.add('no-scroll');
+  clearInterval(S.tick); S.tick = setInterval(simTick, 1000);
+  simRender();
+}
+function simLeft() { return Math.max(0, Math.round((new Date(S.att.deadline).getTime() - Date.now()) / 1000)); }
+function simTick() {
+  const t = $('#simTimer'); if (!S.att) return;
+  const left = simLeft();
+  if (t) { t.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; t.classList.toggle('low', left <= 300); }
+  if (left <= 0) simFinish(true);
+}
+function simSpeak(item) {
+  if (S.playing || S.heard.has(item.n)) return;
+  if (!canSpeak) { S.heard.add(item.n); return simRender(); }
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(item.script); u.lang = 'fr-FR'; u.rate = .95; if (frVoice) u.voice = frVoice;
+    const done = () => { S.playing = false; S.heard.add(item.n); simRender(); };
+    u.onerror = done;
+    // B2: the question is heard after the document, then the four options appear.
+    u.onend = () => {
+      if (!item.question_after) return done();
+      const qv = new SpeechSynthesisUtterance(item.question); qv.lang = 'fr-FR'; qv.rate = .95; if (frVoice) qv.voice = frVoice;
+      qv.onend = qv.onerror = done;
+      setTimeout(() => speechSynthesis.speak(qv), 600);
+    };
+    S.playing = true; simRender(); speechSynthesis.speak(u);
+  } catch (e) { S.playing = false; S.heard.add(item.n); simRender(); }
+}
+function simRender() {
+  const root = $('#simRoot'); if (!root || !S.att) return;
+  const co = S.att.section === 'co', it = S.items[S.i], total = S.items.length;
+  const chosen = S.answers[it.n];
+  const showQ = !co || !it.question_after || S.heard.has(it.n);
+  const canAnswer = !co || S.heard.has(it.n) || S.playing || !it.question_after;
+  const left = simLeft();
+  const docBlock = co
+    ? `<div class="sim-doc sim-audio"><p class="label">Documento ${it.n}</p>
+        ${canSpeak ? `<button class="btn ${S.heard.has(it.n) ? 'btn-light' : 'btn-dark'}" type="button" data-sim-play ${S.playing || S.heard.has(it.n) ? 'disabled' : ''}>${icon('speaker')}${S.playing ? 'Escuchando…' : S.heard.has(it.n) ? 'Ya escuchaste este documento' : 'Escuchar (una sola vez)'}</button>`
+          : `<p class="muted">Tu navegador no puede leer el audio: lee el documento.</p><p>${esc(it.script)}</p>`}</div>`
+    : `<div class="sim-doc"><p class="label">Documento</p><div class="sim-text">${esc(it.document || '').replace(/\n/g, '<br>')}</div></div>`;
+  root.innerHTML = `<div class="sim-shell" role="dialog" aria-modal="true" aria-label="Simulacro ${SIM_SEC[S.att.section].es}">
+    <header class="sim-top"><b>${SIM_SEC[S.att.section].es}</b><span class="sim-count">Pregunta ${S.i + 1} de ${total}</span>
+      <span class="sim-timer ${left <= 300 ? 'low' : ''}" id="simTimer" aria-label="Tiempo restante">${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}</span>
+      <button class="btn btn-light btn-sm" type="button" data-sim-end>Terminar</button></header>
+    <div class="sim-body">
+      ${docBlock}
+      <div class="sim-q">${showQ ? `<h2>${esc(it.question)}</h2>
+        <div class="sim-opts" role="radiogroup" aria-label="Respuestas">${it.options.map((o, k) => `<button type="button" role="radio" aria-checked="${chosen === k}" class="sim-opt ${chosen === k ? 'on' : ''}" data-sim-opt="${k}" ${canAnswer ? '' : 'disabled'}><span>${'ABCD'[k]}</span>${esc(o)}</button>`).join('')}</div>`
+        : `<p class="muted">La pregunta aparece después de la escucha.</p>`}</div>
+    </div>
+    <footer class="sim-foot">
+      ${co ? '<span class="muted" style="font-size:13px">Sin vuelta atrás, como en el examen.</span>' : `<button class="btn btn-light" type="button" data-sim-prev ${S.i === 0 ? 'disabled' : ''}>Anterior</button>`}
+      ${!co ? `<div class="sim-dots">${S.items.map((x, k) => `<button type="button" class="${k === S.i ? 'cur' : ''} ${S.answers[x.n] != null ? 'ok' : ''}" data-sim-go="${k}" aria-label="Pregunta ${k + 1}">${k + 1}</button>`).join('')}</div>` : ''}
+      ${S.i < total - 1 ? `<button class="btn btn-dark" type="button" data-sim-next ${co && S.playing ? 'disabled' : ''}>Siguiente<span class="arrow">${icon('arrow')}</span></button>`
+        : `<button class="btn btn-dark" type="button" data-sim-end>Terminar el simulacro</button>`}
+    </footer></div>`;
+}
+async function simFinish(auto) {
+  if (!S.att || S.busy) return;
+  if (!auto) {
+    const missing = S.items.filter(x => S.answers[x.n] == null).length;
+    if (!confirm(missing ? `Te faltan ${missing} preguntas sin responder (valen 0). ¿Terminar de todos modos?` : '¿Terminar el simulacro y ver tu resultado?')) return;
+  }
+  S.busy = true; clearInterval(S.tick); try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+  const r = await sb.rpc('sim_finish', { p_attempt: S.att.id, p_answers: S.answers });
+  S.busy = false;
+  if (r.error || !r.data) { toast('No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.'); S.tick = setInterval(simTick, 1000); return; }
+  S.att = null; A.simCat = null; loadSim(true);
+  simShowResult(r.data);
+}
+function simShowResult(rv) {
+  let root = $('#simRoot');
+  if (!root) { root = document.createElement('div'); root.id = 'simRoot'; root.className = 'sim-root'; document.body.appendChild(root); }
+  root.hidden = false; document.body.classList.add('no-scroll');
+  const pct = simPct(rv), band = rv.estimate && SIM_BAND[rv.estimate.band], co = rv.section === 'co';
+  root.innerHTML = `<div class="sim-shell" role="dialog" aria-modal="true" aria-label="Resultado del simulacro">
+    <header class="sim-top"><b>${SIM_SEC[rv.section].es} · resultado</b><span></span><span></span><button class="btn btn-light btn-sm" type="button" data-sim-close>Cerrar</button></header>
+    <div class="sim-body sim-result">
+      <div class="sim-score">${ring(pct || 0, 100, `${pct} %`)}<div><p class="huge num">${rv.correct}<span class="muted" style="font-size:.5em">/${rv.total}</span></p>
+        ${band ? `<span class="pill" style="background:var(--${band[1]})">${band[0]}</span>` : ''}
+        <p class="muted" style="margin-top:8px;font-size:13px">Resultado orientativo: no es un puntaje TCF ni un nivel NCLC oficial.</p></div></div>
+      ${rv.estimate && Array.isArray(rv.estimate.blocks) && rv.estimate.blocks.length ? `<div class="sim-blocks"><p class="label">Por bloque de dificultad (de lo más fácil a lo más difícil)</p>
+        ${rv.estimate.blocks.map(b => `<div class="sim-block"><span>Preguntas ${b.from}–${b.to}</span><i><b style="width:${Math.round(100 * b.correct / Math.max(1, b.count))}%"></b></i><span class="num">${b.correct}/${b.count}</span></div>`).join('')}
+        <p class="muted" style="font-size:13px;margin-top:6px">Mira en qué bloque empiezan tus errores: es lo que trabajas con tu profesor.</p></div>` : ''}
+      <h2 style="margin:22px 0 10px">Corrección</h2>
+      <ol class="sim-review">${(rv.items || []).map(x => { const ok = x.chosen === x.answer; return `<li class="${ok ? 'ok' : 'ko'}">
+        <p><b>${x.n}.</b> ${esc(x.question)} <span class="sim-mark">${ok ? icon('check') : icon('x')}</span></p>
+        <p class="sim-ans">${x.chosen == null ? '<span class="muted">Sin respuesta</span> · ' : ok ? '' : `Tu respuesta: <s>${'ABCD'[x.chosen]}. ${esc(x.options[x.chosen])}</s> · `}Correcta: <b>${'ABCD'[x.answer]}. ${esc(x.options[x.answer])}</b></p>
+        <details><summary>${co ? 'Ver la transcripción' : 'Ver el documento'}</summary><p>${esc((co ? x.script : x.document) || '').replace(/\n/g, '<br>')}</p>${x.note ? `<p class="muted">${esc(x.note)}</p>` : ''}</details>
+      </li>`; }).join('')}</ol>
+    </div></div>`;
+}
+function simClose() {
+  const root = $('#simRoot'); if (root) { root.hidden = true; root.innerHTML = ''; }
+  document.body.classList.remove('no-scroll');
+  clearInterval(S.tick); S.att = null; try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+  render();
+}
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-sim-start],[data-sim-exam],[data-sim-review],[data-sim-play],[data-sim-opt],[data-sim-next],[data-sim-prev],[data-sim-go],[data-sim-end],[data-sim-close]');
+  if (!t) return;
+  if (t.matches('[data-sim-exam]')) { A.simExam = t.dataset.simExam; return render(); }
+  if (t.matches('[data-sim-start]')) return simStart(t.dataset.simStart, t);
+  if (t.matches('[data-sim-review]')) { t.disabled = true; const r = await sb.rpc('sim_review', { p_attempt: t.dataset.simReview }); t.disabled = false; if (r.error || !r.data) return toast('No se pudo abrir la corrección.'); return simShowResult(r.data); }
+  if (t.matches('[data-sim-close]')) return simClose();
+  if (!S.att) return;
+  const it = S.items[S.i];
+  if (t.matches('[data-sim-play]')) return simSpeak(it);
+  if (t.matches('[data-sim-opt]')) {
+    const k = +t.dataset.simOpt;
+    S.answers[it.n] = k; simRender();
+    sb.rpc('sim_answer', { p_attempt: S.att.id, p_n: it.n, p_choice: k }).then(r => { if (r && r.error && /closed/.test(r.error.message || '')) simFinish(true); });
+    return;
+  }
+  if (t.matches('[data-sim-next]')) { try { speechSynthesis.cancel(); } catch (_) {} if (S.att.section === 'co') S.heard.add(it.n); S.playing = false; S.i = Math.min(S.items.length - 1, S.i + 1); return simRender(); }
+  if (t.matches('[data-sim-prev]') && S.att.section === 'ce') { S.i = Math.max(0, S.i - 1); return simRender(); }
+  if (t.matches('[data-sim-go]') && S.att.section === 'ce') { S.i = +t.dataset.simGo; return simRender(); }
+  if (t.matches('[data-sim-end]')) return simFinish(false);
+});
 
 function gauge(v) {
   const r = 49, c = 2 * Math.PI * r;
