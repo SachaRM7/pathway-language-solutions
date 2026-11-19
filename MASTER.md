@@ -914,6 +914,13 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 ## 18. Comment tenir ce document à jour
 
+**Qui le met à jour :** tout agent qui travaille sur le dépôt, dans la même PR que son changement. La règle est écrite là où les agents la lisent automatiquement :
+- `AGENTS.md`, lu par Codex et les autres agents de code ;
+- `CLAUDE.md`, lu par Claude Code, qui renvoie à `AGENTS.md` ;
+- `.github/pull_request_template.md` : une case « MASTER.md mis à jour » dans chaque PR.
+
+Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modifient pas ce fichier.
+
 **Principe :** ce fichier décrit **l'état présent**. Le détail technique reste dans le code, les migrations et les autres documents ; ici, on garde la vue d'ensemble, les décisions et leurs raisons.
 
 **À chaque PR fusionnée** qui change le produit :
@@ -942,3 +949,4 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 | Date | Changement |
 |---|---|
 | 19 nov. 2026 | Création du document : état après la PR #141, historique depuis août 2026, backlog, règles, leçons. |
+| 19 nov. 2026 | Ajout de `AGENTS.md`, `CLAUDE.md` et du modèle de PR : chaque agent doit tenir ce document à jour. |
