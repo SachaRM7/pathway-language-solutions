@@ -19,7 +19,7 @@ Dans les copies de ce dossier, les noms des modèles d'IA sont remplacés par de
 À savoir avant de lire :
 
 - **Ce sont des articles d'auteurs externes**, souvent écrits pour vendre une formation, un outil ou un lien affilié. Les chiffres de vues et de revenus ne sont **pas vérifiés**.
-- Les noms des modèles d'IA ont été remplacés par des niveaux génériques : `[top model]`, `[advanced model]`, `[mid model]`, `[light model]`. Le dépôt ne contient pas d'identifiant de modèle (règle de `AGENTS.md`). Pour choisir un modèle, suivre ce que l'outil utilisé propose au moment du travail.
+- Dans les copies, les noms des modèles d'IA sont remplacés par les étiquettes de la légende ci-dessus. Ce n'est pas une règle de Pathway : les copies ont été faites par une session Claude, qui n'a pas le droit d'écrire ces noms dans un dépôt. Rien n'empêche d'ajouter les articles d'origine tels quels.
 - **Rien n'a été installé ni testé.** Avant d'installer un outil, un skill ou un serveur MCP :
   - lire son code ;
   - vérifier sa licence ;
@@ -323,5 +323,5 @@ Il présente un outil open source (MCP et ligne de commande) qui permet à un ag
 ## Ajouter une référence
 
 1. Ranger le fichier dans le bon dossier, avec un nom clair et un numéro.
-2. Retirer les noms de modèles d'IA du texte. Les liens peuvent rester tels quels.
+2. L'ajouter tel quel. Si c'est une session Claude qui l'ajoute, elle remplace les noms de modèles par les étiquettes de la légende.
 3. Ajouter ici un résumé, une note ★ à ★★★ et la ligne « Pour Pathway », puis une ligne dans le tableau « Quelle référence pour quelle tâche ».

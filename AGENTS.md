@@ -61,5 +61,5 @@ Pour toute tâche liée aux **vidéos**, au **motion design**, à l'**animation*
   - aucun paiement, aucune saisie de mot de passe par un agent ;
   - aucun envoi au nom de Pathway sans clic humain ;
   - aucun contournement des protections anti-robots.
-- **Données privées :** pas d'adresse e-mail personnelle de l'équipe, ni d'identifiant de modèle d'IA, dans le code, les commits, les PR ou la documentation.
+- **Données privées :** pas d'adresse e-mail personnelle de l'équipe dans le code, les commits, les PR ou la documentation.
 - **IA face aux élèves et aux prospects :** elle ne prétend jamais être humaine, n'invente rien et ne fait aucune promesse migratoire.
