@@ -318,8 +318,6 @@ Un tour de ce que des gens ont construit en quelques jours (jeux, films, scènes
 
 Il présente un outil open source (MCP et ligne de commande) qui permet à un agent d'expliquer **comment fonctionne une application** sans son code source : applications de bureau, sites, fichiers .NET ou Android…
 
-**Pour Pathway :** hors sujet aujourd'hui. **Ne jamais s'en servir** pour contourner une licence ou un paiement, ni pour copier un logiciel ou un site concurrent. Usage acceptable : comprendre le fonctionnement d'un outil qu'on utilise déjà, en respectant ses conditions d'utilisation.
-
 ---
 
 ## Ajouter une référence
