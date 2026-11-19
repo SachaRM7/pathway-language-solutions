@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #146 (références vidéo, marketing, SEO).
+> **État au 19 novembre 2026** — dernière PR intégrée : #147 (8 références vidéo et IA de plus).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -683,7 +683,7 @@ Relevé du 19 nov. 2026.
   - consignes de mise à jour pour les agents (#143) ;
   - **la publicité vidéo et les réseaux sociaux deviennent le prochain grand chantier** (#144) ;
   - **lancement du Campus fixé au 1er janvier 2027** (#145) ;
-  - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146).
+  - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146), puis 8 de plus : motion design, vidéo de lancement, IA en général (#147).
 
 ---
 
@@ -862,7 +862,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 #### Pour démarrer la nouvelle conversation
 
-1. Lire `docs/marketing/studio-video.md`, cette section et **`docs/references/README.md`**. En priorité : le moteur automatisé (01), ce que cachent les vidéos virales (03), la campagne par agents (09) et la sélection d'outils (`outils/depots-github.md`).
+1. Lire `docs/marketing/studio-video.md`, cette section et **`docs/references/README.md`**. En priorité : le **studio de vidéo de lancement (13)**, le **playbook complet (11)**, le cours complet (12), le moteur automatisé (01), la campagne par agents (09) et la sélection d'outils (`outils/depots-github.md`).
 2. Trancher les questions ouvertes :
    - la **mascotte** (le phare du logo animé : Sacha est pour, Ryan et Abdrahim n'ont pas confirmé) ;
    - le budget ;
@@ -1091,3 +1091,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Section « Prochain grand chantier : publicités vidéo et réseaux sociaux » (plan vidéo résumé, démarrage). |
 | 19 nov. 2026 | Lancement du Campus fixé au 1er janvier 2027, avec la liste de ce qu'il reste à faire avant cette date (§12). |
 | 19 nov. 2026 | Ajout de `docs/references/` : 10 articles (motion design, animation, réseaux sociaux, marketing, SEO) et 63 dépôts GitHub classés par thème et par utilité. |
+| 19 nov. 2026 | 8 références de plus (11 à 18) : playbook et cours complets de motion design, studio de vidéo de lancement, langage du mouvement, simulateur 3D, IA et agents, rétro-ingénierie. |

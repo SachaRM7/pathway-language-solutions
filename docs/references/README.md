@@ -21,17 +21,23 @@ Ce dossier rassemble des **articles de référence** (guides publiés sur X, sau
 
 | Je dois… | Lire en priorité |
 |---|---|
-| Monter le **studio vidéo** (outils, rendu, chaîne de production) | 01, 03, 02 |
-| Écrire le **brief** d'une vidéo, ou les règles du studio (`bible.md`) | 03, 04, 01 |
-| Rendre une animation HTML en **MP4** (vertical 1080×1920) | 02 (script `render.py`), 01 (`seek(t)`, FFmpeg), 03 |
-| Faire les **variantes** d'une pub (accroches, formats 9:16 / 1:1 / 16:9, appels à l'action) | 01 |
-| Mettre en place la **relecture des images** avant le rendu (planche, contrôle qualité) | 01, 03, 04 |
+| Monter le **studio vidéo** (outils, rendu, chaîne de production) | 11, 13, 01, 03 |
+| Faire la **pub principale** (vidéo de lancement qui montre le site et le Campus) | **13**, 11, 01 |
+| Écrire le **brief** d'une vidéo, ou les règles du studio (`bible.md`, `CLAUDE.md` du studio) | 11, 12, 03, 04 |
+| Choisir les **valeurs exactes** du mouvement (courbes, ressorts, durées, grille de rythme) | 11, 12, 14 |
+| Rendre une animation HTML en **MP4** (vertical 1080×1920) | 11 (`render.mjs`, flou de mouvement), 12, 02 (`render.py`), 01 |
+| Faire les **variantes** d'une pub (accroches, formats 9:16 / 1:1 / 16:9, appels à l'action) | 01, 12 (tous les formats et tailles) |
+| Mettre en place la **relecture des images** avant le rendu (planche, contrôle qualité) | 12 (« les images fixes mentent »), 13, 01, 03 |
+| Corriger une vidéo qui ne va pas (symptôme → phrase à envoyer) | 12 |
+| Animer l'**interface** du site ou du Campus avec un vocabulaire commun | 14 |
+| Organiser des **agents** (qui construit, qui relit, quel niveau d'effort, quel coût) | 16, 12, 09 |
 | Créer un **personnage récurrent** (la mascotte phare) qui reste identique d'une vidéo à l'autre | 06 |
 | Faire des **shorts racontés** (histoires, voix off, sous-titres au mot) | 07, 05 |
+| Faire une vidéo « simulateur » en 3D (une journée dans un système, interface par-dessus) | 15, 17 |
 | Préparer le **contenu Instagram / TikTok** : tendances, accroches, analyse de concurrents | 08 |
 | Préparer une **campagne** (lancement du 1er janvier : page, plan, e-mails) | 09 |
 | Faire un **audit SEO** ou choisir les prochains articles | 10 |
-| Choisir un **outil** (rendu, sous-titres, détourage, design…) | `outils/depots-github.md` |
+| Choisir un **outil** (rendu, sous-titres, détourage, design…) | `outils/depots-github.md`, 12 (boîte à outils) |
 
 ---
 
@@ -93,6 +99,74 @@ L'article donne 6 prompts à copier, des « règles du studio » et l'ajout de l
 
 **Pour Pathway :** une source de prompts et de règles pour le scénariste et le relecteur.
 
+### 11 · Le playbook complet du motion design ★★★
+`motion-design/11-playbook-complet-motion-design.html`
+
+La référence la plus complète sur la vidéo en code.
+
+- **12 règles** résumées au début.
+- **L'échelle des prompts,** du plus simple au plus complet :
+  - une ligne ;
+  - un reel de marque ;
+  - une liste d'états ;
+  - un brief de réalisateur.
+- **L'effet de chaque ligne du prompt** sur le résultat.
+- **Deux façons de démarrer :** l'application Claude ou Claude Code.
+- **Un `CLAUDE.md` de studio**, prêt à copier : contrat de rendu, look, son, contrôles avant de montrer.
+- **Le moteur :** une page HTML et un `render.mjs` à copier, avec un flou de mouvement obtenu en moyennant des sous-images.
+- **Les chiffres :** courbes, ressorts, durées en images, grille de rythme.
+
+**Pour Pathway :** c'est la base technique du studio. On reprend son `CLAUDE.md` de studio et son renderer, adaptés à notre charte.
+
+### 12 · Cours complet : du prompt au film ★★★
+`motion-design/12-cours-complet-du-prompt-au-film.html`
+
+Un cours long et très pratique.
+
+- **Écrire :** une ligne contre un brief de réalisateur, et « des chiffres, pas des adjectifs ».
+- **Le mouvement :** ressorts et courbes, puis l'horloge (le timing passe avant tout).
+- **Une première boucle en 10 minutes**, puis le rendu MP4 et l'export pour les réseaux.
+- **Contrôle qualité du mouvement :** « les images fixes mentent ». On vérifie la vidéo en mouvement, pas seulement des captures.
+- **Les retouches :** formulations de retouche qui marchent, et comment utiliser son propre matériel (captures, logo).
+- **Au-delà :** la 3D et Blender par script, et les équipes d'agents (qui construit, qui relit).
+- **En pratique :**
+  - coûts et niveau d'effort ;
+  - **tous les formats et toutes les tailles** ;
+  - la boîte à outils ;
+  - un tableau « symptôme → phrase à envoyer » ;
+  - 4 prompts.
+
+**Pour Pathway :** le manuel à garder ouvert pendant la production, surtout pour le contrôle qualité et les corrections.
+
+### 13 · Studio de vidéo de lancement ★★★
+`motion-design/13-studio-video-de-lancement.html`
+
+Le cours le plus proche de **notre pub principale** : une vidéo de lancement, c'est « du HTML qui bouge » (cartes d'interface, texte animé, compteurs, logo).
+
+- **Pourquoi les promos faites par IA se ressemblent toutes**, et comment l'éviter.
+- **N'installer que le nécessaire :**
+  - le renderer HTML → MP4 déterministe ;
+  - GSAP (SplitText, MorphSVG) ;
+  - des skills de goût (timing, chorégraphie, les 12 principes de Disney appliqués à l'interface) ;
+  - le son fait en code.
+- **Les règles du studio**, écrites une fois. On y trouve une partie « **Product truth** » : rien que le vrai produit.
+- **L'histoire d'abord :** capturer le produit, écrire un script de 40 mots, puis le découper en plans.
+- **La fabrication :**
+  - des blocs d'abord, des finitions faites à la main ensuite ;
+  - plans d'interface cadrés serré, avec une caméra qui bouge ;
+  - texte animé qui a du poids ;
+  - le « chiffre preuve ».
+- **La finition :** son calé sur l'image, rendu, vérification du fichier, boucle de relecture.
+
+**Pour Pathway :** **à suivre presque pas à pas** pour la pub du lancement du Campus. Captures réelles du site et du Campus (compte de démonstration). Le « chiffre preuve » doit être un chiffre réel : une ronde IRCC datée, ou un résultat d'élève autorisé.
+
+### 14 · Design engineering : un langage du mouvement ★★
+`motion-design/14-design-engineering-langage-du-mouvement.html`
+
+L'article montre comment monter un petit « studio de mouvement » quand on est seul entre design et code. Le modèle écrit les **jetons de mouvement** (durées, courbes, comportements), construit les prototypes et audite le travail, mais le goût reste humain. On définit d'abord le vocabulaire, une seule fois, pour que tout bouge de la même façon. L'article fournit du code et une fiche de comportements.
+
+**Pour Pathway :** utile pour harmoniser les animations du Campus (`motion.js` / `motion.css`), du site et des vidéos, pour que la marque bouge pareil partout.
+
 ---
 
 ## Animation et séries — `animation/`
@@ -127,6 +201,21 @@ Un skill externe (« video maker ») transforme un paragraphe en short vertical 
 - Il propose plus de 13 styles (aquarelle, encre, papier, craie, typographie animée…).
 
 **Pour Pathway :** des idées de styles et de méthode. Le skill se télécharge depuis un site tiers : **lire son code avant tout usage**.
+
+### 15 · Un secteur entier en « système vivant » ★
+`animation/15-simulateur-systeme-vivant.html`
+
+Des vidéos façon simulateur 3D. Exemple : un aéroport qui tourne, avec un curseur qui clique dans une interface posée par-dessus. Elles reposent sur 5 règles :
+
+- une seule caméra, sans coupe ;
+- une lumière fixe ;
+- la journée écrite comme une fonction du temps ;
+- une vérification que rien ne traverse rien ;
+- des sous-agents qui construisent.
+
+L'article donne tous les prompts.
+
+**Pour Pathway :** une idée de format possible plus tard (par exemple « une semaine dans le Campus »), mais lourde. Pas prioritaire.
 
 ---
 
@@ -181,12 +270,43 @@ Prompts à copier : fichier de faits, analyse de concurrents, page d'arrivée, p
 
 ---
 
+## IA en général (capacités, agents, coûts) — `ia-generale/`
+
+### 16 · Guide complet d'un modèle avancé et de ses agents ★★
+`ia-generale/16-guide-complet-modele-et-agents.html`
+
+- **Les capacités** du modèle le plus puissant, avec les mesures et ce qu'il a construit.
+- **Quand il coûte trop cher** pour ce qu'il apporte, et comment régler le **niveau d'effort**.
+- **Le principe « le cerveau, pas les mains »** : le modèle puissant planifie et juge, des modèles moins chers exécutent.
+- **Une installation en 3 minutes**, des règles de travail à mettre dans `CLAUDE.md` (façon de travailler, validations, comptes rendus) et 5 prompts.
+- **Ses limites**, dites honnêtement.
+
+**Pour Pathway :** pour organiser nos agents (studio vidéo, Difusión, SEO) sans gaspiller : choisir le bon modèle et le bon effort pour chaque tâche.
+
+### 17 · Jeux, vidéos et mondes 3D : guide de terrain ★
+`ia-generale/17-jeux-videos-mondes-3d.html`
+
+Un tour de ce que des gens ont construit en quelques jours (jeux, films, scènes 3D), avec le temps et le coût qu'ils ont annoncés. L'article donne aussi ce qu'il faut retenir avant d'essayer, et l'installation sur macOS et Windows.
+
+**Pour Pathway :** une source d'idées et des ordres de grandeur. Rien à appliquer directement.
+
+---
+
 ## Outils — `outils/`
 
 ### Dépôts GitHub classés par thème et par utilité ★★★
 `outils/depots-github.md`
 
 63 dépôts cités dans ces articles, rangés par thème (rendu vidéo, montage et audio, génération IA et 3D, design d'interface), avec une note d'utilité pour Pathway et une **sélection de départ pour le studio vidéo**.
+
+---
+
+### 18 · Rétro-ingénierie avec un agent (REA) ★
+`outils/18-reverse-engineering.html`
+
+Il présente un outil open source (MCP et ligne de commande) qui permet à un agent d'expliquer **comment fonctionne une application** sans son code source : applications de bureau, sites, fichiers .NET ou Android…
+
+**Pour Pathway :** hors sujet aujourd'hui. **Ne jamais s'en servir** pour contourner une licence ou un paiement, ni pour copier un logiciel ou un site concurrent. Usage acceptable : comprendre le fonctionnement d'un outil qu'on utilise déjà, en respectant ses conditions d'utilisation.
 
 ---
 
