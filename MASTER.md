@@ -779,7 +779,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
   - Les 7 fiches d'agents : `.claude/agents/studio-*.md`.
 - **Première pièce produite :** « Ronda IRCC n.º 452 » (`piezas/2026-10-27-ronda-452/`), 15 s, 1080 × 1920, en boucle, avec une bande-son fabriquée en code (cumbia légère à 120 BPM et bruitages : Sacha veut un son « qui parle aux Latinos »). Planche de 18 images et **trois versions** prêtes (décision de Sacha) : `reel-muet.mp4` (sans son), `reel-effets.mp4` (bruitages sans musique) et `reel.mp4` (musique et bruitages), **en attente de la validation de Sacha**. Coût : 0 €.
   - Le format se remplit seul : `formatos/ronda-ircc/nueva-pieza.mjs` lit `v4/data/ircc-rounds.json`.
-  - **Avant publication :** revérifier la dernière ronde sur IRCC (l'instantané date du 10 nov. ; `canada.ca` n'est pas joignable depuis la session cloud).
+  - **Chiffres vérifiés sur la source officielle IRCC le 19 nov. 2026 :** la ronde n.º 452 reste la dernière ronde « francés ». À refaire le jour de la publication avec `node scripts/refresh-v4-ircc.mjs --check` (il passe depuis la session cloud ; seul `curl` échoue sur `canada.ca`).
 - **Pas encore fait :** le format 4:5, la pub principale (il faut un compte de démonstration du Campus), les variantes, le témoignage (accord d'Elena et de Devon manquant).
 
 #### Ce qui existe déjà côté publicité
