@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #149 (correction des consignes sur les noms de modèles).
+> **État au 19 novembre 2026** — dernière PR intégrée : #150 (tâche programmée du studio vidéo).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -686,7 +686,8 @@ Relevé du 19 nov. 2026.
   - **lancement du Campus fixé au 1er janvier 2027** (#145) ;
   - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146), puis 8 de plus : motion design, vidéo de lancement, IA en général (#147) ;
   - **plan de démarrage des pubs validé**, en 4 étapes jusqu'au lancement du 1er janvier (#148) ;
-  - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (PR du studio vidéo).
+  - **tâche programmée hebdomadaire du studio vidéo** (#150) ;
+  - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (#PRNUM).
 
 ---
 
@@ -922,6 +923,20 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 - **Se coordonner avec Ryan,** qui fait déjà des pubs (témoignages, vers Messenger). Il ne faut pas se concurrencer sur les mêmes audiences. Ses chiffres (coût par message) servent de point de comparaison.
 - **Avant Noël,** les pubs coûtent plus cher et l'attention baisse. D'où un test court mi-décembre, puis la vraie poussée début janvier.
 - **Toujours :** vrais élèves avec leur accord, chiffres IRCC datés, aucune promesse migratoire, pas d'étiquette « IA ».
+
+#### Automatisation : la tâche programmée « Studio vidéo Pathway »
+
+- **Quand :** chaque **lundi à 14 h 11, heure de Paris**, juste après le rapport du lundi. Première exécution le 23 nov. 2026.
+- **Où :** une session Claude Code neuve, dans le cloud (pas besoin d'ordinateur allumé). Sacha reçoit une **notification push** sur son téléphone.
+- **Déroulé :**
+  1. Bilan de la semaine, par l'agent analyste.
+  2. Proposition de 3 sujets, par l'agent stratège. Sacha répond avec un numéro.
+  3. Production : script, animation, relecture neuve.
+  4. **Planche de 18 images envoyée à Sacha pour validation.**
+  5. MP4 et légende. **Sacha publie à la main.**
+- **Garde-fou :** si le studio (`marketing/studio/`, `.claude/agents/studio-*.md`) n'est pas encore sur `main`, la session s'arrête et le signale.
+- **Limite actuelle :** la tâche n'a **aucun connecteur** (pas d'accès Supabase), donc le bilan demande les chiffres à Sacha. Pour qu'elle lise la base elle-même, il faut recréer la tâche depuis l'écran des tâches programmées de claude.ai, en ajoutant le connecteur Supabase.
+- Le texte de la tâche se modifie depuis cet écran, ou en le demandant à Claude.
 
 #### Pour démarrer la nouvelle conversation
 
@@ -1159,3 +1174,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Plan de démarrage des pubs validé par Sacha (§13) : décider, produire, tester à petit budget mi-décembre, accélérer au 1er janvier. |
 | 19 nov. 2026 | Studio vidéo créé (`marketing/studio/`) et premier prototype « Ronda IRCC n.º 452 » rendu ; budget et accès aux comptes reportés après les premiers rendus (décision de Sacha). |
 | 19 nov. 2026 | Retrait de la fausse « règle d'équipe » sur les noms de modèles d'IA : l'équipe n'interdit rien de tel. |
+| 19 nov. 2026 | Tâche programmée « Studio vidéo Pathway » : chaque lundi 14 h 11 (Paris), bilan, 3 sujets, puis production après le choix de Sacha (§13). |
