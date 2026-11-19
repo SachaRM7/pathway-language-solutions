@@ -673,7 +673,65 @@ window.CampusApp = {
 function showApp() {
   $('#login').hidden = true; $('#ob').hidden = true; $('#app').hidden = false;
   document.body.classList.remove('no-scroll');
+  demoBar();
   render();
+}
+
+/* ───────────── Demo campus (db/044_demo_aislada.sql, 045_demo_datos.sql, function « demo ») ─────────────
+   A separate, fictitious world: a teacher and four A2 students with a realistic history. The real team
+   never sees it in its lists, no e-mail is ever sent to it, the CRM ignores it. A team member enters it
+   from Ajustes in one click (no mailbox needed) and comes back to their own account from the bar. */
+const DEMO_KEY = 'campus-demo-return';
+const DEMO_SIG = 'M20 120 Q 60 40 110 110 Q 160 170 190 90 Q 250 30 280 110 M300 100 Q 340 60 380 120 Q 430 160 470 90 L 520 120';
+const DEMO_PEOPLE = [
+  { id: 'lucia', name: 'Lucía Ramírez', role: 'Alumna', note: 'racha de 12 días, clases grabadas, mensajes' },
+  { id: 'valentina', name: 'Valentina Quispe', role: 'Alumna', note: 'racha de 31 días, fin de nivel por validar' },
+  { id: 'mateo', name: 'Mateo Torres', role: 'Alumno', note: 'atrasado: 2 ausencias, inactivo 9 días' },
+  { id: 'diego', name: 'Diego Fernández', role: 'Alumno', note: 'nuevo: una tarea y una pregunta pendientes' },
+  { id: 'profesor', name: 'Julien Moreau', role: 'Profesor', note: 've a los 4 alumnos: avance, ausencias, mensajes' }
+];
+function demoTile() {
+  if (A.profile.is_demo) return '';
+  return `<article class="tile c-6" id="demoTile"><div class="tile-head"><h2>Campus de demostración</h2></div>
+    <p class="muted" style="font-size:14px;margin-bottom:12px">Un campus ficticio para mostrar o probar el Campus sin tocar a los alumnos reales: un profesor y 4 alumnos de A2 con clases, grabaciones, racha, tarjetas, mensajes y ausencias. Nadie recibe correos y no aparece en tus listas ni en los informes.</p>
+    <div class="demo-pick">${DEMO_PEOPLE.map(d => `<button class="demo-who" type="button" data-demo="${d.id}"><b>${esc(d.name)}</b><span>${esc(d.role)} · ${esc(d.note)}</span></button>`).join('')}</div>
+    <div class="demo-foot"><button class="btn btn-light btn-sm" type="button" data-demo-reset>Reiniciar los datos</button>
+      <span class="muted">Para volver a tu cuenta: «Volver a mi cuenta», arriba, o «Salir de la demo» en tu menú.</span></div>
+  </article>`;
+}
+function demoBar() {
+  let bar = $('#demoBar');
+  let hidden = false; try { hidden = sessionStorage.getItem('campus-demo-bar') === 'off'; } catch (_) {}
+  const on = !!(A.profile && A.profile.is_demo) && !hidden;
+  document.body.classList.toggle('is-demo', on);
+  if (!on) { if (bar) bar.remove(); return; }
+  if (!bar) { bar = document.createElement('div'); bar.id = 'demoBar'; bar.className = 'demo-bar'; bar.setAttribute('role', 'status'); document.body.prepend(bar); }
+  bar.innerHTML = `<span class="demo-txt"><b>Demo</b> · ${esc(A.profile.full_name)}<span class="demo-more"> · datos ficticios</span></span>
+    <button type="button" class="demo-back" data-action="demo-leave">Volver a mi cuenta</button>
+    <button type="button" class="demo-x" data-action="demo-hide" aria-label="Ocultar la barra (para salir: «Salir de la demo» en tu menú)" title="Ocultar la barra">${icon('x')}</button>`;
+}
+async function enterDemo(who, b) {
+  b.disabled = true;
+  const r = await sb.functions.invoke('demo', { body: { action: 'enter', as: who } });
+  if (r.error || !r.data || !r.data.token_hash) { b.disabled = false; return toast('No se pudo abrir la demo. Inténtalo de nuevo en un momento.'); }
+  const { data: cur } = await sb.auth.getSession();
+  try {
+    if (cur.session && !A.profile.is_demo) localStorage.setItem(DEMO_KEY, JSON.stringify({ access_token: cur.session.access_token, refresh_token: cur.session.refresh_token }));
+    sessionStorage.removeItem('campus-demo-bar');
+  } catch (_) {}
+  const v = await sb.auth.verifyOtp({ token_hash: r.data.token_hash, type: 'magiclink' });
+  if (v.error) { b.disabled = false; return toast('No se pudo abrir la demo. Inténtalo de nuevo en un momento.'); }
+  location.replace(location.pathname);
+}
+async function leaveDemo() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null'); localStorage.removeItem(DEMO_KEY); sessionStorage.removeItem('campus-demo-bar'); } catch (_) {}
+  if (saved && saved.refresh_token) {
+    const r = await sb.auth.setSession({ access_token: saved.access_token, refresh_token: saved.refresh_token });
+    if (!r.error) return location.replace(location.pathname + '#ajustes');
+  }
+  await sb.auth.signOut({ scope: 'local' });
+  location.replace(location.pathname);
 }
 window.addEventListener('hashchange', () => { flipped = false; if (crmOverlayOpen() && location.hash !== '#prospectos') crmClose(); if (A.profile && !$('#app').hidden) { render(); window.scrollTo({ top: 0 }); } });
 
@@ -684,7 +742,7 @@ function toggleMenu() {
   const p = A.profile;
   slot.innerHTML = `<div class="menu" role="menu"><div class="who"><b>${esc(p.full_name)}</b>${esc(A.session.user.email)}</div>
     ${isStaff() ? '' : `<button type="button" role="menuitem" data-action="logros">${icon('trophy')}<span><b>Mis logros</b><small>Nivel ${levelInfo(p.xp_total).lvl} · ${fmt(p.xp_total)} XP</small></span></button><button type="button" role="menuitem" data-action="plan">${icon('target')}Mi plan</button>`}
-    ${isStaff() ? `<button type="button" role="menuitem" data-action="logout">${icon('x')}Cerrar sesión</button>` : ''}</div>`;
+    ${p.is_demo ? `<button type="button" role="menuitem" data-action="demo-leave">${icon('x')}Salir de la demo</button>` : isStaff() ? `<button type="button" role="menuitem" data-action="logout">${icon('x')}Cerrar sesión</button>` : ''}</div>`;
   fitMenu(slot);
 }
 
@@ -930,7 +988,7 @@ function viewLogros() {
   <article class="tile"><div class="tile-head"><h2>Insignias</h2><span class="pill ghost num">${A.myBadges.size} de ${A.badges.length}</span></div>
     <div class="badges">${A.badges.map(b => { const has = A.myBadges.has(b.id); return `<div class="badge ${has ? '' : 'locked'}"><span class="medal" style="background:var(--${b.color});color:var(--${b.color}-ink)">${icon(has ? b.icon : 'lock')}</span><b>${esc(b.name)}</b><span>${esc(b.description)}</span></div>`; }).join('')}</div>
   </article>
-  ${isStaff() ? '' : `<p class="logout-foot"><button type="button" data-action="logout">Cerrar sesión</button></p>`}</section>`;
+  ${isStaff() ? '' : `<p class="logout-foot"><button type="button" data-action="${A.profile.is_demo ? 'demo-leave' : 'logout'}">${A.profile.is_demo ? 'Salir de la demo' : 'Cerrar sesión'}</button></p>`}</section>`;
 }
 
 /* ───────────── Staff views ───────────── */
@@ -1402,7 +1460,7 @@ function viewAjustes() {
       <div class="err-row"><span><b>Después del test de nivel</b><br><span class="muted" style="font-size:13px">A quien hace el test en el sitio: su resultado y la invitación a una reunión gratuita con un profesor (enseguida), luego dos recordatorios (a 2 y 5 días). Se detienen si envía sus disponibilidades, responde o se inscribe.</span></span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-light" type="button" data-mail-test>Enviarme los correos de las clases</button><button class="btn btn-light" type="button" data-placement-test>Enviarme los 3 correos del test</button></div>
       <p class="muted" style="font-size:13px;margin-top:10px">Las pruebas solo te llegan a ti: el informe del lunes, un recordatorio y un aviso de ausencia; o los 3 correos del test de nivel (ejemplo A2), con su botón de disponibilidades en modo demostración.</p></article>
-    ${agentsTile()}
+    ${demoTile()}${agentsTile()}
   </div></section>`;
 }
 
@@ -3639,6 +3697,13 @@ function bindSchedule(id) {
     if (error) { b.disabled = false; return fail(error); }
     toast(b.dataset.ok === '1' ? 'Cambio aprobado: los alumnos ya lo ven.' : 'Cambio rechazado.'); await refresh(); render();
   });
+  $$('[data-demo]').forEach(b => b.onclick = () => enterDemo(b.dataset.demo, b));
+  $$('[data-demo-reset]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const r = await sb.functions.invoke('demo', { body: { action: 'reset' } });
+    b.disabled = false;
+    toast(!r.error && r.data && r.data.ok ? 'Demo reiniciada: datos frescos para hoy.' : 'No se pudo reiniciar la demo. Inténtalo de nuevo en un momento.');
+  });
   $$('[data-placement-test]').forEach(b => b.onclick = async () => {
     b.disabled = true;
     const r = await sb.functions.invoke('placement-followups', { body: { test: true, level: 'A2', lang: 'es' } });
@@ -4407,6 +4472,8 @@ document.addEventListener('click', async e => {
   if (a === 'menu') { e.stopPropagation(); toggleMenu(); return; }
   if (a === 'bell') { e.stopPropagation(); toggleBell(); return; }
   if (a === 'logout') { await sb.auth.signOut(); return; }
+  if (a === 'demo-leave') return leaveDemo();
+  if (a === 'demo-hide') { try { sessionStorage.setItem('campus-demo-bar', 'off'); } catch (_) {} demoBar(); return; }
   if (a === 'plan') { $('#menuSlot').innerHTML = ''; return openOnboarding(false); }
   if (a === 'logros') { closeMenus(); if (location.hash === '#logros') render(); else location.hash = 'logros'; return; }
 });
@@ -4575,6 +4642,11 @@ const contractRequired = () => !!(A.profile && A.profile.role === 'student' && c
 async function loadContract() {
   const r = await sb.rpc('contract_status');
   A.contract = r.error ? null : (r.data || null); // needs db/015_contrato.sql
+  // A demo student signs the current text by itself (the demo should never stop on the contract).
+  if (A.profile && A.profile.is_demo && A.profile.role === 'student' && A.contract && !contractSignedNow()) {
+    const s = await sb.rpc('sign_contract', { p_body: contractBody(), p_name: A.profile.full_name, p_signature: DEMO_SIG });
+    if (!s.error) { const again = await sb.rpc('contract_status'); if (!again.error) A.contract = again.data || A.contract; }
+  }
   A.contractHash = A.contract ? await sha256(contractBody()) : null;
 }
 

@@ -1346,3 +1346,20 @@ a.pill.warn { text-decoration: none; }
 .meet-slot input { margin-top: 4px; accent-color: var(--ink); }
 .meet-slot small { display: block; color: var(--ink-2); font-size: 13px; }
 .meet-slot:has(input:checked) { box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* Demo campus (Ajustes → « Campus de demostración », bar while inside the demo) */
+.demo-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.demo-who { display: flex; flex-direction: column; gap: 3px; text-align: left; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--soft); color: var(--ink); font: 500 14px var(--font); cursor: pointer; }
+.demo-who span { color: var(--ink-2); font-size: 12.5px; font-weight: 400; }
+.demo-who:hover { border-color: var(--ink-3); }
+.demo-who:disabled { opacity: .55; cursor: progress; }
+.demo-foot { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.demo-foot .muted { font-size: 13px; }
+.demo-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 39; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 34px; padding: 4px 8px 4px 14px; background: #1d1d22; color: #f4f4f5; font: 500 13px var(--font); }
+.demo-bar .demo-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.demo-bar .demo-back { flex: none; border: 0; border-radius: 999px; padding: 5px 12px; background: var(--coral); color: #fff; font: 600 12.5px var(--font); cursor: pointer; }
+.demo-bar .demo-x { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.demo-bar .demo-x svg { width: 14px; height: 14px; }
+body.is-demo { padding-top: 34px; }
+body.is-demo .side { top: calc(env(safe-area-inset-top, 0px) + 50px); }
+@media (max-width: 520px) { .demo-bar { justify-content: space-between; gap: 6px; } .demo-bar .demo-more { display: none; } }

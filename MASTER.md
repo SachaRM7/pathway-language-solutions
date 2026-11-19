@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #152 (bande-son et trois versions de « Ronda IRCC »).
+> **État au 19 novembre 2026** — dernière PR intégrée : #154 (Campus de démonstration).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -228,7 +228,7 @@ Application web d'une seule page (`campus/app.js`, environ 5 600 lignes, sans bu
 ### Les espaces
 
 - **Élèves :** un seul espace.
-- **Équipe :** un sélecteur **Profesor · Admin**. L'espace « Alumno » a été retiré pour l'équipe le 17 nov. : pour voir le Campus côté élève, on utilise un **compte élève de test**.
+- **Équipe :** un sélecteur **Profesor · Admin**. L'espace « Alumno » a été retiré pour l'équipe le 17 nov. : pour voir le Campus côté élève, on utilise le **Campus de démonstration** (voir plus bas).
 - Un point rouge sur « Admin » signale une tâche urgente.
 - Le Campus retient le dernier espace utilisé.
 
@@ -332,6 +332,25 @@ Navigation regroupée : **Inicio (Bandeja)**, **Ventas** (Captación, Inscripcio
   - fin de niveau ;
   - **« Accesos de asistentes »** : clés MCP par rôle, affichées une seule fois, avec un registre des actions.
 - **Aide « i »** sur chaque onglet et sur les cartes clés. **Sur téléphone**, le sélecteur Profesor / Admin occupe la première ligne de l'en-tête.
+
+### Campus de démonstration (19 nov. 2026)
+
+Un **monde fictif, séparé du vrai Campus**, pour montrer le Campus, le tester ou en faire des captures pour les vidéos, sans créer de faux e-mails ni toucher aux vrais élèves.
+
+- **Entrer :** Admin → Ajustes → **« Campus de demostración »**, puis un clic sur une personne. Aucune boîte e-mail n'est nécessaire.
+  - **Lucía Ramírez**, alumna : série de 12 jours, cours enregistrés, messages, une demande de changement d'horaire.
+  - **Valentina Quispe**, alumna : série de 31 jours, fin de niveau à valider.
+  - **Mateo Torres**, alumno : en retard, 2 absences, inactif depuis 9 jours.
+  - **Diego Fernández**, alumno : nouveau, une tâche et une question en attente.
+  - **Julien Moreau**, professeur : voit les 4 élèves (avancement, absences, messages, rapports de cours).
+- **Revenir :** bandeau en haut « Volver a mi cuenta », ou « Salir de la demo » dans le menu du compte. Le bandeau peut être masqué (×) pour des captures propres.
+- **Données :** toutes fictives, avec des dates relatives à aujourd'hui. Elles se **rafraîchissent toutes seules** si elles ont plus de 6 jours ; bouton « Reiniciar los datos » pour repartir de zéro.
+- **Séparation garantie (SQL 044) :**
+  - l'équipe réelle ne voit jamais la démo (listes, Bandeja, alertes, rapport du lundi, outils des bots), et un compte démo ne voit que la démo ;
+  - aucun e-mail automatique n'est envoyé aux comptes démo ; leurs adresses sont en @example.com et ne reçoivent rien ;
+  - rien ne va dans le CRM.
+- **Ce que la démo n'invente pas :** le contenu du programme. Les élèves démo n'ont fait que l'**unité 1**, la seule qui a des exercices aujourd'hui.
+- **Pas encore couvert :** l'espace Admin (prospects, disponibilités, réunions) n'a pas de données démo. C'est une étape 2 possible.
 
 ---
 
@@ -463,6 +482,8 @@ Toutes sont **appliquées en production** au 19 nov. 2026.
 | 041 | Mi agenda, plages bloquées, réunions avec les prospects, suggestions de créneaux, flux iCal |
 | 042 | Membres de l'équipe qui animent les réunions |
 | 043 | Tâche programmée des rappels de réunion |
+| 044 | Monde démo séparé (`profiles.is_demo`) : invisible pour l'équipe réelle, exclu des e-mails, des rapports et du CRM |
+| 045 | Données de la démo (`demo_seed`) : un professeur et 4 élèves A2 avec un historique réaliste |
 
 ### Edge Functions
 
@@ -479,6 +500,7 @@ Toutes sont **appliquées en production** au 19 nov. 2026.
 | `placement-followups` | 3 e-mails après le test (4 langues) | `RESEND_API_KEY` |
 | `mail` | Correo : IMAP, SMTP, brouillons IA | `ZOHO_SMTP_PASSWORD`, `ANTHROPIC_API_KEY` |
 | `meetings` | Invitations et rappels de réunion, flux iCal des agendas | `RESEND_API_KEY` |
+| `demo` | Campus de démonstration : crée les comptes démo, rafraîchit les données, connexion d'un clic pour l'équipe | — |
 
 - `zoho-probe` est une ancienne fonction de test, neutralisée (renvoie 410). Elle peut être supprimée.
 - Les fonctions appelées par pg_cron vérifient l'en-tête `x-cron-secret`.
@@ -603,7 +625,7 @@ Relevé du 19 nov. 2026.
 | Tests de niveau enregistrés | 6 |
 | Demandes d'inscription | 0 |
 | Élèves programmés (horaires) | 0 |
-| Unités du programme | 60, toutes en A2 (A1, B1, B2 à créer) |
+| Unités du programme | 60 en A2, mais **une seule (l'unité 1) a des exercices** ; A1, B1, B2 à créer |
 | Contacts Difusión | 33 |
 | Conversations Correo | 0 (aucun e-mail réel reçu depuis la mise en route) |
 | Disponibilités reçues, réunions proposées | 0, 0 |
@@ -688,7 +710,8 @@ Relevé du 19 nov. 2026.
   - **plan de démarrage des pubs validé**, en 4 étapes jusqu'au lancement du 1er janvier (#148) ;
   - **tâche programmée hebdomadaire du studio vidéo** (#150) ;
   - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (#151) ;
-  - **bande-son en code** (cumbia à 120 BPM et bruitages) et **trois versions** de la vidéo : muette, bruitages seuls, complète (#152).
+  - **bande-son en code** (cumbia à 120 BPM et bruitages) et **trois versions** de la vidéo : muette, bruitages seuls, complète (#152) ;
+  - **Campus de démonstration** : un monde fictif séparé, un professeur et 4 élèves, entrée d'un clic depuis Ajustes (#154).
 
 ---
 
@@ -699,7 +722,7 @@ Relevé du 19 nov. 2026.
 C'est l'échéance qui fixe les priorités (décision de Sacha, 19 nov. 2026). Avant cette date, il faut :
 
 - [ ] **WhatsApp canadien branché** (voir ci-dessous), puis le numéro +51 remplacé partout.
-- [ ] **Contenus du Campus** pour les niveaux des premiers élèves. Seul l'A2 existe (60 unités) ; A1, B1 et B2 sont à créer selon les besoins.
+- [ ] **Contenus du Campus** : sur les 60 unités A2, **seule l'unité 1 a des exercices** (8). Il faut écrire et publier les exercices des unités suivantes, puis A1, B1 et B2 selon les besoins des premiers élèves. **C'est le plus gros chantier avant le lancement.**
 - [ ] **Premiers élèves invités et programmés :** invitation, onboarding, contrat signé, horaire fixe, lien Zoom personnel.
 - [ ] **Mi agenda configurée** par Ryan et Abdrahim, et **une réunion réelle faite** de bout en bout.
 - [ ] **Essais réels de Correo**, et d'un parcours élève complet avec un compte de test.
@@ -741,8 +764,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 - **Essai réel des réunions :** faire le test avec une autre adresse, envoyer ses disponibilités, proposer la réunion, recevoir l'invitation, cliquer « Confirmo ».
 - **Essai réel de Correo :** e-mail depuis un Gmail perso vers `contacto@`, puis vérifier qu'il arrive avec un brouillon, répondre « desde Ryan » et vérifier le fil et les Envoyés.
 - **Premier vrai élève :** Admin → Clases → « Programar a un alumno », avec son lien Zoom personnel.
-- **Compte élève de test**, pour voir le Campus côté élève.
-- **Contenu du programme :** créer les unités A1, B1 et B2 (seul l'A2 existe, 60 unités).
+- **Contenu du programme :** écrire les exercices des unités A2 2 à 63 (seule l'unité 1 en a), puis A1, B1 et B2.
 
 ### 🟡 Petits réglages en attente (Sacha)
 
@@ -1177,3 +1199,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | « Ronda IRCC » : bande-son fabriquée en code (cumbia, bruitages) et trois versions par pièce : muette, bruitages seuls, complète. |
 | 19 nov. 2026 | Retrait de la fausse « règle d'équipe » sur les noms de modèles d'IA : l'équipe n'interdit rien de tel. |
 | 19 nov. 2026 | Tâche programmée « Studio vidéo Pathway » : chaque lundi 14 h 11 (Paris), bilan, 3 sujets, puis production après le choix de Sacha (§13). |
+| 19 nov. 2026 | Campus de démonstration (§6, SQL 044–045, fonction `demo`) ; constat : seule l'unité A2 1 a des exercices (§12). |
