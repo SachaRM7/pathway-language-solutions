@@ -7,7 +7,10 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const SR = 44100, DUR = 15, N = SR * DUR, BEAT = 0.5;
-const L = new Float32Array(N), R = new Float32Array(N);
+// Deux pistes séparées : la musique et les bruitages. On écrit ensuite deux fichiers :
+// audio.wav (tout) et audio-effets.wav (bruitages seuls, au même niveau que dans le mix complet).
+const ML = new Float32Array(N), MR = new Float32Array(N), FL = new Float32Array(N), FR = new Float32Array(N);
+let L = ML, R = MR;
 
 // Hasard semé (mulberry32).
 let seed = 20261027;
@@ -89,6 +92,7 @@ for (let bar = 0; bar < 15; bar++) {
 for (let rep = 0; rep < 3; rep++) MEL.forEach(([b, n]) => pluck(rep * 10 * BEAT + b * BEAT, n, 0.5, 0.15, 0.2, 0.9, 0.975));
 
 // ---------- Les bruitages, sur les images de reel.html (un son tombe sur son image, jamais avant).
+L = FL; R = FR;
 const whoosh = (t) => { let lp = 0; add(t - 0.05, 0.5, 0.11, 0, (s) => { lp += (0.02 + 0.3 * Math.sin(Math.PI * s / 0.5) ** 2) * (noise() - lp); return lp * Math.sin(Math.PI * s / 0.5) ** 2; }); };
 const pop = (t, f, g = 0.2) => tone(t, 0.14, g, 0.1, f * 0.7, f, 28, 0.15);
 const thud = (t, g) => { tone(t, 0.3, g, 0, 170, 62, 13, 0.1); hiss(t, 0.05, g * 0.35, 0, 0.6, 60); };
@@ -107,16 +111,23 @@ pop(11.75, 784, 0.15);                             // le logo
 tick(12.0, 1175);                                  // le « clic » du bouton
 
 // ---------- Mixage : limiteur doux, puis WAV 16 bits stéréo.
+// Le gain est calculé sur le mix complet et appliqué aussi aux bruitages seuls : un tampon sonne pareil dans les deux versions.
+const AL = new Float32Array(N), AR = new Float32Array(N);
 let peak = 0;
-for (let i = 0; i < N; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
-const g = 0.9 / Math.max(peak, 1e-6), out = Buffer.alloc(44 + N * 4);
-out.write('RIFF', 0); out.writeUInt32LE(36 + N * 4, 4); out.write('WAVEfmt ', 8); out.writeUInt32LE(16, 16);
-out.writeUInt16LE(1, 20); out.writeUInt16LE(2, 22); out.writeUInt32LE(SR, 24); out.writeUInt32LE(SR * 4, 28);
-out.writeUInt16LE(4, 32); out.writeUInt16LE(16, 34); out.write('data', 36); out.writeUInt32LE(N * 4, 40);
-for (let i = 0; i < N; i++) {
-  out.writeInt16LE(Math.round(Math.tanh(L[i] * g * 1.15) / Math.tanh(1.15) * 32000), 44 + i * 4);
-  out.writeInt16LE(Math.round(Math.tanh(R[i] * g * 1.15) / Math.tanh(1.15) * 32000), 46 + i * 4);
+for (let i = 0; i < N; i++) { AL[i] = ML[i] + FL[i]; AR[i] = MR[i] + FR[i]; peak = Math.max(peak, Math.abs(AL[i]), Math.abs(AR[i])); }
+const g = 0.9 / Math.max(peak, 1e-6);
+function wav(name, A, B) {
+  const out = Buffer.alloc(44 + N * 4);
+  out.write('RIFF', 0); out.writeUInt32LE(36 + N * 4, 4); out.write('WAVEfmt ', 8); out.writeUInt32LE(16, 16);
+  out.writeUInt16LE(1, 20); out.writeUInt16LE(2, 22); out.writeUInt32LE(SR, 24); out.writeUInt32LE(SR * 4, 28);
+  out.writeUInt16LE(4, 32); out.writeUInt16LE(16, 34); out.write('data', 36); out.writeUInt32LE(N * 4, 40);
+  for (let i = 0; i < N; i++) {
+    out.writeInt16LE(Math.round(Math.tanh(A[i] * g * 1.15) / Math.tanh(1.15) * 32000), 44 + i * 4);
+    out.writeInt16LE(Math.round(Math.tanh(B[i] * g * 1.15) / Math.tanh(1.15) * 32000), 46 + i * 4);
+  }
+  const dest = resolve(process.argv[2] || '.', name);
+  writeFileSync(dest, out);
+  console.log('son :', dest);
 }
-const dest = resolve(process.argv[2] || '.', 'audio.wav');
-writeFileSync(dest, out);
-console.log('son :', dest);
+wav('audio.wav', AL, AR);          // musique + bruitages
+wav('audio-effets.wav', FL, FR);   // bruitages seuls
