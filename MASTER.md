@@ -3,7 +3,8 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #143 (consignes de mise à jour pour les agents).
+> **État au 19 novembre 2026** — dernière PR intégrée : #145 (date de lancement du Campus).
+> **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
 
@@ -609,7 +610,7 @@ Relevé du 19 nov. 2026.
 | Edge Functions | 11 actives, plus `zoho-probe` neutralisée |
 | Pages indexables | 70 |
 
-**En une phrase :** toute la machine commerciale et pédagogique est construite et en ligne, mais elle n'a **pas encore servi en conditions réelles**. Ce qui manque : le premier élève programmé, la première réunion, le numéro WhatsApp canadien, et les premières données de mesure.
+**En une phrase :** toute la machine commerciale et pédagogique est construite et en ligne, mais elle n'a **pas encore servi en conditions réelles**. Ce qui manque : le premier élève programmé, la première réunion, le numéro WhatsApp canadien, et les premières données de mesure. **Échéance : le lancement du Campus le 1er janvier 2027.**
 
 ---
 
@@ -679,11 +680,25 @@ Relevé du 19 nov. 2026.
 - **19 nov. :**
   - création de ce MASTER.md (#142) ;
   - consignes de mise à jour pour les agents (#143) ;
-  - **la publicité vidéo et les réseaux sociaux deviennent le prochain grand chantier**.
+  - **la publicité vidéo et les réseaux sociaux deviennent le prochain grand chantier** (#144) ;
+  - **lancement du Campus fixé au 1er janvier 2027**.
 
 ---
 
 ## 12. En cours, en attente, à faire
+
+### 🚀 Lancement du Campus le 1er janvier 2027
+
+C'est l'échéance qui fixe les priorités (décision de Sacha, 19 nov. 2026). Avant cette date, il faut :
+
+- [ ] **WhatsApp canadien branché** (voir ci-dessous), puis le numéro +51 remplacé partout.
+- [ ] **Contenus du Campus** pour les niveaux des premiers élèves. Seul l'A2 existe (60 unités) ; A1, B1 et B2 sont à créer selon les besoins.
+- [ ] **Premiers élèves invités et programmés :** invitation, onboarding, contrat signé, horaire fixe, lien Zoom personnel.
+- [ ] **Mi agenda configurée** par Ryan et Abdrahim, et **une réunion réelle faite** de bout en bout.
+- [ ] **Essais réels de Correo**, et d'un parcours élève complet avec un compte de test.
+- [ ] **E-mail de connexion** vérifié (modèle avec le code, arrivée hors spam).
+- [ ] **Publicité prête pour le lancement :** pub principale et premières vidéos, voir [§13](#13-vision-et-backlog).
+
 
 ### 🔴 Bloquant : WhatsApp avec le numéro canadien (Sacha, avec Ryan)
 
@@ -745,7 +760,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 ### 🎬 Prochain grand chantier : publicités vidéo et réseaux sociaux (Instagram, puis TikTok)
 
-> Décidé le 19 nov. 2026 : ce sera le **prochain gros chantier**, dans une nouvelle conversation. Le plan complet, rédigé le 14 nov., est dans **`docs/marketing/studio-video.md`** : le lire en entier avant de commencer. Il était « en attente » jusqu'à la fin des priorités du moment (CRM, relances, **lancement du 1er janvier**).
+> Décidé le 19 nov. 2026 : ce sera le **prochain gros chantier**, dans une nouvelle conversation. Le plan complet, rédigé le 14 nov., est dans **`docs/marketing/studio-video.md`** : le lire en entier avant de commencer. Il était « en attente » jusqu'à la fin des priorités du moment (CRM, relances, **lancement du Campus le 1er janvier 2027**). Les vidéos doivent donc servir ce lancement.
 
 #### Ce qui existe déjà côté publicité
 
@@ -758,7 +773,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
   - **le CRM range automatiquement un prospect venu d'une pub** en origine « Publicidad · <campagne> ».
 - **Convention de lien :** toujours vers le test de niveau, avec étiquette. Exemple : `https://pathway-languages.com/test-placement.html?utm_source=instagram&utm_medium=reel&utm_campaign=<nom>`.
 - **Comptes Instagram et TikTok :** l'existence et l'accès aux comptes de Pathway sont **à confirmer**. La tâche T022 (Instagram / TikTok) des specs V4 est encore ouverte.
-- **Lancement du 1er janvier (2027) :** mentionné dans le plan vidéo comme une priorité, mais son contenu exact n'est pas documenté (rentrée des cours ? campagne ?). **À préciser.**
+- **Lancement du Campus le 1er janvier 2027** (confirmé par Sacha le 19 nov.). La pub principale, qui montre le site et le Campus, doit être prête pour cette date.
 
 #### Les deux usages prévus
 
@@ -850,7 +865,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
    - la **mascotte** (le phare du logo animé : Sacha est pour, Ryan et Abdrahim n'ont pas confirmé) ;
    - le budget ;
    - l'accès aux comptes Instagram et TikTok ;
-   - le sens du lancement du 1er janvier.
+   - le calendrier de production pour être prêt au 1er janvier.
 3. **Clé ElevenLabs :** l'enregistrer par le formulaire sécurisé de la session, **jamais dans le chat**. Les droits sont déjà définis dans le plan : plafond de crédits, expiration à 90 jours.
 4. Créer `marketing/studio/` et la bible, puis produire le prototype « Ronda IRCC » : planche de 18 images, validation, MP4.
 5. **Publication :**
@@ -1009,8 +1024,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
    - `llms.txt` simplifie les formules (Acelerado 4 h, Intensivo 6 h) et contient encore le +51 ;
    - les pages « Cuánto tiempo » donnent des délais, alors que le résultat du test n'en donne plus. Choix à confirmer.
 8. **Octolinks :** commande abandonnée ou maintenue ?
-9. **Lancement du 1er janvier 2027 :** qu'est-ce qui est lancé exactement (cours, campagne, nouvelle offre) ?
-10. **Publicité :** budget, campagnes en cours, résultats, accès aux comptes Instagram et TikTok, mascotte ([§13](#13-vision-et-backlog)).
+9. **Publicité :** budget, campagnes en cours, résultats, accès aux comptes Instagram et TikTok, mascotte ([§13](#13-vision-et-backlog)).
 
 ### Dette technique
 
@@ -1072,4 +1086,5 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 |---|---|
 | 19 nov. 2026 | Création du document : état après la PR #141, historique depuis août 2026, backlog, règles, leçons. |
 | 19 nov. 2026 | Ajout de `AGENTS.md`, `CLAUDE.md` et du modèle de PR : chaque agent doit tenir ce document à jour. |
-| 19 nov. 2026 | Section « Prochain grand chantier : publicités vidéo et réseaux sociaux » (plan vidéo résumé, lancement du 1er janvier, démarrage). |
+| 19 nov. 2026 | Section « Prochain grand chantier : publicités vidéo et réseaux sociaux » (plan vidéo résumé, démarrage). |
+| 19 nov. 2026 | Lancement du Campus fixé au 1er janvier 2027, avec la liste de ce qu'il reste à faire avant cette date (§12). |
