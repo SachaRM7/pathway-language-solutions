@@ -8,7 +8,10 @@
 node scripts/refresh-v4-ircc.mjs                               # 1. instantané officiel IRCC à jour
 node marketing/studio/formatos/ronda-ircc/nueva-pieza.mjs      # 2. crée piezas/<date>-ronda-<n>/ (reel.html + data.js)
 node marketing/studio/motor/render.mjs marketing/studio/piezas/<id>/reel.html --planche   # 3. planche de 18 images → validation
-node marketing/studio/motor/render.mjs marketing/studio/piezas/<id>/reel.html             # 4. reel.mp4
+node marketing/studio/motor/render.mjs marketing/studio/piezas/<id>/reel.html             # 4. reel.mp4 muet
+node marketing/studio/formatos/ronda-ircc/sonido.mjs <dossier temporaire>                # 5. audio.wav (tout) et audio-effets.wav (bruitages seuls)
+# 6. trois versions par pièce, avec ffmpeg (voir piezas/2026-10-27-ronda-452) :
+#    reel-muet.mp4 (sans son) · reel-effets.mp4 (bruitages, sans musique) · reel.mp4 (musique + bruitages)
 ```
 
 - Pour voir l'animation : ouvrir `reel.html` dans un navigateur (lecture en boucle).
