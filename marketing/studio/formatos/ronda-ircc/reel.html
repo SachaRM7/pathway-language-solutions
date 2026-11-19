@@ -67,6 +67,8 @@
   #s4 .q { top: 610px; font-size: 80px; }
   #s4 .btn { top: 900px; height: 170px; border-radius: 999px; background: var(--action); color: var(--paper); font-size: 74px; display: flex; align-items: center; justify-content: center; gap: 22px; box-shadow: 0 18px 0 rgba(18,43,38,.14); }
   #s4 .btn svg { width: 58px; height: 58px; }
+  #s4 .ink { top: 900px; height: 170px; border-radius: 999px; border: 7px solid var(--action); }
+  #s4 .logo { top: 1404px; text-align: center; } #s4 .logo img { height: 118px; }
   #s4 .sub { top: 1112px; font-size: 42px; text-align: center; opacity: .82; }
   #s4 .url { top: 1300px; font-size: 62px; text-align: center; }
   #s4 .legal { top: 1560px; font-size: 32px; text-align: center; opacity: .85; }
@@ -102,9 +104,11 @@
   <section class="card" id="s4"><div class="cam">
     <div class="abs t y"><span class="w">¿Y</span> <span class="w">tú?</span></div>
     <div class="abs t q"><span class="w">¿Cuál</span> <span class="w">es</span> <span class="w">tu</span> <span class="w">nivel</span><br><span class="w">de</span> <span class="w">francés?</span></div>
+    <div class="abs ink"></div>
     <div class="abs t btn"><span>Mide tu nivel gratis</span><svg viewBox="0 0 58 58"><path d="M10 29h36M32 13l16 16-16 16" fill="none" stroke="#fffaf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <div class="abs sub">Test en línea · desde 12 minutos</div>
     <div class="abs t url">pathway-languages.com</div>
+    <div class="abs logo"><img src="../../../../v4/assets/pathway-logo.svg" alt="Pathway"></div>
     <div class="abs legal">Solo enseñamos francés; no damos asesoría migratoria.</div>
   </div></section>
 
@@ -220,13 +224,25 @@
     words($('#s4 .y'), c, 0.2, { dy: 120 });
     words($('#s4 .q'), c, 0.5);
     const btn = $('#s4 .btn');
-    pop(btn, c, 1.0, MOTION.pop);
+    // Coup de tampon : le bouton tombe de haut, incliné, et frappe sur le temps (c = 1,0), puis s'écrase et se remet.
+    const HIT = 1.0, FALL = 0.2, st = c - (HIT - FALL), hit = Math.max(0, c - HIT);
+    if (st <= 0) { btn.style.opacity = 0; } else {
+      const k = Math.pow(clamp(st / FALL), 3); // accélère jusqu'à l'impact
+      const squash = Math.exp(-11 * hit) * Math.sin(28 * hit);
+      btn.style.opacity = clamp(st / 0.07);
+      btn.style.transform = `rotate(${lerp(-10, -1.5, k)}deg) scale(${lerp(2.1, 1, k) * (1 - 0.08 * squash)}, ${lerp(2.1, 1, k) * (1 + 0.05 * squash)})`;
+    }
+    const ink = $('#s4 .ink'); // l'empreinte d'encre qui s'élargit à l'impact
+    ink.style.opacity = c < HIT ? 0 : 0.55 * (1 - easeOut(hit / 0.5));
+    ink.style.transform = `rotate(-1.5deg) scale(${1 + 0.1 * easeOut(hit / 0.5)}, ${1 + 0.42 * easeOut(hit / 0.5)})`;
+    $('#s4 .cam').style.transform += ` translateY(${9 * Math.exp(-13 * hit) * Math.sin(38 * hit) * (c >= HIT ? 1 : 0)}px)`; // la page encaisse le coup
     const press = Math.exp(-10 * Math.max(0, c - 2.0)) * Math.sin(20 * Math.max(0, c - 2.0)); // « clic » sur le temps
     btn.style.transform += ` scale(${1 - 0.045 * press})`;
     $('#s4 .btn svg').style.transform = `translateX(${10 * spring(c - 2.0, 0.5, 14) - 10 * spring(c - 2.5, 0.8, 14)}px)`;
     enter($('#s4 .legal'), c, 0.5, { ...MOTION.text, dy: 20 }); // la mention reste 3 s à l'écran
     enter($('#s4 .sub'), c, 1.25, { ...MOTION.text, dy: 30 });
     enter($('#s4 .url'), c, 1.5, { ...MOTION.text, dy: 40 });
+    pop($('#s4 .logo'), c, 1.75, MOTION.pop);
   };
 
   // Aperçu dans un navigateur : lecture en boucle. En rendu (?render=1), seul seek(t) est appelé.

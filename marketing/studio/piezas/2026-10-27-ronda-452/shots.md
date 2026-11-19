@@ -15,7 +15,8 @@
 | 220–238 | 7,35–7,95 s | Les 4 compétences, la coche se dessine |
 | 240 | 8,0 s | « Se demuestra con el TEF Canada o el TCF Canada. » (2 s de lecture) |
 | 300 | 10,0 s | **PLAN 4** (fond papier) : « ¿Y tú? », « ¿Cuál es tu nivel de francés? », et la mention « Solo enseñamos francés… » |
-| 330 | 11,0 s | Bouton « Mide tu nivel gratis » (pop), puis durée du test et adresse du site |
+| 324–330 | 10,8–11,0 s | **Coup de tampon :** le bouton « Mide tu nivel gratis » tombe de haut, incliné, et frappe sur le temps ; il s'écrase, l'empreinte s'élargit, la page encaisse le coup |
+| 338–353 | 11,25–11,75 s | Durée du test, adresse du site, puis le **logo Pathway** (pop) entre l'adresse et la mention |
 | 360 | 12,0 s | Le bouton s'enfonce (« clic »), la flèche avance |
 | 405 | 13,5 s | **Le plan 1 revient** et pousse le plan 4 |
 | 449 | 14,97 s | Identique à l'image 0 : la vidéo boucle |
