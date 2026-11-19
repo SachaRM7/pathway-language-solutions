@@ -3,7 +3,8 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #141 (Mi agenda et réunions avec les prospects).
+> **État au 19 novembre 2026** — dernière PR intégrée : #143 (consignes de mise à jour pour les agents).
+> **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
 
 ## Sommaire
@@ -675,7 +676,10 @@ Relevé du 19 nov. 2026.
   - disponibilités avant le 1er e-mail (#139) ;
   - **1er e-mail 5 min après le test** (#140) ;
   - **Mi agenda et réunions avec les prospects** (#141).
-- **19 nov. :** création de ce MASTER.md.
+- **19 nov. :**
+  - création de ce MASTER.md (#142) ;
+  - consignes de mise à jour pour les agents (#143) ;
+  - **la publicité vidéo et les réseaux sociaux deviennent le prochain grand chantier**.
 
 ---
 
@@ -739,7 +743,123 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 ## 13. Vision et backlog
 
-### Prochaine grande étape : Google Calendar dans les deux sens (étape 2 de Mi agenda)
+### 🎬 Prochain grand chantier : publicités vidéo et réseaux sociaux (Instagram, puis TikTok)
+
+> Décidé le 19 nov. 2026 : ce sera le **prochain gros chantier**, dans une nouvelle conversation. Le plan complet, rédigé le 14 nov., est dans **`docs/marketing/studio-video.md`** : le lire en entier avant de commencer. Il était « en attente » jusqu'à la fin des priorités du moment (CRM, relances, **lancement du 1er janvier**).
+
+#### Ce qui existe déjà côté publicité
+
+- **Pubs Meta** (Instagram, Facebook) gérées par **Ryan**, surtout en format témoignages.
+  - Le budget, les campagnes en cours et leurs résultats **ne sont pas documentés** : à demander à Ryan et à noter ici.
+- **Mesure prête :**
+  - pixel Meta (Lead, Contact, ViewContent) ;
+  - première origine UTM gardée 30 jours ;
+  - parcours anonyme et bloc « Site » du rapport du lundi, avec les chiffres par campagne ;
+  - **le CRM range automatiquement un prospect venu d'une pub** en origine « Publicidad · <campagne> ».
+- **Convention de lien :** toujours vers le test de niveau, avec étiquette. Exemple : `https://pathway-languages.com/test-placement.html?utm_source=instagram&utm_medium=reel&utm_campaign=<nom>`.
+- **Comptes Instagram et TikTok :** l'existence et l'accès aux comptes de Pathway sont **à confirmer**. La tâche T022 (Instagram / TikTok) des specs V4 est encore ouverte.
+- **Lancement du 1er janvier (2027) :** mentionné dans le plan vidéo comme une priorité, mais son contenu exact n'est pas documenté (rentrée des cours ? campagne ?). **À préciser.**
+
+#### Les deux usages prévus
+
+1. **La pub principale** (priorité de Sacha) : un motion design de **30 à 45 s**, plus une version de 15 s. Il montre de **vraies captures du site et du Campus**.
+
+   | Moment | Contenu |
+   |---|---|
+   | 0–3 s | Accroche lisible sans le son (ex. « 407 puntos con francés. ¿Y tú? ») |
+   | 3–8 s | Le problème : préparer seul le TEF ou le TCF, sans plan ni suivi |
+   | 8–18 s | Le site : test gratuit, résultat par compétence, tarifs simples |
+   | 18–35 s | Le Campus : exercices, manuel, cours enregistrés, progression, rappels |
+   | 35–40 s | La preuve : vrais résultats d'élèves, rondes IRCC |
+   | Fin | « Mide tu nivel gratis », lien étiqueté, logo |
+
+   - **Formats :** 9:16, 1:1, 16:9.
+   - **Langues :** espagnol d'abord, puis les autres avec le même montage et une autre voix off.
+   - **Captures du Campus :** uniquement un compte de démonstration avec des élèves fictifs.
+
+2. **Les réseaux sociaux** : environ **3 vidéos courtes par semaine** (Reels, puis TikTok), toujours dans la même direction artistique. Objectif : environ 30 minutes de travail humain par semaine.
+
+#### Méthode : production par agents IA, avec deux validations humaines
+
+- **Fabrication :**
+  - les vidéos sont du **motion design fait en code** : HTML/SVG animé (GSAP ou Remotion) ;
+  - chaque image est capturée par Playwright, puis la vidéo est encodée par FFmpeg ;
+  - **coût de rendu : 0 €** ;
+  - pas de vidéo réaliste générée par IA (personnes, décors), sauf plus tard et avec un budget plafonné.
+- **Chaîne :** script → plan découpé (une action par plan) → maquette → **planche de 18 images validée** → MP4.
+- **Deux validations de Sacha :** **avant toute dépense** et **avant toute publication**.
+- **Équipe de 7 agents à une seule tâche :**
+
+  | Agent | Son travail | Ce qu'il ne fait jamais |
+  |---|---|---|
+  | Stratège | Propose 3 sujets par semaine | Choisir seul |
+  | Scénariste | Écrit le script de 15 à 30 s et le plan découpé | Promettre un résultat |
+  | Motion designer | Anime en code, aux couleurs de Pathway | Sortir de la charte |
+  | Relecteur | Vérifie avec un regard neuf, conclut « bon » ou « à reprendre » | Modifier quoi que ce soit |
+  | Rendu | Sort la planche puis le MP4 ; annonce le coût de la voix off avant | Dépasser le budget |
+  | Publication | Prépare la légende, le lien étiqueté et l'horaire | Publier sans l'accord de Sacha |
+  | Analyste | Fait le bilan hebdomadaire (vues complètes, tests, inscrits via le CRM) | Conclure sur moins de 8 vidéos |
+
+  - Les agents de production tournent dans Claude Code (sessions cloud avec Chromium, Playwright, FFmpeg).
+  - Les agents de suivi peuvent tourner sur AppuBot.
+- **Dossier à créer :**
+  - `marketing/studio/` avec :
+    - `bible.md` (public, ton, charte, interdits, appel à l'action, rythme, zones sûres) ;
+    - `formatos/` ;
+    - `piezas/<id>/` (script, plan, HTML, planche, MP4) ;
+    - `log.md` (chaque production, son coût, son verdict) ;
+  - les fiches des agents dans `.claude/agents/`.
+- **Rythme :**
+  - musique à 120 BPM ;
+  - accroche de 6 mots au plus dans les 3 premières secondes ;
+  - pas de mouvement linéaire ;
+  - la dernière image reprend la première, pour que la vidéo boucle.
+- **Zones sûres 9:16 :** texte à 96 px des bords, en évitant environ 200 px en haut et 300 px en bas.
+- **Indicateurs :** part des vidéos vues jusqu'au bout, comparée à notre moyenne, puis tests et inscrits par vidéo grâce aux UTM et au CRM.
+
+#### Charte, outils, interdits
+
+- **Couleurs** (`v4/home.css`) :
+  - encre `#122b26`, papier `#fffaf2`, crème `#f5efe4` ;
+  - terracotta `#c76f56`, action `#a34e3b`, sauge `#cad8c3`.
+- **Polices :** Outfit (titres) et DM Sans (texte), dans `v4/assets/fonts/`.
+- **Outils :**
+  - GSAP ou Remotion (vérifier la licence de Remotion), Lottie ;
+  - **ElevenLabs** (abonnement Starter déjà pris) pour la voix off, la musique et les sous-titres ;
+  - WhisperX, Openverse (vérifier la licence de chaque son), FFmpeg, Playwright.
+- **Interdits :**
+  - **aucun faux témoignage, ni faux élève ou faux professeur généré par IA** ;
+  - jamais « invitation garantie » ni « certificat Pathway » ;
+  - chiffres IRCC tirés de la source officielle, avec la date de la ronde ;
+  - aucune promesse migratoire, aucune étiquette « IA » ;
+  - aucune donnée réelle d'élève à l'écran.
+
+#### Les 4 premiers formats
+
+1. **« Ronda IRCC »** : « La categoría de francés invitó desde N puntos ». Il se remplit tout seul avec `v4/data/ircc-rounds.json`.
+2. **« Tip TEF »** : une erreur fréquente des hispanophones et sa correction.
+3. **« Testimonio »** : un extrait d'une vraie vidéo d'élève (Devon, Elena…), sous-titré.
+4. **« Oferta »** : le test gratuit et l'appel à l'action.
+
+**Première pièce (prototype) :** « Ronda IRCC », 15 s, 1080×1920, sans voix, sur une grille de 120 BPM, avec la dernière ronde.
+
+#### Pour démarrer la nouvelle conversation
+
+1. Lire `docs/marketing/studio-video.md` et cette section.
+2. Trancher les questions ouvertes :
+   - la **mascotte** (le phare du logo animé : Sacha est pour, Ryan et Abdrahim n'ont pas confirmé) ;
+   - le budget ;
+   - l'accès aux comptes Instagram et TikTok ;
+   - le sens du lancement du 1er janvier.
+3. **Clé ElevenLabs :** l'enregistrer par le formulaire sécurisé de la session, **jamais dans le chat**. Les droits sont déjà définis dans le plan : plafond de crédits, expiration à 90 jours.
+4. Créer `marketing/studio/` et la bible, puis produire le prototype « Ronda IRCC » : planche de 18 images, validation, MP4.
+5. **Publication :**
+   - pas d'automatisation par navigateur sur Instagram ou TikTok (protections anti-robots) ;
+   - soit Sacha publie à la main avec la légende préparée ;
+   - soit on branche plus tard les API officielles (Instagram via Meta Business, TikTok Content Posting API).
+6. Mettre à jour cette section au fur et à mesure (formats validés, résultats, coûts).
+
+### Prochaine grande étape technique : Google Calendar dans les deux sens (étape 2 de Mi agenda)
 
 - **Envoi** des cours et des réunions vers le Google Calendar de chacun.
 - **Lecture des plages occupées** : les rendez-vous personnels bloquent des créneaux automatiquement.
@@ -761,7 +881,7 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
 
 ### Acquisition
 
-- **Vidéos publicitaires en motion design** : plan dans `docs/marketing/studio-video.md`, mis de côté.
+- **Vidéos publicitaires et réseaux sociaux** : voir le prochain grand chantier, en tête de cette section.
 - **Test A/B pub vers Messenger contre pub vers le site**, mesuré au coût par inscrit.
 - Une page d'arrivée dédiée aux pubs.
 - **WhatsApp avec brouillons IA** dès que le numéro canadien est branché.
@@ -889,6 +1009,8 @@ Déjà fait : numéro acheté, ajouté dans un nouveau compte WhatsApp Business,
    - `llms.txt` simplifie les formules (Acelerado 4 h, Intensivo 6 h) et contient encore le +51 ;
    - les pages « Cuánto tiempo » donnent des délais, alors que le résultat du test n'en donne plus. Choix à confirmer.
 8. **Octolinks :** commande abandonnée ou maintenue ?
+9. **Lancement du 1er janvier 2027 :** qu'est-ce qui est lancé exactement (cours, campagne, nouvelle offre) ?
+10. **Publicité :** budget, campagnes en cours, résultats, accès aux comptes Instagram et TikTok, mascotte ([§13](#13-vision-et-backlog)).
 
 ### Dette technique
 
@@ -950,3 +1072,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 |---|---|
 | 19 nov. 2026 | Création du document : état après la PR #141, historique depuis août 2026, backlog, règles, leçons. |
 | 19 nov. 2026 | Ajout de `AGENTS.md`, `CLAUDE.md` et du modèle de PR : chaque agent doit tenir ce document à jour. |
+| 19 nov. 2026 | Section « Prochain grand chantier : publicités vidéo et réseaux sociaux » (plan vidéo résumé, lancement du 1er janvier, démarrage). |
