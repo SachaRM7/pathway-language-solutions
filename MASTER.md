@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #151 (studio vidéo et prototype « Ronda IRCC »).
+> **État au 19 novembre 2026** — dernière PR intégrée : #152 (bande-son et trois versions de « Ronda IRCC »).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -687,7 +687,8 @@ Relevé du 19 nov. 2026.
   - **références vidéo, marketing et SEO** rangées dans `docs/references/` (#146), puis 8 de plus : motion design, vidéo de lancement, IA en général (#147) ;
   - **plan de démarrage des pubs validé**, en 4 étapes jusqu'au lancement du 1er janvier (#148) ;
   - **tâche programmée hebdomadaire du studio vidéo** (#150) ;
-  - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (#151).
+  - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (#151) ;
+  - **bande-son en code** (cumbia à 120 BPM et bruitages) et **trois versions** de la vidéo : muette, bruitages seuls, complète (#152).
 
 ---
 
@@ -1173,5 +1174,6 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | 8 références de plus (11 à 18) : playbook et cours complets de motion design, studio de vidéo de lancement, langage du mouvement, simulateur 3D, IA et agents, rétro-ingénierie. |
 | 19 nov. 2026 | Plan de démarrage des pubs validé par Sacha (§13) : décider, produire, tester à petit budget mi-décembre, accélérer au 1er janvier. |
 | 19 nov. 2026 | Studio vidéo créé (`marketing/studio/`) et premier prototype « Ronda IRCC n.º 452 » rendu ; budget et accès aux comptes reportés après les premiers rendus (décision de Sacha). |
+| 19 nov. 2026 | « Ronda IRCC » : bande-son fabriquée en code (cumbia, bruitages) et trois versions par pièce : muette, bruitages seuls, complète. |
 | 19 nov. 2026 | Retrait de la fausse « règle d'équipe » sur les noms de modèles d'IA : l'équipe n'interdit rien de tel. |
 | 19 nov. 2026 | Tâche programmée « Studio vidéo Pathway » : chaque lundi 14 h 11 (Paris), bilan, 3 sujets, puis production après le choix de Sacha (§13). |
