@@ -58,6 +58,24 @@ try { const m = localStorage.getItem('campus-mode'); A.mode = ['profesor', 'admi
 try { A.staff.scope = localStorage.getItem('campus-scope') === 'all' ? 'all' : 'mine'; } catch (e) { A.staff.scope = 'mine'; }
 
 const SEGMENTS = {
+  A1: [
+    { letter: "A", name: "La présentation complète", desc: "Saluer, se présenter, poser des questions, être et avoir, les verbes en -er (et quelques verbes irréguliers fréquents : aller, faire), les nombres, la date et l'heure, les pays et nationalités, l'adresse, l'état civil, les professions, la famille." },
+    { letter: "B", name: "Sujets simples au présent", desc: "Les couleurs, les articles, le présent, les vêtements, les saisons, les repas, commander, se déplacer et demander son chemin, les transports, acheter un billet." },
+    { letter: "C", name: "La description & parler de soi", desc: "Le corps, la description physique et morale, les pronoms toniques, la routine, les émotions, la santé, la nature, les animaux, la maison et les meubles." },
+    { letter: "D", name: "Activités & loisirs", desc: "Les loisirs, le cinéma, les sports, la fréquence, le quotidien, les semi-auxiliaires, les courses, l'hôtel, les projets, les invitations, les goûts et l'avis." }
+  ],
+  B1: [
+    { letter: "A", name: "Opinion, argumentation et interaction", desc: "Consolidation A2, connecteurs logiques, opinion et désaccord, argumentation, conseil, introduction au subjonctif." },
+    { letter: "B", name: "Récits, hypothèses et expansion d'idées", desc: "Plus-que-parfait, système du récit, conditionnel, hypothèses, relatifs (dont), pronoms doubles, émotions, cause/conséquence." },
+    { letter: "C", name: "Société, culture et médias", desc: "Médias, réseaux, écologie, travail, lecture authentique, possibilité, certitude/doute, débat, culture francophone, résumé, argumentation." },
+    { letter: "D", name: "Immersion canadienne & préparation TCF", desc: "Projet d'installation, démarches, jeux de rôles, courriel formel, essai, synthèse, préparation à la simulation." }
+  ],
+  B2: [
+    { letter: "A", name: "Argumentation avancée et nuance", desc: "Consolidation B1, registres de langue, nuance et concession, subjonctif avancé, doute, discours rapporté, mise en relief, connecteurs complexes, synthèse d'opinions." },
+    { letter: "B", name: "Analyse, hypothèse et discours complexe", desc: "Conditionnel passé, irréel du passé, regret et reproche, voix passive, gérondif, nominalisation, discours académique, relatifs composés, cohérence textuelle, cause et concession avancées." },
+    { letter: "C", name: "Société, culture et monde contemporain", desc: "Désinformation, intelligence artificielle, écologie, travail, immigration, document audiovisuel, résumé et synthèse, débat complexe, littérature et cinéma, argumentation écrite B2, présentation longue." },
+    { letter: "D", name: "Immersion académique & préparation TCF", desc: "Français académique et dissertation, courrier professionnel, comprendre un cours et un article long, entretien approfondi, réunion, synthèse de documents et synthèse orale, méthodes des quatre épreuves du TCF, stratégies du jour J et mini-bilan de compréhension." }
+  ],
   A2: [
     { letter: 'A', name: 'Rappels & vie quotidienne', desc: 'Présent, auxiliaires, connecteurs simples, futur proche, expressions avec être / avoir, impératif et recommandations.' },
     { letter: 'B', name: 'Raconter au passé', desc: 'Passé composé, accord du participe, négation et interrogation, marqueurs temporels, pronominaux, imparfait et choix des deux temps.' },
@@ -277,7 +295,9 @@ async function loadAll() {
   syncTimezone();
   A.units = units.data;
   A.unitInfo = {};
-  for (const e of ex.data) { const u = A.unitInfo[e.unit_id] ||= { count: 0, validated: 0 }; u.count++; if (e.status === 'validated') u.validated++; }
+  // In the demo (db/046), draft exercises count as published: the demo shows the Campus as it will be.
+  const live = e => e.status === 'validated' || (A.profile.is_demo && A.profile.role === 'student' && e.status === 'draft');
+  for (const e of ex.data) { const u = A.unitInfo[e.unit_id] ||= { count: 0, validated: 0 }; u.count++; if (live(e)) u.validated++; }
   A.runs = runs.data;
   A.assignments = asg.data.filter(a => a.assignment).map(a => ({ ...a.assignment, completed_at: a.completed_at }));
   A.xp = xp.data;
@@ -850,7 +870,38 @@ function challengeTile() {
     </article>`;
 }
 
+// The whole path A1 → B2 (db/046): the other levels can be browsed, read only, from Mi ruta.
+function rutaLevelTabs(view) {
+  const p = A.profile, mine = LEVELS.indexOf(p.level);
+  return `<div class="seg-tabs lvl-tabs" role="group" aria-label="Nivel">${LEVELS.map((l, i) => `<button type="button" data-ruta-level="${l}" aria-pressed="${l === view}"><b>${l}</b>${l === p.level ? 'Tu nivel' : i < mine ? 'Anterior' : 'Después'}</button>`).join('')}</div>`;
+}
+function viewRutaPreview(lvl) {
+  const p = A.profile, segs = segmentsFor(lvl), i = Math.min(Math.max(A.segPrev || 0, 0), 3), s = segs[i], from = i * 16 + 1;
+  const before = LEVELS.indexOf(lvl) < LEVELS.indexOf(p.level);
+  const units = A.units.filter(u => u.level === lvl);
+  const cells = [];
+  for (let n = from; n < from + 16; n++) {
+    const u = units.find(x => x.number === n);
+    const why = before ? 'nivel anterior al tuyo' : `se abre cuando valides tu nivel ${p.level}`;
+    cells.push(`<button class="u soon" data-toast="${esc(u ? `Unidad ${n} · ${u.title}: ${why}.` : `Unidad ${n}: ${why}.`)}" aria-label="Unidad ${n}${u ? `, ${esc(u.title)}` : ''}">${pad2(n)}</button>`);
+  }
+  cells.push(`<button class="u u-exam" data-toast="Examen del segmento ${s.letter} del nivel ${lvl}." aria-label="Examen ${s.letter}">${icon('trophy')}</button>`);
+  return `<section class="view" aria-labelledby="h-ruta">
+  ${topBar('h-ruta', 'Mi ruta', `De A1 a B2 · 4 niveles de 64 unidades`)}
+  ${rutaLevelTabs(lvl)}
+  <article class="tile ${before ? 'mint' : 'lilac'} lvl-intro"><span class="pill">${before ? 'Nivel anterior' : 'Próximo nivel'}</span>
+    <h2>Nivel ${lvl} · ${units.length} unidades y 4 exámenes de segmento</h2>
+    <p>${before ? `Ya estás en ${esc(p.level)}: este nivel queda como referencia. Puedes repasar sus notas con tu profesor.` : `Se abre cuando validas tu nivel ${esc(p.level)}: el examen con tu profesor y el examen final del campus. Tu ruta sigue aquí, unidad por unidad.`}</p>
+  </article>
+  <div class="seg-tabs" role="group" aria-label="Segmento">${segs.map((x, k) => `<button type="button" data-seg-prev="${k}" aria-pressed="${k === i}"><b>${x.letter}</b>${esc(x.name)}</button>`).join('')}</div>
+  <article class="tile">
+    <div class="tile-head"><div><h2>Segmento ${s.letter} · ${esc(s.name)}</h2>${s.desc ? `<p class="muted" style="font-size:14px;margin-top:6px;max-width:70ch">${esc(s.desc)}</p>` : ''}</div></div>
+    <div class="units">${cells.join('')}</div>
+    <ol class="unit-titles">${units.filter(u => u.number >= from && u.number < from + 16).map(u => `<li><span class="num">${pad2(u.number)}</span>${esc(u.title)}</li>`).join('')}</ol>
+  </article></section>`;
+}
 function viewRuta() {
+  if (A.rutaLevel && A.rutaLevel !== A.profile.level && LEVELS.includes(A.rutaLevel)) return viewRutaPreview(A.rutaLevel);
   const p = A.profile, segs = segmentsFor(p.level);
   if (A.seg == null) { const nu = nextUnit(); A.seg = nu ? Math.max(0, segs.findIndex(s => s.letter === nu.segment)) : 0; }
   const s = segs[A.seg], from = A.seg * 16 + 1, done = doneUnits(), nu = nextUnit();
@@ -873,6 +924,7 @@ function viewRuta() {
   const fInfo = featured ? A.unitInfo[featured.id] : null;
   return `<section class="view" aria-labelledby="h-ruta">
   ${topBar('h-ruta', 'Mi ruta', `Manual ${p.level} · 64 unidades en 4 segmentos`)}
+  ${rutaLevelTabs(p.level)}
   <div class="seg-tabs" role="group" aria-label="Segmento">${segs.map((x, i) => `<button type="button" data-seg="${i}" aria-pressed="${i === A.seg}"><b>${x.letter}</b>${esc(x.name)}</button>`).join('')}</div>
   ${featured ? `<article class="tile peach unit-hero">
       <div><span class="pill">Unidad actual</span><h2>${esc(featured.title)}</h2>
@@ -4419,7 +4471,7 @@ document.addEventListener('click', async e => {
     if (ct.matches('[data-crm-goto]')) { const id = ct.dataset.crmGoto; setTimeout(() => crmOpen(id), 80); }
     if (location.hash === '#prospectos') { e.preventDefault(); closeMenus(); render(); }
   }
-  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-cont],[data-cont-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],[data-edit-unit],[data-ed-back],[data-ed-open],[data-ed-new],[data-ed-close],[data-ed-ask],[data-ed-delete],[data-ed-move],#flash');
+  const t = e.target.closest('[data-start],[data-toast],[data-say],[data-rate],[data-seg],[data-seg-prev],[data-ruta-level],[data-cont],[data-cont-seg],[data-exam],[data-action],[data-preview],[data-publish],[data-mode],[data-hw-student],[data-edit-unit],[data-ed-back],[data-ed-open],[data-ed-new],[data-ed-close],[data-ed-ask],[data-ed-delete],[data-ed-move],#flash');
   if (!e.target.closest('.menu-wrap')) closeMenus();
   if (!t) return;
   if (t.matches('[data-mode]')) {
@@ -4456,6 +4508,8 @@ document.addEventListener('click', async e => {
   }
   if (t.matches('[data-toast]')) return toast(t.dataset.toast);
   if (t.matches('[data-seg]')) { A.seg = +t.dataset.seg; render(); return; }
+  if (t.matches('[data-seg-prev]')) { A.segPrev = +t.dataset.segPrev; render(); return; }
+  if (t.matches('[data-ruta-level]')) { A.rutaLevel = t.dataset.rutaLevel; A.segPrev = 0; render(); return; }
   if (t.matches('[data-cont]')) { A.contTab = t.dataset.cont; render(); return; }
   if (t.matches('[data-cont-seg]')) { A.contSeg = t.dataset.contSeg; render(); return; }
   if (t.matches('[data-exam]')) { A.simExam = t.dataset.exam; render(); return; }
@@ -4997,7 +5051,7 @@ async function startLesson(unitId, preview) {
     if (!st.unlocked) return toast(`Supera antes la unidad ${st.prev ? st.prev.number : ''} con al menos 75 %.`);
   }
   let q = sb.from('exercises').select('id,type,kind,payload,position,status').eq('unit_id', unitId).order('position');
-  if (!preview) q = q.eq('status', 'validated');
+  if (!preview) q = A.profile.is_demo ? q.in('status', ['validated', 'draft']) : q.eq('status', 'validated');
   const { data, error } = await q;
   if (error) return fail(error);
   if (!data.length) return toast('Esta unidad todavía no tiene ejercicios.');

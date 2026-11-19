@@ -1363,3 +1363,11 @@ a.pill.warn { text-decoration: none; }
 body.is-demo { padding-top: 34px; }
 body.is-demo .side { top: calc(env(safe-area-inset-top, 0px) + 50px); }
 @media (max-width: 520px) { .demo-bar { justify-content: space-between; gap: 6px; } .demo-bar .demo-more { display: none; } }
+
+/* Mi ruta: the whole path A1 → B2 (other levels read only) */
+.lvl-tabs { margin-bottom: 10px; }
+.lvl-intro h2 { margin-top: 12px; }
+.lvl-intro p { margin-top: 8px; font-size: 14px; max-width: 70ch; }
+.unit-titles { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 18px; }
+.unit-titles li { display: flex; gap: 10px; font-size: 14px; color: var(--ink-2); }
+.unit-titles .num { flex: none; width: 24px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }

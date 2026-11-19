@@ -3,7 +3,7 @@
 > **Le document de référence de Pathway** : ce qu'est l'école, comment elle fonctionne, ce qui est en ligne, ce qui reste à faire et où l'on va.
 > À lire en premier par toute personne (ou tout assistant IA) qui rejoint le projet.
 >
-> **État au 19 novembre 2026** — dernière PR intégrée : #154 (Campus de démonstration).
+> **État au 19 novembre 2026** — dernière PR intégrée : #155 (parcours A1 → B2 dans Mi ruta).
 > **🚀 Lancement du Campus : 1er janvier 2027.** Ce qu'il reste à faire avant cette date : [§12](#12-en-cours-en-attente-à-faire).
 > **Prochain grand chantier :** publicités vidéo et réseaux sociaux ([§13](#13-vision-et-backlog)).
 > Règles de mise à jour : [section 18](#18-comment-tenir-ce-document-à-jour). Historique des mises à jour : [section 19](#19-journal-des-mises-à-jour).
@@ -237,6 +237,7 @@ Application web d'une seule page (`campus/app.js`, environ 5 600 lignes, sans bu
 - **5 onglets en bas : Inicio, Mi ruta, Repasar, Simulacros, Mi curso.**
   - **Inicio :** objectif du jour en XP, série, prochaine classe, défi de la semaine.
   - **Mi ruta :**
+    - onglets **A1 · A2 · B1 · B2** : l'élève voit tout le parcours. Les autres niveaux sont en lecture seule, avec les titres réels des unités, tirés des manuels ;
     - unités à réussir à **75 %**, nouvel essai après **24 h** ;
     - certaines unités ne s'ouvrent **qu'après avoir été vues en cours** (rapport de fin de cours) ;
     - examen tous les 16 unités, puis **examen de fin de niveau** en deux étapes (examen validé par le professeur, puis examen final du Campus) ;
@@ -349,7 +350,7 @@ Un **monde fictif, séparé du vrai Campus**, pour montrer le Campus, le tester 
   - l'équipe réelle ne voit jamais la démo (listes, Bandeja, alertes, rapport du lundi, outils des bots), et un compte démo ne voit que la démo ;
   - aucun e-mail automatique n'est envoyé aux comptes démo ; leurs adresses sont en @example.com et ne reçoivent rien ;
   - rien ne va dans le CRM.
-- **Ce que la démo n'invente pas :** le contenu du programme. Les élèves démo n'ont fait que l'**unité 1**, la seule qui a des exercices aujourd'hui.
+- **Exercices :** les comptes démo voient aussi les **exercices en brouillon** (SQL 046). Les vrais élèves ne voient que les exercices publiés par un professeur dans Programa. La démo montre donc le Campus tel qu'il sera, à mesure que les brouillons sont écrits.
 - **Pas encore couvert :** l'espace Admin (prospects, disponibilités, réunions) n'a pas de données démo. C'est une étape 2 possible.
 
 ---
@@ -484,6 +485,7 @@ Toutes sont **appliquées en production** au 19 nov. 2026.
 | 043 | Tâche programmée des rappels de réunion |
 | 044 | Monde démo séparé (`profiles.is_demo`) : invisible pour l'équipe réelle, exclu des e-mails, des rapports et du CRM |
 | 045 | Données de la démo (`demo_seed`) : un professeur et 4 élèves A2 avec un historique réaliste |
+| 046 | Unités A1, B1 et B2 (titres du sommaire des manuels) ; les comptes démo voient les exercices en brouillon |
 
 ### Edge Functions
 
@@ -625,7 +627,7 @@ Relevé du 19 nov. 2026.
 | Tests de niveau enregistrés | 6 |
 | Demandes d'inscription | 0 |
 | Élèves programmés (horaires) | 0 |
-| Unités du programme | 60 en A2, mais **une seule (l'unité 1) a des exercices** ; A1, B1, B2 à créer |
+| Unités du programme | 240 (60 par niveau, A1 → B2), mais **une seule (A2, unité 1) a des exercices publiés** |
 | Contacts Difusión | 33 |
 | Conversations Correo | 0 (aucun e-mail réel reçu depuis la mise en route) |
 | Disponibilités reçues, réunions proposées | 0, 0 |
@@ -711,7 +713,9 @@ Relevé du 19 nov. 2026.
   - **tâche programmée hebdomadaire du studio vidéo** (#150) ;
   - **studio vidéo créé** (`marketing/studio/`) : bible, fichier de faits, moteur de rendu, 7 fiches d'agents, et **premier prototype « Ronda IRCC n.º 452 »** (#151) ;
   - **bande-son en code** (cumbia à 120 BPM et bruitages) et **trois versions** de la vidéo : muette, bruitages seuls, complète (#152) ;
-  - **Campus de démonstration** : un monde fictif séparé, un professeur et 4 élèves, entrée d'un clic depuis Ajustes (#154).
+  - **Campus de démonstration** : un monde fictif séparé, un professeur et 4 élèves, entrée d'un clic depuis Ajustes (#154) ;
+  - **parcours A1 → B2** dans Mi ruta, 180 unités A1/B1/B2 ajoutées, brouillons visibles dans la démo (#155) ;
+  - décision de Sacha : **écrire les vrais exercices** (brouillons relus puis publiés par les professeurs) et **construire les vrais Simulacros**, plutôt que des données factices.
 
 ---
 
@@ -1200,3 +1204,4 @@ Les bots AppuBot passent par le Campus (MCP) et non par le dépôt : ils ne modi
 | 19 nov. 2026 | Retrait de la fausse « règle d'équipe » sur les noms de modèles d'IA : l'équipe n'interdit rien de tel. |
 | 19 nov. 2026 | Tâche programmée « Studio vidéo Pathway » : chaque lundi 14 h 11 (Paris), bilan, 3 sujets, puis production après le choix de Sacha (§13). |
 | 19 nov. 2026 | Campus de démonstration (§6, SQL 044–045, fonction `demo`) ; constat : seule l'unité A2 1 a des exercices (§12). |
+| 19 nov. 2026 | Parcours A1 → B2 visible dans Mi ruta (SQL 046) ; brouillons visibles dans la démo ; vrais exercices et vrais Simulacros décidés. |
